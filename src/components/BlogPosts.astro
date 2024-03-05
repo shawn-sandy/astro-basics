@@ -1,8 +1,9 @@
 ---
-const { title, url, description } = Astro.props;
+const { title, url, description, date } = Astro.props;
 ---
 
 <li>
+  <div>{date}</div>
   <h2 data-ui="display">
     <a href={url}> {title}</a>
   </h2>
@@ -11,8 +12,10 @@ const { title, url, description } = Astro.props;
     <a
       href={url}
       style="--link-radius: initial"
-      aria-label={`Continue reading ${title}`}><b>Continue reading</b></a
+      aria-label={`Continue reading ${title}`}
     >
+      <b>Continue reading</b>
+    </a>
   </p>
   <hr />
 </li>
