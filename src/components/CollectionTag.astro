@@ -1,0 +1,20 @@
+---
+import { getCollection } from "astro:content";
+const collection = Astro.props.collection || "Collection Tags";
+const collectionTag = Astro.props.collectionTag || "posts";
+const allPosts = await getCollection(collectionTag);
+const tags = [...new Set(allPosts.map((post) => post.data.tags).flat())];
+---
+
+<h4 data-ui="display">
+  {collection}
+</h4>
+<ul data-list="unstyled">
+  {
+    tags?.map((tag) => (
+      <li class="tag">
+        <a href={`/tags/${tag}`}>{tag}</a>
+      </li>
+    ))
+  }
+</ul>
