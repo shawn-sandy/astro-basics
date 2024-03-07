@@ -16,7 +16,7 @@ header > section > p {
 
 h2 a[href] {
   font-size: var(--h2);
-  color: currentColor;
+  /* color: currentColor; */
 }
 
 pre {
