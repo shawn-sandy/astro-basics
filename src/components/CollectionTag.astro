@@ -1,6 +1,6 @@
 ---
 import { getCollection } from "astro:content";
-const collection = Astro.props.collection || "Collection Tags";
+const collection = Astro.props.collection || "Collections";
 const collectionTag = Astro.props.collectionTag || "posts";
 const allPosts = await getCollection(collectionTag);
 const tags = [...new Set(allPosts.map((post) => post.data.tags).flat())];
@@ -18,3 +18,8 @@ const tags = [...new Set(allPosts.map((post) => post.data.tags).flat())];
     ))
   }
 </ul>
+<style>
+  a {
+    text-transform: capitalize;
+  }
+</style>
