@@ -2,15 +2,15 @@
 import { getCollection } from "astro:content";
 import BlogPosts from "./BlogPosts.astro";
 
-const { contentTitle, pageSize, to } = Astro.props;
-const allPosts = await getCollection("posts");
+const { contentTitle, pageSize, to, collection } = Astro.props;
+const allPosts = await getCollection(collection || "posts");
 const collectionLists = allPosts.slice(0, pageSize || 3);
 ---
 
 {contentTitle && <h3 data-ui="display">{contentTitle}</h3>}
 <ul data-list="unstyled">
   {
-    collectionLists?.map((post) => (
+    collectionLists?.map((post: any) => (
       <>
         <BlogPosts
           title={post.data.title}
