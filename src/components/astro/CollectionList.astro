@@ -2,34 +2,22 @@
 import { getCollection } from "astro:content";
 import BlogPosts from "./BlogPosts.astro";
 
-const contentTitle: string = Astro.props.contentTitle;
-const pageSize: number = Astro.props.pageSize || 3;
+const { contentTitle, pageSize, to } = Astro.props;
 const allPosts = await getCollection("posts");
-const paginatedPosts = allPosts.slice(0, pageSize);
-
-import Pagination from "./Pagination.astro";
+const collectionLists = allPosts.slice(0, pageSize || 3);
 ---
 
 {contentTitle && <h3 data-ui="display">{contentTitle}</h3>}
 <ul data-list="unstyled">
   {
-    paginatedPosts?.map((post) => (
+    collectionLists?.map((post) => (
       <>
         <BlogPosts
           title={post.data.title}
           description={post.data.description}
-          url={`/posts/${post.slug}`}
+          url={`/${to || "posts"}/${post.slug}`}
         />
       </>
     ))
   }
 </ul>
-
-<style>
-  ul {
-    padding: 0;
-  }
-  li {
-    list-style: none;
-  }
-</style>
