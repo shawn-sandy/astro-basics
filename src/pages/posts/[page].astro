@@ -15,7 +15,7 @@ const pageSize = 2;
 const { page } = Astro.props as any;
 ---
 
-<Layout>
+<Layout pageTitle="Blog Posts">
   <ul data-list="unstyled">
     {
       page?.data.map((post: any) => (
