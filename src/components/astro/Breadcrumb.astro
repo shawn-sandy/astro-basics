@@ -2,7 +2,16 @@
 // imports
 // define props
 // define routes array
+type Route = { path: string; name: string };
+
+type BreadCrumbsRoutes = {
+  routes: Route[];
+};
 // get current path using window.location.pathname
+const path = window.location.pathname;
 // split the paths into array using '/' as delimiter
+const pathSegments = path.split("/").filter((segment) => segment);
 // map over routes array to check for matching route
 ---
+
+<nav></nav>
