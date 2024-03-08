@@ -1,11 +1,13 @@
 ---
 import { getCollection } from "astro:content";
 import BlogPosts from "./BlogPosts.astro";
-const contentTitle = Astro.props.contentTitle;
 
-const postLength = Astro.props.postLength || 10;
+const contentTitle: string = Astro.props.contentTitle;
+const pageSize: number = Astro.props.pageSize || 3;
 const allPosts = await getCollection("posts");
-const paginatedPosts = allPosts.slice(0, postLength);
+const paginatedPosts = allPosts.slice(0, pageSize);
+
+import Pagination from "./Pagination.astro";
 ---
 
 {contentTitle && <h3 data-ui="display">{contentTitle}</h3>}
@@ -22,6 +24,7 @@ const paginatedPosts = allPosts.slice(0, postLength);
     ))
   }
 </ul>
+<Pagination items={allPosts} itemsPerPage={pageSize} />
 <style>
   ul {
     padding: 0;
