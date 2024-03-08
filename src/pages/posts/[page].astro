@@ -33,7 +33,7 @@ const { page } = Astro.props as any;
     </div>
     <Pagination items={all} itemsPerPage={pageSize} />
     <div>
-      {page?.url?.next ? <a href={page?.url?.next}>Next</a> : "Next"}
+      {page?.url?.next ? <a href={page?.url?.next}>Next </a> : "Next"}
     </div>
   </nav>
 </Layout>
