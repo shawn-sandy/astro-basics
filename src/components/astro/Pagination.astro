@@ -7,3 +7,15 @@ const to: string = Astro.props.to || "posts";
 const totalPages = Math.ceil(itemsArray.length / itemsPerPage);
 const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 ---
+
+<ul data-list="unstyled inline">
+  {
+    pageNumbers.map((number) => {
+      return (
+        <li>
+          <a href={`/${to}/$`}>{number}</a>
+        </li>
+      );
+    })
+  }
+</ul>
