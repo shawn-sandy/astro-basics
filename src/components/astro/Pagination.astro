@@ -13,7 +13,7 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
     pageNumbers.map((number) => {
       return (
         <li>
-          <a href={`/${to}/$`}>{number}</a>
+          <a href={`/${to}/${number}`}>{number}</a>
         </li>
       );
     })
