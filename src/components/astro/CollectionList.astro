@@ -2,6 +2,14 @@
 import { getCollection } from "astro:content";
 import BlogPosts from "./BlogPosts.astro";
 
+/**
+ * The props for the CollectionList component.
+ * @typedef {Object} Props
+ * @property {string} [contentTitle] - The title to display for the collection.
+ * @property {number} [pageSize] - The number of items per page.
+ * @property {string} [to] - The link for the "View All" button.
+ * @property {any} [collection] - The collection to display.
+ */
 export type Props = {
   contentTitle?: string;
   pageSize?: number;
