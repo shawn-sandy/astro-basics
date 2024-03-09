@@ -1,16 +1,17 @@
 ---
 export type Props = {
-  items: any[];
+  itemsSize: number;
   itemsPerPage?: number;
   currentPage?: number;
   to?: string;
 };
-const itemsArray = Astro.props.items;
+
 const itemsPerPage = Astro.props.itemsPerPage || 5;
 const currentPage = Astro.props.currentPage || 1;
+const itemsSize = Astro.props.itemsSize;
 const to = Astro.props.to || "posts";
 
-const totalPages = Math.ceil(itemsArray?.length / itemsPerPage);
+const totalPages = Math.ceil(itemsSize / itemsPerPage);
 const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 ---
 
