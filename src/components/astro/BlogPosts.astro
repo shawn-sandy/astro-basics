@@ -1,14 +1,17 @@
 ---
+export type Props = {
+  title?: string;
+  url?: string;
+  description?: string;
+};
 const { title, url, description } = Astro.props;
 ---
 
-<li>
-  <h2 data-ui="display">
-    <a href={url}>{title}</a>
-  </h2>
-  {description && <p>{description}</p>}
-  <p>
-    <a href={url} aria-label={`Continue reading ${title}`}>Continue</a>
-  </p>
-  <hr />
-</li>
+<h2 data-ui="display">
+  <a href={url}>{title}</a>
+</h2>
+{description && <p>{description}</p>}
+<p>
+  <a href={url} aria-label={`Continue reading ${title}`}>Continue</a>
+</p>
+<hr />

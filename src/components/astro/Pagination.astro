@@ -1,19 +1,25 @@
 ---
-const itemsArray: [] = Astro.props.items;
-const itemsPerPage: number = Astro.props.itemsPerPage || 5;
-const currentPage: number = Astro.props.currentPage || 1;
-const to: string = Astro.props.to || "posts";
+export type Props = {
+  items: [];
+  itemsPerPage?: number;
+  currentPage?: number;
+  to?: string;
+};
+const itemsArray = Astro.props.items;
+const itemsPerPage = Astro.props.itemsPerPage || 5;
+const currentPage = Astro.props.currentPage || 1;
+const to = Astro.props.to || "posts";
 
-const totalPages = Math.ceil(itemsArray.length / itemsPerPage);
+const totalPages = Math.ceil(itemsArray?.length / itemsPerPage);
 const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 ---
 
 <ul data-list="unstyled inline">
   {
-    pageNumbers.map((number) => {
+    pageNumbers.map((item) => {
       return (
         <li>
-          <a href={`/${to}/${number}`}>{number}</a>
+          <a href={`/${to}/${item}`}>{item}</a>
         </li>
       );
     })

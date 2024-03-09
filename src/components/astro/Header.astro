@@ -1,4 +1,9 @@
 ---
+export type Props = {
+  headerTitle?: string;
+  headerDescription?: string;
+};
+// const {  headerTitle, headerDescription } = Astro.props;
 const headerTitle = Astro.props.headerTitle || "Header Title";
 const headerDescription = Astro.props.headerDescription || "Description text";
 ---
