@@ -12,7 +12,7 @@ import spotlightjs from "@spotlightjs/astro";
 // https://astro.build/config
 export default defineConfig({
   site: "https://example.com",
-  integrations: [react(), mdx(), sitemap(), sentry(), spotlightjs()],
+  integrations: [react(), mdx(), sitemap(), spotlightjs()],
   adapter: netlify(),
   output: "hybrid",
   // Enable Custom Markdown options, plugins, etc.
@@ -22,7 +22,7 @@ export default defineConfig({
     rehypePlugins: [rehypeAccessibleEmojis],
     shikiConfig: {
       theme: "one-dark-pro",
-      wrap: true
-    }
-  }
+      wrap: true,
+    },
+  },
 });

@@ -18,10 +18,16 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
   const [breadcrumbs, setBreadcrumbs] = React.useState("/");
   React.useEffect(() => {
     const path = window.location.pathname;
-
     setBreadcrumbs(path);
   }, []);
+
+  const getCustomName = (pathSegment: string | number) => {
+    const route = routes?.find((route) => route.path === pathSegment);
+    return route ? route.name : pathSegment;
+  };
+
   const segments = breadcrumbs.split("/").filter((segment) => segment);
+
   return (
     <nav aria-label="Breadcrumb" {...props}>
       <ul data-list="">
@@ -33,7 +39,11 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
             <li key={index}>
               <span>
                 <a href={`/${segments.slice(0, index + 1).join("/")}`}>
-                  {isNaN(segment) ? segment : <span>{`page ${segment}`}</span>}
+                  {isNaN(segment) ? (
+                    getCustomName(segment)
+                  ) : (
+                    <span>{`Page ${segment}`}</span>
+                  )}
                 </a>
               </span>
             </li>
