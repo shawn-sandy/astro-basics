@@ -32,27 +32,25 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
   const segments = currentPath.split("/").filter((segment) => segment);
   if (currentPath.length) {
     return (
-      <nav aria-label="Breadcrumb" {...props}>
-        <ul data-list="">
-          <li>
-            <a href="/">{startRoute}</a>
-          </li>
-          {segments.length &&
-            segments.map((segment: any, index) => (
-              <li key={index}>
-                <span>
-                  <a href={`/${segments.slice(0, index + 1).join("/")}`}>
-                    {isNaN(segment) ? (
-                      getPathName(segment)
-                    ) : (
-                      <span>{`Page ${segment}`}</span>
-                    )}
-                  </a>
-                </span>
-              </li>
-            ))}
-        </ul>{" "}
-      </nav>
+      <ul aria-label="breadcrumb" data-list="unstyled inline" {...props}>
+        <li>
+          <a href="/">{startRoute}</a>
+        </li>
+        {segments.length &&
+          segments.map((segment: any, index) => (
+            <li key={index}>
+              <span>
+                <a href={`/${segments.slice(0, index + 1).join("/")}`}>
+                  {isNaN(segment) ? (
+                    `/ ${getPathName(segment)}`
+                  ) : (
+                    <span>{`/ Page ${segment}`}</span>
+                  )}
+                </a>
+              </span>
+            </li>
+          ))}
+      </ul>
     );
   } else {
     return null;

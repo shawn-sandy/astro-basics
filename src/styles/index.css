@@ -27,3 +27,7 @@ pre {
 footer > div {
   flex-direction: column;
 }
+
+ul[arial-label="Breadcrumb"] {
+  margin-inline-start: 0;
+}
