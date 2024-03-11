@@ -4,6 +4,7 @@ import React from "react";
 type Crumbs = {
   path?: string | number;
   name?: string;
+  url?: string;
 };
 type BreadcrumbProps = {
   routes?: Crumbs[];
@@ -15,42 +16,47 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
   routes,
   ...props
 }) => {
-  const [breadcrumbs, setBreadcrumbs] = React.useState("/");
+  const [currentPath, setCurrentPath] = React.useState("");
   React.useEffect(() => {
     const path = window.location.pathname;
-    setBreadcrumbs(path);
+    if (path.length) {
+      setCurrentPath(path);
+    }
   }, []);
 
-  const getCustomName = (pathSegment: string | number) => {
+  const getPathName = (pathSegment: string | number) => {
     const route = routes?.find((route) => route.path === pathSegment);
     return route ? route.name : pathSegment;
   };
 
-  const segments = breadcrumbs.split("/").filter((segment) => segment);
-
-  return (
-    <nav aria-label="Breadcrumb" {...props}>
-      <ul data-list="">
-        <li>
-          <a href="/">{startRoute}</a>
-        </li>
-        {segments.length &&
-          segments.map((segment: any, index) => (
-            <li key={index}>
-              <span>
-                <a href={`/${segments.slice(0, index + 1).join("/")}`}>
-                  {isNaN(segment) ? (
-                    getCustomName(segment)
-                  ) : (
-                    <span>{`Page ${segment}`}</span>
-                  )}
-                </a>
-              </span>
-            </li>
-          ))}
-      </ul>{" "}
-    </nav>
-  );
+  const segments = currentPath.split("/").filter((segment) => segment);
+  if (currentPath.length) {
+    return (
+      <nav aria-label="Breadcrumb" {...props}>
+        <ul data-list="">
+          <li>
+            <a href="/">{startRoute}</a>
+          </li>
+          {segments.length &&
+            segments.map((segment: any, index) => (
+              <li key={index}>
+                <span>
+                  <a href={`/${segments.slice(0, index + 1).join("/")}`}>
+                    {isNaN(segment) ? (
+                      getPathName(segment)
+                    ) : (
+                      <span>{`Page ${segment}`}</span>
+                    )}
+                  </a>
+                </span>
+              </li>
+            ))}
+        </ul>{" "}
+      </nav>
+    );
+  } else {
+    return null;
+  }
 };
 
 export default Breadcrumb;
