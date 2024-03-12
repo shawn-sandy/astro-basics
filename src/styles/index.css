@@ -28,6 +28,7 @@ footer > div {
   flex-direction: column;
 }
 
-ul[arial-label="Breadcrumb"] {
+[arial-label~="breadcrumb"] {
   margin-inline-start: 0;
+  background-color: red;
 }

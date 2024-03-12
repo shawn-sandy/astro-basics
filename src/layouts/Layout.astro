@@ -4,6 +4,7 @@ import Navigation from "../components/astro/Navigation.astro";
 import Footer from "../components/astro/Footer.astro";
 import Header from "../components/astro/Header.astro";
 import Sidebar from "../components/astro/Sidebar.astro";
+import AstroBreadcrumb from "#components/react/astro-breadcrumb.tsx";
 import "@fpkit/react/styles";
 const { pageTitle, pageDescription } = Astro.props;
 import "../styles/index.css";
@@ -26,7 +27,11 @@ import "../styles/index.css";
     <Header headerTitle={pageTitle} headerDescription={pageDescription} />
     <main>
       <section arai-label="main-content">
-        <article><slot /></article>
+        <article>
+          <div><AstroBreadcrumb client:load /></div>
+          <hr />
+          <slot />
+        </article>
         <Sidebar />
       </section>
     </main>
