@@ -7,7 +7,7 @@ const routes = [
     path: "posts",
   },
   {
-    name: "About us",
+    name: "Page",
     url: "about",
     path: "about",
   },
