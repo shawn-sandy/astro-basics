@@ -2,7 +2,7 @@ import { Breadcrumb } from "@fpkit/react";
 
 const routes = [
   {
-    name: "Blog Post",
+    name: "Blog",
     url: "/posts/1",
     path: "posts",
   },
