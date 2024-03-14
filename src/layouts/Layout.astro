@@ -9,14 +9,16 @@ import "@fpkit/react/styles";
 
 // types
 type Props = {
-  pageTitle: string;
-  pageDescription: string;
-  showBreadcrumb: boolean;
+  pageTitle?: string;
+  pageDescription?: string;
+  showBreadcrumb?: boolean;
+  breadcrumbRoutes?: [];
 };
 
-const showBreadcrumb = Astro.props.showBreadcrumb || true;
+const showBreadcrumb =
+  Astro.props.showBreadcrumb === undefined ? true : Astro.props.showBreadcrumb;
 
-const { pageTitle, pageDescription } = Astro.props;
+const { pageTitle, pageDescription, breadcrumbRoutes } = Astro.props;
 import "../styles/index.css";
 ---
 
@@ -38,8 +40,19 @@ import "../styles/index.css";
     <main>
       <section arai-label="main-content">
         <article>
-          <div>{showBreadcrumb && <AstroBreadcrumb client:load />}</div>
-          <hr />
+          {
+            showBreadcrumb && (
+              <>
+                <div>
+                  <AstroBreadcrumb
+                    routes={breadcrumbRoutes || undefined}
+                    client:load
+                  />
+                </div>
+                <hr />
+              </>
+            )
+          }
           <slot />
         </article>
         <Sidebar />
