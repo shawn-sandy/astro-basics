@@ -6,6 +6,16 @@ import Header from "../components/astro/Header.astro";
 import Sidebar from "../components/astro/Sidebar.astro";
 import AstroBreadcrumb from "#components/react/astro-breadcrumb.tsx";
 import "@fpkit/react/styles";
+
+// types
+type Props = {
+  pageTitle: string;
+  pageDescription: string;
+  showBreadcrumb: boolean;
+};
+
+const showBreadcrumb = Astro.props.showBreadcrumb || true;
+
 const { pageTitle, pageDescription } = Astro.props;
 import "../styles/index.css";
 ---
@@ -28,7 +38,7 @@ import "../styles/index.css";
     <main>
       <section arai-label="main-content">
         <article>
-          <div><AstroBreadcrumb client:load /></div>
+          <div>{showBreadcrumb && <AstroBreadcrumb client:load />}</div>
           <hr />
           <slot />
         </article>

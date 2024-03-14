@@ -1,4 +1,5 @@
 import { Breadcrumb } from "@fpkit/react";
+import type React from "react";
 
 const astroRoutes = [
   {
@@ -13,8 +14,13 @@ const astroRoutes = [
   },
 ];
 
-export const AstroBreadcrumb = () => {
-  return <Breadcrumb routes={astroRoutes} />;
+type AstroRoutes = Pick<React.ComponentProps<typeof Breadcrumb>, "routes">;
+
+export const AstroBreadcrumb = ({ routes }: AstroRoutes) => {
+  const builtRoutes = routes ? [...routes, ...astroRoutes] : astroRoutes;
+  console.log(builtRoutes);
+
+  return <Breadcrumb routes={builtRoutes} />;
 };
 
 export default AstroBreadcrumb;
