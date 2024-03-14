@@ -13,11 +13,8 @@ const astroRoutes = [
   },
 ];
 
-type Props = Pick<React.ComponentProps<typeof Breadcrumb>, "routes">;
-
-export const AstroBreadcrumb = ({ routes }: Props) => {
-  const buildRoutes = { ...astroRoutes, ...routes };
-  return <Breadcrumb routes={buildRoutes} />;
+export const AstroBreadcrumb = () => {
+  return <Breadcrumb routes={astroRoutes} />;
 };
 
 export default AstroBreadcrumb;
