@@ -502,10 +502,10 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.19.8.tgz#c8285183dbdb17008578dbacb6e22748709b4822"
   integrity sha512-bfZ0cQ1uZs2PqpulNL5j/3w+GDhP36k1K5c38QdQg+Swy51jFZWWeIkteNsufkQxp986wnqRRsb/bHbY1WQ7TA==
 
-"@fpkit/react@^0.3.66":
-  version "0.3.66"
-  resolved "https://registry.yarnpkg.com/@fpkit/react/-/react-0.3.66.tgz#bf6517aac25bb8f9066f46292929ed3f14b8e62f"
-  integrity sha512-+KfTtjq8FHG3JKtSfMxhHvnu9fNIfWxtuZ9rpm93f+Boe0sg9Hx9/Q7TbzBBN9lB8XWnbjLGsd4UJo1LqoR34g==
+"@fpkit/react@^0.3.67":
+  version "0.3.67"
+  resolved "https://registry.yarnpkg.com/@fpkit/react/-/react-0.3.67.tgz#95ef3b7628c38604eb011df9f7c9f11d03f4be0e"
+  integrity sha512-r4EnVtwoo7eXmo8Taculua0PxN6ogzsspZVZIPFRi8bC2+lIT69G/ubit4YU0TEqAp9PpwNVDfcsrupc6EYETQ==
   dependencies:
     focus-trap "^7.5.2"
     react "^18.0.0"
