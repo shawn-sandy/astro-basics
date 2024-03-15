@@ -1,11 +1,13 @@
 ---
 import Layout from "./Layout.astro";
+import { Truncate } from "#libs/content.ts";
+
 const { frontmatter } = Astro.props;
 const { slug } = Astro.params;
 
-const route = [
+const contentRoute = [
   {
-    name: frontmatter.title,
+    name: Truncate(frontmatter.title),
     url: "", // not necessary for post paths
     path: slug?.toString(),
   },
@@ -15,7 +17,7 @@ const route = [
 <Layout
   pageTitle={frontmatter.title}
   pageDescription={frontmatter.description}
-  breadcrumbRoutes={route}
+  breadcrumbRoutes={contentRoute}
 >
   <p>{frontmatter.pubDate.toString().slice(0, 10)}</p>
 
