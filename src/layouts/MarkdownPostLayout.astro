@@ -1,13 +1,12 @@
 ---
 import Layout from "./Layout.astro";
-import { Truncate } from "#libs/content.ts";
 
 const { frontmatter } = Astro.props;
 const { slug } = Astro.params;
 
 const contentRoute = [
   {
-    name: Truncate(frontmatter.title),
+    name: frontmatter.title,
     url: "", // not necessary for post paths
     path: slug?.toString(),
   },
