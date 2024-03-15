@@ -8,11 +8,16 @@ import AstroBreadcrumb from "#components/react/astro-breadcrumb.tsx";
 import "@fpkit/react/styles";
 
 // types
+type routeItem = {
+  name: string;
+  url: string;
+  path: string;
+};
 type Props = {
   pageTitle?: string;
   pageDescription?: string;
   showBreadcrumb?: boolean;
-  breadcrumbRoutes?: [];
+  breadcrumbRoutes?: routeItem[];
 };
 
 const showBreadcrumb =

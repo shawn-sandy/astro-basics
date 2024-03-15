@@ -1,12 +1,25 @@
 ---
 import Layout from "./Layout.astro";
 const { frontmatter } = Astro.props;
+
+const route = [
+  {
+    name: frontmatter.title,
+    url: "", // not necessary for post paths
+    path: frontmatter.breadcrumbSlug,
+  },
+];
 ---
 
-<Layout pageTitle={frontmatter.title} pageDescription={frontmatter.description}>
+{console.log({})}
+<Layout
+  pageTitle={frontmatter.title}
+  pageDescription={frontmatter.description}
+  breadcrumbRoutes={route}
+>
   <p>{frontmatter.pubDate.toString().slice(0, 10)}</p>
 
-  <p>Written by: {frontmatter.author}</p>
+  <p>Written by: {frontmatter.author} {JSON.stringify(frontmatter)}</p>
   {
     frontmatter.image && (
       <p>
