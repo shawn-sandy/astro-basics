@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import MarkdownPostLayout from "../../layouts/MarkdownPostLayout.astro";
+import { Slugify } from "#libs/content.ts";
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection("posts");
