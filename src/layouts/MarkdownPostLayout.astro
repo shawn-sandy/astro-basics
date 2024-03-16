@@ -1,5 +1,6 @@
 ---
 import Layout from "./Layout.astro";
+import Youtube from "#components/astro/Youtube.astro";
 
 const { frontmatter } = Astro.props;
 const { slug } = Astro.params;
@@ -32,6 +33,14 @@ const contentRoute = [
       </p>
     )
   }
+  {
+    frontmatter.youtube?.id && (
+      <p>
+        <Youtube id={frontmatter.youtube.id} />
+      </p>
+    )
+  }
+
   <slot />
   <div>
     <ul class="tags" data-list="unstyled inline">

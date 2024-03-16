@@ -15,10 +15,10 @@ const postsCollection = defineCollection({
       .optional(),
     tags: z.array(z.string()),
     isDraft: z.boolean().default(false),
-    youtubeId: z
+    youtube: z
       .object({
         id: z.string(),
-        title: z.string(),
+        title: z.string().optional(),
         start: z.string().optional(),
         end: z.string().optional(),
       })
