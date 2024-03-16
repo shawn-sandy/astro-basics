@@ -43,21 +43,21 @@ import "../styles/index.css";
     <Navigation />
     <Header headerTitle={pageTitle} headerDescription={pageDescription} />
     <main>
+      <section>
+        {
+          showBreadcrumb && (
+            <>
+              <AstroBreadcrumb
+                routes={breadcrumbRoutes || undefined}
+                client:load
+              />
+              <hr />
+            </>
+          )
+        }
+      </section>
       <section arai-label="main-content">
         <article>
-          {
-            showBreadcrumb && (
-              <>
-                <div>
-                  <AstroBreadcrumb
-                    routes={breadcrumbRoutes || undefined}
-                    client:load
-                  />
-                </div>
-                <hr />
-              </>
-            )
-          }
           <slot />
         </article>
         <Sidebar />
