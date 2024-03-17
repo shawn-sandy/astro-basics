@@ -22,7 +22,9 @@ const astroRoutes = [
 type AstroRoutes = Pick<React.ComponentProps<typeof Breadcrumb>, "routes">;
 
 export const AstroBreadcrumb = ({ routes }: AstroRoutes) => {
-  const breadcrumbRoute = routes ? [...routes, ...astroRoutes] : astroRoutes;
+  const breadcrumbRoute = routes?.length
+    ? [...routes, ...astroRoutes]
+    : astroRoutes;
 
   return <Breadcrumb routes={breadcrumbRoute} />;
 };

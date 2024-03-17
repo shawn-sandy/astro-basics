@@ -3,9 +3,11 @@
 import { Breadcrumb as BreadcrumbNav } from "@fpkit/react";
 // get current path using window.location.pathname
 const path = window.location.pathname;
-// split the paths into array using '/' as delimiter
-const pathSegments = path.split("/").filter((segment) => segment);
 // map over routes array to check for matching route
+type Props = {
+  astroRoutes: [];
+};
+
 const routes = [
   {
     name: "Blog Post",
@@ -18,6 +20,8 @@ const routes = [
     path: "about",
   },
 ];
+
+const bcRoutes = { ...routes, ...Astro.props.astroRoutes };
 ---
 
-<BreadcrumbNav routes={routes} client:load />
+<BreadcrumbNav routes={bcRoutes} client:load />
