@@ -11,6 +11,7 @@ export async function getStaticPaths({ paginate }) {
 }
 
 const all = await getCollection("posts");
+all.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 const pageSize = 2;
 const { page } = Astro.props as any;
 const routes = [

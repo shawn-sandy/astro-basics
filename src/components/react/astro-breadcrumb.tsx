@@ -8,6 +8,11 @@ const astroRoutes = [
     path: "posts",
   },
   {
+    name: "Docs",
+    url: "/docs/1",
+    path: "docs",
+  },
+  {
     name: "About us",
     url: "about",
     path: "about",
