@@ -38,11 +38,6 @@ footer > div {
   margin-block-start: 2rem;
 }
 
-[arial-label~="breadcrumb"] {
-  margin-inline-start: 0;
-  background-color: red;
-}
-
 section:has(> nav) {
   display: flex;
   flex-direction: column;

@@ -19,7 +19,9 @@ export type Props = {
 
 const { contentTitle, pageSize, to, collection } = Astro.props;
 const allPosts = await getCollection(collection || "posts");
-
+allPosts.sort(
+  (a, b) => Date.parse(b.data.pubDate) - Date.parse(a.data.pubDate)
+);
 const collectionLists = allPosts.slice(0, pageSize || 3);
 ---
 

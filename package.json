@@ -31,5 +31,9 @@
     "rehype-accessible-emojis": "^0.3.2",
     "remark-toc": "^9.0.0",
     "sass": "^1.71.1"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "prettier-plugin-astro": "^0.13.0"
   }
 }
