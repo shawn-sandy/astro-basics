@@ -9,7 +9,7 @@ const allPosts = await getCollection("docs");
   <ul data-list="unstyled">
     {
       allPosts
-        .splice(0, 5)
+        .splice(0, 3)
         .map((post) => (
           <BlogPosts
             url={`docs/${post.slug}`}
@@ -20,6 +20,6 @@ const allPosts = await getCollection("docs");
     }
   </ul>
   <p>
-    <a href="/docs/2"><b>Continue reading docs</b></a>
+    <a href="/docs/1"><b>Continue reading docs</b></a>
   </p>
 </Layout>
