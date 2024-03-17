@@ -7,36 +7,52 @@ tags: ["astro", "blogging", "learning in public"]
  
 ---
 
+## Welcome to AstroKit
 
-export const authors = [
-    { name: 'Jane', email: 'hi@jane.com' },
-    { name: 'John', twitter: '@john2002' },
-];
-export const published = new Date('2022-02-01');
+ This is an introductory post for AstroKit, a starter kit for building blogs and documentation sites with Astro.
 
-## Hello world!
-
-{/* Written by: {new Intl.ListFormat('en').format(authors.map(d => d.name))}.
-
-Published on: {new Intl.DateTimeFormat('en', {dateStyle: 'long'}).format(published)}. */}
+ AstroKit is a starter kit for building blogs and documentation sites with Astro. It includes features like MDX, syntax highlighting, and more. This site is built with Astro, so you can use it as a reference for building your own site. Find out more about Astro by visiting the [Astro docs](https://docs.astro.build/)
 
 
-## Syntax highlighting
+AstroKit Features 
 
-We also support syntax highlighting in MDX out-of-the-box! This example uses our default [Shiki theme](https://github.com/shikijs/shiki). See the [MDX integration docs](https://docs.astro.build/en/guides/integrations-guide/mdx/#syntax-highlighting) for configuration options.
+- Easy blogging with MDX
+- Automatic route generation for posts
+- Frontmatter support
+- Syntax highlighting
+- Automatic image optimization**
+- Pagination for long-form content
+- Breadcrumds for navigation
+- Tags and categories for filtering posts
+- Easy customization with components
+- Accessibility built in 
+- SEO optimized
 
-```astro
----
-title: 'MDX post example'
-pubDate: 2022-07-01
-description: 'This is the first post of my new Astro blog.'
-author: 'Astro Learner'
-tags: ["astro", "blogging", "learning in public"]
----
+## Getting started
 
-export const authors = [
-    { name: 'Jane', email: 'hi@jane.com' },
-    { name: 'John', twitter: '@john2002' },
-];
-export const published = new Date('2022-02-01');
+To get started with AstroKit, you can clone the repository from GitHub and run the following commands:
+
+```bash 
+# Clone the repository
+git clone https://github.com/withastro/astrokit.git my-blog
+# Navigate to the directory
+cd my-blog
+# Install dependencies
+npm install
+# Start dev server
+npm run start
+```
+
+This will start a development server at `http://localhost:3000` where you can see the site in action. You can start writing your own posts by adding MDX files to the `src/posts` directory. The posts will automatically be generated as routes.
+
+
+## Next Steps 
+
+- Writing your first post go to [Writing Posts](/docs/1-a-writing-posts)
+- Learn how to customize AstroKit by visiting [Customizing AstroKit](/docs/2-customizing)
+- Configure custom routes for additional pages on [Custom Routes](/docs/3-custom-routes)
+- Develoment Tips like hot module reloading on [Development Tips](/docs/4-ddevelopment)
+
+## Conclusion
+That covers the basics of getting started with AstroKit. Have fun building your blog or documentation site! Feel free to check out the source code on GitHub and submit any issues or feature requests. Happy coding! 
 ```
