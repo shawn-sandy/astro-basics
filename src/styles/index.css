@@ -53,3 +53,7 @@ section:has(> nav) {
 article > * + * {
   margin-block-start: 1.5rem;
 }
+
+article p {
+  max-width: 80ch;
+}
