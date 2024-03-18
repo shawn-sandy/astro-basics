@@ -9,7 +9,7 @@ const astroRoutes = [
   },
   {
     name: "Docs",
-    url: "/docs/1",
+    url: "/docs",
     path: "docs",
   },
   {
