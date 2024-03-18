@@ -8,15 +8,13 @@ const allPosts = await getCollection("docs");
 <Layout pageTitle="Blogs">
   <ul data-list="unstyled">
     {
-      allPosts
-        .splice(0, 3)
-        .map((post) => (
-          <BlogPosts
-            url={`docs/${post.slug}`}
-            title={post.data.title}
-            description={post.data.description}
-          />
-        ))
+      allPosts.map((post) => (
+        <BlogPosts
+          url={`docs/${post.slug}`}
+          title={post.data.title}
+          description={post.data.description}
+        />
+      ))
     }
   </ul>
   <p>
