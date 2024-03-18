@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content";
-import Layout from "../layouts/Layout.astro";
-import BlogPosts from "../components/astro/BlogPosts.astro";
+import Layout from "#layouts/Layout.astro";
+import BlogPosts from "#components/astro/BlogPosts.astro";
 const allPosts = await getCollection("docs");
 ---
 
