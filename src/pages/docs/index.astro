@@ -3,14 +3,19 @@ import { getEntry } from "astro:content";
 import MarkdownPostLayout from "#layouts/MarkdownPostLayout.astro";
 import CollectionList from "#components/astro/CollectionList.astro";
 // const allPosts = await getCollection("docs");
-const introDoc = await getEntry("docs", "1-introduction");
+const introDoc = await getEntry("docs", "0-welcome");
 const { Content } = await introDoc.render();
 ---
 
 <MarkdownPostLayout frontmatter={introDoc?.data}>
   <Content />
-  <hr />
+
   <section>
-    <CollectionList collection="docs" contentTitle="Other Docs" pageSize={10} />
+    <CollectionList
+      collectionTitle="AstroKit Docs"
+      to="docs"
+      collection="docs"
+      pageSize={10}
+    />
   </section>
 </MarkdownPostLayout>

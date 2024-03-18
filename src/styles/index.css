@@ -20,6 +20,12 @@ header > section > p {
   font-size: 2rem;
 }
 
+h1,
+h2,
+h3 {
+  text-transform: capitalize;
+}
+
 h2 a[href] {
   font-size: var(--h2);
   /* color: currentColor; */
@@ -42,4 +48,8 @@ section:has(> nav) {
   display: flex;
   flex-direction: column;
   justify-items: flex-start;
+}
+
+article > * + * {
+  margin-block-start: 1.5rem;
 }

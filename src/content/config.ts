@@ -39,7 +39,6 @@ const astroKitDocs = defineCollection({
         alt: z.string(),
       })
       .optional(),
-    tags: z.array(z.string()),
     isDraft: z.boolean().default(false),
     youtube: z
       .object({

@@ -19,9 +19,6 @@ const contentRoute = [
   pageDescription={frontmatter.description}
   breadcrumbRoutes={contentRoute}
 >
-  <p>{frontmatter.pubDate.toString().slice(0, 10)}</p>
-
-  <p>Written by: {frontmatter.author}</p>
   {
     frontmatter.image && (
       <p>
@@ -42,18 +39,19 @@ const contentRoute = [
   }
 
   <slot />
-
-  <div>
-    <ul class="tags" data-list="unstyled inline">
-      {
-        frontmatter.tags.map((tag) => (
-          <li class="tag">
-            <a href={`/tags/${tag}`}>
-              <span data-tag>{tag}</span>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </div>
+  {
+    frontmatter.tags && frontmatter.tags.length > 0 && (
+      <div>
+        <ul class="tags" data-list="unstyled inline">
+          {frontmatter.tags.map((tag) => (
+            <li class="tag">
+              <a href={`/tags/${tag}`}>
+                <span data-tag>{tag}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
 </Layout>

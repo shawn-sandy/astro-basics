@@ -11,13 +11,13 @@ import BlogPosts from "./BlogPosts.astro";
  * @property {any} [collection] - The collection to display.
  */
 export type Props = {
-  contentTitle?: string;
+  collectionTitle?: string;
   pageSize?: number;
   to?: string;
   collection?: any;
 };
 
-const { contentTitle, pageSize, to, collection } = Astro.props;
+const { collectionTitle, pageSize, to, collection } = Astro.props;
 const allPosts = await getCollection(collection || "posts");
 allPosts.sort(
   (a: any, b: any) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
@@ -25,7 +25,7 @@ allPosts.sort(
 const collectionLists = allPosts.slice(0, pageSize || 3);
 ---
 
-{contentTitle && <h3 data-ui="display">{contentTitle}</h3>}
+{collectionTitle && <h3 data-ui="display">{collectionTitle}</h3>}
 
 {
   collectionLists?.map((post: any) => (
