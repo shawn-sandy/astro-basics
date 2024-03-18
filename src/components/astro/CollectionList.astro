@@ -1,0 +1,38 @@
+---
+import { getCollection } from "astro:content";
+import BlogPosts from "./BlogPosts.astro";
+
+/**
+ * The props for the CollectionList component.
+ * @typedef {Object} Props
+ * @property {string} [contentTitle] - The title to display for the collection.
+ * @property {number} [pageSize] - The number of items per page.
+ * @property {string} [to] - The link for the "View All" button.
+ * @property {any} [collection] - The collection to display.
+ */
+export type Props = {
+  contentTitle?: string;
+  pageSize?: number;
+  to?: string;
+  collection?: any;
+};
+
+const { contentTitle, pageSize, to, collection } = Astro.props;
+const allPosts = await getCollection(collection || "posts");
+allPosts.sort(
+  (a: any, b: any) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+const collectionLists = allPosts.slice(0, pageSize || 3);
+---
+
+{contentTitle && <h3 data-ui="display">{contentTitle}</h3>}
+
+{
+  collectionLists?.map((post: any) => (
+    <BlogPosts
+      title={post.data.title}
+      description={post.data.description}
+      url={`/${to || "posts"}/${post.slug}`}
+    />
+  ))
+}

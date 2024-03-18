@@ -10,6 +10,12 @@ main > section {
   padding-inline: 2rem;
 }
 
+header {
+  min-height: fit-content;
+  padding-block: 2rem;
+  grid-template-rows: minmax(300px, auto);
+}
+
 header > section > p {
   font-size: 2rem;
 }
@@ -26,4 +32,14 @@ pre {
 
 footer > div {
   flex-direction: column;
+}
+
+* + section {
+  margin-block-start: 2rem;
+}
+
+section:has(> nav) {
+  display: flex;
+  flex-direction: column;
+  justify-items: flex-start;
 }

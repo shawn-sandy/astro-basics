@@ -1,11 +1,29 @@
 ---
 import ViewTransitions from "astro/components/ViewTransitions.astro";
-import Navigation from "#components/Navigation.astro";
-import Footer from "#components/Footer.astro";
-import Header from "#components/Header.astro";
-import Sidebar from "#components/Sidebar.astro";
+import Navigation from "../components/astro/Navigation.astro";
+import Footer from "../components/astro/Footer.astro";
+import Header from "../components/astro/Header.astro";
+import Sidebar from "../components/astro/Sidebar.astro";
+import AstroBreadcrumb from "#components/react/astro-breadcrumb.tsx";
 import "@fpkit/react/styles";
-const { pageTitle, pageDescription } = Astro.props;
+
+// types
+type routeItem = {
+  name: string;
+  url: string;
+  path?: string;
+};
+type Props = {
+  pageTitle?: string;
+  pageDescription?: string;
+  showBreadcrumb?: boolean;
+  breadcrumbRoutes?: routeItem[];
+};
+
+const showBreadcrumb =
+  Astro.props.showBreadcrumb === undefined ? true : Astro.props.showBreadcrumb;
+
+const { pageTitle, pageDescription, breadcrumbRoutes } = Astro.props;
 import "../styles/index.css";
 ---
 
@@ -18,15 +36,29 @@ import "../styles/index.css";
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>{pageTitle}</title>
+    <title>{pageTitle || "Astro Kit"}</title>
     <ViewTransitions />
   </head>
   <body>
     <Navigation />
     <Header headerTitle={pageTitle} headerDescription={pageDescription} />
     <main>
+      <section>
+        {
+          showBreadcrumb && (
+            <>
+              <AstroBreadcrumb
+                routes={breadcrumbRoutes || undefined}
+                client:load
+              />
+            </>
+          )
+        }
+      </section>
       <section arai-label="main-content">
-        <article><slot /></article>
+        <article>
+          <slot />
+        </article>
         <Sidebar />
       </section>
     </main>

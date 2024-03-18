@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-const pageTitle = "About Me";
+const pageTitle = "About";
 
 const identity = {
   firstName: "Sarah",
@@ -16,7 +16,7 @@ const finished = false;
 const goal = 3;
 ---
 
-<Layout>
+<Layout pageTitle={pageTitle}>
   <h2>{pageTitle}</h2>
   <h3>... and my new Astro site!</h3>
 

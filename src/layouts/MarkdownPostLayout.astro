@@ -1,9 +1,24 @@
 ---
 import Layout from "./Layout.astro";
+import Youtube from "#components/astro/Youtube.astro";
+
 const { frontmatter } = Astro.props;
+const { slug } = Astro.params;
+
+const contentRoute = [
+  {
+    name: frontmatter.title,
+    url: "", // not necessary for post paths
+    path: slug?.toString(),
+  },
+];
 ---
 
-<Layout pageTitle={frontmatter.title} pageDescription={frontmatter.description}>
+<Layout
+  pageTitle={frontmatter.title}
+  pageDescription={frontmatter.description}
+  breadcrumbRoutes={contentRoute}
+>
   <p>{frontmatter.pubDate.toString().slice(0, 10)}</p>
 
   <p>Written by: {frontmatter.author}</p>
@@ -18,7 +33,16 @@ const { frontmatter } = Astro.props;
       </p>
     )
   }
+  {
+    frontmatter.youtube?.id && (
+      <p>
+        <Youtube id={frontmatter.youtube.id} />
+      </p>
+    )
+  }
+
   <slot />
+
   <div>
     <ul class="tags" data-list="unstyled inline">
       {

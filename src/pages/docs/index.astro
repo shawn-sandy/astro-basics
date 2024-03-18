@@ -1,0 +1,16 @@
+---
+import { getCollection, getEntry } from "astro:content";
+import MarkdownPostLayout from "../../layouts/MarkdownPostLayout.astro";
+// const allPosts = await getCollection("docs");
+const introDoc = await getEntry("docs", "1-introduction");
+const { Content } = await introDoc.render();
+---
+
+<MarkdownPostLayout frontmatter={introDoc.data}>
+  <Content />
+  <section>
+    <p>
+      <a href="/docs/1"><b>Continue reading docs</b></a>
+    </p>
+  </section>
+</MarkdownPostLayout>

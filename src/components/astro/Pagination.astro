@@ -1,0 +1,28 @@
+---
+export type Props = {
+  itemsSize: number;
+  itemsPerPage?: number;
+  currentPage?: number;
+  to?: string;
+};
+
+const itemsPerPage = Astro.props.itemsPerPage || 5;
+const currentPage = Astro.props.currentPage || 1;
+const itemsSize = Astro.props.itemsSize;
+const to = Astro.props.to || "posts";
+
+const totalPages = Math.ceil(itemsSize / itemsPerPage);
+const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+---
+
+<ul data-list="unstyled inline">
+  {
+    pageNumbers.map((item) => {
+      return (
+        <li>
+          <a href={`/${to}/${item}`}>{item}</a>
+        </li>
+      );
+    })
+  }
+</ul>

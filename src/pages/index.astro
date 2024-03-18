@@ -1,13 +1,12 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import CollectionList from "#components/astro/CollectionList.astro";
+import Welcome from "#components/astro/Welcome.astro";
 ---
 
-<Layout pageTitle="Astro Kit">
-  <h2 data-ui="display">Welcome!</h2>
-  <p>
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Esse harum
-    dignissimos debitis beatae omnis accusantium doloremque sed facilis maiores
-    consequatur earum cum voluptatem ipsum aut, excepturi perspiciatis aperiam
-    illum vel?
-  </p>
+<Layout pageTitle="Astro Kit" showBreadcrumb={false}>
+  <Welcome />
+  <section>
+    <CollectionList pageSize={2} />
+  </section>
 </Layout>

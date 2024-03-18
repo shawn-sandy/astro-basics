@@ -1,0 +1,27 @@
+---
+// imports
+import { Breadcrumb as BreadcrumbNav } from "@fpkit/react";
+// get current path using window.location.pathname
+const path = window.location.pathname;
+// map over routes array to check for matching route
+type Props = {
+  astroRoutes: [];
+};
+
+const routes = [
+  {
+    name: "Blog Post",
+    url: "/posts/1",
+    path: "posts",
+  },
+  {
+    name: "About us",
+    url: "about",
+    path: "about",
+  },
+];
+
+const bcRoutes = { ...routes, ...Astro.props.astroRoutes };
+---
+
+<BreadcrumbNav routes={bcRoutes} client:load />

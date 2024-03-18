@@ -1,11 +1,11 @@
 ---
 import { getCollection } from "astro:content";
 import Layout from "../layouts/Layout.astro";
-import BlogPosts from "#components/BlogPosts.astro";
+import BlogPosts from "../components/astro/BlogPosts.astro";
 const allPosts = await getCollection("posts");
 ---
 
-<Layout>
+<Layout pageTitle="Blogs">
   <ul data-list="unstyled">
     {
       allPosts.map((post) => (
