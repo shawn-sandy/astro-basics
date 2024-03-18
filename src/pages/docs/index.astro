@@ -1,25 +1,16 @@
 ---
-import { getCollection } from "astro:content";
-import Layout from "#layouts/Layout.astro";
-import BlogPosts from "#components/astro/BlogPosts.astro";
-const allPosts = await getCollection("docs");
+import { getCollection, getEntry } from "astro:content";
+import MarkdownPostLayout from "../../layouts/MarkdownPostLayout.astro";
+// const allPosts = await getCollection("docs");
+const introDoc = await getEntry("docs", "1-introduction");
+const { Content } = await introDoc.render();
 ---
 
-<Layout pageTitle="Blogs">
-  <ul data-list="unstyled">
-    {
-      allPosts.map((post) => (
-        <BlogPosts
-          url={`docs/${post.slug}`}
-          title={post.data.title}
-          description={post.data.description}
-        />
-      ))
-    }
-  </ul>
+<MarkdownPostLayout frontmatter={introDoc.data}>
+  <Content />
   <section>
     <p>
       <a href="/docs/1"><b>Continue reading docs</b></a>
     </p>
   </section>
-</Layout>
+</MarkdownPostLayout>
