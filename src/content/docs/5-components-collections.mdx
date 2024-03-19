@@ -1,0 +1,43 @@
+---
+title: 'Collection List Component'
+pubDate: 2022-07-01
+description: 'AstroKit includes some useful components help you to build pages.'
+author: 'AstroKit'
+image:
+     url: '/images/collections-component.png'
+     alt: 'Astro Collection List Component'
+tgs: ["docs"]
+---
+
+import CollectionList from "#components/astro/CollectionList.astro";
+
+## CollectionList Component
+
+This component is used to display a list of blog posts or other collections of content. It uses the `getCollection` function from `astro:content` to fetch the collection, and the `BlogPosts` component to display each item in the collection.
+
+### Props
+
+The `CollectionList` component accepts the following props:
+
+- `collectionTitle` (optional): The title to display for the collection.
+- `pageSize` (optional): The number of items per page. Defaults to 3 if not provided.
+- `to` (optional): The link for the "View All" button.
+- `collection` (optional): The collection to display. Defaults to "posts" if not provided.
+
+### Sorting and Pagination
+
+The `CollectionList` component sorts the items in the collection in descending order by publication date. It then slices the sorted array to get the items for the current page.
+
+### Rendering
+
+The `CollectionList` component renders an `h3` element with the collection title (if provided), and a `BlogPosts` component for each item in the collection. The `BlogPosts` component is passed the title, description, and URL of each post.
+
+## Usage
+ 
+```astro
+---
+import CollectionList from "#components/astro/CollectionList.astro";
+---
+
+<CollectionList collectionTitle="My Blog Posts" pageSize={2} to="blog" collection="posts" />
+```

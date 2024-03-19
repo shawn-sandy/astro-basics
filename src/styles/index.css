@@ -57,3 +57,13 @@ article > * + * {
 article p {
   max-width: 80ch;
 }
+
+article img {
+  border: 2px lightgray solid;
+  border-radius: 0.3rem;
+}
+
+code {
+  color: rgb(158, 49, 49);
+  font-size: smaller;
+}
