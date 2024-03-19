@@ -14,7 +14,7 @@ const postsCollection = defineCollection({
       })
       .optional(),
     tags: z.array(z.string()),
-    isDraft: z.boolean().default(false),
+    draft: z.boolean().default(false),
     youtube: z
       .object({
         id: z.string(),
@@ -39,7 +39,7 @@ const astroKitDocs = defineCollection({
         alt: z.string(),
       })
       .optional(),
-    isDraft: z.boolean().default(false),
+    draft: z.boolean().default(false),
     youtube: z
       .object({
         id: z.string(),

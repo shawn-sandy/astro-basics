@@ -18,7 +18,9 @@ export type Props = {
 };
 
 const { collectionTitle, pageSize, to, collection } = Astro.props;
-const allPosts = await getCollection(collection || "posts");
+const allPosts = await getCollection(collection || "posts", ({ data }) => {
+  return data?.draft !== true;
+});
 allPosts.sort(
   (a: any, b: any) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
 );
