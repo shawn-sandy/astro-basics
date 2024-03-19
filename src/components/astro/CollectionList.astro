@@ -12,6 +12,7 @@ import BlogPosts from "./BlogPosts.astro";
  */
 export type Props = {
   collectionTitle?: string;
+  collectionTitle?: string;
   pageSize?: number;
   to?: string;
   collection?: any;
@@ -27,6 +28,7 @@ allPosts.sort(
 const collectionLists = allPosts.slice(0, pageSize || 3);
 ---
 
+{collectionTitle && <h3 data-ui="display">{collectionTitle}</h3>}
 {collectionTitle && <h3 data-ui="display">{collectionTitle}</h3>}
 
 {
