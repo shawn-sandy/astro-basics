@@ -6,4 +6,70 @@ author: 'Astro Learner'
 tags: ["astro", "blogging", "learning in public"]
 ---
 
-## Coming soon...
+## BlogPosts Astro Component
+
+The `BlogPosts` component renders a preview for a blog post, displaying the title, description, and a link to the full post.
+
+## Usage
+
+```astro
+---
+import BlogPosts from './BlogPosts.astro';
+---
+
+const posts = [
+  {
+    title: 'First Post',
+    url: '/posts/first',
+    description: 'This is the first post' 
+  },
+  {
+    title: 'Second Post', 
+    url: '/posts/second',
+    description: 'The second post is even better!'
+  }
+];
+
+// Pass post data as props
+<BlogPosts {...posts[0]} /> 
+```
+
+## CollectionList Component
+
+This is the Astro component for displaying a collection list.
+
+## Usage
+The CollectionList component displays a title and list of posts from a collection.
+
+```astro
+---
+import CollectionList from '../components/CollectionList.astro'
+---
+
+<CollectionList 
+  collectionTitle="Latest Posts"
+  collection="posts"
+  pageSize={3}
+/>
+```
+
+
+## Props
+
+### The CollectionList component accepts the following props:
+
+- collectionTitle (optional) - The title to display for the collection.
+- pageSize (optional) - The number of items per page to display. Default is 3.
+- to (optional) - The link for the "View All" button. Defaults to "/posts".
+- collection (optional) - The collection to display posts from. Defaults to "posts".
+
+### Functionality
+- Fetches posts from the specified collection, sorted by published date.
+- Displays the collectionTitle if provided.
+- Maps over the posts and displays each one in a BlogPosts component.
+- Limits the number of posts by the pageSize prop.
+- Provides a "View All" button if the to prop is specified that links to the full collection.
+- So in summary, it's a reusable component for displaying a sampled list of posts from a collection!
+
+
+
