@@ -9,12 +9,8 @@ const { Content } = await introDoc.render();
 
 <MarkdownPostLayout frontmatter={introDoc?.data}>
   <Content />
+  <hr />
   <section>
-    <CollectionList
-      collectionTitle="AstroKit Docs"
-      to="docs"
-      collection="docs"
-      pageSize={10}
-    />
+    <CollectionList to="docs" collection="docs" pageSize={10} />
   </section>
 </MarkdownPostLayout>
