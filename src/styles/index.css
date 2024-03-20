@@ -73,3 +73,8 @@ code {
   color: rgb(158, 49, 49);
   font-size: smaller;
 }
+
+article li {
+  font-size: unset;
+  font-size: var(--fs-0);
+}

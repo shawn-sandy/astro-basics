@@ -7,36 +7,35 @@ tags: ["astro", "blogging", "learning in public"]
  
 ---
 
+## Quick start 
 
-export const authors = [
-    { name: 'Jane', email: 'hi@jane.com' },
-    { name: 'John', twitter: '@john2002' },
-];
-export const published = new Date('2022-02-01');
-
-## Hello world!
-
-{/* Written by: {new Intl.ListFormat('en').format(authors.map(d => d.name))}.
-
-Published on: {new Intl.DateTimeFormat('en', {dateStyle: 'long'}).format(published)}. */}
-
-
-## Syntax highlighting
-
-We also support syntax highlighting in MDX out-of-the-box! This example uses our default [Shiki theme](https://github.com/shikijs/shiki). See the [MDX integration docs](https://docs.astro.build/en/guides/integrations-guide/mdx/#syntax-highlighting) for configuration options.
-
-```astro
----
-title: 'MDX post example'
+To create your first blog post, go to the `src/content/posts` directory and create a new `.mdx` file. Open `post-1.md` and copy the content the file you created. 
+ 
+```md
+--
+title: 'My First Blog Post'
 pubDate: 2022-07-01
 description: 'This is the first post of my new Astro blog.'
-author: 'Astro Learner'
+author: 'Astro Learner' 
+image:
+    url: 'https://picsum.photos/300'
+    alt: 'The full Astro logo.'
 tags: ["astro", "blogging", "learning in public"]
 ---
 
-export const authors = [
-    { name: 'Jane', email: 'hi@jane.com' },
-    { name: 'John', twitter: '@john2002' },
-];
-export const published = new Date('2022-02-01');
+
+Published on: 2022-07-01
+
+Welcome to my _new blog_ about learning Astro! Here, I will share my learning journey as I build a new website.
+
+### What I've accomplished
+
+1. **Installing Astro**: First, I created a new Astro project and set up my online accounts.
+
+2. **Making Pages**: I then learned how to make pages by creating new `.astro` files and placing them in the `src/pages/` folder.
+
+3. **Making Blog Posts**: This is my first blog post! I now have Astro pages and Markdown posts!
+
 ```
+
+Edit the content by fisrt changing the title, description, authors and tags in the frontmatter setion. Then, you can add your own content.
