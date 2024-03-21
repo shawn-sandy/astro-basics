@@ -8,7 +8,8 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest"
   },
   "imports": {
     "#*": "./src/*"
@@ -30,7 +31,8 @@
     "react-dom": "^18.2.0",
     "rehype-accessible-emojis": "^0.3.2",
     "remark-toc": "^9.0.0",
-    "sass": "^1.71.1"
+    "sass": "^1.71.1",
+    "vitest": "^1.4.0"
   },
   "devDependencies": {
     "prettier": "^3.2.5",
