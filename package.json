@@ -31,13 +31,13 @@
     "react-dom": "^18.2.0",
     "rehype-accessible-emojis": "^0.3.2",
     "remark-toc": "^9.0.0",
-    "sass": "^1.71.1",
-    "vitest": "^1.4.0"
+    "sass": "^1.71.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.42.1",
     "@types/node": "^20.11.30",
     "prettier": "^3.2.5",
-    "prettier-plugin-astro": "^0.13.0"
+    "prettier-plugin-astro": "^0.13.0",
+    "vitest": "^1.4.0"
   }
 }
