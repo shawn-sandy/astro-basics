@@ -10,6 +10,8 @@ tags: ["astro", "blogging", "learning in public"]
 ## Quick start 
 
 To create your first blog post, go to the `src/content/posts` directory and create a new `.mdx` file. Open `post-1.md` and copy the content the file you created. 
+
+  
  
 ```md
 --
@@ -24,8 +26,6 @@ tags: ["astro", "blogging", "learning in public"]
 ---
 
 
-Published on: 2022-07-01
-
 Welcome to my _new blog_ about learning Astro! Here, I will share my learning journey as I build a new website.
 
 ### What I've accomplished
@@ -39,3 +39,61 @@ Welcome to my _new blog_ about learning Astro! Here, I will share my learning jo
 ```
 
 Edit the content by fisrt changing the title, description, authors and tags in the frontmatter setion. Then, you can add your own content.
+
+## Lets break it down
+
+## Add post meta with Frontmatter
+
+The frontmatter is the section at the top of the file that contains metadata about the post. You can add or modify the following fields:
+```md
+---
+title: 'My Second Blog Post'
+pubDate: 2022-07-05
+description: 'An update on my Astro learning journey.'
+author: 'author name'
+image:
+    url: 'https://picsum.photos/300'
+    alt: 'The full Astro logo.'
+tags: ["tag-1", 'tag-2', "blogging", ]
+---
+```
+
+## Formatting content
+
+Now, you can use markdown to format your content. Here are some examples:
+
+
+```md
+
+# Heading 1
+
+Welcome to my _new blog_ about learning Astro! Here, I will share my learning journey as I build a new website.
+
+# Heading 2
+
+You can write paragraphs of text like this one and format text with **bold**, _italics_, `code` and other markdown syntax.
+
+
+You can also include lists:
+1. Item 1
+2. Item 2
+3. Item 3
+
+You can also include images:
+![Astro Logo](https://picsum.photos/300)
+
+And code blocks:
+```javascript
+function hello() {
+  console.log('Hello, world!');
+}
+```
+
+## So in summary, to create a new blog post:
+
+1. Create a new `.mdx` file in the `src/content/posts` directory
+2. Add the frontmatter metadata at the top: title, pubDate, description, author, image, tags
+3. Write your post content using Markdown formatting
+4. Share a link to your post.
+
+Enjoy!
