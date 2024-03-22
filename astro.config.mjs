@@ -5,14 +5,15 @@ import remarkToc from "remark-toc";
 import { rehypeAccessibleEmojis } from "rehype-accessible-emojis";
 import netlify from "@astrojs/netlify";
 import sitemap from "@astrojs/sitemap";
-
 import sentry from "@sentry/astro";
 import spotlightjs from "@spotlightjs/astro";
+
+import lighthouse from "astro-lighthouse";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://example.com",
-  integrations: [react(), mdx(), sitemap(), spotlightjs()],
+  integrations: [react(), mdx(), sitemap(), spotlightjs(), lighthouse()],
   adapter: netlify(),
   output: "hybrid",
   // Enable Custom Markdown options, plugins, etc.
@@ -22,7 +23,7 @@ export default defineConfig({
     rehypePlugins: [rehypeAccessibleEmojis],
     shikiConfig: {
       theme: "one-dark-pro",
-      wrap: true,
-    },
-  },
+      wrap: true
+    }
+  }
 });
