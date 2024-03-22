@@ -70,9 +70,13 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: "npm run preview",
-    url: "http://localhost:4321/",
-    reuseExistingServer: !process.env.CI,
-  },
+  /* This configuration block `webServer` in the Playwright test configuration file is used to define
+settings related to running a local development server before starting the tests. Here is what each
+property does: */
+  // webServer: {
+  //   command: "npm run preview",
+  //   url: "http://localhost:4321/",
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120 * 1000,
+  // },
 });
