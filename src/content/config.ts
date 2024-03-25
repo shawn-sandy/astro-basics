@@ -26,32 +26,16 @@ const postsCollection = defineCollection({
   }),
 });
 
+const content = defineCollection({
+  ...postsCollection,
+});
+
 const astroKitDocs = defineCollection({
-  schema: z.object({
-    title: z.string(),
-    pubDate: z.date(),
-    description: z.string(),
-    author: z.string(),
-    breadcrumbSlug: z.string().optional(), // should match the slug
-    image: z
-      .object({
-        url: z.string(),
-        alt: z.string(),
-      })
-      .optional(),
-    draft: z.boolean().default(false),
-    youtube: z
-      .object({
-        id: z.string(),
-        title: z.string().optional(),
-        start: z.string().optional(),
-        end: z.string().optional(),
-      })
-      .optional(),
-  }),
+  ...postsCollection,
 });
 
 export const collections = {
   posts: postsCollection,
   docs: astroKitDocs,
+  content: content,
 };
