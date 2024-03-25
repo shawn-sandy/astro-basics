@@ -13,7 +13,7 @@ const postsCollection = defineCollection({
         alt: z.string(),
       })
       .optional(),
-    tags: z.array(z.string()),
+    tags: z.array(z.string()).optional(),
     draft: z.boolean().default(false),
     youtube: z
       .object({
@@ -26,11 +26,10 @@ const postsCollection = defineCollection({
   }),
 });
 
-const content = defineCollection({
+const astroKitDocs = defineCollection({
   ...postsCollection,
 });
-
-const astroKitDocs = defineCollection({
+const content = defineCollection({
   ...postsCollection,
 });
 
