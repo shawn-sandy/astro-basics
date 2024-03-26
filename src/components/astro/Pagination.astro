@@ -1,14 +1,30 @@
 ---
+import { getCollection } from "astro:content";
+import type { ContentEntryMap } from "astro:content";
 export type Props = {
-  itemsSize: number;
+  collection: keyof ContentEntryMap;
+  itemsSize?: number;
   itemsPerPage?: number;
   currentPage?: number;
   to?: string;
 };
 
+const { collection } = Astro.props;
+type sortType = {
+  data: {
+    pubDate: Date;
+  };
+};
+
+const all = await getCollection(collection);
+all.sort(
+  (a: sortType, b: sortType) =>
+    b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+
 const itemsPerPage = Astro.props.itemsPerPage || 5;
 const currentPage = Astro.props.currentPage || 1;
-const itemsSize = Astro.props.itemsSize;
+const itemsSize = all.length || 4;
 const to = Astro.props.to || "posts";
 
 const totalPages = Math.ceil(itemsSize / itemsPerPage);

@@ -15,9 +15,9 @@ export const BREADCRUMB_ROUTE = [
     path: "about",
   },
   {
-    name: "Content",
+    name: "Articles",
     url: "/content",
-    path: "contact",
+    path: "content",
   },
 ];
 

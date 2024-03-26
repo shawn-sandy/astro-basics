@@ -4,7 +4,10 @@ import MarkdownPostLayout from "#layouts/MarkdownPostLayout.astro";
 import CollectionList from "#components/astro/CollectionList.astro";
 // const allPosts = await getCollection("docs");
 
-const article: any = await getEntry("content", "content");
+const article: ReturnType<typeof getEntry> = await getEntry(
+  "content",
+  "content"
+);
 const { Content } = await article.render();
 ---
 
