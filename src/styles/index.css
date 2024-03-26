@@ -78,3 +78,7 @@ article li {
   font-size: unset;
   font-size: var(--fs-0);
 }
+
+p {
+  max-width: 60ch;
+}

@@ -437,10 +437,10 @@
   dependencies:
     tslib "^2.4.0"
 
-"@fpkit/react@^0.3.74":
-  version "0.3.74"
-  resolved "https://registry.npmjs.org/@fpkit/react/-/react-0.3.74.tgz"
-  integrity sha512-nh5bs5eHxxGnrytFTpRa63zd62eaxhvLknn749pE77k/7VaAUJHTK/6yQeAuCvv8rMUuKRhSo3RPExHZ3QfCCA==
+"@fpkit/react@^0.3.75":
+  version "0.3.75"
+  resolved "https://registry.npmjs.org/@fpkit/react/-/react-0.3.75.tgz"
+  integrity sha512-kxbOvHixRyncTOuWfAfDm7cB//Fu1bVlCvu3GQrNpDxcXozFnP8GY4A/LzPujgzfgnGUxqMuIBJlnpuT9/4QBA==
   dependencies:
     focus-trap "^7.5.2"
     react "^18.0.0"

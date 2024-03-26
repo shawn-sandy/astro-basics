@@ -14,6 +14,11 @@ export const BREADCRUMB_ROUTE = [
     url: "about",
     path: "about",
   },
+  {
+    name: "Content",
+    url: "/content",
+    path: "contact",
+  },
 ];
 
 export const SITE_TITLE = "My Site";

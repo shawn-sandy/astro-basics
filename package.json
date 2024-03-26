@@ -21,7 +21,7 @@
     "@astrojs/react": "^3.1.0",
     "@astrojs/rss": "^4.0.5",
     "@astrojs/sitemap": "^3.1.1",
-    "@fpkit/react": "^0.3.74",
+    "@fpkit/react": "^0.3.75",
     "@sentry/astro": "^7.108.0",
     "@spotlightjs/astro": "^1.0.18",
     "@total-typescript/ts-reset": "^0.5.1",

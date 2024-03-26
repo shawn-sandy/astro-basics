@@ -1,0 +1,17 @@
+---
+import { getEntry } from "astro:content";
+import MarkdownPostLayout from "#layouts/MarkdownPostLayout.astro";
+import CollectionList from "#components/astro/CollectionList.astro";
+// const allPosts = await getCollection("docs");
+
+const article: any = await getEntry("content", "content");
+const { Content } = await article.render();
+---
+
+<MarkdownPostLayout frontmatter={article?.data}>
+  <Content />
+  <hr />
+  <section>
+    <CollectionList to="content" collection="content" pageSize={10} />
+  </section>
+</MarkdownPostLayout>
