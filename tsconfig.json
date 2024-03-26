@@ -4,11 +4,11 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "strictNullChecks": true,
-    "allowJs": true
-  },
-  "paths": {
-    "#*": [
-      "./src/*"
-    ],
+    "allowJs": true,
+    "paths": {
+      "#*": [
+        "./src/*"
+      ]
+    }
   }
 }

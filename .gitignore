@@ -20,3 +20,11 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 .netlify
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

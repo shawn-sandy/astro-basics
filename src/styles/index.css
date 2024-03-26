@@ -20,6 +20,18 @@ header > section > p {
   font-size: 2rem;
 }
 
+h1,
+h2,
+h3 {
+  text-transform: capitalize;
+}
+
+h1,
+h2,
+h3 {
+  text-transform: capitalize;
+}
+
 h2 a[href] {
   font-size: var(--h2);
   /* color: currentColor; */
@@ -42,4 +54,31 @@ section:has(> nav) {
   display: flex;
   flex-direction: column;
   justify-items: flex-start;
+}
+
+article > * + * {
+  margin-block-start: 1.5rem;
+}
+
+article p {
+  max-width: 80ch;
+}
+
+article img {
+  border: 2px lightgray solid;
+  border-radius: 0.3rem;
+}
+
+code {
+  color: rgb(158, 49, 49);
+  font-size: smaller;
+}
+
+article li {
+  font-size: unset;
+  font-size: var(--fs-0);
+}
+
+p {
+  max-width: 60ch;
 }

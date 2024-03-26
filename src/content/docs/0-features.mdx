@@ -1,0 +1,72 @@
+---
+title: 'AstroKit Features'
+pubDate: 2022-07-01
+description: 'This is the first post of my new Astro blog.'
+author: 'Astro Learner'
+tags: ["astro", "blogging", "learning in public"]
+ 
+---
+
+
+## Easy blogging with MDX 
+
+Quickly and easily write blog posts using Markdown and JSX with MDX. MDX makes it simple write any type of content using `markdown` syntax but give you the ability to embed interactive media/components directly in your content.
+
+> MDX lets you use JSX in your markdown content. You can import components, such as interactive charts or alerts, and embed them within your content. This makes writing long-form content with components a blast.
+
+```mdx
+{/* import react component */}
+import CollectionList from "#components/astro/CollectionList.astro";
+
+
+lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero. 
+ 
+
+<div className="note">
+  > Some notable things in a block quote!
+</div> 
+
+<CollectionList collectionTitle="My Blog Posts" pageSize={2} to="blog" collection="posts" />
+
+```
+
+* Readmore about markdown and MDX features: <a href="https://mdxjs.com/" target="_blank">MDX Docs</a>
+* Markdown guides - how to accomplish several common use cases and patterns around MDX <a href="https://mdxjs.com/getting-started#markdown-features" target="_blank">here</a> 
+* Github flavored markdown syntax reference <a href="https://mdxjs.com/guides/gfm/" target="_blank">syntax guide</a>
+* Markdown list of <a href="https://mdxjs.com/table-of-components/" target="_blank">Components</a> 
+* Try out interactive <a href="https://mdxjs.com/playground" target="_blank">MDX Playground</a>
+
+
+# Accessibility built in 
+
+Accessibility is a foundational aspect of AstroKit. We meticulously craft each component with accessibility at the forefront, adhering to established best practices including:
+
+- **Semantic HTML:** Use semantic elements and attributes to ensure content structure and meaning are preserved across different assistive technologies.
+
+- **Keyboard Navigation:** Ensure all interactive elements are fully navigable and usable with a keyboard, catering to users who cannot use a mouse.
+
+- **ARIA (Accessible Rich Internet Applications) Attributes:** Use ARIA roles, properties, and states to enhance accessibility, especially in complex web components and applications where standard HTML elements may fall short.
+
+- **Color Contrast:** Adhere to minimum contrast ratios to enhance readability for users with visual impairments.
+
+- **Text Alternatives:** Provide alt text for images and other non-text content, making information accessible to screen reader users and those with visual impairments.
+
+- **Error Identification and Recovery:** Design error messages and form validation processes that are easy to understand and navigate, helping users to identify and recover from errors.
+
+- **Responsive and Flexible Design:** Ensure content is accessible on various devices and screen sizes, accommodating users with different preferences and needs.
+
+- **Testing with Assistive Technologies:** Regularly test components with screen readers, magnification software, and other assistive technologies to identify and address accessibility barriers.
+
+- **Inclusive and User-Centered Design:** Engage with a diverse range of users in the design process to understand and accommodate a wide range of needs and preferences.
+
+- **Accessibility Guidelines Compliance:** Aim for compliance with international accessibility standards such as WCAG (Web Content Accessibility Guidelines) and ADA (Americans with Disabilities Act) to ensure broader accessibility.
+
+ The AstroKit team is a commitmented to building products that are inclusive and accessible to all users, regardless of their abilities or how they choose to access the web.
+
+# MDX Embed support
+# Easy to customize components
+# React integration
+# Syntax highlighting
+# Automatic image optimization**
+# Pagination for long-form content
+# Breadcrumds for navigation

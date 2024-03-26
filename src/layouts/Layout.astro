@@ -1,10 +1,11 @@
 ---
 import ViewTransitions from "astro/components/ViewTransitions.astro";
-import Navigation from "../components/astro/Navigation.astro";
-import Footer from "../components/astro/Footer.astro";
-import Header from "../components/astro/Header.astro";
-import Sidebar from "../components/astro/Sidebar.astro";
+import Navigation from "#components/astro/Navigation.astro";
+import Footer from "#components/astro/Footer.astro";
+import Header from "#components/astro/Header.astro";
+import Sidebar from "#components/astro/Sidebar.astro";
 import AstroBreadcrumb from "#components/react/astro-breadcrumb.tsx";
+import { SITE_DESCRIPTION, SITE_TITLE } from "#utils/config";
 import "@fpkit/react/styles";
 
 // types
@@ -32,11 +33,11 @@ import "../styles/index.css";
     <meta charset="utf-8" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="description" content="A brief description of the page" />
+    <meta name="description" content={SITE_DESCRIPTION} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>{pageTitle || "Astro Kit"}</title>
+    <title>{pageTitle || SITE_TITLE}</title>
     <ViewTransitions />
   </head>
   <body>

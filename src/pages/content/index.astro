@@ -4,14 +4,14 @@ import MarkdownPostLayout from "#layouts/MarkdownPostLayout.astro";
 import CollectionList from "#components/astro/CollectionList.astro";
 // const allPosts = await getCollection("docs");
 
-const introDoc = await getEntry("docs", "0-welcome");
-const { Content } = await introDoc.render();
+const article: any = await getEntry("content", "content");
+const { Content } = await article.render();
 ---
 
-<MarkdownPostLayout frontmatter={introDoc?.data}>
+<MarkdownPostLayout frontmatter={article?.data}>
   <Content />
   <hr />
   <section>
-    <CollectionList to="docs" collection="docs" pageSize={10} />
+    <CollectionList to="content" collection="content" pageSize={10} />
   </section>
 </MarkdownPostLayout>

@@ -2,7 +2,9 @@
 import { getCollection } from "astro:content";
 const postListTitle = Astro.props.postListTitle || "Latest Posts";
 const postLength = Astro.props.postLength || 10;
-const allPosts = await getCollection("posts");
+const allPosts = await getCollection("posts", ({ data }) => {
+  return data?.draft !== true;
+});
 allPosts.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 const paginatedPosts = allPosts.slice(0, postLength);
 ---
