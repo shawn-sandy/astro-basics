@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import type { ContentEntryMap } from "astro:content";
+import type { SortType } from "#utils/types";
 export type Props = {
   collection: keyof ContentEntryMap;
   itemsSize?: number;
@@ -10,15 +11,10 @@ export type Props = {
 };
 
 const { collection } = Astro.props;
-type sortType = {
-  data: {
-    pubDate: Date;
-  };
-};
 
 const all = await getCollection(collection);
 all.sort(
-  (a: sortType, b: sortType) =>
+  (a: SortType, b: SortType) =>
     b.data.pubDate.getTime() - a.data.pubDate.getTime()
 );
 

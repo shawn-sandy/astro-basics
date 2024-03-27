@@ -1,5 +1,7 @@
 ---
 import { getCollection } from "astro:content";
+
+import type { SortType } from "#utils/types";
 import BlogPosts from "./BlogPosts.astro";
 
 /**
@@ -22,7 +24,8 @@ const allPosts = await getCollection(collection || "posts", ({ data }) => {
   return data?.draft !== true;
 });
 allPosts.sort(
-  (a: any, b: any) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+  (a: SortType, b: SortType) =>
+    b.data.pubDate.getTime() - a.data.pubDate.getTime()
 );
 const collectionLists = allPosts.slice(0, pageSize || 3);
 ---
