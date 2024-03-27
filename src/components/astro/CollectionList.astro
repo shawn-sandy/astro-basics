@@ -1,6 +1,5 @@
 ---
 import { getCollection } from "astro:content";
-
 import type { SortType } from "#utils/types";
 import BlogPosts from "./BlogPosts.astro";
 
@@ -20,8 +19,10 @@ export type Props = {
 };
 
 const { collectionTitle, pageSize, to, collection } = Astro.props;
-const allPosts = await getCollection(collection || "posts", ({ data }) => {
-  return data?.draft !== true;
+const allPosts = await getCollection(collection || "posts");
+
+allPosts.filter(({ data: data }) => {
+  return data.draft !== true;
 });
 allPosts.sort(
   (a: SortType, b: SortType) =>
