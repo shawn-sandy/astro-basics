@@ -13,6 +13,10 @@ export type Props = {
 const { collection } = Astro.props;
 
 const all = await getCollection(collection);
+
+all.filter(({ data }) => {
+  return data.draft !== true;
+});
 all.sort(
   (a: SortType, b: SortType) =>
     b.data.pubDate.getTime() - a.data.pubDate.getTime()
