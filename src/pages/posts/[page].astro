@@ -4,21 +4,23 @@ import Layout from "#layouts/Layout.astro";
 import BlogPosts from "#components/astro/BlogPosts.astro";
 import Pagination from "#components/astro/Pagination.astro";
 
+type Props = {
+  pageSize: number;
+};
+
 export async function getStaticPaths({ paginate }) {
-  const allPosts = await getCollection("posts");
-  allPosts.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
-  return paginate(allPosts, { pageSize: 2 });
+  const allPosts = await getCollection("posts", ({ data }) => {
+    return data.draft !== true;
+  });
+
+  const published = allPosts.sort(
+    (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+  );
+  return paginate(published, { pageSize: Astro.props?.pageSize || 2 });
 }
 
 const pageSize = 2;
 const { page } = Astro.props as any;
-const routes = [
-  {
-    name: "Blog Post",
-    url: "/posts/1",
-    path: "posts",
-  },
-];
 ---
 
 <Layout pageTitle="Blog Posts">
