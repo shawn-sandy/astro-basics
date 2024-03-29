@@ -15,7 +15,7 @@ const { collection } = Astro.props;
 
 const all = await getCollection(collection);
 
-const filterAll = all
+const filterResults = all
   .filter(({ data }) => {
     return data.draft !== true;
   })
@@ -26,7 +26,7 @@ const filterAll = all
 
 const itemsPerPage = PAGINATION_COUNT || 3;
 const currentPage = Astro.props.currentPage || 1;
-const itemsSize = filterAll.length;
+const itemsSize = filterResults.length;
 const to = Astro.props.to || "posts";
 
 const totalPages = Math.ceil(itemsSize / itemsPerPage);
