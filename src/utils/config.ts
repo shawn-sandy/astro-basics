@@ -24,4 +24,4 @@ export const BREADCRUMB_ROUTE = [
 export const SITE_TITLE = "My Site";
 export const SITE_DESCRIPTION = "My site description";
 export const SITE_LOGO = "/logo.png";
-export const PAGINATION_COUNT: number = 3;
+export const PAGINATION_COUNT: number = 2;

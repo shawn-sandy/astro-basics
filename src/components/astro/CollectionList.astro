@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import type { SortType } from "#utils/types";
 import BlogPosts from "./BlogPosts.astro";
+import { PAGINATION_COUNT } from "#utils/config";
 
 /**
  * The props for the CollectionList component.
@@ -29,7 +30,7 @@ const collectionLists = allPosts
     (a: SortType, b: SortType) =>
       b.data.pubDate.getTime() - a.data.pubDate.getTime()
   )
-  .slice(0, pageSize || 3);
+  .slice(0, PAGINATION_COUNT || 3);
 ---
 
 {collectionTitle && <h3 data-ui="display">{collectionTitle}</h3>}
