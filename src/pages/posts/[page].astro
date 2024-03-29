@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import { PAGINATION_COUNT } from "#utils/config";
 import Layout from "#layouts/Layout.astro";
 import BlogPosts from "#components/astro/BlogPosts.astro";
 import Pagination from "#components/astro/Pagination.astro";
@@ -16,10 +17,10 @@ export async function getStaticPaths({ paginate }) {
   const published = allPosts.sort(
     (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
   );
-  return paginate(published, { pageSize: Astro.props?.pageSize || 2 });
+  return paginate(published, { pageSize: PAGINATION_COUNT });
 }
 
-const pageSize = 2;
+const pageSize = PAGINATION_COUNT;
 const { page } = Astro.props as any;
 ---
 
