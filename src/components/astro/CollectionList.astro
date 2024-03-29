@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import type { SortType } from "#utils/types";
 import BlogPosts from "./BlogPosts.astro";
-import { PAGINATION_COUNT } from "#utils/config";
+import { PAGINATION_COUNT } from "#utils/site-config";
 
 /**
  * The props for the CollectionList component.
@@ -44,3 +44,4 @@ const collectionLists = allPosts
     />
   ))
 }
+#utils/site-config

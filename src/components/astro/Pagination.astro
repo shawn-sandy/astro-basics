@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import type { ContentEntryMap } from "astro:content";
 import type { SortType } from "#utils/types";
-import { PAGINATION_COUNT } from "#utils/config";
+import { PAGINATION_COUNT } from "#utils/site-config";
 export type Props = {
   collection: keyof ContentEntryMap;
   itemsSize?: number;

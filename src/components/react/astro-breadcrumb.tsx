@@ -1,6 +1,6 @@
 import { Breadcrumb } from "@fpkit/react";
 import type React from "react";
-import { BREADCRUMB_ROUTE } from "#utils/config.ts";
+import { BREADCRUMB_ROUTE } from "#utils/site-config";
 
 const astroRoutes = BREADCRUMB_ROUTE;
 
