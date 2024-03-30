@@ -22,28 +22,3 @@ const caption = imgCaption ? "" : imgAlt;
   />
   {imgCaption && <figcaption>{imgCaption}</figcaption>}
 </figure>
-
-<style>
-  figure:has(img[alt]) {
-    --img-display: flex;
-    --figure-p: 0.5rem;
-    --figure-bg: whitesmoke;
-    display: var(--img-display);
-    position: relative;
-    padding: var(--figure-p);
-    background-color: var(--figure-bg);
-    max-width: fit-content;
-  }
-  figure > figcaption {
-    position: absolute;
-    bottom: var(--figure-p);
-    left: var(--figure-p);
-    right: var(--figure-p);
-    padding: var(--spc-3);
-    background-color: rgba(245, 245, 245, 0.683);
-  }
-  figure > img {
-    max-width: 100%;
-    height: auto;
-  }
-</style>
