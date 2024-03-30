@@ -1,6 +1,7 @@
 ---
 import Layout from "./Layout.astro";
 import Youtube from "#components/astro/Youtube.astro";
+import Img from "#components/astro/Img.astro";
 
 const { frontmatter } = Astro.props;
 const { slug } = Astro.params;
@@ -21,13 +22,13 @@ const contentRoute = [
 >
   {
     frontmatter.image && (
-      <p>
-        <img
-          src={frontmatter.image.url}
-          width="800"
-          alt={frontmatter.image?.alt || ""}
+      <>
+        <Img
+          imgSrc={frontmatter.image.url}
+          imgAlt={frontmatter.image?.alt || ""}
+          imgCaption="This is a caption for the image"
         />
-      </p>
+      </>
     )
   }
   {

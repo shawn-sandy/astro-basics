@@ -1,0 +1,40 @@
+---
+import { Image } from "astro:assets";
+
+export type Props = {
+  imgCaption?: string;
+  imgAlt?: string;
+  imgSrc: string;
+};
+
+const { imgSrc, imgAlt, imgCaption } = Astro.props;
+---
+
+<figure>
+  <Image src={imgSrc} alt={imgAlt || ""} inferSize={true} />
+  {imgCaption && <figcaption>{imgCaption}</figcaption>}
+</figure>
+
+<style>
+  figure:has(img[alt]) {
+    --img-display: flex;
+    --figure-p: 0.5rem;
+    --figure-bg: whitesmoke;
+    display: var(--img-display);
+    position: relative;
+    padding: var(--figure-p);
+    background-color: var(--figure-bg);
+  }
+  figure > figcaption {
+    position: absolute;
+    bottom: var(--figure-p);
+    left: var(--figure-p);
+    right: var(--figure-p);
+    padding: var(--spc-1);
+    background-color: rgba(245, 245, 245, 0.683);
+  }
+  figure > img {
+    width: 100%;
+    height: auto;
+  }
+</style>

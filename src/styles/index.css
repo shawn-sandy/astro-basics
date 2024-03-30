@@ -65,7 +65,7 @@ article p {
 }
 
 article img {
-  border: 2px lightgray solid;
+  /* border: 2px lightgray solid; */
   border-radius: 0.3rem;
 }
 
