@@ -32,6 +32,7 @@ const caption = imgCaption ? "" : imgAlt;
     position: relative;
     padding: var(--figure-p);
     background-color: var(--figure-bg);
+    max-width: fit-content;
   }
   figure > figcaption {
     position: absolute;
@@ -42,7 +43,7 @@ const caption = imgCaption ? "" : imgAlt;
     background-color: rgba(245, 245, 245, 0.683);
   }
   figure > img {
-    width: 100%;
+    max-width: 100%;
     height: auto;
   }
 </style>
