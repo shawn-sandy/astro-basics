@@ -2,18 +2,25 @@
 import { Image } from "astro:assets";
 
 export type Props = {
-  imgCaption?: boolean;
-  imgAlt?: string;
   imgSrc: string;
+  imgCaption?: string;
+  imgAlt?: string;
+  imgWidth?: number;
+  imgHeight?: number;
 };
 
-const { imgSrc, imgAlt, imgCaption } = Astro.props;
+const { imgSrc, imgAlt, imgWidth, imgHeight, imgCaption } = Astro.props;
 const caption = imgCaption ? "" : imgAlt;
 ---
 
 <figure>
-  <Image src={imgSrc} alt=`${caption}` inferSize={true} />
-  {imgCaption && <figcaption>{imgAlt}</figcaption>}
+  <Image
+    src={imgSrc}
+    alt=`${imgAlt}`
+    width={imgWidth || 500}
+    height={imgHeight || 500}
+  />
+  {imgCaption && <figcaption>{imgCaption}</figcaption>}
 </figure>
 
 <style>

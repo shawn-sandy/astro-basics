@@ -1,11 +1,11 @@
 ---
 import { getCollection } from "astro:content";
-import MarkdownPostLayout from "#layouts/MarkdownPostLayout.astro";
+import MarkdownPostLayout from "../../layouts/MarkdownPostLayout.astro";
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection("posts");
   return blogEntries.map((entry) => ({
-    params: { slug: entry.data.draft ? undefined : entry.slug },
+    params: { slug: entry.slug },
     props: { entry },
   }));
 }
