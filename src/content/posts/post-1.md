@@ -6,6 +6,7 @@ author: 'Astro Learner'
 image:
     url: 'https://picsum.photos/300'
     alt: 'The full Astro logo.'
+    showCaption: true
 tags: ["astro", "blogging", "learning in public"]
 ---
 

@@ -2,17 +2,18 @@
 import { Image } from "astro:assets";
 
 export type Props = {
-  imgCaption?: string;
+  imgCaption?: boolean;
   imgAlt?: string;
   imgSrc: string;
 };
 
 const { imgSrc, imgAlt, imgCaption } = Astro.props;
+const caption = imgCaption ? "" : imgAlt;
 ---
 
 <figure>
-  <Image src={imgSrc} alt={imgAlt || ""} inferSize={true} />
-  {imgCaption && <figcaption>{imgCaption}</figcaption>}
+  <Image src={imgSrc} alt=`${caption}` inferSize={true} />
+  {imgCaption && <figcaption>{imgAlt}</figcaption>}
 </figure>
 
 <style>
@@ -30,7 +31,7 @@ const { imgSrc, imgAlt, imgCaption } = Astro.props;
     bottom: var(--figure-p);
     left: var(--figure-p);
     right: var(--figure-p);
-    padding: var(--spc-1);
+    padding: var(--spc-3);
     background-color: rgba(245, 245, 245, 0.683);
   }
   figure > img {

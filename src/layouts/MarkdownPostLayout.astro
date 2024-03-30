@@ -2,6 +2,7 @@
 import Layout from "./Layout.astro";
 import Youtube from "#components/astro/Youtube.astro";
 import Img from "#components/astro/Img.astro";
+import { fade } from "astro:transitions";
 
 const { frontmatter } = Astro.props;
 const { slug } = Astro.params;
@@ -25,8 +26,8 @@ const contentRoute = [
       <>
         <Img
           imgSrc={frontmatter.image.url}
-          imgAlt={frontmatter.image?.alt || ""}
-          imgCaption="This is a caption for the image"
+          imgAlt={frontmatter.image?.alt}
+          imgCaption={frontmatter.image?.showCaption}
         />
       </>
     )
