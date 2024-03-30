@@ -6,7 +6,7 @@ author: 'Astro Learner'
 image:
     url: 'https://picsum.photos/300'
     alt: 'The full Astro logo.'
-    showCaption: The img caption from my first blog post.
+    caption: The img caption from my first blog post.
 tags: ["astro", "blogging", "learning in public"]
 ---
 
