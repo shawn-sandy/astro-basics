@@ -82,3 +82,14 @@ article li {
 p {
   max-width: 60ch;
 }
+
+article > figure:has(img[alt]) {
+  min-width: 100%;
+  background-color: transparent;
+  border-radius: 0;
+}
+
+article > figure > img[alt] {
+  min-width: 100%;
+  border-radius: 0;
+}
