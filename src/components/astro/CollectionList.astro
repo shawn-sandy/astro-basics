@@ -24,7 +24,7 @@ const allPosts = await getCollection(collection || "posts");
 
 const collectionLists = allPosts
   .filter(({ data: data }) => {
-    return data.draft !== true;
+    return data.draft === false;
   })
   .sort(
     (a: SortType, b: SortType) =>

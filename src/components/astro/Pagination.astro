@@ -17,14 +17,14 @@ const all = await getCollection(collection);
 
 const filterResults = all
   .filter(({ data }) => {
-    return data.draft !== true;
+    return data.draft === false;
   })
   .sort(
     (a: SortType, b: SortType) =>
       b.data.pubDate.getTime() - a.data.pubDate.getTime()
   );
 
-const itemsPerPage = PAGINATION_COUNT || 3;
+const itemsPerPage = Astro.props.itemsPerPage || PAGINATION_COUNT || 3;
 const currentPage = Astro.props.currentPage || 1;
 const itemsSize = filterResults.length;
 const to = Astro.props.to || "posts";
