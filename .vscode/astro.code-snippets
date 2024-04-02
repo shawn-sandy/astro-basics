@@ -19,7 +19,7 @@
 		"prefix": "blogpost",
 		"body": [
 			"---",
-			"title: '${1:My First Blog Post}'",
+			"title: '${1:Blog Post Titled Here}'",
 			"pubDate: ${2:2022-07-01}",
 			"description: '${3:This is the first post of my new Astro blog.}'",
 			"author: '${4:Astro Basics}'",
@@ -28,8 +28,9 @@
 			"    alt: '${6:The full Astro logo.}'",
 			"    caption: '${7:The img caption from my first blog post.}'",
 			"tags: [\"${8:astro}\", \"${9:blogging}\", \"${10:learning in public}\"]",
+			"draft: ${11:false}",
 			"---"
 		],
-		"description": "Snippet for a blog post header"
+		"description": "Snippet for a blog post frontmatter meta"
 	}
 }
