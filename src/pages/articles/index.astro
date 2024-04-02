@@ -1,0 +1,8 @@
+---
+import { contentfulClient } from "#libs/contentful";
+import type { Articles } from "#libs/contentful";
+
+const entries = await contentfulClient.getEntries<Articles>({
+  content_type: "blogPost",
+});
+---

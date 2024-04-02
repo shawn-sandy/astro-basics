@@ -1,0 +1,10 @@
+---
+import { contentfulClient } from "#libs/contentful";
+import type { BlogPost } from "#libs/contentful";
+
+export async function getStaticPaths() {
+  const entries = await contentfulClient.getEntries<BlogPost>({
+    content_type: "blogPost",
+  });
+}
+---
