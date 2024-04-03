@@ -20,6 +20,7 @@ export default defineConfig({
     lighthouse(),
     embeds(),
     mdx(),
+    astroImageTools(),
   ],
   adapter: netlify(),
   output: "hybrid",
