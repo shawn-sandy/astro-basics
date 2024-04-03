@@ -20,9 +20,7 @@ export type Props = {
 };
 
 const { collectionTitle, pageSize, to, collection } = Astro.props;
-const allPosts = await getCollection(collection || "posts");
-
-const collectionLists = allPosts
+const allPosts = (await getCollection(collection || "posts"))
   .filter(({ data: data }) => {
     return data.draft === false;
   })
@@ -36,7 +34,7 @@ const collectionLists = allPosts
 {collectionTitle && <h3 data-ui="display">{collectionTitle}</h3>}
 
 {
-  collectionLists?.map((post: any) => (
+  allPosts?.map((post: any) => (
     <BlogPosts
       title={post.data.title}
       description={post.data.description}
