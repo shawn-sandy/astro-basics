@@ -21,7 +21,6 @@ export default defineConfig({
     embeds(),
     mdx(),
   ],
-  adapter: netlify(),
   output: "hybrid",
   // Enable Custom Markdown options, plugins, etc.
   markdown: {
