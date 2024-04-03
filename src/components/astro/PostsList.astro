@@ -2,9 +2,7 @@
 import { getCollection } from "astro:content";
 const postListTitle = Astro.props.postListTitle || "Latest Posts";
 const postLength = Astro.props.postLength || 10;
-const allPosts = await getCollection("posts");
-
-const postsResults = allPosts
+const postsResults = (await getCollection("posts"))
   .filter(({ data }) => {
     return data.draft === false;
   })

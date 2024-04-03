@@ -13,9 +13,7 @@ export type Props = {
 
 const { collection } = Astro.props;
 
-const all = await getCollection(collection);
-
-const filterResults = all
+const results = (await getCollection(collection))
   .filter(({ data }) => {
     return data.draft === false;
   })
@@ -26,7 +24,7 @@ const filterResults = all
 
 const itemsPerPage = Astro.props.itemsPerPage || PAGINATION_COUNT || 3;
 const currentPage = Astro.props.currentPage || 1;
-const itemsSize = filterResults.length;
+const itemsSize = results.length;
 const to = Astro.props.to || "posts";
 
 const totalPages = Math.ceil(itemsSize / itemsPerPage);
