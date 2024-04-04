@@ -1,5 +1,6 @@
 ---
 import { Image } from "astro:assets";
+import { Img } from "astro-imagetools/components";
 
 export type Props = {
   imgSrc: string;
@@ -14,7 +15,7 @@ const caption = imgCaption ? "" : imgAlt;
 ---
 
 <figure>
-  <img
+  <Img
     src={imgSrc}
     alt=`${imgAlt}`
     width={imgWidth || 500}
