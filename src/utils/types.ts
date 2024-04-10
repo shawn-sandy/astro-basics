@@ -3,3 +3,5 @@ export type SortType = {
     pubDate: Date;
   };
 };
+
+export type TODO = any;

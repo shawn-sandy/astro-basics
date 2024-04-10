@@ -45,7 +45,7 @@ const contentRoute = [
     frontmatter.tags && frontmatter.tags.length > 0 && (
       <div>
         <ul class="tags" data-list="unstyled inline">
-          {frontmatter.tags.map((tag) => (
+          {frontmatter.tags.map((tag: string) => (
             <li class="tag">
               <a href={`/tags/${tag}`}>
                 <span data-tag>{tag}</span>

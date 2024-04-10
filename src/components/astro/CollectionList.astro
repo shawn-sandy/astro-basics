@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import type { SortType } from "#utils/types";
 import BlogPosts from "./BlogPosts.astro";
 import { PAGINATION_COUNT } from "#utils/site-config";
+import type { TODO } from "#utils/types";
 
 /**
  * The props for the CollectionList component.
@@ -16,7 +17,7 @@ export type Props = {
   collectionTitle?: string;
   pageSize?: number;
   to?: string;
-  collection?: any;
+  collection?: TODO;
 };
 
 const { collectionTitle, pageSize, to, collection } = Astro.props;
@@ -34,7 +35,7 @@ const collectionResults = (await getCollection(collection || "posts"))
 {collectionTitle && <h3 data-ui="display">{collectionTitle}</h3>}
 
 {
-  collectionResults?.map((post: any) => (
+  collectionResults?.map((post: TODO) => (
     <BlogPosts
       title={post.data.title}
       description={post.data.description}
