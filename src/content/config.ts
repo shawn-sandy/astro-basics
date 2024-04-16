@@ -38,6 +38,7 @@ const content = defineCollection({
 
 export const collections = {
   posts: postsCollection,
+  // docs: astroKitDocs,
   content: content,
   docs: defineCollection({ schema: docsSchema() }),
 };

@@ -15,7 +15,16 @@ import starlight from "@astrojs/starlight";
 // https://astro.build/config
 export default defineConfig({
   site: "https://example.com",
-  integrations: [react(), sitemap(), spotlightjs(), lighthouse(), embeds(), mdx(), astroImageTools, starlight()],
+  integrations: [
+    react(),
+    sitemap(),
+    spotlightjs(),
+    lighthouse(),
+    embeds(),
+    mdx(),
+    astroImageTools,
+    starlight({ title: "My delightful docs site" }),
+  ],
   adapter: netlify(),
   output: "hybrid",
   // Enable Custom Markdown options, plugins, etc.
@@ -25,7 +34,7 @@ export default defineConfig({
     rehypePlugins: [rehypeAccessibleEmojis],
     shikiConfig: {
       theme: "one-dark-pro",
-      wrap: true
-    }
-  }
+      wrap: true,
+    },
+  },
 });
