@@ -21,6 +21,7 @@
     "@astrojs/react": "^3.3.0",
     "@astrojs/rss": "^4.0.5",
     "@astrojs/sitemap": "^3.1.2",
+    "@astrojs/starlight": "^0.21.5",
     "@fpkit/react": "^0.3.78",
     "@sentry/astro": "^7.108.0",
     "@spotlightjs/astro": "^1.0.19",

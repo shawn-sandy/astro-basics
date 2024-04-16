@@ -1,4 +1,5 @@
 import { defineCollection, z } from "astro:content";
+import { docsSchema } from "@astrojs/starlight/schema";
 
 const postsCollection = defineCollection({
   schema: z.object({
@@ -37,6 +38,6 @@ const content = defineCollection({
 
 export const collections = {
   posts: postsCollection,
-  docs: astroKitDocs,
   content: content,
+  docs: defineCollection({ schema: docsSchema() }),
 };
