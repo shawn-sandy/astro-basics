@@ -26,7 +26,7 @@ export default defineConfig({
   adapter: netlify(),
   output: "hybrid",
   // Enable Custom Markdown options, plugins, etc.
-  markdown: {
+  mdx: {
     syntaxHighlight: "shiki",
     remarkPlugins: [remarkToc],
     rehypePlugins: [rehypeAccessibleEmojis],
