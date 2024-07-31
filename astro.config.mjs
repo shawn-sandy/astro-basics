@@ -27,9 +27,9 @@ export default defineConfig({
   output: "hybrid",
   // Enable Custom Markdown options, plugins, etc.
   mdx: {
-    syntaxHighlight: "shiki",
-    remarkPlugins: [remarkToc],
-    rehypePlugins: [rehypeAccessibleEmojis],
+    // syntaxHighlight: "shiki",
+    // remarkPlugins: [remarkToc],
+    // rehypePlugins: [rehypeAccessibleEmojis],
     shikiConfig: {
       theme: "one-dark-pro",
       wrap: true,
