@@ -1,0 +1,119 @@
+---
+import { getCollection } from "astro:content";
+import type { SortType } from "#utils/types";
+import BlogPosts from "./BlogPosts.astro";
+import { PAGINATION_COUNT } from "#utils/site-config";
+import type { TODO } from "#utils/types";
+import Placeholder from "#components/views/Placeholder.astro";
+import Pagination from "#components/astro/Pagination.astro";
+import Img from "#components/astro/Img.astro";
+
+/**
+ * The props for the CollectionList component.
+ * @typedef {Object} Props
+ * @property {string} [contentTitle] - The title to display for the collection.
+ * @property {number} [pageSize] - The number of items per page.
+ * @property {string} [to] - The link for the "View All" button.
+ * @property {any} [collection] - The collection to display.
+ */
+export type Props = {
+  collectionTitle?: string;
+  pageSize?: number;
+  to?: string;
+  collection?: TODO;
+  startCount?: number;
+  category?: string[];
+  itemsPerPage?: number;
+  showPagination?: boolean;
+  showLinks?: boolean;
+};
+
+const isProductionEnv  = import.meta.env.PROD ? true : false;
+
+const {
+  collectionTitle,
+  pageSize,
+  to,
+  collection,
+  startCount,
+  itemsPerPage,
+  showPagination,
+  showLinks
+} = Astro.props;
+const category = Astro.props.category || ["guides", "patterns", "resources"];
+const collectionResults = (await getCollection(collection || "posts"))
+  .filter(({ data: data }) => {
+    if (isProductionEnv) {
+      
+    return category
+      ? data.draft === false && category.includes(data.category)
+      : data.draft === false;
+      
+    } else {
+      return category.includes(data.category)
+    }
+  })
+  .sort(
+    (a: SortType, b: SortType) =>
+      b.data.pubDate.getTime() - a.data.pubDate.getTime()
+  )
+  .slice(startCount || 0, pageSize || PAGINATION_COUNT || 3);
+---
+
+<>
+  {
+    collectionResults.length === 0 ? (
+      <>
+        <Placeholder />
+      </>
+    ) : (
+      <>
+        <>
+          {collectionTitle && <h3 data-ui="display">{collectionTitle}</h3>}
+          {collectionResults?.map((post: TODO) => (
+            <>
+              <article>
+                <BlogPosts
+                  title={post.data.title}
+                  description={post.data?.summary || post.data.description}
+                  url={`/${to || "posts"}/${post.slug}`}
+                  descId={`desc-${post.slug}`}
+                >
+                  <p>
+                    {post.data.image && post.data?.image && (
+                      <Img
+                        imgSrc={post.data.image.url}
+                        imgAlt={post.data.image?.alt}
+                        imgCaption={post.data.image?.caption}
+                      />
+                    )}
+                  </p>
+                </BlogPosts>
+                { showLinks && (
+                  <div class="align-right">
+                    <a
+                      href={`/${to || "posts"}/${post.slug}`}
+                      aria-label={`Continue reading ${post.data.title}`}
+                    >
+                      <i aria-hidden="true">Continue reading</i>
+                    </a>
+                  </div>)}
+              </article>
+            </>
+          ))}
+        </>
+        {showPagination && (
+          <>
+            <p>
+              <hr />
+              <Pagination
+                collection={collection}
+                itemsPerPage={pageSize || itemsPerPage || PAGINATION_COUNT}
+              />
+            </p>
+          </>
+        )}
+      </>
+    )
+  }
+</>

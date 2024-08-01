@@ -25,14 +25,5 @@ export default defineConfig({
   ],
   adapter: netlify(),
   output: "hybrid",
-  // Enable Custom Markdown options, plugins, etc.
-  markdown: {
-    syntaxHighlight: "shiki",
-    remarkPlugins: [remarkToc],
-    rehypePlugins: [rehypeAccessibleEmojis],
-    shikiConfig: {
-      theme: "one-dark-pro",
-      wrap: true,
-    },
-  },
+
 });
