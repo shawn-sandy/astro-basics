@@ -20,19 +20,18 @@ export default defineConfig({
     spotlightjs(),
     lighthouse(),
     embeds(),
-    mdx(),
+    mdx({
+      syntaxHighlight: "shiki",
+      remarkPlugins: [remarkToc],
+      rehypePlugins: [rehypeAccessibleEmojis],
+      shikiConfig: {
+        theme: "one-dark-pro",
+        wrap: true,
+      },
+    }),
     astroImageTools,
   ],
   adapter: netlify(),
   output: "hybrid",
-  // Enable Custom Markdown options, plugins, etc.
-  markdown: {
-    syntaxHighlight: "shiki",
-    remarkPlugins: [remarkToc],
-    rehypePlugins: [rehypeAccessibleEmojis],
-    shikiConfig: {
-      theme: "one-dark-pro",
-      wrap: true,
-    },
-  },
+
 });
