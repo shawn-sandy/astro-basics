@@ -20,15 +20,7 @@ export default defineConfig({
     spotlightjs(),
     lighthouse(),
     embeds(),
-    mdx({
-      syntaxHighlight: "shiki",
-      remarkPlugins: [remarkToc],
-      rehypePlugins: [rehypeAccessibleEmojis],
-      shikiConfig: {
-        theme: "one-dark-pro",
-        wrap: true,
-      },
-    }),
+    mdx(),
     astroImageTools,
   ],
   adapter: netlify(),
