@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@astro-community/astro-embed-youtube": "^0.4.5",
-    "@astrojs/mdx": "^2.3.0",
+    "@astrojs/mdx": "^2.3.1",
     "@astrojs/netlify": "^5.2.0",
     "@astrojs/react": "^3.3.0",
     "@astrojs/rss": "^4.0.5",
