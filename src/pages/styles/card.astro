@@ -1,0 +1,73 @@
+---
+import Layout from "#layouts/Layout.astro";
+---
+
+<Layout>
+  <section>
+    <a href="/" aria-label="card link"></a>
+    
+    <div>
+      <h1>Title</h1>
+      <p>
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequuntur
+        odio maxime vero cum rem soluta quae reiciendis assumenda earum illo
+        temporibus possimus eveniet nihil, perferendis inventore facere placeat
+        atque modi.
+      </p>
+      <!-- <div>
+          <p><a href="/about">About</a></p>
+      </div> -->
+    </div>
+    <div>
+      <button>Click me</button>
+      <p><a href="/about">About</a></p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  :root {
+    --card-p: 1.5rem;
+  }
+  section {
+    position: relative;
+    display: grid;
+    grid-template-rows: "pile";
+    height: fit-content;
+    padding: var(--card-p);
+    border: lightgray solid thin;
+  }
+
+  section > * {
+    grid-area: pile;
+  }
+
+  section > a:empty {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 99;
+    /* padding: var(--card-p); */
+    background-color: transparent;
+  }
+
+  section:has(a:empty:hover) {
+    /* cursor: pointer; */
+    border: blue solid thin;
+  }
+
+  section div:has(a:not(empty), button:not(empty)) {
+    border: none;
+    z-index: 999;
+    height: min-content;
+    width: min-content;
+  }
+
+  section > div:first-of-type {
+    z-index: 1;
+    background: transparent;
+    width: auto;
+  }
+</style>
+
