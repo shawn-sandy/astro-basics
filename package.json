@@ -5,9 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "start": "astro dev",
+    "start": "run-p dev sass",
     "build": "astro build",
     "preview": "astro preview",
+    "sass": "sass --watch src/styles/index.scss:src/styles/index.css --style=compressed",
     "astro": "astro",
     "test": "vitest"
   },
@@ -21,7 +22,7 @@
     "@astrojs/react": "^3.6.1",
     "@astrojs/rss": "^4.0.7",
     "@astrojs/sitemap": "^3.1.6",
-    "@fpkit/react": "^0.3.87",
+    "@fpkit/react": "^0.3.89",
     "@sentry/astro": "^7.108.0",
     "@spotlightjs/astro": "^1.0.19",
     "@total-typescript/ts-reset": "^0.5.1",
@@ -39,6 +40,7 @@
   "devDependencies": {
     "@playwright/test": "^1.42.1",
     "@types/node": "^20.12.4",
+    "npm-run-all": "^4.1.5",
     "prettier": "^3.2.5",
     "prettier-plugin-astro": "^0.13.0",
     "sass": "^1.77.8",
