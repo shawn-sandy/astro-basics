@@ -1,18 +1,22 @@
-import { defineConfig, devices } from "@playwright/test";
+import { devices, type PlaywrightTestConfig } from "@playwright/test";
+import "dotenv/config";
 
 const PORT = process.env.PORT ?? 4321;
 
 /**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
-
-/**
  * See https://playwright.dev/docs/test-configuration.
  */
-export default defineConfig({
+const config: PlaywrightTestConfig = {
   testDir: "./e2e",
+  /* Maximum time one test can run for. */
+  timeout: 30 * 1000,
+  expect: {
+    /**
+     * Maximum time expect() should wait for the condition to be met.
+     * For example in `await expect(locator).toHaveText();`
+     */
+    timeout: 5000,
+  },
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -25,8 +29,9 @@ export default defineConfig({
   reporter: "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
+    /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
+    actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://127.0.0.1:3000',
     baseURL: `http://localhost:${PORT}/`,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
@@ -37,48 +42,23 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+      },
     },
-
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
-    },
-
-    {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"] },
-    },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
   ],
 
+  /* Folder for test artifacts such as screenshots, videos, traces, etc. */
+  // outputDir: 'test-results/',
+
   /* Run your local dev server before starting the tests */
-  /* This configuration block `webServer` in the Playwright test configuration file is used to define
-settings related to running a local development server before starting the tests. Here is what each
-property does: */
-  // webServer: {
-  //   command: "npm run preview",
-  //   url: "http://localhost:4321/",
-  //   reuseExistingServer: !process.env.CI,
-  //   timeout: 120 * 1000,
-  // },
-});
+  webServer: {
+    command: process.env.CI
+      ? `cross-env PORT=${PORT} npm run start`
+      : `cross-env PORT=${PORT} npm run dev`,
+    port: Number(PORT),
+    reuseExistingServer: true,
+  },
+};
+
+export default config;
