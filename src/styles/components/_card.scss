@@ -1,0 +1,46 @@
+.card {
+    &:has(a:first-of-type:empty) {
+      position: relative;
+      display: grid;
+      grid-template-rows: "pile";
+      height: fit-content;
+      padding: 1.5rem;
+      border: lightgray solid thin;
+  
+      > * {
+        grid-area: pile;
+      }
+  
+      > a:empty {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+        z-index: 99;
+        /* padding: var(--card-p); */
+        background-color: transparent;
+      }
+  
+      &:has(a:empty:hover) {
+        /* cursor: pointer; */
+        border: blue solid thin;
+      }
+  
+      div:has(a:not(empty), button:not(empty)) {
+        border: none;
+        z-index: 999;
+        height: min-content;
+        width: min-content;
+        min-width: 100px;
+        position: absolute;
+        right: 0;
+      }
+  
+      > div:first-of-type {
+        z-index: 1;
+        background: transparent;
+        width: auto;
+      }
+    }
+  }
+  
