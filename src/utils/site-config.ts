@@ -25,3 +25,8 @@ export const SITE_TITLE = "My Site";
 export const SITE_DESCRIPTION = "My site description";
 export const SITE_LOGO = "/logo.png";
 export const PAGINATION_COUNT: number = 2;
+export const CONTACT_INFO = {
+    name: "Email",
+    url: "/success",
+    isNetlify: true,
+  }
