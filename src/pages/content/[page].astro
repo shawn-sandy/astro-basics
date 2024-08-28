@@ -38,7 +38,8 @@ const { page } = Astro.props as TODO;
   }
   <!-- Pagination -->
   <Pagination
-    collection="posts"
+    collection="content"
+    to="content"
     itemsPerPage={pageSize}
     currentPage={page?.currentPage}
     prevUrl={page?.url?.prev || undefined}

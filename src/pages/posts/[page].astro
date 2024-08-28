@@ -5,6 +5,7 @@ import Layout from "#layouts/Layout.astro";
 import BlogPosts from "#components/astro/BlogPosts.astro";
 import Pagination from "#components/astro/Pagination.astro";
 import type { TODO } from "#utils/types.js";
+import Blank from "#components/astro/Blank.astro";
 export const collection = "posts"; 
 
 type Props = {
@@ -26,6 +27,7 @@ const { page } = Astro.props as TODO;
 
 <Layout pageTitle="Blog Posts">
   {
+    page?.data.length ? (
     page?.data.map((post: TODO) => (
       <article>
         <BlogPosts
@@ -35,6 +37,10 @@ const { page } = Astro.props as TODO;
         />
       </article>
     ))
+    ) : (
+      <h3>Sorry, no content here yet...</h3>
+      <Blank />
+    )
   }
 
   <!-- Pagination -->
