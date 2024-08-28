@@ -15,13 +15,13 @@ export async function getStaticPaths({ paginate }) {
     return data.draft !== true;
   });
 
-  const published = allPosts.sort(
+  const sortedPublishedPosts = allPosts.sort(
     (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
   );
-  return paginate(published, { pageSize: PAGINATION_COUNT });
+  return paginate(sortedPublishedPosts, { pageSize: PAGINATION_COUNT });
 }
 
-const pageSize = PAGINATION_COUNT;
+const pageSize = PAGINATION_COUNT || 5;
 const { page } = Astro.props as TODO;
 ---
 
