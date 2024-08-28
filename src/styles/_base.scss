@@ -1,3 +1,6 @@
+:root {
+--img-radius: 1rem;
+}
 body {
   min-width: 20.3125rem;
 }
@@ -12,8 +15,14 @@ main > section {
 
 header {
   min-height: fit-content;
-  padding-block: 2rem;
+  padding-block: 3rem;
   grid-template-rows: minmax(300px, auto);
+   div {
+    > img {
+      border-radius: var(--img-radius);
+    }
+  }
+  
 }
 
 header > section > p {
@@ -92,6 +101,10 @@ article > figure:has(img[alt]) {
 article > figure > img[alt] {
   min-width: 100%;
   border-radius: 0;
+}
+
+img + * {
+  padding-block-start: 1rem;
 }
 
 

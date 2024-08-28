@@ -1,12 +1,15 @@
 ---
+import { CONTACT_INFO } from "#utils/site-config.js"
 ---
 
-<form action="/success" method="post" data-netlify="true" name="helloneighbor-contact" data-netlify-honeypot="bot-field">
+<form action={CONTACT_INFO.url} method="post" data-netlify={CONTACT_INFO.isNetlify} name="contact-us" data-netlify-honeypot="bot-field">
+  { CONTACT_INFO.isNetlify &&   
     <p class="hidden">
         <label>
           Don’t fill this out if you’re human: <input name="bot-field" />
         </label>
       </p>
+    }
     <label for="name">Name</label>
     <input type="text" id="name" name="name" required>
     <label for="email">Email</label>

@@ -2,10 +2,11 @@
 import Layout from "../layouts/Layout.astro";
 import CollectionList from "#components/astro/CollectionList.astro";
 import Welcome from "#components/astro/Welcome.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "#utils/site-config.js";
 ---
 
-<Layout pageTitle="Astro Kit" showBreadcrumb={false}>
-  <!-- <Welcome /> -->
+<Layout pageTitle={SITE_TITLE} pageDescription={SITE_DESCRIPTION} showBreadcrumb={false} pageImageUrl="/images/astro-kit-cover.webp">
+ 
   <section>
     <CollectionList pageSize={2} />
   </section>
