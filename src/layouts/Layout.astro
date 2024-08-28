@@ -17,6 +17,7 @@ type routeItem = {
 type Props = {
   pageTitle?: string;
   pageDescription?: string;
+  pageImageUrl?: string;
   showBreadcrumb?: boolean;
   breadcrumbRoutes?: routeItem[];
 };
@@ -24,7 +25,7 @@ type Props = {
 const showBreadcrumb =
   Astro.props.showBreadcrumb === undefined ? true : Astro.props.showBreadcrumb;
 
-const { pageTitle, pageDescription, breadcrumbRoutes } = Astro.props;
+const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } = Astro.props;
 import "../styles/index.css";
 ---
 
@@ -42,7 +43,7 @@ import "../styles/index.css";
   </head>
   <body>
     <Navigation />
-    <Header headerTitle={pageTitle} headerDescription={pageDescription} />
+    <Header headerTitle={pageTitle} headerDescription={pageDescription} headerImageUrl={pageImageUrl} headerImageAlt={pageTitle} />
     <main>
       <section>
         {

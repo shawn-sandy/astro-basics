@@ -14,6 +14,7 @@ header {
   min-height: fit-content;
   padding-block: 2rem;
   grid-template-rows: minmax(300px, auto);
+  
 }
 
 header > section > p {
@@ -92,6 +93,10 @@ article > figure:has(img[alt]) {
 article > figure > img[alt] {
   min-width: 100%;
   border-radius: 0;
+}
+
+img + * {
+  padding-block-start: 1rem;
 }
 
 
