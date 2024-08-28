@@ -1,0 +1,11 @@
+header {
+    min-height: fit-content;
+    padding-block: 3rem;
+    grid-template-rows: minmax(300px, auto);
+     div {
+      > img {
+        border-radius: var(--img-radius);
+      }
+    }
+    
+  }

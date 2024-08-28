@@ -13,18 +13,6 @@ main > section {
   padding-inline: 2rem;
 }
 
-header {
-  min-height: fit-content;
-  padding-block: 3rem;
-  grid-template-rows: minmax(300px, auto);
-   div {
-    > img {
-      border-radius: var(--img-radius);
-    }
-  }
-  
-}
-
 header > section > p {
   font-size: 2rem;
 }
