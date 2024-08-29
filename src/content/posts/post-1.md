@@ -8,6 +8,7 @@ author: 'Astro Learner'
 #     alt: 'The full Astro logo.'
 #     caption: The img caption from my first blog post.
 tags: ["astro", "blogging", "learning in public"]
+publish: false
 ---
 
 

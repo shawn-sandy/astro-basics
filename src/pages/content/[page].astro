@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import Layout from "#layouts/Layout.astro";
 import BlogPosts from "#components/astro/BlogPosts.astro";
 import Pagination from "#components/astro/Pagination.astro";
+import Blank from "#components/astro/Blank.astro";
 import type { TODO } from "#utils/types.js";
 
 export async function getStaticPaths({ paginate }) {
@@ -30,15 +31,15 @@ const { page } = Astro.props as TODO;
             description={post.data.description}
           />
         </article>
-      )) : <p>No content found</p>
+      )) : <Blank />
   }
   <nav>
     <div>
-      {page?.url?.prev ? <a href={page?.url?.prev}>Previous</a> : "Previous"}
+      {page?.url?.prev ? <a href={page?.url?.prev}>Previous</a> : " "}
     </div>
     <Pagination collection="content" itemsPerPage={pageSize} />
     <div>
-      {page?.url?.next ? <a href={page?.url?.next}>Next </a> : "Next"}
+      {page?.url?.next ? <a href={page?.url?.next}>Next </a> : " "}
     </div>
   </nav>
 </Layout>
