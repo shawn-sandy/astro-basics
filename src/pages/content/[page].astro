@@ -31,7 +31,10 @@ const { page } = Astro.props as TODO;
             description={post.data.description}
           />
         </article>
-      )) : <Blank />
+      )) : (
+      <h3>Sorry, no content here yet...</h3>
+      <Blank />
+    )
   }
   <nav>
     <div>

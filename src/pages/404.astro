@@ -1,11 +1,14 @@
 ---
 import Blank from "#components/astro/Blank.astro";
 import Layout from "#layouts/Layout.astro";
+const pageTitle = "404 Not Found";
 ---
 
 <Layout
-  pageTitle="404 Not Found"
+  pageTitle={pageTitle}
   pageDescription="Ooops you broke it! The page you requested could not be found."
 >
+<h2>{pageTitle}</h2>
+<h3>Seems, you took a wrong turn</h3>
 <Blank />
 </Layout>
