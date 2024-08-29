@@ -4,7 +4,7 @@ const postListTitle = Astro.props.postListTitle || "Latest Posts";
 const postLength = Astro.props.postLength || 10;
 const postsResults = (await getCollection("posts"))
   .filter(({ data }) => {
-    return data.draft === false;
+    return data.publish === false;
   })
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 const paginatedPosts = postsResults.slice(0, postLength);

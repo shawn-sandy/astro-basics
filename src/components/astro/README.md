@@ -11,7 +11,7 @@ The purpose of this directory is to organize and modularize the Astro components
 ### PostsList.astro
 
 This component is responsible for rendering a list of blog posts. It retrieves
-the latest posts from the content collection, filters out draft posts, sorts
+the latest posts from the content collection, filters out publish posts, sorts
 them by publication date, and displays a specified number of posts with links to
 their respective pages.
 
@@ -52,7 +52,7 @@ year.
 ### CollectionList.astro
 
 This component is responsible for rendering a list of items from a specified
-content collection. It filters out draft items, sorts them by publication date,
+content collection. It filters out publish items, sorts them by publication date,
 and displays a specified number of items using the `BlogPosts` component.
 
 ### Breadcrumb.astro

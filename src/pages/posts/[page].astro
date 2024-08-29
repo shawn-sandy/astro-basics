@@ -12,7 +12,7 @@ type Props = {
 
 export async function getStaticPaths({ paginate }) {
   const allPosts = await getCollection("posts", ({ data }) => {
-    return data.draft !== true;
+    return data.publish !== true;
   });
 
   const sortedPublishedPosts = allPosts.sort(

@@ -28,7 +28,7 @@
 			"    alt: '${6:The full Astro logo.}'",
 			"    caption: '${7:The img caption from my first blog post.}'",
 			"tags: [\"${8:astro}\", \"${9:blogging}\", \"${10:learning in public}\"]",
-			"draft: ${11:false}",
+			"publish: ${11:false}",
 			"---"
 		],
 		"description": "Snippet for a blog post frontmatter meta"

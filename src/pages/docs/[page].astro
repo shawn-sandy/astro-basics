@@ -8,7 +8,7 @@ import type { TODO } from "#utils/types.js";
 
 export async function getStaticPaths({ paginate }) {
   const allPosts = await getCollection("docs", ({ data }) => {
-    return data.draft === false;
+    return data.publish === false;
   });
   return paginate(allPosts, { pageSize: PAGINATION_COUNT });
 }
