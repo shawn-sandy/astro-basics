@@ -15,7 +15,7 @@ const postsCollection = defineCollection({
       })
       .optional(),
     tags: z.array(z.string()).optional(),
-    draft: z.boolean().default(false),
+    publish: z.boolean().default(false),
     featured: z.boolean().default(false),
     youtube: z
       .object({

@@ -23,7 +23,7 @@ export type Props = {
 const { collectionTitle, pageSize, to, collection } = Astro.props;
 const collectionResults = (await getCollection(collection || "posts"))
   .filter(({ data: data }) => {
-    return data.draft === false;
+    return data.publish === true;
   })
   .sort(
     (a: SortType, b: SortType) =>

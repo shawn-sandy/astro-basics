@@ -46,8 +46,8 @@ const collectionResults = (await getCollection(collection || "posts"))
     if (isProductionEnv) {
       
     return category
-      ? data.draft === false && category.includes(data.category)
-      : data.draft === false;
+      ? data.publish === true && category.includes(data.category)
+      : data.publish === true;
       
     } else {
       return category.includes(data.category)
