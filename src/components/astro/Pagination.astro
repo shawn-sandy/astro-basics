@@ -15,7 +15,7 @@ const { collection } = Astro.props;
 
 const results = (await getCollection(collection))
   .filter(({ data }) => {
-    return data.publish === false;
+    return data.publish === true;
   })
   .sort(
     (a: SortType, b: SortType) =>
@@ -31,14 +31,19 @@ const totalPages = Math.ceil(itemsSize / itemsPerPage);
 const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 ---
 
-<ul data-list="unstyled inline">
-  {
-    pageNumbers.map((item) => {
-      return (
-        <li>
-          <a href={`/${to}/${item}`}>{item}</a>
-        </li>
-      );
-    })
-  }
-</ul>
+{ totalPages > 1 && (
+  <nav>
+    <ul data-list="unstyled inline">
+      {
+        pageNumbers.map((item) => {
+          return (
+            <li>
+              <a href={`/${to}/${item}`}>{item}</a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </nav>
+  )}
+
