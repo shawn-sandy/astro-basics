@@ -5,26 +5,29 @@ import Layout from "#layouts/Layout.astro";
 import BlogPosts from "#components/astro/BlogPosts.astro";
 import Pagination from "#components/astro/Pagination.astro";
 import type { TODO } from "#utils/types.js";
-export const collection = "posts";
-import AstroPages from "#components/astro/AstroPages.astro";
+
 
 type Props = {
-  pageSize: number;
+  pageSize?: number;
+  collections?: string;
 };
 
+
+
+const { page, collections } = Astro.props as TODO;
+
 export async function getStaticPaths({ paginate }) {
-  const postsCollection = await getCollection(collection, ({ data }) => {
+  const allPosts = await getCollection(collections, ({ data }) => {
     return data.publish === true;
   });
 
-  const sortedPublishedPosts = postsCollection.sort(
+  const sortedPublishedPosts = allPosts.sort(
     (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
   );
   return paginate(sortedPublishedPosts, { pageSize: PAGINATION_COUNT });
 }
 
 const pageSize = PAGINATION_COUNT || 5;
-const { page } = Astro.props as TODO;
 ---
 
 <Layout pageTitle="Blog Posts">
@@ -49,5 +52,3 @@ const { page } = Astro.props as TODO;
     </div>
   </nav>
 </Layout>
-
-<AstroPages pageSize={pageSize} collections={collection} />
