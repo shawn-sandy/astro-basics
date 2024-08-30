@@ -5,7 +5,7 @@ import BlogPosts from "#components/astro/BlogPosts.astro";
 import Pagination from "#components/astro/Pagination.astro";
 import { PAGINATION_COUNT } from "#utils/site-config";
 import type { TODO } from "#utils/types.js";
-const collection = "docs";
+
 
 export async function getStaticPaths({ paginate }) {
   const allPosts = await getCollection("docs", ({ data }) => {

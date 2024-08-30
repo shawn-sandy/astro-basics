@@ -5,13 +5,14 @@ import Layout from "#layouts/Layout.astro";
 import BlogPosts from "#components/astro/BlogPosts.astro";
 import Pagination from "#components/astro/Pagination.astro";
 import type { TODO } from "#utils/types.js";
+export const collection = "posts";
 
 type Props = {
   pageSize: number;
 };
 
 export async function getStaticPaths({ paginate }) {
-  const allPosts = await getCollection("posts", ({ data }) => {
+  const allPosts = await getCollection(collection, ({ data }) => {
     return data.publish === true;
   });
 
