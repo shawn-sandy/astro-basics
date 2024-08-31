@@ -20,7 +20,7 @@
       "  return paginate(allPosts, { pageSize: 2 });",
       "}",
       "",
-      "const pageSize = 2;",
+      "const pageSize = ${2:2};",
       "const { page } = Astro.props as TODO;",
       "---",
       "",
