@@ -46,6 +46,6 @@ const { page } = Astro.props as TODO;
     currentPage={page?.currentPage}
     prevUrl={page?.url?.prev || undefined}
     nextUrl={page?.url?.next || undefined}
-    totalPages={page.total}
+    totalPages={page.size}
   />
 </Layout>
