@@ -13,14 +13,12 @@ type Props = {
 };
 
 export async function getStaticPaths({ paginate }) {
-  const postsCollection = await getCollection(collection, ({ data }) => {
+  const postsCollection = (await getCollection(collection, ({ data }) => {
     return data.publish === true;
-  });
-
-  const sortedPublishedPosts = postsCollection.sort(
+  })).sort(
     (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
   );
-  return paginate(sortedPublishedPosts, { pageSize: PAGINATION_COUNT });
+  return paginate(postsCollection, { pageSize: PAGINATION_COUNT });
 }
 
 const pageSize = PAGINATION_COUNT || 5;
@@ -39,15 +37,15 @@ const { page } = Astro.props as TODO;
       </article>
     ))
   }
-  <nav>
-    <div>
+
+    <!-- <div>
       {page?.url?.prev ? <a href={page?.url?.prev}>Previous</a> : ""}
-    </div>
-    <Pagination collection="posts" itemsPerPage={pageSize} />
-    <div>
+    </div> -->
+    <Pagination collection="posts" itemsPerPage={pageSize} currentPage={page?.currentPage} prevUrl={page?.url?.prev || undefined} nextUrl={page?.url?.next || undefined} />
+    <!-- <div>
       {page?.url?.next ? <a href={page?.url?.next}>Next </a> : ""}
-    </div>
-  </nav>
+    </div> -->
+
 </Layout>
 
 <AstroPages pageSize={pageSize} collections={collection} />

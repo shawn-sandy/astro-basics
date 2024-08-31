@@ -15,7 +15,6 @@ npm create astro@latest -- --template minimal
 - **Vite**: A build tool that uses modern JavaScript and TypeScript.
 - **TypeScript**: A typed superset of JavaScript that compiles to plain JavaScript.
 - **Tailwind CSS**: A utility-first CSS framework for rapidly building custom designs.
-
 - **Blog and Documentation Templates**: Ready-to-use templates for creating blog posts and documentation pages.
 - **Pagination**: Built-in pagination for blog posts and documentation pages.
 - **Content Collections**: Utilizes Astro's content collections for organized content management.

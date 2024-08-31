@@ -9,6 +9,8 @@ export type Props = {
   itemsPerPage?: number;
   currentPage?: number;
   to?: string;
+  prevUrl?: string;
+  nextUrl?: string;
 };
 
 const { collection } = Astro.props;
@@ -26,6 +28,8 @@ const itemsPerPage = Astro.props.itemsPerPage || PAGINATION_COUNT || 3;
 const currentPage = Astro.props.currentPage || 1;
 const itemsSize = results.length;
 const to = Astro.props.to || "posts";
+const prevUrl = Astro.props.prevUrl ;
+const nextUrl = Astro.props.nextUrl ;
 
 const totalPages = Math.ceil(itemsSize / itemsPerPage);
 const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -33,6 +37,7 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
 { totalPages > 1 && (
   <nav>
+   <ul><li>{ prevUrl && <a href={prevUrl}>Previous</a> }</li></ul>
     <ul data-list="unstyled inline">
       {
         pageNumbers.map((item) => {
@@ -44,6 +49,7 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
         })
       }
     </ul>
+    <ul><li>{ nextUrl && <a href={nextUrl}>Next</a>}</li></ul> 
   </nav>
   )}
 
