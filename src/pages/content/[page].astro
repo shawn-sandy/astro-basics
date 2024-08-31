@@ -36,13 +36,13 @@ const { page } = Astro.props as TODO;
       <Blank />
     )
   }
-  <nav>
-    <div>
-      {page?.url?.prev ? <a href={page?.url?.prev}>Previous</a> : " "}
-    </div>
-    <Pagination collection="content" itemsPerPage={pageSize} />
-    <div>
-      {page?.url?.next ? <a href={page?.url?.next}>Next </a> : " "}
-    </div>
-  </nav>
+  <!-- Pagination -->
+  <Pagination
+    collection="posts"
+    itemsPerPage={pageSize}
+    currentPage={page?.currentPage}
+    prevUrl={page?.url?.prev || undefined}
+    nextUrl={page?.url?.next || undefined}
+    totalPages={page.total}
+  />
 </Layout>
