@@ -22,7 +22,6 @@ const { page } = Astro.props as TODO;
   {
     page?.data.map((post: TODO) => (
       <article>
-
         <BlogPosts
           url={post.slug}
           title={post.data.title}

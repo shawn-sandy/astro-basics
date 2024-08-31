@@ -32,7 +32,7 @@ const to = Astro.props.to || "posts";
 const prevUrl = Astro.props.prevUrl ;
 const nextUrl = Astro.props.nextUrl ;
 
-const totalPages = Astro.props.totalPages || Math.ceil(itemsSize / itemsPerPage);
+const totalPages = Math.ceil(itemsSize / itemsPerPage);
 const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 ---
 
