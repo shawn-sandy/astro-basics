@@ -6,6 +6,7 @@ import Pagination from "#components/astro/Pagination.astro";
 import { PAGINATION_COUNT } from "#utils/site-config";
 import type { TODO } from "#utils/types.js";
 
+
 export async function getStaticPaths({ paginate }) {
   const allPosts = await getCollection("docs", ({ data }) => {
     return data.publish === true;
@@ -29,13 +30,13 @@ const { page } = Astro.props as TODO;
       </article>
     ))
   }
-  <nav>
-    <div>
-      {page?.url?.prev ? <a href={page?.url?.prev}>Previous</a> : "Previous"}
-    </div>
-    <Pagination collection="docs" itemsPerPage={pageSize} to="docs" />
-    <div>
-      {page?.url?.next ? <a href={page?.url?.next}>Next </a> : "Next"}
-    </div>
-  </nav>
+  <!-- Pagination -->
+  <Pagination
+    collection="posts"
+    itemsPerPage={pageSize}
+    currentPage={page?.currentPage}
+    prevUrl={page?.url?.prev || undefined}
+    nextUrl={page?.url?.next || undefined}
+    totalPages={page.size}
+  />
 </Layout>
