@@ -26,7 +26,6 @@ const { page } = Astro.props as TODO;
   <!-- Pagination -->
   <Pagination
     collection="docs"
-    to="docs"
     itemsPerPage={pageSize}
     currentPage={page?.currentPage}
     prevUrl={page?.url?.prev || undefined}

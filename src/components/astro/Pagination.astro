@@ -28,7 +28,7 @@ const results = (await getCollection(collection))
 const itemsPerPage = Astro.props.itemsPerPage || PAGINATION_COUNT || 3;
 const currentPage = Astro.props.currentPage || 1;
 const itemsSize = results.length;
-const to = Astro.props.to || "posts";
+const to = Astro.props.to || collection || "posts";
 const prevUrl = Astro.props.prevUrl ;
 const nextUrl = Astro.props.nextUrl ;
 
