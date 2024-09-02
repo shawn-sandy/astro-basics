@@ -5,6 +5,7 @@ import BlogPosts from "#components/astro/BlogPosts.astro";
 import Pagination from "#components/astro/Pagination.astro";
 import Blank from "#components/astro/Blank.astro";
 import type { TODO } from "#utils/types.js";
+import ContentList from "#components/astro/ContentList.astro";
 
 export async function getStaticPaths({ paginate }) {
   const allPosts = (await getCollection("content")).filter((item) => {
@@ -21,24 +22,11 @@ const { page } = Astro.props as TODO;
 ---
 
 <Layout pageTitle="Content">
-  { 
-    page.data.length ?  
-      page?.data.map((post: TODO) => (
-        <article>
-          <BlogPosts
-            url={post.slug}
-            title={post.data.title}
-            description={post.data.description}
-          />
-        </article>
-      )) : (
-      <h3>Sorry, no content here yet...</h3>
-      <Blank />
-    )
-  }
+  <ContentList page={page} />
   <!-- Pagination -->
   <Pagination
-    collection="posts"
+    collection="content"
+    to="content"
     itemsPerPage={pageSize}
     currentPage={page?.currentPage}
     prevUrl={page?.url?.prev || undefined}
