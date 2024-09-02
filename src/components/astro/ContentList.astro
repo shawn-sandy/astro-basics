@@ -1,0 +1,30 @@
+---
+import type { TODO } from "#utils/types.js";
+import Blank from "./Blank.astro";
+import BlogPosts from "./BlogPosts.astro";
+
+export type Props = {
+  page: TODO;
+};
+
+const { page } = Astro.props as Props;
+---
+
+{
+    page?.data.length ? (
+      page?.data.map((post: TODO) => (
+        <article>
+          <BlogPosts
+            url={post.slug}
+            title={post.data.title}
+            description={post.data.description}
+          />
+        </article>
+      ))
+    ) : (
+      <>
+        <h3>Sorry no content found...</h3>
+        <Blank />
+      </>
+    )
+  }

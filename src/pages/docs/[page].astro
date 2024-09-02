@@ -6,6 +6,7 @@ import Pagination from "#components/astro/Pagination.astro";
 import { PAGINATION_COUNT } from "#utils/site-config";
 import type { TODO } from "#utils/types.js";
 import Blank from "#components/astro/Blank.astro";
+import ContentList from "#components/astro/ContentList.astro";
 
 
 
@@ -21,21 +22,7 @@ const { page } = Astro.props as TODO;
 ---
 
 <Layout pageTitle="AstroKit Docs">
-  {
-    page?.data.length ?
-    page?.data.map((post: TODO) => (
-      <article>
-        <BlogPosts
-          url={post.slug}
-          title={post.data.title}
-          description={post.data.description}
-        />
-      </article>
-    )) : (
-      <h3>Sorry, no content here yet...</h3>
-      <Blank />
-    )
-  }
+<ContentList page={page} />
   <!-- Pagination -->
   <Pagination
     collection="docs"
