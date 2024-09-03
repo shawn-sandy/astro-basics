@@ -2,9 +2,10 @@
 import Layout from "./Layout.astro";
 import Youtube from "#components/astro/Youtube.astro";
 import Img from "#components/astro/Img.astro";
-import { fade } from "astro:transitions";
-
-const { frontmatter } = Astro.props;
+import Toc from "#components/astro/Toc.astro";
+import type { TODO } from "#utils/types.js";
+const frontmatter = Astro.props.frontmatter;
+const headings = Astro.props.headings;
 const { slug } = Astro.params;
 
 const contentRoute = [
@@ -21,6 +22,8 @@ const contentRoute = [
   pageDescription={frontmatter.description}
   breadcrumbRoutes={contentRoute}
 >
+
+ 
   {
     frontmatter.image && (
       <>
@@ -39,6 +42,8 @@ const contentRoute = [
       </p>
     )
   }
+
+ <Toc headings={headings} />
 
   <slot />
   {

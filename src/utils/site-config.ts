@@ -6,7 +6,7 @@ export const BREADCRUMB_ROUTE = [
   },
   {
     name: "Docs",
-    url: "/docs",
+    url: "/docs/1",
     path: "docs",
   },
   {
