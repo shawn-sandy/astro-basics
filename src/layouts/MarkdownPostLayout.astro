@@ -23,7 +23,6 @@ const contentRoute = [
   breadcrumbRoutes={contentRoute}
 >
 
- <Toc headings={headings} />
  
   {
     frontmatter.image && (
@@ -33,7 +32,7 @@ const contentRoute = [
           imgAlt={frontmatter.image?.alt}
           imgCaption={frontmatter.image?.caption}
         />
-      </T>
+      </>
     )
   }
   {
@@ -43,6 +42,8 @@ const contentRoute = [
       </p>
     )
   }
+
+ <Toc headings={headings} />
 
   <slot />
   {
