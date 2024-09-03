@@ -1,0 +1,19 @@
+---
+import type { TODO } from "#utils/types.js"
+
+export type Props = {
+  headings: TODO
+}
+const { headings } = Astro.props;
+---
+
+{headings.length > 1 && (
+    <ul data-list="unstyled">
+      {headings.map((heading: TODO) => (
+        <li>
+         <a href={`#${heading.slug}`}>&#128279;
+          {heading.text}</a>
+        </li>
+      ))}
+    </ul>
+  )}
