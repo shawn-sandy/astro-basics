@@ -2,7 +2,7 @@
 import { CONTACT_INFO } from "#utils/site-config.js"
 ---
 
-<form action={CONTACT_INFO.url} method="post" data-netlify={CONTACT_INFO.isNetlify} name="contact-us" data-netlify-honeypot="bot-field">
+<form action={CONTACT_INFO.url} method="post" data-netlify={CONTACT_INFO.isNetlify} id="contact-us" name="contact-us" data-netlify-honeypot="bot-field" novalidate>
   { CONTACT_INFO.isNetlify &&   
     <p class="hidden">
         <label>
@@ -22,3 +22,85 @@ import { CONTACT_INFO } from "#utils/site-config.js"
     <textarea id="message" name="message" rows="7" required></textarea>
     <button type="submit" data-btn="pill"><b>Send Message</b></button>
 </form>
+
+
+<script>
+  const form = document.querySelector('form') as HTMLFormElement;
+  // if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    validateForm();
+  });
+
+  function validateForm() {
+    const fields = form.querySelectorAll('input, textarea') as NodeListOf<HTMLInputElement | HTMLTextAreaElement>;
+    let isValid = true;
+
+    fields.forEach((field) => {
+      const value = field.value.trim();
+      let fieldValid = true;
+      let errorMessage = '';
+
+      if (field.required && !value) {
+        fieldValid = false;
+        errorMessage = 'This field is required';
+      } else if (field.type === 'email' && value && !isValidEmail(value)) {
+        fieldValid = false;
+        errorMessage = 'Please enter a valid email address';
+      } else if (field.id === 'phone' && value && !isValidPhone(value)) {
+        fieldValid = false;
+        errorMessage = 'Please enter a valid phone number';
+      }
+
+      setFieldValidity(field, fieldValid, errorMessage);
+      if (!fieldValid) isValid = false;
+    });
+
+    if (isValid) {
+      form.submit();
+    }
+  }
+
+  function isValidEmail(email: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  function isValidPhone(phone: string) {
+    return /^[\d\s-()]{7,}$/.test(phone);
+  }
+
+  function setFieldValidity(field: HTMLElement, isValid: boolean, errorMessage: string) {
+    const errorElement = field.nextElementSibling as HTMLElement;
+    
+    if (isValid) {
+      field.classList.remove('invalid');
+      if (errorElement && errorElement.classList.contains('error-message')) {
+        errorElement.textContent = '';
+        errorElement.style.display = 'none';
+      }
+    } else {
+      field.classList.add('invalid');
+      if (!errorElement || !errorElement.classList.contains('error-message')) {
+        const newErrorElement = document.createElement('span');
+        newErrorElement.classList.add('error-message');
+        field.parentNode?.insertBefore(newErrorElement, field.nextSibling);
+        newErrorElement.textContent = errorMessage;
+        newErrorElement.style.display = 'block';
+      } else {
+        errorElement.textContent = errorMessage;
+        errorElement.style.display = 'block';
+      }
+    }
+  }
+</script>
+
+<style>
+ /* Initially hide invalid styles */
+input:user-invalid:not(:focus),
+textarea:user-invalid:not(:focus),
+select:user-invalid:not(:focus) {
+  border: 2px solid red;
+  background-color: #ffe6e6;
+}
+</style>
