@@ -1,12 +1,11 @@
-  export function validateForm() { 
-    const form = document.querySelector("form") as HTMLFormElement;
+ const form = document.querySelector("form") as HTMLFormElement;
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       validateForm();
     });
 
-  
+    function validateForm() {
       const fields = form.querySelectorAll("input, textarea") as NodeListOf<
         HTMLInputElement | HTMLTextAreaElement
       >;
