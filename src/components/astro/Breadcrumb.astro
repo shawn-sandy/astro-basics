@@ -24,4 +24,4 @@ const routes = [
 const bcRoutes = { ...routes, ...Astro.props.astroRoutes };
 ---
 
-<BreadcrumbNav routes={bcRoutes} client:load />
+<BreadcrumbNav routes={bcRoutes} client:idle />
