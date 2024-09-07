@@ -1,4 +1,3 @@
- const form = document.querySelector("form") as HTMLFormElement;
 
  export function validateForm(form: HTMLFormElement) {
   if (form) {
