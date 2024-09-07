@@ -1,0 +1,18 @@
+/* Initially hide invalid styles */
+form {
+  > div {
+    gap: 0.5rem;
+  }
+  .error-msg {
+    display: none;
+  }
+  input:user-invalid:not(:focus),
+  textarea:user-invalid:not(:focus),
+  select:user-invalid:not(:focus) {
+    outline: thin solid red;
+    background-color: #ffe6e6;
+    + p {
+      color: red;
+    }
+  }
+}

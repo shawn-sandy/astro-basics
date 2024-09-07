@@ -1,56 +1,83 @@
 ---
-import { CONTACT_INFO } from "#utils/site-config.js"
+import { CONTACT_INFO } from "#utils/site-config.js";
 ---
 
-<form action={CONTACT_INFO.url} method="post" data-netlify={CONTACT_INFO.isNetlify} id="contact-us" name="contact-us" data-netlify-honeypot="bot-field" novalidate>
-  { CONTACT_INFO.isNetlify &&   
-    <p class="hidden">
+<form
+  action={CONTACT_INFO.url}
+  method="post"
+  data-netlify={CONTACT_INFO.isNetlify}
+  id="contact-us"
+  name="contact-us"
+  data-netlify-honeypot="bot-field"
+  novalidate
+>
+  {
+    CONTACT_INFO.isNetlify && (
+      <p class="hidden">
         <label>
           Don’t fill this out if you’re human: <input name="bot-field" />
         </label>
       </p>
-    }
+    )
+  }
+
+  <div>
     <label for="name">Name</label>
-    <input type="text" id="name" name="name" required>
+    <input type="text" id="name" name="name" required />
+    <p class="error-msg">Your name is required</p>
+  </div>
+  <div>
     <label for="email">Email</label>
-    <input type="email" id="email" name="email" required>
+    <input type="email" id="email" name="email" required />
+    <p class="error-msg">Your name is required</p>
+  </div>
+  <div>
     <label for="phone">Phone</label>
-    <input type="tel" id="phone" name="phone">
+    <input type="tel" id="phone" name="phone" />
+    <p class="error-msg">Your name is required</p>
+  </div>
+  <div>
     <label for="subject">Subject</label>
-    <input type="text" id="subject" name="subject" required>
+    <input type="text" id="subject" name="subject" required />
+    <p class="error-msg">Your name is required</p>
+  </div>
+  <div>
     <label for="message">Message</label>
     <textarea id="message" name="message" rows="7" required></textarea>
-    <button type="submit" data-btn="pill"><b>Send Message</b></button>
+    <div class="error-msg">Your name is required</div>
+  </div>
+  <button type="submit" data-btn="pill"><b>Send Message</b></button>
 </form>
 
-
 <script>
-  const form = document.querySelector('form') as HTMLFormElement;
+  const form = document.querySelector("form") as HTMLFormElement;
   // if (!form) return;
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
     validateForm();
   });
 
   function validateForm() {
-    const fields = form.querySelectorAll('input, textarea') as NodeListOf<HTMLInputElement | HTMLTextAreaElement>;
+    const fields = form.querySelectorAll("input, textarea") as NodeListOf<
+      HTMLInputElement | HTMLTextAreaElement
+    >;
     let isValid = true;
 
     fields.forEach((field) => {
       const value = field.value.trim();
       let fieldValid = true;
-      let errorMessage = '';
+      let errorMessage = "";
 
       if (field.required && !value) {
         fieldValid = false;
-        errorMessage = 'This field is required';
-      } else if (field.type === 'email' && value && !isValidEmail(value)) {
+        errorMessage = "This field is required";
+      } else if (field.type === "email" && value && !isValidEmail(value)) {
         fieldValid = false;
-        errorMessage = 'Please enter a valid email address';
-      } else if (field.id === 'phone' && value && !isValidPhone(value)) {
+        errorMessage = "Please enter a valid email address";
+      } else if (field.id === "phone" && value && !isValidPhone(value)) {
         fieldValid = false;
-        errorMessage = 'Please enter a valid phone number';
+        errorMessage = "Please enter a valid phone number";
       }
 
       setFieldValidity(field, fieldValid, errorMessage);
@@ -70,37 +97,23 @@ import { CONTACT_INFO } from "#utils/site-config.js"
     return /^[\d\s-()]{7,}$/.test(phone);
   }
 
-  function setFieldValidity(field: HTMLElement, isValid: boolean, errorMessage: string) {
+  function setFieldValidity(
+    field: HTMLElement,
+    isValid: boolean,
+    errorMessage: string
+  ) {
     const errorElement = field.nextElementSibling as HTMLElement;
-    
+
     if (isValid) {
-      field.classList.remove('invalid');
-      if (errorElement && errorElement.classList.contains('error-message')) {
-        errorElement.textContent = '';
-        errorElement.style.display = 'none';
-      }
+      field.classList.remove("invalid");
+      errorElement?.classList.add("error-msg");
     } else {
-      field.classList.add('invalid');
-      if (!errorElement || !errorElement.classList.contains('error-message')) {
-        const newErrorElement = document.createElement('span');
-        newErrorElement.classList.add('error-message');
-        field.parentNode?.insertBefore(newErrorElement, field.nextSibling);
-        newErrorElement.textContent = errorMessage;
-        newErrorElement.style.display = 'block';
-      } else {
-        errorElement.textContent = errorMessage;
-        errorElement.style.display = 'block';
-      }
+      field.classList.add("invalid");
+      errorElement?.classList.remove("error-msg");
     }
   }
 </script>
 
 <style>
- /* Initially hide invalid styles */
-input:user-invalid:not(:focus),
-textarea:user-invalid:not(:focus),
-select:user-invalid:not(:focus) {
-  border: 2px solid red;
-  background-color: #ffe6e6;
-}
+  /* Initially hide invalid styles */
 </style>
