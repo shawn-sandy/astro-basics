@@ -15,4 +15,14 @@ form {
       color: red;
     }
   }
+
+  input:user-valid:not(:focus),
+  textarea:user-valid:not(:focus),
+  select:user-valid:not(:focus) {
+    outline: thin solid green;
+    background-color: #e6ffe6;
+    + p {
+      display: none;
+    }
+  }
 }
