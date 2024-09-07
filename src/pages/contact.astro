@@ -34,6 +34,7 @@ import { CONTACT_INFO } from "#utils/site-config.js";
       name="contact-us"
       data-netlify-honeypot="bot-field"
       novalidate
+      aria-label="Contact us"
     >
       {
         CONTACT_INFO.isNetlify && (
@@ -73,10 +74,9 @@ import { CONTACT_INFO } from "#utils/site-config.js";
       <button type="submit" data-btn="pill"><b>Send Message</b></button>
     </form>
   </section>
-  
 </Layout>
 <script>
-   const form = document.querySelector("form") as HTMLFormElement;
+  const form = document.querySelector("form") as HTMLFormElement;
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -137,5 +137,5 @@ import { CONTACT_INFO } from "#utils/site-config.js";
         errorElement?.classList.remove("error-msg");
       }
     }
-  }  
+  }
 </script>
