@@ -9,7 +9,6 @@ import { CONTACT_INFO } from "#utils/site-config.js";
   id="contact-us"
   name="contact-us"
   data-netlify-honeypot="bot-field"
-
 >
   {
     CONTACT_INFO.isNetlify && (
@@ -49,7 +48,7 @@ import { CONTACT_INFO } from "#utils/site-config.js";
   <button type="submit" data-btn="pill"><b>Send Message</b></button>
 </form>
  <script>
-  // import { validateForm } from "#utils/contact.ts";
-  // validateForm();
+  import { validateForm } from "#utils/contact.ts";
+  validateForm();
  </script>
  
