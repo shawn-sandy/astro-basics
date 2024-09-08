@@ -1,0 +1,51 @@
+/* Initially hide invalid styles */
+form {
+  > div {
+    gap: 0.5rem;
+  }
+
+  label {
+    &:has(+ input[required],
+          + textarea[required],
+          + select[required]) {
+      &::after {
+        content: ' required *';
+        color: var(--error-color);
+        font-size: smaller;
+      }
+    }
+  }
+
+  .error-msg {
+    display: none;
+  }
+  input, textarea, select {
+    outline: 1px solid currentColor;
+    background-color: whitesmoke;
+  }
+
+  input:user-invalid:not(:focus),
+  textarea:user-invalid:not(:focus),
+  select:user-invalid:not(:focus) {
+    outline: thin solid var(--error-color);
+    background-color: #ffe6e6;
+    + p {
+      color: var(--error-color);
+      &::before {
+        content: '⚠ ';
+      }
+    }
+  }
+
+  input:user-valid:not(:focus),
+  textarea:user-valid:not(:focus),
+  select:user-valid:not(:focus) {
+    outline: thin solid var(--success-color);
+    background-color: #e6ffe6;
+    + p {
+      display: none;
+    }
+  }
+}
+// Add asterisk to labels of required fields
+

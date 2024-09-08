@@ -1,62 +1,12 @@
----
-import { CONTACT_INFO } from "#utils/site-config.js";
----
 
-<form
-  action={CONTACT_INFO.url}
-  method="post"
-  data-netlify={CONTACT_INFO.isNetlify}
-  id="contact-us"
-  name="contact-us"
-  data-netlify-honeypot="bot-field"
->
-  {
-    CONTACT_INFO.isNetlify && (
-      <p class="hidden">
-        <label>
-          Don’t fill this out if you’re human: <input name="bot-field" />
-        </label>
-      </p>
-    )
-  }
-
-  <div>
-    <label for="name">Name</label>
-    <input type="text" id="name" name="name" required />
-    <p class="error-msg">Please enter your full name</p>
-  </div>
-  <div>
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" required />
-    <p class="error-msg">We need your email to get back to you</p>
-  </div>
-  <div>
-    <label for="phone">Phone</label>
-    <input type="tel" id="phone" name="phone" />
-    <p class="error-msg">Your phone number does not appear to be valid</p>
-  </div>
-  <div>
-    <label for="subject">Subject</label>
-    <input type="text" id="subject" name="subject" required />
-    <p class="error-msg">We need a subject to help us respond</p>
-  </div>
-  <div>
-    <label for="message">Message</label>
-    <textarea id="message" name="message" rows="7" required></textarea>
-    <div class="error-msg">Please enter your message here</div>
-  </div>
-  <button type="submit" data-btn="pill"><b>Send Message</b></button>
-</form>
- <script>
- 
-  const form = document.querySelector("form") as HTMLFormElement;
+ export function validateForm(form: HTMLFormElement) {
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      validateForm();
+      validateForm(form);
     });
 
-    function validateForm() {
+    function validateForm(form: HTMLFormElement) {
       const fields = form.querySelectorAll("input, textarea") as NodeListOf<
         HTMLInputElement | HTMLTextAreaElement
       >;
@@ -111,5 +61,4 @@ import { CONTACT_INFO } from "#utils/site-config.js";
       }
     }
   }
- </script>
- 
+}

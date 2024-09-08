@@ -1,24 +1,139 @@
 ---
 import Layout from "#layouts/Layout.astro";
-import ContactForm from "#components/astro/ContactForm.astro";
+import { CONTACT_INFO } from "#utils/site-config.js";
 ---
 
-<Layout pageTitle="Contact" pageDescription="We are here to answer your questions, welcome your feedback, and help you get involved">
-
-    <h3>Reach Out, Say Hello Neighbor!</h3>
-    <hr>
-    <section>  
-      <p>
+<Layout
+  pageTitle="Contact"
+  pageDescription="We are here to answer your questions, welcome your feedback, and help you get involved"
+>
+  <h3>Reach Out, Say Hello Neighbor!</h3>
+  <hr />
+  <section>
+    <p>
       We’re here to answer your questions, welcome your feedback, and help you
       get involved. Use the form below or contact us directly at [insert email
       address] or [insert phone number].
     </p>
-    <hr>
-    <ContactForm />
-    <!-- <h3>Stay Connected</h3>
+    <hr />
+ 
+    <!-- 
+    <h3>Stay Connected</h3>
     <p>
       Follow us on social media [insert social media links] to stay updated on
       our latest projects and events.
     </p>
-  </section> -->
+    -->
+  </section> 
+    <form
+      action={CONTACT_INFO.url}
+      method="post"
+      data-netlify={CONTACT_INFO.isNetlify}
+      id="contact-us"
+      name="contact-us"
+      data-netlify-honeypot="bot-field"
+      novalidate
+      aria-label="Contact us"
+    >
+      {
+        CONTACT_INFO?.isNetlify && (
+          <p class="hidden">
+            <label>
+              Don’t fill this out if you’re human: <input name="bot-field" />
+            </label>
+          </p>
+        )
+      }
+
+      <div>
+        <label for="name">Your Full Name</label>
+        <input type="text" id="name" name="name" required />
+        <p class="error-msg">Please enter your full name</p>
+      </div>
+      <div>
+        <label for="email">Your current email address</label>
+        <input type="email" id="email" name="email" required />
+        <p class="error-msg">We need your email to get back to you</p>
+      </div>
+      <div>
+        <label for="phone">Your full number</label>
+        <input type="tel" id="phone" name="phone" />
+        <p class="error-msg">Your phone number does not appear to be valid</p>
+      </div>
+      <div>
+        <label for="subject">The subject of your message</label>
+        <input type="text" id="subject" name="subject" required />
+        <p class="error-msg">We need a subject to help us respond</p>
+      </div>
+      <div>
+        <label for="message">Please enter your message here</label>
+        <textarea id="message" name="message" rows="7" required></textarea>
+        <p class="error-msg">Please enter your message here</p>
+      </div>
+      <button type="submit" data-btn="pill"><b>Send Message</b></button>
+    </form>
+  </section>
 </Layout>
+<script>
+  const form = document.querySelector("form") as HTMLFormElement;
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      validateForm();
+    });
+
+    function validateForm() {
+      const fields = form.querySelectorAll("input, textarea") as NodeListOf<
+        HTMLInputElement | HTMLTextAreaElement
+      >;
+      let isValid = true;
+
+      fields.forEach((field) => {
+        const value = field.value.trim();
+        let fieldValid = true;
+        let errorMessage = "";
+
+        if (field.required && !value) {
+          fieldValid = false;
+          errorMessage = "This field is required";
+        } else if (field.type === "email" && value && !isValidEmail(value)) {
+          fieldValid = false;
+          errorMessage = "Please enter a valid email address";
+        } else if (field.id === "phone" && value && !isValidPhone(value)) {
+          fieldValid = false;
+          errorMessage = "Please enter a valid phone number";
+        }
+
+        setFieldValidity(field, fieldValid, errorMessage);
+        if (!fieldValid) isValid = false;
+      });
+
+      if (isValid) {
+        form.submit();
+      }
+    }
+
+    function isValidEmail(email: string) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function isValidPhone(phone: string) {
+      return /^[\d\s-()]{7,}$/.test(phone);
+    }
+
+    function setFieldValidity(
+      field: HTMLElement,
+      isValid: boolean,
+      errorMessage: string
+    ) {
+      const errorElement = field.nextElementSibling as HTMLElement;
+      if (isValid) {
+        field.classList.remove("invalid");
+        errorElement?.classList.add("error-msg");
+      } else {
+        field.classList.add("invalid");
+        errorElement?.classList.remove("error-msg");
+      }
+    }
+  }
+</script>
