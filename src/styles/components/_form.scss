@@ -24,28 +24,26 @@ form {
     background-color: whitesmoke;
   }
 
-  // Styles for invalid form inputs when not focused
   input:user-invalid:not(:focus),
   textarea:user-invalid:not(:focus),
   select:user-invalid:not(:focus) {
-    outline: thin solid var(--error-color); // Add a red outline
-    background-color: #ffe6e6; // Light red background
+    outline: thin solid var(--error-color);
+    background-color: #ffe6e6;
     + p {
-      color: red; // Make the following paragraph text red (likely an error message)
+      color: var(--error-color);
       &::before {
-        content: '⚠ '; // Add an error icon
+        content: '⚠ ';
       }
     }
   }
 
-  // Styles for valid form inputs when not focused
   input:user-valid:not(:focus),
   textarea:user-valid:not(:focus),
   select:user-valid:not(:focus) {
-    outline: thin solid var(--success-color); // Add a green outline
-    background-color: #e6ffe6; // Light green background
+    outline: thin solid var(--success-color);
+    background-color: #e6ffe6;
     + p {
-      display: none; // Hide the following paragraph (likely an error message)
+      display: none;
     }
   }
 }
