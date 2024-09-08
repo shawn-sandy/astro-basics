@@ -3,18 +3,38 @@ form {
   > div {
     gap: 0.5rem;
   }
+
+  label {
+    &:has(+ input[required],
+          + textarea[required],
+          + select[required]) {
+      &::after {
+        content: ' required *';
+        color: var(--error-color);
+        font-size: smaller;
+      }
+    }
+  }
+
   .error-msg {
     display: none;
+  }
+  input, textarea, select {
+    outline: 1px solid currentColor;
+    background-color: whitesmoke;
   }
 
   // Styles for invalid form inputs when not focused
   input:user-invalid:not(:focus),
   textarea:user-invalid:not(:focus),
   select:user-invalid:not(:focus) {
-    outline: thin solid red; // Add a red outline
+    outline: thin solid var(--error-color); // Add a red outline
     background-color: #ffe6e6; // Light red background
     + p {
       color: red; // Make the following paragraph text red (likely an error message)
+      &::before {
+        content: '⚠ '; // Add an error icon
+      }
     }
   }
 
@@ -22,10 +42,12 @@ form {
   input:user-valid:not(:focus),
   textarea:user-valid:not(:focus),
   select:user-valid:not(:focus) {
-    outline: thin solid green; // Add a green outline
+    outline: thin solid var(--success-color); // Add a green outline
     background-color: #e6ffe6; // Light green background
     + p {
       display: none; // Hide the following paragraph (likely an error message)
     }
   }
 }
+// Add asterisk to labels of required fields
+
