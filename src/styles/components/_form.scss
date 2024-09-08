@@ -6,23 +6,26 @@ form {
   .error-msg {
     display: none;
   }
+
+  // Styles for invalid form inputs when not focused
   input:user-invalid:not(:focus),
   textarea:user-invalid:not(:focus),
   select:user-invalid:not(:focus) {
-    outline: thin solid red;
-    background-color: #ffe6e6;
+    outline: thin solid red; // Add a red outline
+    background-color: #ffe6e6; // Light red background
     + p {
-      color: red;
+      color: red; // Make the following paragraph text red (likely an error message)
     }
   }
 
+  // Styles for valid form inputs when not focused
   input:user-valid:not(:focus),
   textarea:user-valid:not(:focus),
   select:user-valid:not(:focus) {
-    outline: thin solid green;
-    background-color: #e6ffe6;
+    outline: thin solid green; // Add a green outline
+    background-color: #e6ffe6; // Light green background
     + p {
-      display: none;
+      display: none; // Hide the following paragraph (likely an error message)
     }
   }
 }
