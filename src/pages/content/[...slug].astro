@@ -1,7 +1,7 @@
 ---
-import { getCollection } from "astro:content";
+import { getCollection, type CollectionEntry  } from "astro:content";
 import MarkdownPostLayout from "../../layouts/MarkdownPostLayout.astro";
-import { Slugify } from "#libs/content.ts";
+
 
 export async function getStaticPaths() {
   const content = await getCollection("content");
@@ -11,7 +11,11 @@ export async function getStaticPaths() {
   }));
 }
 
-const { entry } = Astro.props;
+export type Props = {
+  entry: CollectionEntry<"content">;
+};
+
+const { entry } = Astro.props as Props;
 const { Content, headings } = await entry.render();
 ---
 
