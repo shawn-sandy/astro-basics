@@ -8,7 +8,13 @@ const frontmatter = Astro.props.frontmatter;
 const headings = Astro.props.headings;
 const { slug } = Astro.params;
 
-const contentRoute = [
+type ContentRoute = {
+  name: string;
+  url: string;
+  path: string | undefined;
+};
+
+const contentRoute: ContentRoute[] = [
   {
     name: frontmatter.title,
     url: "", // not necessary for post paths
