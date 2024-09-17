@@ -1,7 +1,7 @@
 ---
 import Layout from "#layouts/Layout.astro";
 import { CONTACT_INFO } from "#utils/site-config.js";
-import Alert from '../components/astro/Alert.astro';
+import Alert from '#components/astro/Alert.astro';
 
 let errors = {};
 if (Astro.request.method === 'POST') {
@@ -34,7 +34,8 @@ if (Astro.request.method === 'POST') {
 
 <div id="error-alert" style="display: none;">
   <Alert type="error">
-    <ul id="error-list"></ul>
+    <h6>Please correct the following errors</h6>
+    <ul id="error-list" data-list="unstyled"></ul>
   </Alert>
 </div>
     <form

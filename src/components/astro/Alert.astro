@@ -5,14 +5,14 @@ export interface Props {
 
 const { type } = Astro.props;
 ---
-
-<div class={`alert alert-${type}`}>
+<div class="alert alert-error" role="alert">
   <slot />
 </div>
 
 <style>
   .alert {
     padding: 1rem;
+    padding-inline-start: 1.5rem;
     margin-bottom: 1rem;
     border-radius: 0.25rem;
   }
