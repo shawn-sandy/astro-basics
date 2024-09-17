@@ -75,6 +75,7 @@ import { CONTACT_INFO } from "#utils/site-config.js";
   </section>
 </Layout>
 <script>
+  // rewrite the form validation using formData api
   const form = document.querySelector("form") as HTMLFormElement;
   if (form) {
     form.addEventListener("submit", (e) => {
@@ -83,30 +84,28 @@ import { CONTACT_INFO } from "#utils/site-config.js";
     });
 
     function validateForm() {
-      const fields = form.querySelectorAll("input, textarea") as NodeListOf<
-        HTMLInputElement | HTMLTextAreaElement
-      >;
+      const formData = new FormData(form);
       let isValid = true;
 
-      fields.forEach((field) => {
-        const value = field.value.trim();
+      for (const [name, value] of formData.entries()) {
+        const field = form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement;
         let fieldValid = true;
         let errorMessage = "";
 
         if (field.required && !value) {
           fieldValid = false;
           errorMessage = "This field is required";
-        } else if (field.type === "email" && value && !isValidEmail(value)) {
+        } else if (name === "email" && value && !isValidEmail(value.toString())) {
           fieldValid = false;
           errorMessage = "Please enter a valid email address";
-        } else if (field.id === "phone" && value && !isValidPhone(value)) {
+        } else if (name === "phone" && value && !isValidPhone(value.toString())) {
           fieldValid = false;
           errorMessage = "Please enter a valid phone number";
         }
 
         setFieldValidity(field, fieldValid, errorMessage);
         if (!fieldValid) isValid = false;
-      });
+      }
 
       if (isValid) {
         form.submit();
@@ -133,6 +132,7 @@ import { CONTACT_INFO } from "#utils/site-config.js";
       } else {
         field.classList.add("invalid");
         errorElement?.classList.remove("error-msg");
+        errorElement.textContent = errorMessage;
       }
     }
   }

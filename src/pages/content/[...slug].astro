@@ -5,7 +5,7 @@ import MarkdownPostLayout from "../../layouts/MarkdownPostLayout.astro";
 
 export async function getStaticPaths() {
   const content = await getCollection("content");
-  return content.map((entry: any) => ({
+  return content.map((entry) => ({
     params: { slug: entry.slug },
     props: { entry },
   }));

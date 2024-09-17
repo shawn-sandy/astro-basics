@@ -1,0 +1,100 @@
+# Project Rules
+ 
+You are an expert in Astro, React, TypeScript, JavaScript, and CSS.
+
+Code Style and Structure
+- Write concise, technical TypeScript/JavaScript code with accurate examples.
+- Use functional and declarative programming patterns; avoid classes.
+- Prefer iteration and modularization over code duplication.
+- Use descriptive variable names.
+- Structure files: exported component, subcomponents, helpers, static content, types.
+
+TypeScript Usage
+- Use TypeScript for type-checking and enhanced developer experience.
+- Prefer interfaces over types for object shapes.
+- Use functional components with TypeScript interfaces.
+
+Syntax and Formatting
+- Use arrow functions for components and regular functions for utilities.
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+- Use declarative JSX.
+
+UI and Styling
+- Use CSS for styling, leveraging Astro's scoped styles feature.
+- Implement responsive design; use a mobile-first approach.
+
+Performance Optimization
+- Leverage Astro's partial hydration for interactive components.
+- Use Astro's built-in image optimization.
+- Implement lazy loading for non-critical components.
+
+Key Conventions
+- Use Astro's routing system.
+- Optimize Web Vitals (LCP, CLS, FID).
+- Utilize Astro's server-side rendering capabilities.
+- Use TypeScript for static type checking and improved tooling support.
+
+Follow Astro docs for Data Fetching, Rendering, and Routing, and TypeScript docs for type system features.
+
+Commit Messages
+- Always use conventional commit messages for commits
+  - Format: `<type>(<scope>): <description>`
+  - Example: `feat(contact): add form validation`
+
+File Structure
+- Keep Astro pages in `src/pages/`
+- Store styles in `src/styles/`
+- Place components in `src/components/`
+  - Separate Astro and React components into subdirectories
+
+Component Naming
+- Use PascalCase for component names
+- Suffix Astro components with `.astro`
+- Suffix React components with `.tsx`
+
+Styling
+- Use SCSS for styling
+- Organize component-specific styles in `src/styles/components/`
+
+## Breadcrumbs
+- Implement breadcrumbs using the Astro component
+- Use the React component for dynamic breadcrumbs if needed
+
+Code Quality
+- Follow consistent indentation and formatting
+- Write clear, descriptive comments for complex logic
+- Use TypeScript for type safety in React components
+Accessibility
+- Ensure all interactive elements are keyboard accessible
+- Use semantic HTML elements appropriately
+
+Version Control
+- Create feature branches for new developments
+- Review code before merging into the main branch
+
+Documentation
+- Keep README up-to-date with project setup and usage instructions
+- Document any non-obvious code or architectural decisions
+
+Astro-specific Rules
+- Use `.astro` files for Astro components
+- Leverage Astro's static site generation capabilities for performance
+- Use `<script>` tags with `is:inline` for small, page-specific scripts
+- Utilize Astro's built-in asset optimization for images and styles
+
+React-specific Rules
+- Use functional components with hooks instead of class components
+- Implement lazy loading for large components or routes
+- Use React.memo() for performance optimization when appropriate
+- Follow the React naming convention for custom hooks (use`use` prefix)
+
+TypeScript-specific Rules
+- Enable strict mode in `tsconfig.json`
+- Use interface for object shapes and type for unions/intersections
+- Avoid using `any` type; use `unknown` for truly unknown types
+- Utilize generics for reusable components and functions
+
+Framework Interoperability
+- Use Astro's `client:` directives when integrating React components
+- Ensure proper type definitions when passing props between Astro and React
+
