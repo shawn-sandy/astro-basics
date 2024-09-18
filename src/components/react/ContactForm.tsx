@@ -30,14 +30,25 @@ const ContactForm: React.FC = () => {
         const formElement = e.target as HTMLFormElement;
         const formData = new FormData(formElement);
         
-        const response = await fetch(CONTACT_INFO.url, {
-          method: 'POST',
-          body: formData,
+        // Add form-name field for Netlify
+        formData.append("form-name", "contact-us");
+
+        const response = await fetch("/", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams(formData as any).toString(),
         });
 
         if (response.ok) {
-          // Redirect to the success URL
-          window.location.href = CONTACT_INFO.url;
+          // Reset form and show success message
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            subject: '',
+            message: ''
+          });
+          alert('Thank you for your message. We will get back to you soon!');
         } else {
           throw new Error('Form submission failed');
         }
@@ -88,24 +99,15 @@ const ContactForm: React.FC = () => {
       )}
 
       <form
-        action={CONTACT_INFO.url}
-        method="post"
-        data-netlify={CONTACT_INFO.isNetlify}
-        id="contact-us"
         name="contact-us"
+        method="post"
+        data-netlify="true"
         data-netlify-honeypot="bot-field"
         onSubmit={handleSubmit}
         noValidate
         aria-label="Contact us"
       >
-        {CONTACT_INFO?.isNetlify && (
-          <p className="hidden">
-            <label>
-              Don't fill this out if you're human: <input name="bot-field" />
-            </label>
-          </p>
-        )}
-
+        <input type="hidden" name="form-name" value="contact-us" />
         <div>
           <label htmlFor="name">Your Full Name</label>
           <input
