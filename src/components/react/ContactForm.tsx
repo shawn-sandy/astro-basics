@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import Alert from "./Alert";
-import { CONTACT_INFO } from '../../utils/site-config';
 
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -13,52 +12,25 @@ const ContactForm: React.FC = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prevData => ({ ...prevData, [name]: value }));
-    // Clear the error for this field when the user starts typing
     setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     
     if (validateForm()) {
-      try {
-        const formElement = e.target as HTMLFormElement;
-        const formData = new FormData(formElement);
-        
-        // Add form-name field for Netlify
-        formData.append("form-name", "contact-us");
-
-        const response = await fetch("/", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams(formData as any).toString(),
-        });
-
-        if (response.ok) {
-          // Reset form and show success message
-          setFormData({
-            name: '',
-            email: '',
-            phone: '',
-            subject: '',
-            message: ''
-          });
-          alert('Thank you for your message. We will get back to you soon!');
-        } else {
-          throw new Error('Form submission failed');
-        }
-      } catch (error) {
-        console.error('Error submitting form:', error);
-        alert('There was an error submitting the form. Please try again.');
-      }
+      // Allow the form to submit naturally
+      (e.target as HTMLFormElement).submit();
+      setIsSubmitted(true);
+    } else {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   const validateForm = () => {
@@ -83,6 +55,10 @@ const ContactForm: React.FC = () => {
     return /^[\d\s-()]{7,}$/.test(phone);
   };
 
+  if (isSubmitted) {
+    return <Alert type="success">Thank you for your message. We will get back to you soon!</Alert>;
+  }
+
   return (
     <section>
       {Object.keys(errors).length > 0 && (
@@ -100,7 +76,7 @@ const ContactForm: React.FC = () => {
 
       <form
         name="contact-us"
-        method="post"
+        method="POST"
         data-netlify="true"
         data-netlify-honeypot="bot-field"
         onSubmit={handleSubmit}
@@ -108,6 +84,10 @@ const ContactForm: React.FC = () => {
         aria-label="Contact us"
       >
         <input type="hidden" name="form-name" value="contact-us" />
+        <div hidden>
+          <input name="bot-field" />
+        </div>
+
         <div>
           <label htmlFor="name">Your Full Name</label>
           <input
