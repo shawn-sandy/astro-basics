@@ -84,7 +84,7 @@ const ContactForm: React.FC = () => {
         aria-label="Contact us"
       >
         <input type="hidden" name="form-name" value="contact-us" />
-        <div hidden>
+        <div hidden className="hidden">
           <input name="bot-field" />
         </div>
 
