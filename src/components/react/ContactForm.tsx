@@ -56,7 +56,8 @@ const ContactForm: React.FC = () => {
   };
 
   if (isSubmitted) {
-    return <Alert type="success">Thank you for your message. We will get back to you soon!</Alert>;
+    window.location.href = '/success';
+    return null;
   }
 
   return (
