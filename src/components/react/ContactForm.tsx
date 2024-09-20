@@ -17,7 +17,7 @@ const ContactForm: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prevData => ({ ...prevData, [name]: value }));
-    setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
+    // Remove error clearing on input change
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
