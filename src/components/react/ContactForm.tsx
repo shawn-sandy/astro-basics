@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Alert from "./Alert";
+import { FORM_ERROR_MESSAGES } from '#constants/formErrors';
 
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -36,12 +37,12 @@ const ContactForm: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) newErrors.name = 'Please enter your full name';
-    if (!formData.email.trim()) newErrors.email = 'We need your email to get back to you';
-    else if (!isValidEmail(formData.email)) newErrors.email = 'Please enter a valid email address';
-    if (formData.phone.trim() && !isValidPhone(formData.phone)) newErrors.phone = 'Your phone number does not appear to be valid';
-    if (!formData.subject.trim()) newErrors.subject = 'We need a subject to help us respond';
-    if (!formData.message.trim()) newErrors.message = 'Please enter your message here';
+    if (!formData.name.trim()) newErrors.name = FORM_ERROR_MESSAGES.name;
+    if (!formData.email.trim()) newErrors.email = FORM_ERROR_MESSAGES.emailRequired;
+    else if (!isValidEmail(formData.email)) newErrors.email = FORM_ERROR_MESSAGES.emailInvalid;
+    if (formData.phone.trim() && !isValidPhone(formData.phone)) newErrors.phone = FORM_ERROR_MESSAGES.phoneInvalid;
+    if (!formData.subject.trim()) newErrors.subject = FORM_ERROR_MESSAGES.subject;
+    if (!formData.message.trim()) newErrors.message = FORM_ERROR_MESSAGES.message;
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
