@@ -56,9 +56,6 @@ Styling
 - Use SCSS for styling
 - Organize component-specific styles in `src/styles/components/`
 
-## Breadcrumbs
-- Implement breadcrumbs using the Astro component
-- Use the React component for dynamic breadcrumbs if needed
 
 Code Quality
 - Follow consistent indentation and formatting
@@ -97,4 +94,3 @@ TypeScript-specific Rules
 Framework Interoperability
 - Use Astro's `client:` directives when integrating React components
 - Ensure proper type definitions when passing props between Astro and React
-
