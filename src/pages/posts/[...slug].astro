@@ -1,7 +1,8 @@
 ---
 import { getCollection, type CollectionEntry } from "astro:content";
 import MarkdownPostLayout from "#layouts/MarkdownPostLayout.astro";
-
+import TextToSpeech from "#components/astro/TextToSpeech.astro";
+import { stripHtml } from "string-strip-html";
 export async function getStaticPaths() {
   const blogEntries = await getCollection("posts");
   return blogEntries.map((entry) => ({
@@ -16,9 +17,11 @@ export type Props = {
 
 const { entry } = Astro.props as Props;
 const { Content, headings } = await entry.render();
-console.log(headings);
+// const contentHTML = stripHtml(Content());
 ---
 
 <MarkdownPostLayout frontmatter={entry.data} headings={headings}>
+  <TextToSpeech text={stripHtml(entry.body).result} client:load />
   <Content />
+  {JSON.stringify(stripHtml(entry.body).result)}
 </MarkdownPostLayout>

@@ -4,4 +4,4 @@ import { TextToSpeech as TextToSpeechComponent } from "@fpkit/react";
 const { text } = Astro.props;
 ---
 
-<TextToSpeechComponent initialText={text} client:idle />
+<TextToSpeechComponent showTextInput={false} initialText={text} client:idle />

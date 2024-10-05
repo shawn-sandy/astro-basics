@@ -35,7 +35,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rehype-accessible-emojis": "^0.3.2",
-    "remark-toc": "^9.0.0"
+    "remark-toc": "^9.0.0",
+    "string-strip-html": "^13.4.8"
   },
   "devDependencies": {
     "@playwright/test": "^1.42.1",
