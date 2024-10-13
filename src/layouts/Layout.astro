@@ -6,7 +6,8 @@ import Header from "#components/astro/Header.astro";
 import Sidebar from "#components/astro/Sidebar.astro";
 import AstroBreadcrumb from "#components/react/astro-breadcrumb.tsx";
 import { SITE_DESCRIPTION, SITE_TITLE } from "#utils/site-config";
-import "@fpkit/react/styles";
+import "@fpkit/acss/styles";
+import "../styles/index.css";
 
 // types
 type routeItem = {
@@ -25,8 +26,8 @@ type Props = {
 const showBreadcrumb =
   Astro.props.showBreadcrumb === undefined ? true : Astro.props.showBreadcrumb;
 
-const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } = Astro.props;
-import "../styles/index.css";
+const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
+  Astro.props;
 ---
 
 <html lang="en">
@@ -43,7 +44,12 @@ import "../styles/index.css";
   </head>
   <body>
     <Navigation />
-    <Header headerTitle={pageTitle} headerDescription={pageDescription} headerImageUrl={pageImageUrl} headerImageAlt={pageTitle} />
+    <Header
+      headerTitle={pageTitle}
+      headerDescription={pageDescription}
+      headerImageUrl={pageImageUrl}
+      headerImageAlt={pageTitle}
+    />
     <main>
       <section>
         {
