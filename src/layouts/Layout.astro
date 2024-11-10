@@ -50,6 +50,7 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
       headerImageUrl={pageImageUrl}
       headerImageAlt={pageTitle}
     />
+    <slot name="featured" />
     <main>
       <section>
         {
