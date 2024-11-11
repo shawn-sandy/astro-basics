@@ -115,6 +115,7 @@ img + * {
 section:has([data-grid], [data-flex]) {
   width: var(--content-w, 100%);
   padding-block: var(--space-l, 3rem);
+  padding-inline: var(--px, 1rem);
   width: min(100%, 1480px);
   --card-gap: 1rem;
 }
