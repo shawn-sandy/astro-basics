@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import CollectionList from "#components/astro/CollectionList.astro";
-import CoverFeature from "#components/astro/CoverFeature.astro";
+import Featured from "#components/astro/Featured.astro";
 import Welcome from "#components/astro/Welcome.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "#utils/site-config.js";
 ---
@@ -13,7 +13,7 @@ import { SITE_DESCRIPTION, SITE_TITLE } from "#utils/site-config.js";
   pageImageUrl="/images/astro-kit-cover.webp"
 >
   <section slot="featured">
-    <CoverFeature />
+    <Featured />
   </section>
   <section>
     <CollectionList pageSize={2} />
