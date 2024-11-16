@@ -1,0 +1,12 @@
+---
+export interface Props {
+  type: 'error' | 'success' | 'info';
+}
+
+const { type } = Astro.props;
+---
+<div class={`alert alert-${type}`} role="alert">
+  <slot />
+</div>
+
+ 

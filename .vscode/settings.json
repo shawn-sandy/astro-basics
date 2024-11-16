@@ -11,5 +11,10 @@
             "other": "on"
         },
         "editor.minimap.enabled": false
+    },
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#41027D",
+        "titleBar.activeBackground": "#5C02AF",
+        "titleBar.activeForeground": "#FDFBFF"
     }
 }

@@ -1,7 +1,7 @@
 :root {
---img-radius: 1rem;
---error-color: firebrick;
---success-color: green;
+  --img-radius: 1rem;
+  --error-color: firebrick;
+  --success-color: green;
 }
 body {
   min-width: 20.3125rem;
@@ -19,12 +19,11 @@ header {
   min-height: fit-content;
   padding-block: 3rem;
   grid-template-rows: minmax(300px, auto);
-   div {
+  div {
     > img {
       border-radius: var(--img-radius);
     }
   }
-  
 }
 
 header > section > p {
@@ -61,7 +60,7 @@ footer > div {
   margin-block-start: 2rem;
 }
 
-section:has(> nav) {
+section:where(> nav) {
   display: flex;
   flex-direction: column;
   justify-items: flex-start;
@@ -109,7 +108,14 @@ img + * {
   padding-block-start: 1rem;
 }
 
-
 .hidden {
   display: none;
+}
+
+section:has([data-grid], [data-flex]) {
+  width: var(--content-w, 100%);
+  padding-block: var(--space-l, 3rem);
+  padding-inline: var(--px, 1rem);
+  width: min(100%, 1480px);
+  --card-gap: 1rem;
 }

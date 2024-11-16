@@ -69,13 +69,13 @@ import { CONTACT_INFO } from "#utils/site-config.js";
 
         if (field.required && !value) {
           fieldValid = false;
-          errorMessage = "This field is required";
+          // errorMessage = "This field is required";
         } else if (field.type === "email" && value && !isValidEmail(value)) {
           fieldValid = false;
-          errorMessage = "Please enter a valid email address";
+          // errorMessage = "Please enter a valid email address";
         } else if (field.id === "phone" && value && !isValidPhone(value)) {
           fieldValid = false;
-          errorMessage = "Please enter a valid phone number";
+          // errorMessage = "Please enter a valid phone number";
         }
 
         setFieldValidity(field, fieldValid, errorMessage);

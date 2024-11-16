@@ -1,12 +1,20 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import CollectionList from "#components/astro/CollectionList.astro";
+import Featured from "#components/astro/Featured.astro";
 import Welcome from "#components/astro/Welcome.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "#utils/site-config.js";
 ---
 
-<Layout pageTitle={SITE_TITLE} pageDescription={SITE_DESCRIPTION} showBreadcrumb={false} pageImageUrl="/images/astro-kit-cover.webp">
- 
+<Layout
+  pageTitle={SITE_TITLE}
+  pageDescription={SITE_DESCRIPTION}
+  showBreadcrumb={false}
+  pageImageUrl="/images/astro-kit-cover.webp"
+>
+  <section slot="featured">
+    <Featured />
+  </section>
   <section>
     <CollectionList pageSize={2} />
   </section>

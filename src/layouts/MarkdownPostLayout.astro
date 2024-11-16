@@ -3,12 +3,19 @@ import Layout from "./Layout.astro";
 import Youtube from "#components/astro/Youtube.astro";
 import Img from "#components/astro/Img.astro";
 import Toc from "#components/astro/Toc.astro";
+import TextToSpeech from "#components/astro/TextToSpeech.astro";
 import type { TODO } from "#utils/types.js";
 const frontmatter = Astro.props.frontmatter;
 const headings = Astro.props.headings;
 const { slug } = Astro.params;
 
-const contentRoute = [
+type ContentRoute = {
+  name: string;
+  url: string;
+  path: string | undefined;
+};
+
+const contentRoute: ContentRoute[] = [
   {
     name: frontmatter.title,
     url: "", // not necessary for post paths
@@ -22,8 +29,6 @@ const contentRoute = [
   pageDescription={frontmatter.description}
   breadcrumbRoutes={contentRoute}
 >
-
- 
   {
     frontmatter.image && (
       <>
@@ -31,7 +36,7 @@ const contentRoute = [
           imgSrc={frontmatter.image.url}
           imgAlt={frontmatter.image?.alt}
           imgCaption={frontmatter.image?.caption}
-        />     
+        />
       </>
     )
   }
@@ -42,8 +47,8 @@ const contentRoute = [
       </p>
     )
   }
-
- <Toc headings={headings} />
+  <!-- <h2>{frontmatter.title}</h2> -->
+  <Toc headings={headings} />
 
   <slot />
   {
@@ -53,7 +58,7 @@ const contentRoute = [
           {frontmatter.tags.map((tag: string) => (
             <li class="tag">
               <a href={`/tags/${tag}`}>
-                <i >{tag}</i>
+                <i>{tag}</i>
               </a>
             </li>
           ))}

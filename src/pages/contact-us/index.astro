@@ -1,0 +1,30 @@
+---
+import Layout from "#layouts/Layout.astro";
+import ContactForm from "#components/react/ContactForm";
+---
+
+<Layout
+  pageTitle="Contact Us"
+  pageDescription="We are here to answer your questions, welcome your feedback, and help you get involved"
+>
+  <h3>Reach Out, Say Hello Neighbor!</h3>
+  <hr />
+  <section>
+    <p>
+      We're here to answer your questions, welcome your feedback, and help you
+      get involved. Use the form below or contact us directly at [insert email
+      address] or [insert phone number].
+    </p>
+    <hr />
+ 
+    <!-- 
+    <h3>Stay Connected</h3>
+    <p>
+      Follow us on social media [insert social media links] to stay updated on
+      our latest projects and events.
+    </p>
+    -->
+  </section> 
+
+  <ContactForm client:load />
+</Layout>

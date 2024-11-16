@@ -1,0 +1,28 @@
+---
+import { Card as CardComponent } from "@fpkit/acss";
+
+type Props = {
+  cardTitle?: string;
+  cardImage?: string;
+  cardLink?: string;
+};
+
+const { cardTitle, cardImage, cardLink } = Astro.props as Props;
+---
+
+<CardComponent>
+  {cardImage && <img src={cardImage ?? "https://picsum.photos/200"} alt="" />}
+  <CardComponent.Title>{cardTitle ?? "Card Feature"}</CardComponent.Title>
+  <CardComponent.Content>
+    <slot />
+  </CardComponent.Content>
+  {
+    cardLink && (
+      <div class="card-footer">
+        <a href={cardLink || "#"}>
+          <i>Continue Reading</i>
+        </a>
+      </div>
+    )
+  }
+</CardComponent>
