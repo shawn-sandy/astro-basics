@@ -5,7 +5,7 @@ form {
   }
 
   label {
-    &:has(+ input[required],
+    &:where(+ input[required],
           + textarea[required],
           + select[required]) {
       &::after {

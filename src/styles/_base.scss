@@ -60,7 +60,7 @@ footer > div {
   margin-block-start: 2rem;
 }
 
-section:has(> nav) {
+section:where(> nav) {
   display: flex;
   flex-direction: column;
   justify-items: flex-start;
