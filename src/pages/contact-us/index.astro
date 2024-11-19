@@ -1,6 +1,7 @@
 ---
 import Layout from "#layouts/Layout.astro";
 import ContactForm from "#components/react/ContactForm";
+import ContactUsForm from "#components/react/ContactUsForm.tsx";
 ---
 
 <Layout
@@ -26,5 +27,6 @@ import ContactForm from "#components/react/ContactForm";
     -->
   </section> 
 
-  <ContactForm client:load />
+<ContactUsForm client:idle />
+
 </Layout>

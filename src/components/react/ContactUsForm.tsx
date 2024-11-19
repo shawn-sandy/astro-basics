@@ -1,5 +1,4 @@
-import React, { useState, type ChangeEvent } from 'react';
-import type { FormEvent } from 'react';
+import React, { useState, type ChangeEvent, type FormEvent } from 'react';
 import { CONTACT_INFO } from '#utils/site-config.js';
 import ContactFormView from './view/ContactFormView';
 
@@ -20,7 +19,7 @@ interface Errors {
   message?: string;
 }
 
-const ContactForm: React.FC = () => {
+const ContactForm: React.FC = ({}) => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
