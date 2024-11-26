@@ -69,10 +69,9 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
           <slot />
         </article>
         <aside>
-          <slot name="sidebar" />
+          <slot name="sidebar-header" />
           <Sidebar />
           <slot name="sidebar-footer" />
-
         </aside>
       </section>
     </main>
