@@ -28,6 +28,8 @@ const contentRoute: ContentRoute[] = [
   pageTitle={frontmatter.title}
   pageDescription={frontmatter.description}
   breadcrumbRoutes={contentRoute}
+  ogImage={frontmatter.image?.url || null}
+  ogDescription={frontmatter.summary || frontmatter.description}
 >
   {
     frontmatter.image && (
