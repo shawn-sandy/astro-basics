@@ -5,10 +5,20 @@
     "jsxImportSource": "react",
     "strictNullChecks": true,
     "allowJs": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
     "paths": {
       "#*": [
         "./src/*"
       ]
     }
-  }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

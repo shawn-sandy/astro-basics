@@ -1,8 +1,35 @@
 {
-  "name": "@example/minimal",
+  "name": "@shawn-sandy/astro-kit",
   "type": "module",
   "version": "0.0.1",
-  "private": true,
+  "private": false,
+  "description": "A collection of Astro components and utilities",
+  "author": "Shawn Sandy",
+  "license": "MIT",
+  "keywords": [
+    "astro",
+    "astro-components",
+    "ui"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shawn-sandy/astro-kit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./components": "./src/components/index.ts",
+    "./utils": "./src/utils/index.ts",
+    "./styles": "./src/styles/index.css"
+  },
+  "files": [
+    "dist",
+    "src/components",
+    "src/utils",
+    "src/styles"
+  ],
   "scripts": {
     "dev": "astro dev --open",
     "start": "run-p dev sass",
