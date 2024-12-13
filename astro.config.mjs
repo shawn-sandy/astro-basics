@@ -6,7 +6,7 @@ import { rehypeAccessibleEmojis } from "rehype-accessible-emojis";
 import netlify from "@astrojs/netlify";
 import sitemap from "@astrojs/sitemap";
 import embeds from "astro-embed/integration";
-import spotlightjs from "@spotlightjs/astro";
+// import spotlightjs from "@spotlightjs/astro";
 import { astroImageTools } from "astro-imagetools";
 
 import lighthouse from "astro-lighthouse";
@@ -18,6 +18,7 @@ export default defineConfig({
     react(),
     sitemap(),
     lighthouse(),
+    // spotlightjs(),
     embeds(),
     mdx(),
     astroImageTools,
