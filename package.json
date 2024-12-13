@@ -1,7 +1,7 @@
 {
   "name": "@shawn-sandy/astro-kit",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": false,
   "description": "A collection of Astro components and utilities",
   "author": "Shawn Sandy",
