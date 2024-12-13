@@ -17,13 +17,11 @@ export default defineConfig({
   integrations: [
     react(),
     sitemap(),
-    spotlightjs(),
     lighthouse(),
     embeds(),
     mdx(),
     astroImageTools,
   ],
   adapter: netlify(),
-  output: "hybrid",
-
+  output: "static",
 });
