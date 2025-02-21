@@ -37,7 +37,10 @@
     "preview": "astro preview",
     "sass": "sass --watch src/styles/index.scss:src/styles/index.css --style=compressed",
     "astro": "astro",
-    "test": "vitest"
+    "test": "vitest",
+    "lint": "eslint . --fix",
+    "npm-update": "npx npm-check-updates -u",
+    "npm-update-i": "npx npm-check-updates -i"
   },
   "imports": {
     "#*": "./src/*"
