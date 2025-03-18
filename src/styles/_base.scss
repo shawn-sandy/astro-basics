@@ -2,25 +2,26 @@
   --img-radius: 1rem;
   --error-color: firebrick;
   --success-color: green;
+  --max-content-width: 1280px;
 }
 body {
   min-width: 20.3125rem;
   > section {
-    width: min(100%, 1280px);
+    width: min(100%, var(--max-content-width));
     margin: auto;
   }
 }
 
 main {
   padding-block: 2rem;
-  width: min(100%, 1380px);
+  width: min(100%, var(--max-content-width));
   margin: auto;
   > section {
     padding-inline: 2rem;
   }
 }
 section:has([data-grid], [data-flex]) {
-  width: min(100%, 1380px);
+  width: min(100%, var(--max-content-width));
 }
 
 header {
@@ -124,6 +125,6 @@ section:has([data-grid], [data-flex]) {
   width: var(--content-w, 100%);
   padding-block: var(--space-l, 3rem);
   padding-inline: var(--px, 1rem);
-  width: min(100%, 1380px);
+  width: min(100%, var(--max-content-width));
   --card-gap: 1rem;
 }
