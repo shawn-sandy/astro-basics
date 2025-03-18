@@ -5,14 +5,22 @@
 }
 body {
   min-width: 20.3125rem;
+  > section {
+    width: min(100%, 1280px);
+    margin: auto;
+  }
 }
 
 main {
   padding-block: 2rem;
+  width: min(100%, 1380px);
+  margin: auto;
+  > section {
+    padding-inline: 2rem;
+  }
 }
-
-main > section {
-  padding-inline: 2rem;
+section:has([data-grid], [data-flex]) {
+  width: min(100%, 1380px);
 }
 
 header {
@@ -116,6 +124,6 @@ section:has([data-grid], [data-flex]) {
   width: var(--content-w, 100%);
   padding-block: var(--space-l, 3rem);
   padding-inline: var(--px, 1rem);
-  width: min(100%, 1480px);
+  width: min(100%, 1380px);
   --card-gap: 1rem;
 }
