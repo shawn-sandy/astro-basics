@@ -51,7 +51,7 @@
     "@astrojs/netlify": "^6.3.0",
     "@astrojs/react": "^4.2.4",
     "@astrojs/rss": "^4.0.11",
-    "@astrojs/sitemap": "^3.3.0",
+    "@astrojs/sitemap": "^3.3.1",
     "@fpkit/acss": "^0.5.9",
     "@fpkit/react": "^0.4.3",
     "@sentry/astro": "^7.108.0",
