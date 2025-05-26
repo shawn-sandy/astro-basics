@@ -75,6 +75,6 @@
     "prettier": "^3.2.5",
     "prettier-plugin-astro": "^0.14.1",
     "sass": "^1.87.0",
-    "vitest": "^1.4.0"
+    "vitest": "^3.1.4"
   }
 }
