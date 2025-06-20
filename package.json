@@ -1,5 +1,5 @@
 {
-  "name": "@shawn-sandy/astro-kit",
+  "name": "@shawnsandy/astro-kit",
   "type": "module",
   "version": "0.1.0",
   "private": false,
@@ -7,8 +7,10 @@
   "author": "Shawn Sandy",
   "license": "MIT",
   "keywords": [
+    "astro-component",
+    "withastro",
     "astro",
-    "astro-components",
+    "components",
     "ui"
   ],
   "repository": {
@@ -19,16 +21,12 @@
     "access": "public"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./components": "./src/components/index.ts",
-    "./utils": "./src/utils/index.ts",
-    "./styles": "./src/styles/index.css"
+    ".": "./src/components/index.ts",
+    "./astro": "./src/components/astro"
   },
   "files": [
-    "dist",
-    "src/components",
-    "src/utils",
-    "src/styles"
+    "src/components/index.ts",
+    "src/components/astro/*.astro"
   ],
   "scripts": {
     "dev": "astro dev --open",
