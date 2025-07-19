@@ -30,4 +30,5 @@ export default defineConfig({
     mode: "standalone",
   }),
   output: "server",
+  adapter: netlify(),
 });
