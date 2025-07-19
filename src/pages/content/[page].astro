@@ -8,17 +8,20 @@ import type { TODO } from "#utils/types.js";
 import ContentList from "#components/astro/ContentList.astro";
 
 export async function getStaticPaths({ paginate }) {
-  const allPosts = (await getCollection("content")).filter((item) => {
-    return item.data.publish === true;
-  }).sort(
-    (a: { data: { pubDate: Date } }, b: { data: { pubDate: Date } }) =>
-      b.data.pubDate.getTime() - a.data.pubDate.getTime()
-  );
+  const allPosts = (await getCollection("content"))
+    .filter((item) => {
+      return item.data.publish === true;
+    })
+    .sort(
+      (a: { data: { pubDate: Date } }, b: { data: { pubDate: Date } }) =>
+        b.data.pubDate.getTime() - a.data.pubDate.getTime()
+    );
   return paginate(allPosts, { pageSize: 2 });
 }
 
 const pageSize = 2;
 const { page } = Astro.props as TODO;
+export const prerender = true;
 ---
 
 <Layout pageTitle="Content">

@@ -9,6 +9,7 @@ const article: ReturnType<typeof getEntry> = await getEntry(
   "content"
 );
 const { Content } = await article.render();
+export const prerender = true;
 ---
 
 <MarkdownPostLayout frontmatter={article?.data}>
