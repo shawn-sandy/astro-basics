@@ -51,17 +51,12 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
   <body>
     <Navigation>
       <div slot="login">
-        <div>
-          <div class="loading-spinner"></div>
-        </div>
-        <div id="clerk-auth" class="clerk-auth">
-          <SignedIn isStatic={true}>
-            <UserButton />
-          </SignedIn>
-          <SignedOut isStatic={true}>
-            <SignInButton mode="modal" />
-          </SignedOut>
-        </div>
+        <SignedIn isStatic={true}>
+          <UserButton />
+        </SignedIn>
+        <SignedOut isStatic={true}>
+          <SignInButton mode="modal" />
+        </SignedOut>
       </div>
     </Navigation>
 
