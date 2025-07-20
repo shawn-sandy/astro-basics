@@ -49,41 +49,49 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
     <!-- <ViewTransitions /> -->
   </head>
   <body>
-    <Navigation />
-    <Header
-      headerTitle={pageTitle}
-      headerDescription={pageDescription}
-      headerImageUrl={pageImageUrl}
-      headerImageAlt={pageTitle}
-    />
-
-    <SignedIn isStatic={true}> You are signed in! </SignedIn>
-    <slot name="featured" />
-    <main>
-      <section>
-        {
-          showBreadcrumb && (
-            <>
-              <AstroBreadcrumb
-                routes={breadcrumbRoutes || undefined}
-                client:load
-              />
-            </>
-          )
-        }
-      </section>
-      <section arai-label="main-content">
-        <article>
-          <slot />
-
-          <aside>
-            <slot name="sidebar" />
-            <Sidebar />
-            <slot name="sidebar-footer" />
-          </aside>
-        </article>
-      </section>
-      <Footer />
-    </main>
+    <Navigation>
+      <div slot="login">
+        <SignedIn isStatic={true}>
+          <UserButton />
+        </SignedIn>
+        <SignedOut isStatic={true}>
+          <SignInButton mode="modal" />
+        </SignedOut>
+      </div>
+    </Navigation>
   </body>
+  <Header
+    headerTitle={pageTitle}
+    headerDescription={pageDescription}
+    headerImageUrl={pageImageUrl}
+    headerImageAlt={pageTitle}
+  />
+
+  <slot name="featured" />
+  <main>
+    <section>
+      {
+        showBreadcrumb && (
+          <>
+            <AstroBreadcrumb
+              routes={breadcrumbRoutes || undefined}
+              client:load
+            />
+          </>
+        )
+      }
+    </section>
+    <section arai-label="main-content">
+      <article>
+        <slot />
+
+        <aside>
+          <slot name="sidebar" />
+          <Sidebar />
+          <slot name="sidebar-footer" />
+        </aside>
+      </article>
+    </section>
+    <Footer />
+  </main>
 </html>
