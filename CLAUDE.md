@@ -37,20 +37,20 @@ This is **@shawnsandy/astro-kit**, a collection of reusable Astro components and
 
 ### Component Library Structure
 
-The project exports components through `src/components/index.ts` with primarily Astro components:
+The project exports components through `src/components/index.ts` with two main categories:
 
-- **Astro Components** (`src/components/astro/`): Server-side rendered .astro components including AstroPages, BlogPosts, Pagination, Header, Footer, Navigation, ContactForm, and more
-- **React Support**: React components can be created but the current library focuses on .astro components
+- **Astro Components** (`src/components/astro/`): Server-side rendered .astro components
+- **React Components** (`src/components/react/`): Client-side React components (.tsx)
 
 ### Content Architecture
 
 Uses Astro's content collections with three main collections defined in `src/content/config.ts`:
 
-- `posts` - Blog posts with postsCollection schema
-- `docs` - Documentation content (aliased as astroKitDocs)  
+- `posts` - Blog posts
+- `docs` - Documentation content  
 - `content` - General content articles
 
-All collections share the same schema including frontmatter for title, pubDate, description, author, tags, featured status, publish flag, breadcrumbSlug, image metadata, and optional YouTube integration.
+All collections share the same schema including frontmatter for title, pubDate, description, author, tags, featured status, and optional YouTube integration.
 
 ### Path Aliases
 
@@ -77,10 +77,10 @@ Uses `#*` import alias mapping to `./src/*` for cleaner imports across the codeb
 ### Key Integrations
 
 - React support for interactive components
-- MDX for rich content authoring with remark-toc for table of contents generation
-- Dual deployment: Both Node.js standalone and Netlify adapters configured
+- MDX for rich content authoring
+- Netlify adapter for static site deployment
 - Image optimization with astro-imagetools
-- YouTube embeds via @astro-community/astro-embed-youtube, RSS feeds, and sitemap generation
+- YouTube embeds, RSS feeds, and sitemap generation
 
 ## Package Structure
 
@@ -142,21 +142,14 @@ This is published as an npm package with:
 ## Development Notes
 
 - Port 4321 is the standard development server port
-- **Server-side rendering**: Project uses `output: "server"` mode with Node.js standalone adapter
-- Dual deployment: Configured for both standalone Node.js and Netlify (conflicting adapters in astro.config.mjs)
+- **Server-side rendering**: Project now uses `output: "server"` mode (not static)
+- Dual deployment: Configured for both standalone Node.js and Netlify
 - TypeScript is configured with strict null checks and React JSX transform
 - Enhanced parallel development with `npm run start` (dev + sass watching)
-- Playwright tests expect server to be running via `npm run start` command
 - Database-ready: Documentation exists for Astro DB integration (future enhancement)
+-
 
 ## Documentation
 
-- Comprehensive development docs in `docs/` folder
+- Comprehensive development docs in and `docs/` folder
 - PRD (Product Requirements Document) available for feature planning and tracking in `/docs/PRD/`
-
-## important-instruction-reminders
-
-Do what has been asked; nothing more, nothing less.
-NEVER create files unless they're absolutely necessary for achieving your goal.
-ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
