@@ -3,3 +3,31 @@
 @use './components/form';
 @use './components/alert';
 
+// Login container with loading state
+.login-container {
+  position: relative;
+  min-height: 40px; // Adjust based on your button height
+  
+  // Show loading text when container is empty
+  &:empty::before {
+    content: "Loading...";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #666;
+    font-size: 14px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  
+  // Hide loading text when container has content
+  &:not(:empty)::before {
+    display: none;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
