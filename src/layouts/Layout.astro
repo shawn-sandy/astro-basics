@@ -54,7 +54,7 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
         <div id="clerk-loading" class="clerk-loading">
           <div class="loading-spinner"></div>
         </div>
-        <div id="clerk-auth" class="clerk-auth" style="display: none;">
+        <div id="clerk-auth" class="clerk-auth">
           <SignedIn>
             <UserButton />
           </SignedIn>
@@ -64,39 +64,40 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
         </div>
       </div>
     </Navigation>
+
+    <Header
+      headerTitle={pageTitle}
+      headerDescription={pageDescription}
+      headerImageUrl={pageImageUrl}
+      headerImageAlt={pageTitle}
+    />
+
+    <slot name="featured" />
+    <main>
+      <section>
+        {
+          showBreadcrumb && (
+            <>
+              <AstroBreadcrumb
+                routes={breadcrumbRoutes || undefined}
+                client:load
+              />
+            </>
+          )
+        }
+      </section>
+      <section aria-label="main-content">
+        <article>
+          <slot />
+
+          <aside>
+            <slot name="sidebar" />
+            <Sidebar />
+            <slot name="sidebar-footer" />
+          </aside>
+        </article>
+      </section>
+      <Footer />
+    </main>
   </body>
-  <Header
-    headerTitle={pageTitle}
-    headerDescription={pageDescription}
-    headerImageUrl={pageImageUrl}
-    headerImageAlt={pageTitle}
-  />
-
-  <slot name="featured" />
-  <main>
-    <section>
-      {
-        showBreadcrumb && (
-          <>
-            <AstroBreadcrumb
-              routes={breadcrumbRoutes || undefined}
-              client:load
-            />
-          </>
-        )
-      }
-    </section>
-    <section aria-label="main-content">
-      <article>
-        <slot />
-
-        <aside>
-          <slot name="sidebar" />
-          <Sidebar />
-          <slot name="sidebar-footer" />
-        </aside>
-      </article>
-    </section>
-    <Footer />
-  </main>
 </html>
