@@ -74,8 +74,52 @@ This is published as an npm package with:
 - Astro-specific export: `src/components/astro` (Astro components only)
 - Files include: component index and all .astro files
 
+## Authentication & Security
+
+### Clerk Integration
+- Uses `@clerk/astro` for user authentication
+- Requires environment variables: `PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`
+- Middleware (`src/middleware.ts`) protects routes like `/dashboard` and `/forum`
+- Authentication components (`SignedIn`, `SignedOut`, `UserButton`, `SignInButton`) integrated in layout
+- Auth-specific layout available at `src/layouts/Auth.astro`
+
+### Route Protection
+- Protected routes require authentication via middleware
+- Public routes are freely accessible
+- Navigation includes authentication-aware slots
+
+## Environment Configuration
+
+### Required Environment Variables
+- `PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk authentication (public)
+- `CLERK_SECRET_KEY` - Clerk authentication (private)
+- Optional: Contentful CMS integration variables for content management
+
+### Development vs Production
+- Development uses test Clerk environment
+- Production requires live Clerk application setup
+
+## Enhanced Integrations
+
+### Error Monitoring & Performance
+- `@sentry/astro` - Error tracking and monitoring
+- `astro-lighthouse` - Performance auditing
+- `@spotlightjs/astro` - Development debugging (configurable)
+
+### Content & Media
+- `astro-embed/integration` - Enhanced content embedding
+- `astro-imagetools` - Advanced image processing and optimization
+- `rehype-accessible-emojis` - Accessible emoji rendering in MDX
+
+### Development Tools
+- `@total-typescript/ts-reset` - Enhanced TypeScript experience
+- Form validation utilities in `src/utils/contact.ts`
+- Constants for form errors in `src/constants/formErrors.ts`
+
 ## Development Notes
 - Port 4321 is the standard development server port
-- The project uses static output mode for Netlify deployment
+- **Server-side rendering**: Project now uses `output: "server"` mode (not static)
+- Dual deployment: Configured for both standalone Node.js and Netlify
 - TypeScript is configured with strict null checks and React JSX transform
-- No ESLint config file found - linting appears to use default settings
+- Enhanced parallel development with `npm run start` (dev + sass watching)
+- Database-ready: Documentation exists for Astro DB integration (future enhancement)
