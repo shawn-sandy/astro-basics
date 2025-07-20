@@ -1,0 +1,69 @@
+---
+import Layout from "./Layout.astro";
+import Youtube from "#components/astro/Youtube.astro";
+import Img from "#components/astro/Img.astro";
+import Toc from "#components/astro/Toc.astro";
+import TextToSpeech from "#components/astro/TextToSpeech.astro";
+import type { TODO } from "#utils/types.js";
+const frontmatter = Astro.props.frontmatter;
+const headings = Astro.props.headings;
+const { slug } = Astro.params;
+
+type ContentRoute = {
+  name: string;
+  url: string;
+  path: string | undefined;
+};
+
+const contentRoute: ContentRoute[] = [
+  {
+    name: frontmatter.title,
+    url: "", // not necessary for post paths
+    path: slug?.toString(),
+  },
+];
+---
+
+<Layout
+  pageTitle={frontmatter.title}
+  pageDescription={frontmatter.description}
+  breadcrumbRoutes={contentRoute}
+>
+  {
+    frontmatter.image && (
+      <>
+        <Img
+          imgSrc={frontmatter.image.url}
+          imgAlt={frontmatter.image?.alt}
+          imgCaption={frontmatter.image?.caption}
+        />
+      </>
+    )
+  }
+  {
+    frontmatter.youtube?.id && (
+      <p>
+        <Youtube id={frontmatter.youtube.id} />
+      </p>
+    )
+  }
+  <!-- <h2>{frontmatter.title}</h2> -->
+  <Toc headings={headings} />
+
+  <slot />
+  {
+    frontmatter.tags && frontmatter.tags.length > 0 && (
+      <div>
+        <ul class="tags" data-list="unstyled inline">
+          {frontmatter.tags.map((tag: string) => (
+            <li class="tag">
+              <a href={`/tags/${tag}`}>
+                <i>{tag}</i>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+</Layout>

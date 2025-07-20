@@ -8,6 +8,12 @@ import AstroBreadcrumb from "#components/react/astro-breadcrumb.tsx";
 import { SITE_DESCRIPTION, SITE_TITLE } from "#utils/site-config";
 import "@fpkit/acss/styles";
 import "../styles/index.css";
+import {
+  SignedIn,
+  SignedOut,
+  UserButton,
+  SignInButton,
+} from "@clerk/astro/components";
 
 // types
 type routeItem = {
@@ -43,13 +49,24 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
     <!-- <ViewTransitions /> -->
   </head>
   <body>
-    <Navigation />
+    <Navigation>
+      <div slot="login">
+        <SignedIn isStatic={true}>
+          <UserButton />
+        </SignedIn>
+        <SignedOut isStatic={true}>
+          <SignInButton mode="modal" />
+        </SignedOut>
+      </div>
+    </Navigation>
+
     <Header
       headerTitle={pageTitle}
       headerDescription={pageDescription}
       headerImageUrl={pageImageUrl}
       headerImageAlt={pageTitle}
     />
+
     <slot name="featured" />
     <main>
       <section>
@@ -64,17 +81,18 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
           )
         }
       </section>
-      <section arai-label="main-content">
+      <section aria-label="main-content">
         <article>
           <slot />
+
+          <aside>
+            <slot name="sidebar" />
+            <Sidebar />
+            <slot name="sidebar-footer" />
+          </aside>
         </article>
-        <aside>
-          <slot name="sidebar" />
-          <Sidebar />
-          <slot name="sidebar-footer" />
-        </aside>
       </section>
+      <Footer />
     </main>
-    <Footer />
   </body>
 </html>

@@ -11,6 +11,9 @@ import { astroImageTools } from "astro-imagetools";
 
 import lighthouse from "astro-lighthouse";
 
+import node from "@astrojs/node";
+import clerk from "@clerk/astro";
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://example.com",
@@ -18,11 +21,14 @@ export default defineConfig({
     react(),
     sitemap(),
     lighthouse(),
-    // spotlightjs(),
     embeds(),
     mdx(),
+    clerk(),
     astroImageTools,
   ],
+  output: "server",
   adapter: netlify(),
-  output: "static",
+  // adapter: node({
+  //   mode: "standalone",
+  // }),
 });
