@@ -8,12 +8,12 @@ import AstroBreadcrumb from "#components/react/astro-breadcrumb.tsx";
 import { SITE_DESCRIPTION, SITE_TITLE } from "#utils/site-config";
 import "@fpkit/acss/styles";
 import "../styles/index.css";
-// import {
-//   SignedIn,
-//   SignedOut,
-//   UserButton,
-//   SignInButton,
-// } from "@clerk/astro/components";
+import {
+  SignedIn,
+  SignedOut,
+  UserButton,
+  SignInButton,
+} from "@clerk/astro/components";
 
 // types
 type routeItem = {
@@ -56,6 +56,8 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
       headerImageUrl={pageImageUrl}
       headerImageAlt={pageTitle}
     />
+
+    <SignedIn isStatic={true}> You are signed in! </SignedIn>
     <slot name="featured" />
     <main>
       <section>
