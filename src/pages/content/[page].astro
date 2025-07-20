@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import { getCollection } from "astro:content";
 import Layout from "#layouts/Layout.astro";
 import BlogPosts from "#components/astro/BlogPosts.astro";
@@ -8,12 +9,14 @@ import type { TODO } from "#utils/types.js";
 import ContentList from "#components/astro/ContentList.astro";
 
 export async function getStaticPaths({ paginate }) {
-  const allPosts = (await getCollection("content")).filter((item) => {
-    return item.data.publish === true;
-  }).sort(
-    (a: { data: { pubDate: Date } }, b: { data: { pubDate: Date } }) =>
-      b.data.pubDate.getTime() - a.data.pubDate.getTime()
-  );
+  const allPosts = (await getCollection("content"))
+    .filter((item) => {
+      return item.data.publish === true;
+    })
+    .sort(
+      (a: { data: { pubDate: Date } }, b: { data: { pubDate: Date } }) =>
+        b.data.pubDate.getTime() - a.data.pubDate.getTime()
+    );
   return paginate(allPosts, { pageSize: 2 });
 }
 

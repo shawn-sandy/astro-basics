@@ -1,12 +1,15 @@
 ---
-import Layout from "../layouts/Layout.astro"
+export const prerender = true;
+import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
-    <h3>Thank you for reaching out, we will respond shortly</h3>
-    <p>
-        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Dolor iste aperiam autem est. Ad veritatis molestias aliquam eum omnis ex vel porro et consequuntur? Non quasi nisi accusantium doloremque ab.
-    </p>
-    <!-- <p>Email sent successfully.</p> -->
-    <p><a href="/"><i>Return to our home page</i></a></p>
+  <h3>Thank you for reaching out, we will respond shortly</h3>
+  <p>
+    Lorem ipsum dolor, sit amet consectetur adipisicing elit. Dolor iste aperiam
+    autem est. Ad veritatis molestias aliquam eum omnis ex vel porro et
+    consequuntur? Non quasi nisi accusantium doloremque ab.
+  </p>
+  <!-- <p>Email sent successfully.</p> -->
+  <p><a href="/"><i>Return to our home page</i></a></p>
 </Layout>
