@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import { getCollection, type CollectionEntry } from "astro:content";
 import MarkdownPostLayout from "../../layouts/MarkdownPostLayout.astro";
 
@@ -16,7 +17,6 @@ export type Props = {
 
 const { entry } = Astro.props as Props;
 const { Content, headings } = await entry.render();
-export const prerender = true;
 ---
 
 <MarkdownPostLayout frontmatter={entry.data} headings={headings}>

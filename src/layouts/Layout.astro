@@ -8,12 +8,12 @@ import AstroBreadcrumb from "#components/react/astro-breadcrumb.tsx";
 import { SITE_DESCRIPTION, SITE_TITLE } from "#utils/site-config";
 import "@fpkit/acss/styles";
 import "../styles/index.css";
-import {
-  SignedIn,
-  SignedOut,
-  UserButton,
-  SignInButton,
-} from "@clerk/astro/components";
+// import {
+//   SignedIn,
+//   SignedOut,
+//   UserButton,
+//   SignInButton,
+// } from "@clerk/astro/components";
 
 // types
 type routeItem = {
@@ -73,17 +73,15 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
       <section arai-label="main-content">
         <article>
           <slot />
+
+          <aside>
+            <slot name="sidebar" />
+            <Sidebar />
+            <slot name="sidebar-footer" />
+          </aside>
         </article>
-        <SignedOut>
-          <SignInButton mode="modal" />
-        </SignedOut>
-        <aside>
-          <slot name="sidebar" />
-          <Sidebar />
-          <slot name="sidebar-footer" />
-        </aside>
       </section>
+      <Footer />
     </main>
-    <Footer />
   </body>
 </html>

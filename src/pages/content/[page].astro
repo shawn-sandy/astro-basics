@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import { getCollection } from "astro:content";
 import Layout from "#layouts/Layout.astro";
 import BlogPosts from "#components/astro/BlogPosts.astro";
@@ -21,7 +22,6 @@ export async function getStaticPaths({ paginate }) {
 
 const pageSize = 2;
 const { page } = Astro.props as TODO;
-export const prerender = true;
 ---
 
 <Layout pageTitle="Content">

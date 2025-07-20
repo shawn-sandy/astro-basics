@@ -1,11 +1,12 @@
 ---
+export const prerender = true;
 import { PAGINATION_COUNT } from "#utils/site-config";
 import { getCollection } from "astro:content";
 import type { GetStaticPaths } from "astro";
 import Layout from "#layouts/Layout.astro";
 import Pagination from "#components/astro/Pagination.astro";
 import ContentList from "#components/astro/ContentList.astro";
-export const collection = "posts"; 
+export const collection = "posts";
 
 type Props = {
   pageSize: number;
@@ -30,7 +31,7 @@ const pageSize = PAGINATION_COUNT || 5;
 ---
 
 <Layout pageTitle="Blog Posts">
-<ContentList page={page} />
+  <ContentList page={page} />
 
   <!-- Pagination -->
   <Pagination
