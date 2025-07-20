@@ -26,9 +26,8 @@ export default defineConfig({
     clerk(),
     astroImageTools,
   ],
+  output: "server",
   adapter: node({
     mode: "standalone",
   }),
-  output: "server",
-  adapter: netlify(),
 });
