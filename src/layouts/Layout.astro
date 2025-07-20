@@ -55,10 +55,10 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
           <div class="loading-spinner"></div>
         </div>
         <div id="clerk-auth" class="clerk-auth">
-          <SignedIn>
+          <SignedIn isStatic={true}>
             <UserButton />
           </SignedIn>
-          <SignedOut>
+          <SignedOut isStatic={true}>
             <SignInButton mode="modal" />
           </SignedOut>
         </div>
