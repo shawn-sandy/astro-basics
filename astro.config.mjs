@@ -27,5 +27,8 @@ export default defineConfig({
     astroImageTools,
   ],
   output: "server",
-  adapter: netlify(),
+  // adapter: netlify(),
+  adapter: node({
+    mode: "standalone",
+  }),
 });
