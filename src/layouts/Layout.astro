@@ -47,16 +47,43 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle || SITE_TITLE}</title>
     <!-- <ViewTransitions /> -->
+    <style>
+      .clerk-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+      }
+      
+      .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #555;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
     <Navigation>
       <div slot="login">
-        <SignedIn isStatic={true}>
-          <UserButton />
-        </SignedIn>
-        <SignedOut isStatic={true}>
-          <SignInButton mode="modal" />
-        </SignedOut>
+        <div id="clerk-loading" class="clerk-loading">
+          <div class="loading-spinner"></div>
+        </div>
+        <div id="clerk-auth" class="clerk-auth" style="display: none;">
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton mode="modal" />
+          </SignedOut>
+        </div>
       </div>
     </Navigation>
   </body>
@@ -94,4 +121,27 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
     </section>
     <Footer />
   </main>
+  
+  <script>
+    // Hide loading and show Clerk components when ready
+    window.addEventListener('DOMContentLoaded', () => {
+      // Check if Clerk is loaded by polling for its presence
+      const checkClerkLoaded = () => {
+        if (window.Clerk || document.querySelector('.cl-userButton') || document.querySelector('.cl-signInButton')) {
+          const loading = document.getElementById('clerk-loading');
+          const auth = document.getElementById('clerk-auth');
+          
+          if (loading && auth) {
+            loading.style.display = 'none';
+            auth.style.display = 'block';
+          }
+        } else {
+          // Poll every 100ms until Clerk is ready
+          setTimeout(checkClerkLoaded, 100);
+        }
+      };
+      
+      checkClerkLoaded();
+    });
+  </script>
 </html>
