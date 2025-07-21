@@ -27,13 +27,19 @@ type Props = {
   pageImageUrl?: string;
   showBreadcrumb?: boolean;
   breadcrumbRoutes?: routeItem[];
+  hideHeader?: boolean;
 };
 
 const showBreadcrumb =
   Astro.props.showBreadcrumb === undefined ? true : Astro.props.showBreadcrumb;
 
-const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
-  Astro.props;
+const {
+  pageTitle,
+  pageDescription,
+  breadcrumbRoutes,
+  pageImageUrl,
+  hideHeader,
+} = Astro.props;
 ---
 
 <html lang="en">
@@ -60,12 +66,16 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl } =
       </div>
     </Navigation>
 
-    <Header
-      headerTitle={pageTitle}
-      headerDescription={pageDescription}
-      headerImageUrl={pageImageUrl}
-      headerImageAlt={pageTitle}
-    />
+    {
+      !hideHeader && (
+        <Header
+          headerTitle={pageTitle}
+          headerDescription={pageDescription}
+          headerImageUrl={pageImageUrl}
+          headerImageAlt={pageTitle}
+        />
+      )
+    }
 
     <slot name="featured" />
     <main>
