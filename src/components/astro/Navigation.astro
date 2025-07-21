@@ -21,7 +21,7 @@ import { SignedIn } from "@clerk/astro/components";
     </li>
   </ul>
   <slot />
-  <SignedIn>
+  <SignedIn isStatic={true}>
     <ul>
       <li>
         <a href="/events">Events</a>
