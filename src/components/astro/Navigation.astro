@@ -20,18 +20,19 @@ import { SignedIn } from "@clerk/astro/components";
       <a href="/contact">Contact</a>
     </li>
   </ul>
-  <ul>
-    <SignedIn isStatic={true}>
+  <slot />
+  <SignedIn>
+    <ul>
       <li>
         <a href="/events">Events</a>
       </li>
       <li>
         <a href="/dashboard">Dashboard</a>
       </li>
-    </SignedIn>
-    <li>
-      <slot name="login" />
-    </li>
-  </ul>
-  <slot />
+
+      <li>
+        <slot name="login" />
+      </li>
+    </ul>
+  </SignedIn>
 </nav>
