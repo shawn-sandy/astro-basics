@@ -1,0 +1,338 @@
+---
+import Auth from "#/layouts/Auth.astro";
+import { SignedIn, SignedOut, UserButton } from "@clerk/astro/components";
+---
+
+<Auth pageTitle="Dashboard - Astro Kit">
+  <SignedIn>
+    <div class="dashboard-container">
+      <div class="dashboard-grid">
+        <div class="stats-section">
+          <h2>Overview</h2>
+          <div class="stats-cards">
+            <div class="stat-card">
+              <h3>Total Posts</h3>
+              <p class="stat-number">24</p>
+            </div>
+            <div class="stat-card">
+              <h3>Views</h3>
+              <p class="stat-number">1,234</p>
+            </div>
+            <div class="stat-card">
+              <h3>Comments</h3>
+              <p class="stat-number">89</p>
+            </div>
+            <div class="stat-card">
+              <h3>Likes</h3>
+              <p class="stat-number">456</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="recent-activity">
+          <h2>Recent Activity</h2>
+          <div class="activity-list">
+            <div class="activity-item">
+              <span class="activity-icon">📝</span>
+              <div class="activity-content">
+                <p>New blog post published: "Getting Started with Astro"</p>
+                <small>2 hours ago</small>
+              </div>
+            </div>
+            <div class="activity-item">
+              <span class="activity-icon">💬</span>
+              <div class="activity-content">
+                <p>New comment on "React Components in Astro"</p>
+                <small>5 hours ago</small>
+              </div>
+            </div>
+            <div class="activity-item">
+              <span class="activity-icon">❤️</span>
+              <div class="activity-content">
+                <p>Post liked: "Building Modern Web Apps"</p>
+                <small>1 day ago</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <h2>Quick Actions</h2>
+          <div class="action-buttons">
+            <a href="/admin/posts/new" class="action-btn primary">
+              <span>✏️</span>
+              Create New Post
+            </a>
+            <a href="/admin/posts" class="action-btn">
+              <span>📄</span>
+              Manage Posts
+            </a>
+            <a href="/admin/media" class="action-btn">
+              <span>🖼️</span>
+              Media Library
+            </a>
+            <a href="/admin/settings" class="action-btn">
+              <span>⚙️</span>
+              Settings
+            </a>
+          </div>
+        </div>
+
+        <div class="content-preview">
+          <h2>Recent Posts</h2>
+          <div class="post-list">
+            <div class="post-item">
+              <h4>Getting Started with Astro Components</h4>
+              <p>A comprehensive guide to building reusable components...</p>
+              <div class="post-meta">
+                <span>Published</span>
+                <small>3 days ago</small>
+              </div>
+            </div>
+            <div class="post-item">
+              <h4>React Integration in Astro</h4>
+              <p>Learn how to seamlessly integrate React components...</p>
+              <div class="post-meta">
+                <span>Draft</span>
+                <small>1 week ago</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </SignedIn>
+
+  <SignedOut>
+    <div class="auth-required">
+      <h1>Authentication Required</h1>
+      <p>Please sign in to access your dashboard.</p>
+      <a href="/sign-in" class="sign-in-btn">Sign In</a>
+    </div>
+  </SignedOut>
+</Auth>
+
+<style>
+  .dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .dashboard-header h1 {
+    margin: 0;
+    color: #1a202c;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .stats-section {
+    grid-column: 1 / -1;
+  }
+
+  .stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+  }
+
+  .stat-card h3 {
+    margin: 0 0 0.5rem 0;
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  .stat-number {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1a202c;
+  }
+
+  .recent-activity,
+  .quick-actions,
+  .content-preview {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+  }
+
+  .recent-activity h2,
+  .quick-actions h2,
+  .content-preview h2 {
+    margin: 0 0 1rem 0;
+    color: #1a202c;
+    font-size: 1.25rem;
+  }
+
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .activity-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .activity-icon {
+    font-size: 1.25rem;
+  }
+
+  .activity-content p {
+    margin: 0 0 0.25rem 0;
+    color: #1a202c;
+  }
+
+  .activity-content small {
+    color: #64748b;
+  }
+
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #4a5568;
+    transition: all 0.2s;
+  }
+
+  .action-btn:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+  }
+
+  .action-btn.primary {
+    background: #3182ce;
+    color: white;
+    border-color: #3182ce;
+  }
+
+  .action-btn.primary:hover {
+    background: #2c5aa0;
+  }
+
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .post-item {
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+  }
+
+  .post-item h4 {
+    margin: 0 0 0.5rem 0;
+    color: #1a202c;
+  }
+
+  .post-item p {
+    margin: 0 0 0.5rem 0;
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+
+  .post-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .post-meta span {
+    padding: 0.25rem 0.5rem;
+    background: #e2e8f0;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #4a5568;
+  }
+
+  .auth-required {
+    text-align: center;
+    padding: 4rem 2rem;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .auth-required h1 {
+    margin-bottom: 1rem;
+    color: #1a202c;
+  }
+
+  .auth-required p {
+    margin-bottom: 2rem;
+    color: #64748b;
+  }
+
+  .sign-in-btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #3182ce;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+
+  .sign-in-btn:hover {
+    background: #2c5aa0;
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .stats-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-container {
+      padding: 1rem;
+    }
+
+    .action-buttons {
+      gap: 0.5rem;
+    }
+  }
+</style>
