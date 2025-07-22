@@ -56,26 +56,14 @@ const {
   </head>
   <body>
     <Navigation>
-      <ul slot="login">
-        <li>
-          <SignedIn isStatic={true}>
-            <a href="/events">Events</a>
-          </SignedIn>
-        </li>
-        <li>
-          <SignedIn isStatic={true}>
-            <a href="/dashboard">Dashboard</a>
-          </SignedIn>
-        </li>
-        <li>
-          <SignedIn isStatic={true}>
-            <UserButton />
-          </SignedIn>
-          <SignedOut isStatic={true}>
-            <SignInButton mode="modal" />
-          </SignedOut>
-        </li>
-      </ul>
+      <div slot="login">
+        <SignedIn isStatic={true}>
+          <UserButton />
+        </SignedIn>
+        <SignedOut isStatic={true}>
+          <SignInButton mode="modal" />
+        </SignedOut>
+      </div>
     </Navigation>
 
     {
