@@ -7,13 +7,16 @@ This PRD outlines the current authentication system for @shawnsandy/astro-kit, a
 ## Product Overview
 
 ### Current State
+
 The authentication system is **production-ready** with Clerk integration, featuring:
+
 - Server-side route protection via middleware
 - React-based authentication components
 - Multi-deployment support (Netlify + Node.js)
 - Comprehensive dashboard implementation
 
 ### Strategic Goals
+
 1. Provide secure, enterprise-grade authentication
 2. Maintain exceptional performance (Astro SSR benefits)
 3. Enable seamless developer experience
@@ -22,6 +25,7 @@ The authentication system is **production-ready** with Clerk integration, featur
 ## Technical Architecture
 
 ### Core Dependencies
+
 - **Authentication Provider**: Clerk (`@clerk/astro` v2.10.8)
 - **Framework Integration**: Astro with React support
 - **Deployment**: Server-side rendering (`output: "server"`)
@@ -29,6 +33,7 @@ The authentication system is **production-ready** with Clerk integration, featur
 ### Security Model
 
 #### Route Protection
+
 ```typescript
 // Middleware: src/middleware.ts
 Protected Routes:
@@ -42,6 +47,7 @@ Security Features:
 ```
 
 #### Environment Security
+
 ```bash
 PUBLIC_CLERK_PUBLISHABLE_KEY  # Client-side safe
 CLERK_SECRET_KEY             # Server-side only
@@ -50,6 +56,7 @@ CLERK_SECRET_KEY             # Server-side only
 ## Features & Components
 
 ### Authentication Components
+
 | Component | Purpose | Implementation |
 |-----------|---------|----------------|
 | `SignedIn` | Conditional rendering for authenticated users | Layout navigation, protected content |
@@ -58,6 +65,7 @@ CLERK_SECRET_KEY             # Server-side only
 | `SignInButton` | Authentication entry point | Modal sign-in experience |
 
 ### Layouts & Pages
+
 | File | Purpose | Status |
 |------|---------|--------|
 | `src/layouts/Auth.astro` | Authentication-focused layout | ✅ Implemented |
@@ -65,6 +73,7 @@ CLERK_SECRET_KEY             # Server-side only
 | `src/layouts/Layout.astro` | Main layout with auth integration | ✅ Implemented |
 
 ### Dashboard Features
+
 - **User Statistics**: Activity metrics and usage data
 - **Recent Activities**: Timeline of user actions
 - **Quick Actions**: Common user operations
@@ -73,6 +82,7 @@ CLERK_SECRET_KEY             # Server-side only
 ## User Experience
 
 ### Authentication Flow
+
 1. **Unauthenticated User**:
    - Sees sign-in button in navigation
    - Modal sign-in experience (no page redirect)
@@ -91,12 +101,14 @@ CLERK_SECRET_KEY             # Server-side only
 ## Performance Characteristics
 
 ### Optimization Features
+
 - **Static Component Rendering**: `isStatic={true}` for layout components
 - **Server-Side Security**: Authentication checks at middleware level
 - **Minimal Hydration**: Only interactive components hydrate client-side
 - **Modal Authentication**: Prevents full page reloads
 
 ### Performance Metrics
+
 - **SSR Benefits**: Fast initial page loads
 - **Security Performance**: Server-side route protection
 - **Client Bundle**: Minimal authentication JavaScript
@@ -104,12 +116,14 @@ CLERK_SECRET_KEY             # Server-side only
 ## Development Experience
 
 ### Developer Tools
+
 - **Comprehensive Documentation**: `/docs/clerk-react-integration.md`
 - **Environment Templates**: `.env.example` with clear setup
 - **TypeScript Integration**: Full type safety
 - **Hot Reload Support**: Development server with auth
 
 ### Setup Process
+
 1. Install dependencies (`npm install`)
 2. Configure environment variables
 3. Set up Clerk application
@@ -118,12 +132,14 @@ CLERK_SECRET_KEY             # Server-side only
 ## Security & Compliance
 
 ### Security Features
+
 - **Multi-Layer Protection**: Middleware + component-level
 - **Server-Side Enforcement**: Prevents client-side bypasses  
 - **Environment Separation**: Public/private key separation
 - **Professional Provider**: Clerk handles security compliance
 
 ### Compliance Considerations
+
 - **Data Privacy**: Clerk manages user data securely
 - **Authentication Standards**: Industry-standard OAuth flows
 - **Session Management**: Secure session handling
@@ -131,6 +147,7 @@ CLERK_SECRET_KEY             # Server-side only
 ## Gap Analysis & Future Opportunities
 
 ### Missing Features (Priority: Medium-High)
+
 1. **Dedicated Auth Pages**:
    - `/sign-in`, `/sign-up` pages
    - Custom authentication experiences
@@ -147,6 +164,7 @@ CLERK_SECRET_KEY             # Server-side only
    - Preference management
 
 ### Enhancement Opportunities (Priority: Medium)
+
 1. **Role-Based Access Control (RBAC)**:
    - Admin/user role differentiation
    - Granular permission system
@@ -163,6 +181,7 @@ CLERK_SECRET_KEY             # Server-side only
    - Notification preferences
 
 ### Technical Improvements (Priority: Low-Medium)
+
 1. **Error Handling**:
    - Authentication error boundaries
    - Graceful failure handling
@@ -181,12 +200,14 @@ CLERK_SECRET_KEY             # Server-side only
 ## Success Metrics
 
 ### Key Performance Indicators
+
 - **Security**: Zero authentication bypasses
 - **Performance**: < 2s dashboard load time
 - **User Experience**: > 95% successful sign-in rate
 - **Developer Experience**: < 5 minutes setup time
 
 ### Monitoring & Analytics
+
 - User authentication success rates
 - Dashboard engagement metrics
 - Error rate monitoring
@@ -195,18 +216,21 @@ CLERK_SECRET_KEY             # Server-side only
 ## Implementation Roadmap
 
 ### Phase 1: Foundation (✅ Complete)
+
 - [x] Clerk integration
 - [x] Middleware protection
 - [x] Basic dashboard
 - [x] Navigation integration
 
 ### Phase 2: Enhancement (Recommended Next)
+
 - [ ] Dedicated authentication pages
 - [ ] Forum implementation
 - [ ] Profile management interface
 - [ ] Comprehensive error handling
 
 ### Phase 3: Advanced Features (Future)
+
 - [ ] Role-based access control
 - [ ] Advanced analytics
 - [ ] Multi-factor authentication
@@ -217,6 +241,7 @@ CLERK_SECRET_KEY             # Server-side only
 The current authentication system represents a **best-in-class implementation** for Astro applications, combining enterprise-grade security with exceptional performance and developer experience. The foundation is solid and production-ready, with clear opportunities for enhancement as the platform scales.
 
 The system successfully balances:
+
 - **Security**: Multi-layer protection with industry standards
 - **Performance**: Server-side rendering with minimal client footprint
 - **Experience**: Seamless UX for both users and developers
@@ -225,6 +250,7 @@ The system successfully balances:
 ## Appendix
 
 ### File Locations
+
 - Middleware: `src/middleware.ts`
 - Auth Layout: `src/layouts/Auth.astro`
 - Dashboard: `src/pages/dashboard.astro`
@@ -233,12 +259,14 @@ The system successfully balances:
 - Documentation: `docs/clerk-react-integration.md`
 
 ### Environment Variables
+
 ```bash
 PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 ```
 
 ### Deployment Support
+
 - **Netlify**: Full support with edge functions
 - **Node.js**: Standalone server deployment
 - **Development**: Local server with hot reload
