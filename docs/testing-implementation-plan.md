@@ -16,7 +16,7 @@ This document outlines the comprehensive testing strategy for **@shawnsandy/astr
 
 ### Test Infrastructure
 
-```
+```bash
 tests/basic.test.ts          # Basic Vitest setup validation
 e2e/home-page.spec.ts        # Placeholder Playwright test
 vitest.config.ts             # Excludes e2e folder, includes Astro config
@@ -291,7 +291,7 @@ export default getViteConfig({
 
 ### Test Directory Structure
 
-```
+```text
 tests/
 ├── unit/
 │   ├── utils/
