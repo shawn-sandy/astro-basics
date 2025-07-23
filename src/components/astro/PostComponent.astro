@@ -1,12 +1,12 @@
 ---
 // import type { GetStaticPaths } from "astro";
-import { getCollection } from "astro:content";
-import BlogPosts from "./BlogPosts.astro";
+import { getCollection } from 'astro:content'
+import BlogPosts from './BlogPosts.astro'
 
 export async function getStaticPaths({ paginate }) {
-  const allPosts = await getCollection("posts");
-  return paginate(allPosts, { pageSize: 2 });
+  const allPosts = await getCollection('posts')
+  return paginate(allPosts, { pageSize: 2 })
 }
 
-const { page } = Astro.props;
+const { page } = Astro.props
 ---

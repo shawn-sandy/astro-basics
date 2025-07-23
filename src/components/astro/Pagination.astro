@@ -1,39 +1,36 @@
 ---
-import { getCollection } from "astro:content";
-import type { ContentEntryMap } from "astro:content";
-import type { SortType } from "#utils/types";
-import { PAGINATION_COUNT } from "#utils/site-config";
+import { getCollection } from 'astro:content'
+import type { ContentEntryMap } from 'astro:content'
+import type { SortType } from '#utils/types'
+import { PAGINATION_COUNT } from '#utils/site-config'
 export type Props = {
-  collection: keyof ContentEntryMap;
-  itemsSize?: number;
-  itemsPerPage?: number;
-  currentPage?: number;
-  totalPages?: number;
-  to?: string;
-  prevUrl?: string;
-  nextUrl?: string;
-};
+  collection: keyof ContentEntryMap
+  itemsSize?: number
+  itemsPerPage?: number
+  currentPage?: number
+  totalPages?: number
+  to?: string
+  prevUrl?: string
+  nextUrl?: string
+}
 
-const { collection } = Astro.props;
+const { collection } = Astro.props
 
 const results = (await getCollection(collection))
   .filter(({ data }) => {
-    return data.publish === true;
+    return data.publish === true
   })
-  .sort(
-    (a: SortType, b: SortType) =>
-      b.data.pubDate.getTime() - a.data.pubDate.getTime()
-  );
+  .sort((a: SortType, b: SortType) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
 
-const itemsPerPage = Astro.props.itemsPerPage || PAGINATION_COUNT || 3;
-const currentPage = Astro.props.currentPage || 1;
-const itemsSize = results.length;
-const to = Astro.props.to || collection || "posts";
-const prevUrl = Astro.props.prevUrl;
-const nextUrl = Astro.props.nextUrl;
+const itemsPerPage = Astro.props.itemsPerPage || PAGINATION_COUNT || 3
+const currentPage = Astro.props.currentPage || 1
+const itemsSize = results.length
+const to = Astro.props.to || collection || 'posts'
+const prevUrl = Astro.props.prevUrl
+const nextUrl = Astro.props.nextUrl
 
-const totalPages = Math.ceil(itemsSize / itemsPerPage);
-const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+const totalPages = Math.ceil(itemsSize / itemsPerPage)
+const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
 ---
 
 {
@@ -43,16 +40,8 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
         <li>{prevUrl && <a href={prevUrl}>Previous</a>}</li>
       </ul>
       <ul data-list="unstyled inline">
-        {pageNumbers.map((item) => {
-          return (
-            <li>
-              {item === currentPage ? (
-                item
-              ) : (
-                <a href={`/${to}/${item}`}>{item}</a>
-              )}
-            </li>
-          );
+        {pageNumbers.map(item => {
+          return <li>{item === currentPage ? item : <a href={`/${to}/${item}`}>{item}</a>}</li>
         })}
       </ul>
       <ul>

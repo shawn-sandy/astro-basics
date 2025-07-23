@@ -1,0 +1,18 @@
+dist/
+node_modules/
+.astro/
+playwright-report/
+test-results/
+*.min.js
+*.min.css
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Files with code snippets that break Prettier
+docs/AUTHENTICATION_DEVELOPER_GUIDE.md
+docs/AUTHENTICATION_REVIEW.md
+docs/LINTING_GUIDE.md
+docs/PRD/authentication-system-prd.md
+src/content/docs/2-customizing.mdx
+src/content/posts/mdx-example.mdx

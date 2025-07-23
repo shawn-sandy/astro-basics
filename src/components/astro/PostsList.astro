@@ -1,13 +1,13 @@
 ---
-import { getCollection } from "astro:content";
-const postListTitle = Astro.props.postListTitle || "Latest Posts";
-const postLength = Astro.props.postLength || 10;
-const postsResults = (await getCollection("posts"))
+import { getCollection } from 'astro:content'
+const postListTitle = Astro.props.postListTitle || 'Latest Posts'
+const postLength = Astro.props.postLength || 10
+const postsResults = (await getCollection('posts'))
   .filter(({ data }) => {
-    return data.publish === true;
+    return data.publish === true
   })
-  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
-const paginatedPosts = postsResults.slice(0, postLength);
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+const paginatedPosts = postsResults.slice(0, postLength)
 ---
 
 <h4 data-ui="display">
@@ -15,7 +15,7 @@ const paginatedPosts = postsResults.slice(0, postLength);
 </h4>
 <ul data-list="unstyled">
   {
-    paginatedPosts?.map((post) => (
+    paginatedPosts?.map(post => (
       <li>
         <a href={`/posts/${post.slug}`}>{post.data.title} </a>
       </li>

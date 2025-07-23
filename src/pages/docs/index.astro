@@ -1,11 +1,11 @@
 ---
-import { getEntry } from "astro:content";
-import MarkdownPostLayout from "#layouts/MarkdownPostLayout.astro";
-import CollectionList from "#components/astro/CollectionList.astro";
+import { getEntry } from 'astro:content'
+import MarkdownPostLayout from '#layouts/MarkdownPostLayout.astro'
+import CollectionList from '#components/astro/CollectionList.astro'
 // const allPosts = await getCollection("docs");
 
-const introDoc = await getEntry("docs", "0-welcome");
-const { Content } = await introDoc.render();
+const introDoc = await getEntry('docs', '0-welcome')
+const { Content } = await introDoc.render()
 ---
 
 <MarkdownPostLayout frontmatter={introDoc?.data}>

@@ -24,7 +24,7 @@ npm install @your-scope/astro-components
 
 ```astro
 ---
-import { BlogPosts, Pagination } from '@your-scope/astro-components';
+import { BlogPosts, Pagination } from '@your-scope/astro-components'
 ---
 
 <BlogPosts posts={yourPosts} />

@@ -4,30 +4,40 @@
   --success-color: green;
   --max-content-width: 1280px;
 }
+
 body {
   min-width: 20.3125rem;
+
   > section {
-    width: min(100%, var(--max-content-width));
     margin: auto;
+    width: min(100%, var(--max-content-width));
   }
 }
 
 main {
+  margin: auto;
   padding-block: 2rem;
   width: min(100%, var(--max-content-width));
-  margin: auto;
+
   > section {
     padding-inline: 2rem;
   }
 }
+
 section:has([data-grid], [data-flex]) {
+  padding-block: var(--space-l, 3rem);
+  padding-inline: var(--px, 1rem);
+  width: var(--content-w, 100%);
   width: min(100%, var(--max-content-width));
+
+  --card-gap: 1rem;
 }
 
 header {
+  grid-template-rows: minmax(300px, auto);
   min-height: fit-content;
   padding-block: 3rem;
-  grid-template-rows: minmax(300px, auto);
+
   div {
     > img {
       border-radius: var(--img-radius);
@@ -45,20 +55,15 @@ h3 {
   text-transform: capitalize;
 }
 
-h1,
-h2,
-h3 {
-  text-transform: capitalize;
-}
-
 h2 a[href] {
   font-size: var(--h3);
+
   /* color: currentColor; */
 }
 
 pre {
-  padding: 1rem;
   border-radius: 0.5rem;
+  padding: 1rem;
 }
 
 footer > div {
@@ -103,14 +108,14 @@ p {
 }
 
 article > figure:has(img[alt]) {
-  min-width: 100%;
   background-color: transparent;
   border-radius: 0;
+  min-width: 100%;
 }
 
 article > figure > img[alt] {
-  min-width: 100%;
   border-radius: 0;
+  min-width: 100%;
 }
 
 img + * {
@@ -119,12 +124,4 @@ img + * {
 
 .hidden {
   display: none;
-}
-
-section:has([data-grid], [data-flex]) {
-  width: var(--content-w, 100%);
-  padding-block: var(--space-l, 3rem);
-  padding-inline: var(--px, 1rem);
-  width: min(100%, var(--max-content-width));
-  --card-gap: 1rem;
 }

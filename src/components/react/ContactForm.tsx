@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import Alert from "./Alert";
-import { FORM_ERROR_MESSAGES } from '#constants/formErrors';
+import React, { useState } from 'react'
+
+import { FORM_ERROR_MESSAGES } from '#constants/formErrors'
+
+import Alert from './Alert'
 
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -8,57 +10,58 @@ const ContactForm: React.FC = () => {
     email: '',
     phone: '',
     subject: '',
-    message: ''
-  });
+    message: '',
+  })
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({ ...prevData, [name]: value }));
+    const { name, value } = e.target
+    setFormData(prevData => ({ ...prevData, [name]: value }))
     // Remove error clearing on input change
-  };
+  }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
+    e.preventDefault()
+    setIsSubmitting(true)
+
     if (validateForm()) {
       // Allow the form to submit naturally
-      (e.target as HTMLFormElement).submit();
-      setIsSubmitted(true);
+      ;(e.target as HTMLFormElement).submit()
+      setIsSubmitted(true)
     } else {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {}
 
-    if (!formData.name.trim()) newErrors.name = FORM_ERROR_MESSAGES.name;
-    if (!formData.email.trim()) newErrors.email = FORM_ERROR_MESSAGES.emailRequired;
-    else if (!isValidEmail(formData.email)) newErrors.email = FORM_ERROR_MESSAGES.emailInvalid;
-    if (formData.phone.trim() && !isValidPhone(formData.phone)) newErrors.phone = FORM_ERROR_MESSAGES.phoneInvalid;
-    if (!formData.subject.trim()) newErrors.subject = FORM_ERROR_MESSAGES.subject;
-    if (!formData.message.trim()) newErrors.message = FORM_ERROR_MESSAGES.message;
+    if (!formData.name.trim()) newErrors.name = FORM_ERROR_MESSAGES.name
+    if (!formData.email.trim()) newErrors.email = FORM_ERROR_MESSAGES.emailRequired
+    else if (!isValidEmail(formData.email)) newErrors.email = FORM_ERROR_MESSAGES.emailInvalid
+    if (formData.phone.trim() && !isValidPhone(formData.phone))
+      newErrors.phone = FORM_ERROR_MESSAGES.phoneInvalid
+    if (!formData.subject.trim()) newErrors.subject = FORM_ERROR_MESSAGES.subject
+    if (!formData.message.trim()) newErrors.message = FORM_ERROR_MESSAGES.message
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const isValidEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  }
 
   const isValidPhone = (phone: string) => {
-    return /^[\d\s-()]{7,}$/.test(phone);
-  };
+    return /^[\d\s-()]{7,}$/.test(phone)
+  }
 
   if (isSubmitted) {
-    window.location.href = '/success';
-    return null;
+    window.location.href = '/success'
+    return null
   }
 
   return (
@@ -100,9 +103,13 @@ const ContactForm: React.FC = () => {
             onChange={handleInputChange}
             required
             aria-invalid={!!errors.name}
-            aria-describedby={errors.name ? "name-error" : undefined}
+            aria-describedby={errors.name ? 'name-error' : undefined}
           />
-          {errors.name && <p id="name-error" className="error-msg">{errors.name}</p>}
+          {errors.name && (
+            <p id="name-error" className="error-msg">
+              {errors.name}
+            </p>
+          )}
         </div>
 
         <div>
@@ -115,9 +122,13 @@ const ContactForm: React.FC = () => {
             onChange={handleInputChange}
             required
             aria-invalid={!!errors.email}
-            aria-describedby={errors.email ? "email-error" : undefined}
+            aria-describedby={errors.email ? 'email-error' : undefined}
           />
-          {errors.email && <p id="email-error" className="error-msg">{errors.email}</p>}
+          {errors.email && (
+            <p id="email-error" className="error-msg">
+              {errors.email}
+            </p>
+          )}
         </div>
 
         <div>
@@ -129,9 +140,13 @@ const ContactForm: React.FC = () => {
             value={formData.phone}
             onChange={handleInputChange}
             aria-invalid={!!errors.phone}
-            aria-describedby={errors.phone ? "phone-error" : undefined}
+            aria-describedby={errors.phone ? 'phone-error' : undefined}
           />
-          {errors.phone && <p id="phone-error" className="error-msg">{errors.phone}</p>}
+          {errors.phone && (
+            <p id="phone-error" className="error-msg">
+              {errors.phone}
+            </p>
+          )}
         </div>
 
         <div>
@@ -144,9 +159,13 @@ const ContactForm: React.FC = () => {
             onChange={handleInputChange}
             required
             aria-invalid={!!errors.subject}
-            aria-describedby={errors.subject ? "subject-error" : undefined}
+            aria-describedby={errors.subject ? 'subject-error' : undefined}
           />
-          {errors.subject && <p id="subject-error" className="error-msg">{errors.subject}</p>}
+          {errors.subject && (
+            <p id="subject-error" className="error-msg">
+              {errors.subject}
+            </p>
+          )}
         </div>
 
         <div>
@@ -159,9 +178,13 @@ const ContactForm: React.FC = () => {
             onChange={handleInputChange}
             required
             aria-invalid={!!errors.message}
-            aria-describedby={errors.message ? "message-error" : undefined}
+            aria-describedby={errors.message ? 'message-error' : undefined}
           ></textarea>
-          {errors.message && <p id="message-error" className="error-msg">{errors.message}</p>}
+          {errors.message && (
+            <p id="message-error" className="error-msg">
+              {errors.message}
+            </p>
+          )}
         </div>
 
         <button type="submit" data-btn="pill" disabled={isSubmitting}>
@@ -169,7 +192,7 @@ const ContactForm: React.FC = () => {
         </button>
       </form>
     </section>
-  );
-};
+  )
+}
 
-export default ContactForm;
+export default ContactForm

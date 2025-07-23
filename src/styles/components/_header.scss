@@ -1,7 +1,7 @@
 header {
+  grid-template-rows: minmax(300px, auto);
   min-height: fit-content;
   padding-block: 2rem;
-  grid-template-rows: minmax(300px, auto);
 
   > section > p {
     font-size: var(--fs-7);

@@ -1,15 +1,15 @@
 ---
-import { getCollection } from "astro:content";
-import Layout from "../../layouts/Layout.astro";
-const allPosts = await getCollection("posts");
-const tags = [...new Set(allPosts.map((post) => post.data.tags).flat())];
-const pageTitle = "Tag Index";
+import { getCollection } from 'astro:content'
+import Layout from '../../layouts/Layout.astro'
+const allPosts = await getCollection('posts')
+const tags = [...new Set(allPosts.map(post => post.data.tags).flat())]
+const pageTitle = 'Tag Index'
 ---
 
 <Layout pageTitle={pageTitle}>
   <ul data-list="unstyled">
     {
-      tags?.map((tag) => (
+      tags?.map(tag => (
         <li class="tag">
           <a href={`/tags/${tag}`}>{tag}</a>
         </li>

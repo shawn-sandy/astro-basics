@@ -36,8 +36,8 @@
       "    nextUrl={page?.url?.next || undefined}",
       "    totalPages={page.size}",
       "  />",
-      "</Layout>"
+      "</Layout>",
     ],
-    "description": "Astro page template with pagination and blog posts"
-  }
+    "description": "Astro page template with pagination and blog posts",
+  },
 }

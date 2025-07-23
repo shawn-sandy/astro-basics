@@ -1,13 +1,12 @@
 ---
 export type Props = {
-  title?: string;
-  url?: string;
-  description?: string;
-  descId?: string;
-};
-const { title, url, description, descId } = Astro.props;
-const descriptionId =
-  descId && descId.length > 0 ? `article-${descId}` : undefined;
+  title?: string
+  url?: string
+  description?: string
+  descId?: string
+}
+const { title, url, description, descId } = Astro.props
+const descriptionId = descId && descId.length > 0 ? `article-${descId}` : undefined
 ---
 
 <h2 data-ui="display" aria-describedby={descriptionId}>
