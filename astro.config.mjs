@@ -20,8 +20,8 @@ export default defineConfig({
   integrations: [react(), sitemap(), lighthouse(), embeds(), mdx(), clerk(), astroImageTools],
   output: 'server',
   // Choose adapter based on deployment target
-  adapter: netlify(),
-  // adapter: node({
-  //   mode: 'standalone',
-  // }),
+  // adapter: netlify(),
+  adapter: node({
+    mode: 'standalone',
+  }),
 })
