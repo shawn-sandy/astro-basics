@@ -21,7 +21,7 @@ export default defineConfig({
   output: 'server',
   // Choose adapter based on deployment target
   adapter: netlify(),
-  adapter: node({
-    mode: 'standalone',
-  }),
+  // adapter: node({
+  //   mode: 'standalone',
+  // }),
 })
