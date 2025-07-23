@@ -22,7 +22,9 @@ This is **@shawnsandy/astro-kit**, a collection of reusable Astro components and
 ### Testing
 
 - `npm test` - Run Vitest unit tests (excludes e2e folder)
-- `npx playwright test` - Run end-to-end tests (requires server running)
+- `npm run test:e2e` - Run Playwright end-to-end tests
+- `npm run test:e2e:report` - View Playwright test reports
+- `npx playwright test` - Alternative command for e2e tests (requires server running)
 
 ### Code Quality
 
@@ -50,7 +52,7 @@ Uses Astro's content collections with three main collections defined in `src/con
 - `docs` - Documentation content  
 - `content` - General content articles
 
-All collections share the same schema including frontmatter for title, pubDate, description, author, tags, featured status, and optional YouTube integration.
+All collections share the same schema including frontmatter for title, pubDate, description, author, tags, featured status, breadcrumbSlug, publish status, and optional YouTube integration.
 
 ### Path Aliases
 
@@ -65,22 +67,25 @@ Uses `#*` import alias mapping to `./src/*` for cleaner imports across the codeb
 
 ### Site Configuration
 
-- `src/utils/site-config.ts` - Contains site constants (title, description, pagination, breadcrumbs)
+- `src/utils/site-config.ts` - Contains site constants (title, description, `PAGINATION_COUNT: 2`, breadcrumbs, contact info)
 - `src/libs/content.ts` - Content utility functions (Slugify, Truncate)
 
 ### Testing Setup
 
-- **Unit Tests**: Vitest with Astro configuration, excludes e2e tests
-- **E2E Tests**: Playwright configured for multi-browser testing (Chrome, Firefox, Safari)
-- Test server runs on port 4321
+- **Unit Tests**: Vitest with Astro configuration in `/tests` directory, excludes e2e tests
+- **E2E Tests**: Playwright configured for multi-browser testing in `/e2e` directory (Chrome, Firefox, Safari)
+- Test server runs on port 4321 using `npm run start` for e2e testing
+- Test results stored in `/test-results` and reports in `/playwright-report`
 
 ### Key Integrations
 
 - React support for interactive components
 - MDX for rich content authoring
-- Netlify adapter for static site deployment
+- Dual deployment adapters: Netlify (`@astrojs/netlify`) and Node.js (`@astrojs/node`)
 - Image optimization with astro-imagetools
 - YouTube embeds, RSS feeds, and sitemap generation
+- Performance auditing with astro-lighthouse
+- Enhanced content embedding with astro-embed
 
 ## Package Structure
 
@@ -113,6 +118,7 @@ This is published as an npm package with:
 - `PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk authentication (public)
 - `CLERK_SECRET_KEY` - Clerk authentication (private)
 - Optional: Contentful CMS integration variables for content management
+- See `.env.example` for complete environment variable structure
 
 ### Development vs Production
 
@@ -132,22 +138,25 @@ This is published as an npm package with:
 - `astro-embed/integration` - Enhanced content embedding
 - `astro-imagetools` - Advanced image processing and optimization
 - `rehype-accessible-emojis` - Accessible emoji rendering in MDX
+- `remark-toc` - Table of contents generation for markdown
 
 ### Development Tools
 
-- `@total-typescript/ts-reset` - Enhanced TypeScript experience
+- `@total-typescript/ts-reset` - Enhanced TypeScript experience (imported in `reset.d.ts`)
+- Prettier with Astro plugin for code formatting
 - Form validation utilities in `src/utils/contact.ts`
 - Constants for form errors in `src/constants/formErrors.ts`
 
 ## Development Notes
 
 - Port 4321 is the standard development server port
-- **Server-side rendering**: Project now uses `output: "server"` mode (not static)
+- **Server-side rendering**: Project uses `output: "server"` mode (not static)
 - Dual deployment: Configured for both standalone Node.js and Netlify
 - TypeScript is configured with strict null checks and React JSX transform
 - Enhanced parallel development with `npm run start` (dev + sass watching)
 - Database-ready: Documentation exists for Astro DB integration (future enhancement)
--
+- Netlify configuration: `publish = "dist"` with `pretty_urls = false`
+- Uses `npm-run-all` for parallel script execution
 
 ## Documentation
 
