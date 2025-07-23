@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.ts,**/*.tsx"
+applyTo: '**/*.ts,**/*.tsx'
 ---
 
 # Interface Extends
@@ -13,25 +13,25 @@ The `&` operator has terrible performance in TypeScript. Only use it where
 // BAD
 
 type A = {
-  a: string;
-};
+  a: string
+}
 
 type B = {
-  b: string;
-};
+  b: string
+}
 
-type C = A & B;
+type C = A & B
 ```
 
 ```ts
 // GOOD
 
 interface A {
-  a: string;
+  a: string
 }
 
 interface B {
-  b: string;
+  b: string
 }
 
 interface C extends A, B {

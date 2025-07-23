@@ -17,6 +17,7 @@ This comprehensive guide covers integrating Astro DB into the `@shawnsandy/astro
 ## Prerequisites
 
 Your project is already well-configured with:
+
 - Astro 5.8.0
 - Node.js adapter with server output mode
 - TypeScript support
@@ -33,6 +34,7 @@ npx astro add db
 ```
 
 This command will:
+
 - Install the `@astrojs/db` package
 - Add the integration to your `astro.config.mjs`
 - Create the necessary configuration files
@@ -48,22 +50,22 @@ npm install @astrojs/db
 Then update your `astro.config.mjs`:
 
 ```javascript
-import { defineConfig } from "astro/config";
-import react from "@astrojs/react";
-import mdx from "@astrojs/mdx";
-import remarkToc from "remark-toc";
-import { rehypeAccessibleEmojis } from "rehype-accessible-emojis";
-import netlify from "@astrojs/netlify";
-import sitemap from "@astrojs/sitemap";
-import embeds from "astro-embed/integration";
-import { astroImageTools } from "astro-imagetools";
-import lighthouse from "astro-lighthouse";
-import node from "@astrojs/node";
-import clerk from "@clerk/astro";
-import db from "@astrojs/db"; // Add this import
+import { defineConfig } from 'astro/config'
+import react from '@astrojs/react'
+import mdx from '@astrojs/mdx'
+import remarkToc from 'remark-toc'
+import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis'
+import netlify from '@astrojs/netlify'
+import sitemap from '@astrojs/sitemap'
+import embeds from 'astro-embed/integration'
+import { astroImageTools } from 'astro-imagetools'
+import lighthouse from 'astro-lighthouse'
+import node from '@astrojs/node'
+import clerk from '@clerk/astro'
+import db from '@astrojs/db' // Add this import
 
 export default defineConfig({
-  site: "https://example.com",
+  site: 'https://example.com',
   integrations: [
     react(),
     sitemap(),
@@ -75,10 +77,10 @@ export default defineConfig({
     db(), // Add this integration
   ],
   adapter: node({
-    mode: "standalone",
+    mode: 'standalone',
   }),
-  output: "server",
-});
+  output: 'server',
+})
 ```
 
 ## Database Configuration
@@ -89,7 +91,7 @@ After installation, you'll have a `db/config.ts` file. Define your tables based 
 
 ```typescript
 // db/config.ts
-import { defineDb, defineTable, column } from 'astro:db';
+import { defineDb, defineTable, column } from 'astro:db'
 
 const User = defineTable({
   columns: {
@@ -98,8 +100,8 @@ const User = defineTable({
     name: column.text(),
     avatar: column.text({ optional: true }),
     createdAt: column.date({ default: new Date() }),
-  }
-});
+  },
+})
 
 const Post = defineTable({
   columns: {
@@ -116,8 +118,8 @@ const Post = defineTable({
     userId: column.number({ references: () => User.columns.id, optional: true }),
     createdAt: column.date({ default: new Date() }),
     updatedAt: column.date({ default: new Date() }),
-  }
-});
+  },
+})
 
 const Comment = defineTable({
   columns: {
@@ -129,8 +131,8 @@ const Comment = defineTable({
     parentId: column.number({ references: () => Comment.columns.id, optional: true }),
     approved: column.boolean({ default: false }),
     createdAt: column.date({ default: new Date() }),
-  }
-});
+  },
+})
 
 const Analytics = defineTable({
   columns: {
@@ -139,12 +141,12 @@ const Analytics = defineTable({
     views: column.number({ default: 0 }),
     uniqueViews: column.number({ default: 0 }),
     lastViewed: column.date({ default: new Date() }),
-  }
-});
+  },
+})
 
 export default defineDb({
-  tables: { User, Post, Comment, Analytics }
-});
+  tables: { User, Post, Comment, Analytics },
+})
 ```
 
 ### 4. Seed Your Database (Development)
@@ -153,7 +155,7 @@ Create a `db/seed.ts` file for development data:
 
 ```typescript
 // db/seed.ts
-import { db, User, Post, Comment, Analytics } from 'astro:db';
+import { db, User, Post, Comment, Analytics } from 'astro:db'
 
 export default async function seed() {
   // Seed users
@@ -168,8 +170,8 @@ export default async function seed() {
       id: 2,
       email: 'demo@example.com',
       name: 'Demo User',
-    }
-  ]);
+    },
+  ])
 
   // Seed posts
   await db.insert(Post).values([
@@ -198,8 +200,8 @@ export default async function seed() {
       published: true,
       pubDate: new Date('2024-01-20'),
       userId: 1,
-    }
-  ]);
+    },
+  ])
 
   // Seed comments
   await db.insert(Comment).values([
@@ -218,8 +220,8 @@ export default async function seed() {
       email: 'john@example.com',
       postId: 1,
       approved: true,
-    }
-  ]);
+    },
+  ])
 
   // Seed analytics
   await db.insert(Analytics).values([
@@ -234,8 +236,8 @@ export default async function seed() {
       path: '/blog/getting-started-astro-db',
       views: 89,
       uniqueViews: 67,
-    }
-  ]);
+    },
+  ])
 }
 ```
 
@@ -248,46 +250,58 @@ Here's how to query your database in Astro pages:
 ```astro
 ---
 // src/pages/blog/index.astro
-import { db, Post } from 'astro:db';
-import Layout from '#layouts/Layout.astro';
+import { db, Post } from 'astro:db'
+import Layout from '#layouts/Layout.astro'
 
 // Get all published posts
 const posts = await db
   .select()
   .from(Post)
   .where(eq(Post.published, true))
-  .orderBy(desc(Post.pubDate));
+  .orderBy(desc(Post.pubDate))
 
 // Get featured posts
 const featuredPosts = await db
   .select()
   .from(Post)
   .where(and(eq(Post.published, true), eq(Post.featured, true)))
-  .limit(3);
+  .limit(3)
 ---
 
 <Layout title="Blog">
   <main>
     <h1>Featured Posts</h1>
     <div class="featured-grid">
-      {featuredPosts.map(post => (
-        <article>
-          <h2><a href={`/blog/${post.slug}`}>{post.title}</a></h2>
-          <p>{post.excerpt}</p>
-          <p>By {post.author} on {post.pubDate.toLocaleDateString()}</p>
-        </article>
-      ))}
+      {
+        featuredPosts.map(post => (
+          <article>
+            <h2>
+              <a href={`/blog/${post.slug}`}>{post.title}</a>
+            </h2>
+            <p>{post.excerpt}</p>
+            <p>
+              By {post.author} on {post.pubDate.toLocaleDateString()}
+            </p>
+          </article>
+        ))
+      }
     </div>
 
     <h1>All Posts</h1>
     <div class="posts-list">
-      {posts.map(post => (
-        <article>
-          <h3><a href={`/blog/${post.slug}`}>{post.title}</a></h3>
-          <p>{post.excerpt}</p>
-          <p>By {post.author} on {post.pubDate.toLocaleDateString()}</p>
-        </article>
-      ))}
+      {
+        posts.map(post => (
+          <article>
+            <h3>
+              <a href={`/blog/${post.slug}`}>{post.title}</a>
+            </h3>
+            <p>{post.excerpt}</p>
+            <p>
+              By {post.author} on {post.pubDate.toLocaleDateString()}
+            </p>
+          </article>
+        ))
+      }
     </div>
   </main>
 </Layout>
@@ -298,27 +312,27 @@ const featuredPosts = await db
 ```astro
 ---
 // src/pages/blog/[slug].astro
-import { db, Post, Comment } from 'astro:db';
-import { eq } from 'astro:db';
-import Layout from '#layouts/Layout.astro';
+import { db, Post, Comment } from 'astro:db'
+import { eq } from 'astro:db'
+import Layout from '#layouts/Layout.astro'
 
 export async function getStaticPaths() {
-  const posts = await db.select().from(Post).where(eq(Post.published, true));
-  
+  const posts = await db.select().from(Post).where(eq(Post.published, true))
+
   return posts.map(post => ({
     params: { slug: post.slug },
-    props: { post }
-  }));
+    props: { post },
+  }))
 }
 
-const { post } = Astro.props;
+const { post } = Astro.props
 
 // Get comments for this post
 const comments = await db
   .select()
   .from(Comment)
   .where(and(eq(Comment.postId, post.id), eq(Comment.approved, true)))
-  .orderBy(asc(Comment.createdAt));
+  .orderBy(asc(Comment.createdAt))
 ---
 
 <Layout title={post.title}>
@@ -326,28 +340,32 @@ const comments = await db
     <header>
       <h1>{post.title}</h1>
       <p>By {post.author} on {post.pubDate.toLocaleDateString()}</p>
-      {post.tags && (
-        <div class="tags">
-          {JSON.parse(post.tags).map(tag => (
-            <span class="tag">{tag}</span>
-          ))}
-        </div>
-      )}
+      {
+        post.tags && (
+          <div class="tags">
+            {JSON.parse(post.tags).map(tag => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )
+      }
     </header>
-    
+
     <div class="content">
       {post.content}
     </div>
 
     <section class="comments">
       <h2>Comments</h2>
-      {comments.map(comment => (
-        <div class="comment">
-          <h4>{comment.author}</h4>
-          <p>{comment.content}</p>
-          <time>{comment.createdAt.toLocaleDateString()}</time>
-        </div>
-      ))}
+      {
+        comments.map(comment => (
+          <div class="comment">
+            <h4>{comment.author}</h4>
+            <p>{comment.content}</p>
+            <time>{comment.createdAt.toLocaleDateString()}</time>
+          </div>
+        ))
+      }
     </section>
   </article>
 </Layout>
@@ -357,62 +375,63 @@ const comments = await db
 
 ```typescript
 // src/pages/api/posts.ts
-import type { APIRoute } from 'astro';
-import { db, Post } from 'astro:db';
-import { eq, desc } from 'astro:db';
+import type { APIRoute } from 'astro'
+import { db, Post } from 'astro:db'
+import { eq, desc } from 'astro:db'
 
 export const GET: APIRoute = async ({ url }) => {
-  const limit = url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')!) : 10;
-  const featured = url.searchParams.get('featured') === 'true';
+  const limit = url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')!) : 10
+  const featured = url.searchParams.get('featured') === 'true'
 
-  let query = db.select().from(Post).where(eq(Post.published, true));
+  let query = db.select().from(Post).where(eq(Post.published, true))
 
   if (featured) {
-    query = query.where(eq(Post.featured, true));
+    query = query.where(eq(Post.featured, true))
   }
 
-  const posts = await query
-    .orderBy(desc(Post.pubDate))
-    .limit(limit);
+  const posts = await query.orderBy(desc(Post.pubDate)).limit(limit)
 
   return new Response(JSON.stringify(posts), {
     status: 200,
     headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-};
+      'Content-Type': 'application/json',
+    },
+  })
+}
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const data = await request.json();
-    
-    const newPost = await db.insert(Post).values({
-      title: data.title,
-      slug: data.slug,
-      content: data.content,
-      excerpt: data.excerpt,
-      author: data.author,
-      tags: JSON.stringify(data.tags || []),
-      published: data.published || false,
-      pubDate: new Date(data.pubDate),
-    }).returning();
+    const data = await request.json()
+
+    const newPost = await db
+      .insert(Post)
+      .values({
+        title: data.title,
+        slug: data.slug,
+        content: data.content,
+        excerpt: data.excerpt,
+        author: data.author,
+        tags: JSON.stringify(data.tags || []),
+        published: data.published || false,
+        pubDate: new Date(data.pubDate),
+      })
+      .returning()
 
     return new Response(JSON.stringify(newPost[0]), {
       status: 201,
       headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+        'Content-Type': 'application/json',
+      },
+    })
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Failed to create post' }), {
       status: 400,
       headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+        'Content-Type': 'application/json',
+      },
+    })
   }
-};
+}
 ```
 
 ## Production Setup
@@ -430,27 +449,32 @@ ASTRO_DB_APP_TOKEN=your-auth-token
 #### Using Turso (Recommended)
 
 1. Install the Turso CLI:
+
 ```bash
 npm install -g @tursodatabase/cli
 ```
 
 2. Create an account and database:
+
 ```bash
 turso auth signup
 turso db create your-project-name
 ```
 
 3. Get your database URL:
+
 ```bash
 turso db show your-project-name
 ```
 
 4. Create an auth token:
+
 ```bash
 turso db tokens create your-project-name
 ```
 
 5. Set environment variables:
+
 ```bash
 ASTRO_DB_REMOTE_URL=libsql://your-project-name-[user].turso.io
 ASTRO_DB_APP_TOKEN=your-generated-token
@@ -474,45 +498,41 @@ You can use both your existing content collections and Astro DB:
 ```astro
 ---
 // src/pages/content/[slug].astro
-import { getCollection } from 'astro:content';
-import { db, Analytics } from 'astro:db';
-import { eq } from 'astro:db';
+import { getCollection } from 'astro:content'
+import { db, Analytics } from 'astro:db'
+import { eq } from 'astro:db'
 
 // Get content from collections
 export async function getStaticPaths() {
-  const posts = await getCollection('posts');
+  const posts = await getCollection('posts')
   return posts.map(post => ({
     params: { slug: post.slug },
-    props: { post }
-  }));
+    props: { post },
+  }))
 }
 
-const { post } = Astro.props;
-const { Content } = await post.render();
+const { post } = Astro.props
+const { Content } = await post.render()
 
 // Track page views in database
-const currentPath = Astro.url.pathname;
-const analytics = await db
-  .select()
-  .from(Analytics)
-  .where(eq(Analytics.path, currentPath))
-  .get();
+const currentPath = Astro.url.pathname
+const analytics = await db.select().from(Analytics).where(eq(Analytics.path, currentPath)).get()
 
 if (analytics) {
   await db
     .update(Analytics)
-    .set({ 
+    .set({
       views: analytics.views + 1,
-      lastViewed: new Date()
+      lastViewed: new Date(),
     })
-    .where(eq(Analytics.path, currentPath));
+    .where(eq(Analytics.path, currentPath))
 } else {
   await db.insert(Analytics).values({
     path: currentPath,
     views: 1,
     uniqueViews: 1,
-    lastViewed: new Date()
-  });
+    lastViewed: new Date(),
+  })
 }
 ---
 
@@ -527,12 +547,12 @@ You can create a migration script to move existing content to the database:
 
 ```typescript
 // scripts/migrate-content.ts
-import { getCollection } from 'astro:content';
-import { db, Post } from 'astro:db';
+import { getCollection } from 'astro:content'
+import { db, Post } from 'astro:db'
 
 export async function migrateContent() {
-  const posts = await getCollection('posts');
-  
+  const posts = await getCollection('posts')
+
   for (const post of posts) {
     await db.insert(Post).values({
       title: post.data.title,
@@ -544,7 +564,7 @@ export async function migrateContent() {
       featured: post.data.featured || false,
       published: true,
       pubDate: post.data.pubDate,
-    });
+    })
   }
 }
 ```
@@ -582,36 +602,39 @@ Create database tests using your existing Vitest setup:
 
 ```typescript
 // tests/database.test.ts
-import { describe, it, expect, beforeEach } from 'vitest';
-import { db, Post, User } from 'astro:db';
+import { describe, it, expect, beforeEach } from 'vitest'
+import { db, Post, User } from 'astro:db'
 
 describe('Database Operations', () => {
   beforeEach(async () => {
     // Clear test data
-    await db.delete(Post);
-    await db.delete(User);
-  });
+    await db.delete(Post)
+    await db.delete(User)
+  })
 
   it('should create and retrieve a user', async () => {
     const userData = {
       email: 'test@example.com',
       name: 'Test User',
-    };
+    }
 
-    const [user] = await db.insert(User).values(userData).returning();
-    expect(user.email).toBe(userData.email);
-    expect(user.name).toBe(userData.name);
+    const [user] = await db.insert(User).values(userData).returning()
+    expect(user.email).toBe(userData.email)
+    expect(user.name).toBe(userData.name)
 
-    const retrievedUser = await db.select().from(User).where(eq(User.id, user.id)).get();
-    expect(retrievedUser).toBeDefined();
-    expect(retrievedUser?.email).toBe(userData.email);
-  });
+    const retrievedUser = await db.select().from(User).where(eq(User.id, user.id)).get()
+    expect(retrievedUser).toBeDefined()
+    expect(retrievedUser?.email).toBe(userData.email)
+  })
 
   it('should create posts with relationships', async () => {
-    const [user] = await db.insert(User).values({
-      email: 'author@example.com',
-      name: 'Author Name',
-    }).returning();
+    const [user] = await db
+      .insert(User)
+      .values({
+        email: 'author@example.com',
+        name: 'Author Name',
+      })
+      .returning()
 
     const postData = {
       title: 'Test Post',
@@ -621,13 +644,13 @@ describe('Database Operations', () => {
       published: true,
       pubDate: new Date(),
       userId: user.id,
-    };
+    }
 
-    const [post] = await db.insert(Post).values(postData).returning();
-    expect(post.title).toBe(postData.title);
-    expect(post.userId).toBe(user.id);
-  });
-});
+    const [post] = await db.insert(Post).values(postData).returning()
+    expect(post.title).toBe(postData.title)
+    expect(post.userId).toBe(user.id)
+  })
+})
 ```
 
 ## Best Practices

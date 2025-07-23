@@ -32,9 +32,9 @@ The project includes these key Clerk dependencies:
 The Clerk integration is configured in `astro.config.mjs`:
 
 ```javascript
-import { defineConfig } from "astro/config";
-import react from "@astrojs/react";
-import clerk from "@clerk/astro";
+import { defineConfig } from 'astro/config'
+import react from '@astrojs/react'
+import clerk from '@clerk/astro'
 
 export default defineConfig({
   integrations: [
@@ -42,8 +42,8 @@ export default defineConfig({
     clerk(), // Clerk integration
     // ... other integrations
   ],
-  output: "server", // Required for Clerk middleware
-});
+  output: 'server', // Required for Clerk middleware
+})
 ```
 
 ### 3. Environment Variables
@@ -63,16 +63,16 @@ CLERK_SECRET_KEY=sk_test_...
 Authentication middleware is configured in `src/middleware.ts`:
 
 ```typescript
-import { clerkMiddleware, createRouteMatcher } from "@clerk/astro/server";
+import { clerkMiddleware, createRouteMatcher } from '@clerk/astro/server'
 
-const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/forum(.*)"]);
+const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)'])
 
 export const onRequest = clerkMiddleware((auth, context, next) => {
   if (isProtectedRoute(context.request) && !auth().userId) {
-    return auth().redirectToSignIn();
+    return auth().redirectToSignIn()
   }
-  return next();
-});
+  return next()
+})
 ```
 
 **Key Features:**
@@ -91,7 +91,7 @@ Renders content only for authenticated users.
 
 ```astro
 ---
-import { SignedIn } from "@clerk/astro/components";
+import { SignedIn } from '@clerk/astro/components'
 ---
 
 <SignedIn>
@@ -110,7 +110,7 @@ Renders content only for unauthenticated users.
 
 ```astro
 ---
-import { SignedOut } from "@clerk/astro/components";
+import { SignedOut } from '@clerk/astro/components'
 ---
 
 <SignedOut>
@@ -125,7 +125,7 @@ Displays user avatar with dropdown menu for account management.
 
 ```astro
 ---
-import { UserButton } from "@clerk/astro/components";
+import { UserButton } from '@clerk/astro/components'
 ---
 
 <SignedIn>
@@ -146,7 +146,7 @@ Renders a customizable sign-in button.
 
 ```astro
 ---
-import { SignInButton } from "@clerk/astro/components";
+import { SignInButton } from '@clerk/astro/components'
 ---
 
 <SignedOut>
@@ -168,12 +168,7 @@ The main layout (`src/layouts/Layout.astro`) demonstrates navigation-level integ
 
 ```astro
 ---
-import {
-  SignedIn,
-  SignedOut,
-  UserButton,
-  SignInButton,
-} from "@clerk/astro/components";
+import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/astro/components'
 ---
 
 <Navigation>
@@ -200,8 +195,8 @@ Example from `src/pages/dashboard.astro`:
 
 ```astro
 ---
-import Auth from "#/layouts/Auth.astro";
-import { SignedIn, SignedOut } from "@clerk/astro/components";
+import Auth from '#/layouts/Auth.astro'
+import { SignedIn, SignedOut } from '@clerk/astro/components'
 ---
 
 <Auth pageTitle="Dashboard - Astro Kit">
@@ -235,7 +230,7 @@ Navigation component (`src/components/astro/Navigation.astro`) shows authenticat
 
 ```astro
 ---
-import { SignedIn } from "@clerk/astro/components";
+import { SignedIn } from '@clerk/astro/components'
 ---
 
 <nav>
@@ -244,7 +239,7 @@ import { SignedIn } from "@clerk/astro/components";
     <li><a href="/">Home</a></li>
     <li><a href="/about">About</a></li>
   </ul>
-  
+
   <ul>
     <SignedIn>
       <li><a href="/events">Events</a></li>
@@ -290,7 +285,7 @@ Implement error boundaries for authentication failures:
 
 ```astro
 ---
-import { SignedIn, SignedOut } from "@clerk/astro/components";
+import { SignedIn, SignedOut } from '@clerk/astro/components'
 ---
 
 <SignedIn>
@@ -313,20 +308,20 @@ For React components that need authentication context:
 
 ```tsx
 // src/components/react/ProtectedComponent.tsx
-import { useUser } from "@clerk/astro/react";
+import { useUser } from '@clerk/astro/react'
 
 export default function ProtectedComponent() {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser()
 
-  if (!isLoaded) return <div>Loading...</div>;
-  if (!isSignedIn) return <div>Please sign in</div>;
+  if (!isLoaded) return <div>Loading...</div>
+  if (!isSignedIn) return <div>Please sign in</div>
 
   return (
     <div>
       <h2>Welcome, {user.firstName}!</h2>
       {/* Protected React component content */}
     </div>
-  );
+  )
 }
 ```
 
@@ -336,7 +331,7 @@ When using Clerk components in React components that need client-side interactiv
 
 ```astro
 ---
-import ProtectedComponent from "#components/react/ProtectedComponent.tsx";
+import ProtectedComponent from '#components/react/ProtectedComponent.tsx'
 ---
 
 <ProtectedComponent client:load />

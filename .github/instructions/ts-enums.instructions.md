@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.ts,**/*.tsx"
+applyTo: '**/*.ts,**/*.tsx'
 ---
 
 # Enums
@@ -10,14 +10,14 @@ If you require enum-like behaviour, use an `as const` object:
 
 ```ts
 const backendToFrontendEnum = {
-  xs: "EXTRA_SMALL",
-  sm: "SMALL",
-  md: "MEDIUM",
-} as const;
+  xs: 'EXTRA_SMALL',
+  sm: 'SMALL',
+  md: 'MEDIUM',
+} as const
 
-type LowerCaseEnum = keyof typeof backendToFrontendEnum; // "xs" | "sm" | "md"
+type LowerCaseEnum = keyof typeof backendToFrontendEnum // "xs" | "sm" | "md"
 
-type UpperCaseEnum = (typeof backendToFrontendEnum)[LowerCaseEnum]; // "EXTRA_SMALL" | "SMALL" | "MEDIUM"
+type UpperCaseEnum = (typeof backendToFrontendEnum)[LowerCaseEnum] // "EXTRA_SMALL" | "SMALL" | "MEDIUM"
 ```
 
 Remember that numeric enums behave differently to string enums. Numeric enums
@@ -31,8 +31,8 @@ enum Direction {
   Right,
 }
 
-const direction = Direction.Up; // 0
-const directionName = Direction[0]; // "Up"
+const direction = Direction.Up // 0
+const directionName = Direction[0] // "Up"
 ```
 
 This means that the enum `Direction` above will have eight keys instead of four.
@@ -45,5 +45,5 @@ enum Direction {
   Right,
 }
 
-Object.keys(Direction).length; // 8
+Object.keys(Direction).length // 8
 ```

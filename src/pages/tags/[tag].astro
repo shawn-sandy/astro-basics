@@ -1,36 +1,34 @@
 ---
-import { getCollection } from "astro:content";
-import Layout from "../../layouts/Layout.astro";
-import BlogPost from "../../components/astro/BlogPosts.astro";
+import { getCollection } from 'astro:content'
+import Layout from '../../layouts/Layout.astro'
+import BlogPost from '../../components/astro/BlogPosts.astro'
 
 export async function getStaticPaths() {
-  const allPosts = await getCollection("posts");
+  const allPosts = await getCollection('posts')
 
-  const uniqueTags = [
-    ...new Set(allPosts.map((post) => post.data.tags).flat()),
-  ];
+  const uniqueTags = [...new Set(allPosts.map(post => post.data.tags).flat())]
 
-  return uniqueTags.map((tag) => {
-    const filteredPosts = allPosts.filter((post) => {
-      if(post.data.tags) {
-        return post.data.tags.includes(String(tag));
+  return uniqueTags.map(tag => {
+    const filteredPosts = allPosts.filter(post => {
+      if (post.data.tags) {
+        return post.data.tags.includes(String(tag))
       }
-    });
+    })
     return {
       params: { tag },
       props: { posts: filteredPosts },
-    };
-  });
+    }
+  })
 }
 
-const { tag } = Astro.params;
-const { posts } = Astro.props;
+const { tag } = Astro.params
+const { posts } = Astro.props
 ---
 
 <Layout pageTitle={`Tag: ${tag}`}>
   <ul data-list="unstyled">
     {
-      posts?.map((post) => (
+      posts?.map(post => (
         <BlogPost
           url={`/posts/${post.slug}`}
           title={post.data.title}

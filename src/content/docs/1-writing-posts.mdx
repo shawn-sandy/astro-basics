@@ -3,28 +3,26 @@ title: 'Writing Posts'
 pubDate: 2022-07-01
 description: 'This is the first post of my new Astro blog.'
 author: 'Astro Learner'
-tags: ["astro", "blogging", "learning in public"]
+tags: ['astro', 'blogging', 'learning in public']
 publish: true
 ---
 
-## Quick start 
+## Quick start
 
-To create your first blog post, go to the `src/content/posts` directory and create a new `.mdx` file. Open `post-1.md` and copy the content the file you created. 
+To create your first blog post, go to the `src/content/posts` directory and create a new `.mdx` file. Open `post-1.md` and copy the content the file you created.
 
-  
- 
 ```md
 --
 title: 'My First Blog Post'
 pubDate: 2022-07-01
 description: 'This is the first post of my new Astro blog.'
-author: 'Astro Learner' 
+author: 'Astro Learner'
 image:
-    url: 'https://picsum.photos/300'
-    alt: 'The full Astro logo.'
+url: 'https://picsum.photos/300'
+alt: 'The full Astro logo.'
 tags: ["astro", "blogging", "learning in public"]
----
 
+---
 
 Welcome to my _new blog_ about learning Astro! Here, I will share my learning journey as I build a new website.
 
@@ -35,7 +33,6 @@ Welcome to my _new blog_ about learning Astro! Here, I will share my learning jo
 2. **Making Pages**: I then learned how to make pages by creating new `.astro` files and placing them in the `src/pages/` folder.
 
 3. **Making Blog Posts**: This is my first blog post! I now have Astro pages and Markdown posts!
-
 ```
 
 Edit the content by fisrt changing the title, description, authors and tags in the frontmatter setion. Then, you can add your own content.
@@ -45,6 +42,7 @@ Edit the content by fisrt changing the title, description, authors and tags in t
 ## Add post meta with Frontmatter
 
 The frontmatter is the section at the top of the file that contains metadata about the post. You can add or modify the following fields:
+
 ```md
 ---
 title: 'My Second Blog Post'
@@ -52,9 +50,9 @@ pubDate: 2022-07-05
 description: 'An update on my Astro learning journey.'
 author: 'author name'
 image:
-    url: 'https://picsum.photos/300'
-    alt: 'The full Astro logo.'
-tags: ["tag-1", 'tag-2', "blogging", ]
+  url: 'https://picsum.photos/300'
+  alt: 'The full Astro logo.'
+tags: ['tag-1', 'tag-2', 'blogging']
 ---
 ```
 
@@ -62,9 +60,7 @@ tags: ["tag-1", 'tag-2', "blogging", ]
 
 Now, you can use markdown to format your content. Here are some examples:
 
-
 ```md
-
 # Heading 1
 
 Welcome to my _new blog_ about learning Astro! Here, I will share my learning journey as I build a new website.
@@ -73,18 +69,14 @@ Welcome to my _new blog_ about learning Astro! Here, I will share my learning jo
 
 You can write paragraphs of text like this one and format text with **bold**, _italics_, `code` and other markdown syntax.
 
-
 You can also include lists:
+
 1. Item 1
 2. Item 2
 3. Item 3
 
 You can also include images:
 ![Astro Logo](https://picsum.photos/300)
-
-
- 
-
 ```
 
 ## So in summary, to create a new blog post:

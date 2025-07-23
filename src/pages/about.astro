@@ -1,20 +1,20 @@
 ---
-export const prerender = true;
-import Layout from "../layouts/Layout.astro";
-const pageTitle = "About";
+export const prerender = true
+import Layout from '../layouts/Layout.astro'
+const pageTitle = 'About'
 
 const identity = {
-  firstName: "Sarah",
-  country: "Canada",
-  occupation: "Technical Writer",
-  hobbies: ["photography", "birdwatching", "baseball"],
-};
+  firstName: 'Sarah',
+  country: 'Canada',
+  occupation: 'Technical Writer',
+  hobbies: ['photography', 'birdwatching', 'baseball'],
+}
 
-const skills = ["HTML", "CSS", "JavaScript", "React", "Astro", "Writing Docs"];
+const skills = ['HTML', 'CSS', 'JavaScript', 'React', 'Astro', 'Writing Docs']
 
-const happy = true;
-const finished = false;
-const goal = 3;
+const happy = true
+const finished = false
+const goal = 3
 ---
 
 <Layout pageTitle={pageTitle}>
@@ -22,13 +22,13 @@ const goal = 3;
   <h3>... and my new Astro site!</h3>
 
   <p>
-    I am working through Astro's introductory tutorial. This is the second page
-    on my website, and it's the first one I built myself!
+    I am working through Astro's introductory tutorial. This is the second page on my website, and
+    it's the first one I built myself!
   </p>
 
   <p>
-    This site will update as I complete more of the tutorial, so keep checking
-    back and see how my journey is going!
+    This site will update as I complete more of the tutorial, so keep checking back and see how my
+    journey is going!
   </p>
   <p>Here are a few facts about me:</p>
   <ul>
@@ -46,26 +46,18 @@ const goal = 3;
   </ul>
 
   <p>
-    I have experience with a wide range of technical skills that are useful for
-    web development and writing documentation. Some of my strongest abilities
-    are with HTML, CSS, JavaScript, React, and Astro. I also have skills in
-    writing documentation, which helps me create tutorials and API references.
-    My goal is to continue improving my development and writing skills over
-    time.
+    I have experience with a wide range of technical skills that are useful for web development and
+    writing documentation. Some of my strongest abilities are with HTML, CSS, JavaScript, React, and
+    Astro. I also have skills in writing documentation, which helps me create tutorials and API
+    references. My goal is to continue improving my development and writing skills over time.
   </p>
   <p>My skills are:</p>
   <ul>
-    {skills.map((skill) => <li>{skill}</li>)}
+    {skills.map(skill => <li>{skill}</li>)}
   </ul>
   {happy && <p>I am happy to be learning Astro!</p>}
 
   {finished && <p>I finished this tutorial!</p>}
 
-  {
-    goal === 3 ? (
-      <p>My goal is to finish in 3 days.</p>
-    ) : (
-      <p>My goal is not 3 days.</p>
-    )
-  }
+  {goal === 3 ? <p>My goal is to finish in 3 days.</p> : <p>My goal is not 3 days.</p>}
 </Layout>

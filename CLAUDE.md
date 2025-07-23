@@ -29,6 +29,16 @@ This is **@shawnsandy/astro-kit**, a collection of reusable Astro components and
 ### Code Quality
 
 - `npm run lint` - Run ESLint with auto-fix
+- `npm run lint:check` - Run ESLint without fixes
+- `npm run lint:styles` - Run StyleLint for SCSS/CSS
+- `npm run lint:styles:fix` - Fix StyleLint issues
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check Prettier formatting
+- `npm run type-check` - Run TypeScript type checking
+- `npm run lint:all` - Run all linting checks
+- `npm run fix:all` - Fix all auto-fixable issues
+
+**Comprehensive Linting Setup**: See `/docs/LINTING_GUIDE.md` for detailed configuration and usage
 
 ### Package Management
 
@@ -49,7 +59,7 @@ The project exports components through `src/components/index.ts` with two main c
 Uses Astro's content collections with three main collections defined in `src/content/config.ts`:
 
 - `posts` - Blog posts
-- `docs` - Documentation content  
+- `docs` - Documentation content
 - `content` - General content articles
 
 All collections share the same schema including frontmatter for title, pubDate, description, author, tags, featured status, breadcrumbSlug, publish status, and optional YouTube integration.

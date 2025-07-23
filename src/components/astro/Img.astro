@@ -1,24 +1,19 @@
 ---
-import { Image } from "astro:assets";
-import { Img } from "astro-imagetools/components";
+import { Image } from 'astro:assets'
+import { Img } from 'astro-imagetools/components'
 
 export type Props = {
-  imgSrc: string;
-  imgCaption?: string;
-  imgAlt?: string;
-  imgWidth?: number;
-  imgHeight?: number;
-};
+  imgSrc: string
+  imgCaption?: string
+  imgAlt?: string
+  imgWidth?: number
+  imgHeight?: number
+}
 
-const { imgSrc, imgAlt, imgWidth, imgHeight, imgCaption } = Astro.props;
+const { imgSrc, imgAlt, imgWidth, imgHeight, imgCaption } = Astro.props
 ---
 
 <figure>
-  <Img
-    src={imgSrc}
-    alt=`${imgAlt}`
-    width={imgWidth || 1200}
-    height={imgHeight || 600}
-  />
+  <Img src={imgSrc} alt=`${imgAlt}` width={imgWidth || 1200} height={imgHeight || 600} />
   {imgCaption && <figcaption>{imgCaption}</figcaption>}
 </figure>

@@ -1,8 +1,8 @@
-import React from 'react';
+import React from 'react'
 
 interface AlertProps {
-  type: 'error' | 'success' | 'info';
-  children: React.ReactNode;
+  type: 'error' | 'success' | 'info'
+  children: React.ReactNode
 }
 
 const Alert: React.FC<AlertProps> = ({ type, children }) => {
@@ -10,7 +10,7 @@ const Alert: React.FC<AlertProps> = ({ type, children }) => {
     <div className={`alert alert-${type} `} role="alert">
       {children}
     </div>
-  );
-};
+  )
+}
 
-export default Alert;
+export default Alert

@@ -1,37 +1,36 @@
-
-import React, { ChangeEvent, FormEvent } from 'react';
+import React, { ChangeEvent, FormEvent } from 'react'
 
 interface FormData {
-  name: string;
-  email: string;
-  phone: string;
-  subject: string;
-  message: string;
-  botField: string;
+  name: string
+  email: string
+  phone: string
+  subject: string
+  message: string
+  botField: string
 }
 
 interface Errors {
-  name?: string;
-  email?: string;
-  phone?: string;
-  subject?: string;
-  message?: string;
+  name?: string
+  email?: string
+  phone?: string
+  subject?: string
+  message?: string
 }
 
 interface ContactFormViewProps {
-  formData: FormData;
-  errors: Errors;
-  handleChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
-  CONTACT_INFO: { url: string; isNetlify: boolean };
+  formData: FormData
+  errors: Errors
+  handleChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
+  handleSubmit: (e: FormEvent<HTMLFormElement>) => void
+  CONTACT_INFO: { url: string; isNetlify: boolean }
 }
 
 const ContactFormView: React.FC<ContactFormViewProps> = ({
-  formData,
+  formData: _formData,
   errors,
   handleChange,
   handleSubmit,
-  CONTACT_INFO
+  CONTACT_INFO,
 }) => {
   return (
     <form
@@ -76,9 +75,11 @@ const ContactFormView: React.FC<ContactFormViewProps> = ({
         <textarea id="message" name="message" rows={7} required onChange={handleChange}></textarea>
         {errors.message && <div className="error-msg">{errors.message}</div>}
       </div>
-      <button type="submit" data-btn="pill"><b>Send Message</b></button>
+      <button type="submit" data-btn="pill">
+        <b>Send Message</b>
+      </button>
     </form>
-  );
-};
+  )
+}
 
-export default ContactFormView;
+export default ContactFormView

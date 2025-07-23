@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.ts,**/*.tsx"
+applyTo: '**/*.ts,**/*.tsx'
 ---
 
 # Default Exports
@@ -24,12 +24,12 @@ Default exports create confusion from the importing file.
 
 ```ts
 // BAD
-import myFunction from "./myFunction";
+import myFunction from './myFunction'
 ```
 
 ```ts
 // GOOD
-import { myFunction } from "./myFunction";
+import { myFunction } from './myFunction'
 ```
 
 There are certain situations where a framework may require a default export. For
@@ -38,6 +38,6 @@ instance, Next.js requires a default export for pages.
 ```tsx
 // This is fine, if required by the framework
 export default function MyPage() {
-  return <div>Hello</div>;
+  return <div>Hello</div>
 }
 ```

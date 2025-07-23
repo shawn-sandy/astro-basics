@@ -1,63 +1,58 @@
-
- export function validateForm(form: HTMLFormElement) {
+export function validateForm(form: HTMLFormElement) {
   if (form) {
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      validateForm(form);
-    });
+    form.addEventListener('submit', e => {
+      e.preventDefault()
+      validateForm(form)
+    })
 
     function validateForm(form: HTMLFormElement) {
-      const fields = form.querySelectorAll("input, textarea") as NodeListOf<
+      const fields = form.querySelectorAll('input, textarea') as NodeListOf<
         HTMLInputElement | HTMLTextAreaElement
-      >;
-      let isValid = true;
+      >
+      let isValid = true
 
-      fields.forEach((field) => {
-        const value = field.value.trim();
-        let fieldValid = true;
-        let errorMessage = "";
+      fields.forEach(field => {
+        const value = field.value.trim()
+        let fieldValid = true
+        let errorMessage = ''
 
         if (field.required && !value) {
-          fieldValid = false;
-          errorMessage = "This field is required";
-        } else if (field.type === "email" && value && !isValidEmail(value)) {
-          fieldValid = false;
-          errorMessage = "Please enter a valid email address";
-        } else if (field.id === "phone" && value && !isValidPhone(value)) {
-          fieldValid = false;
-          errorMessage = "Please enter a valid phone number";
+          fieldValid = false
+          errorMessage = 'This field is required'
+        } else if (field.type === 'email' && value && !isValidEmail(value)) {
+          fieldValid = false
+          errorMessage = 'Please enter a valid email address'
+        } else if (field.id === 'phone' && value && !isValidPhone(value)) {
+          fieldValid = false
+          errorMessage = 'Please enter a valid phone number'
         }
 
-        setFieldValidity(field, fieldValid, errorMessage);
-        if (!fieldValid) isValid = false;
-      });
+        setFieldValidity(field, fieldValid, errorMessage)
+        if (!fieldValid) isValid = false
+      })
 
       if (isValid) {
-        form.submit();
+        form.submit()
       }
     }
 
     function isValidEmail(email: string) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
     }
 
     function isValidPhone(phone: string) {
-      return /^[\d\s-()]{7,}$/.test(phone);
+      return /^[\d\s-()]{7,}$/.test(phone)
     }
 
-    function setFieldValidity(
-      field: HTMLElement,
-      isValid: boolean,
-      errorMessage: string
-    ) {
-      const errorElement = field.nextElementSibling as HTMLElement;
+    function setFieldValidity(field: HTMLElement, isValid: boolean, _errorMessage: string) {
+      const errorElement = field.nextElementSibling as HTMLElement
 
       if (isValid) {
-        field.classList.remove("invalid");
-        errorElement?.classList.add("error-msg");
+        field.classList.remove('invalid')
+        errorElement?.classList.add('error-msg')
       } else {
-        field.classList.add("invalid");
-        errorElement?.classList.remove("error-msg");
+        field.classList.add('invalid')
+        errorElement?.classList.remove('error-msg')
       }
     }
   }

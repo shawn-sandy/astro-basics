@@ -1,9 +1,9 @@
 ---
-import { getCollection } from "astro:content";
-import type { SortType } from "#utils/types";
-import BlogPosts from "./BlogPosts.astro";
-import { PAGINATION_COUNT } from "#utils/site-config";
-import type { TODO } from "#utils/types";
+import { getCollection } from 'astro:content'
+import type { SortType } from '#utils/types'
+import BlogPosts from './BlogPosts.astro'
+import { PAGINATION_COUNT } from '#utils/site-config'
+import type { TODO } from '#utils/types'
 
 /**
  * The props for the CollectionList component.
@@ -14,22 +14,19 @@ import type { TODO } from "#utils/types";
  * @property {any} [collection] - The collection to display.
  */
 export type Props = {
-  collectionTitle?: string;
-  pageSize?: number;
-  to?: string;
-  collection?: TODO;
-};
+  collectionTitle?: string
+  pageSize?: number
+  to?: string
+  collection?: TODO
+}
 
-const { collectionTitle, pageSize, to, collection } = Astro.props;
-const collectionResults = (await getCollection(collection || "posts"))
+const { collectionTitle, pageSize, to, collection } = Astro.props
+const collectionResults = (await getCollection(collection || 'posts'))
   .filter(({ data: data }) => {
-    return data.publish === true;
+    return data.publish === true
   })
-  .sort(
-    (a: SortType, b: SortType) =>
-      b.data.pubDate.getTime() - a.data.pubDate.getTime()
-  )
-  .slice(0, PAGINATION_COUNT || 3);
+  .sort((a: SortType, b: SortType) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, PAGINATION_COUNT || 3)
 ---
 
 {collectionTitle && <h3 data-ui="display">{collectionTitle}</h3>}
@@ -39,7 +36,7 @@ const collectionResults = (await getCollection(collection || "posts"))
     <BlogPosts
       title={post.data.title}
       description={post.data.description}
-      url={`/${to || "posts"}/${post.slug}`}
+      url={`/${to || 'posts'}/${post.slug}`}
     />
   ))
 }

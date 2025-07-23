@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.ts,**/*.tsx"
+applyTo: '**/*.ts,**/*.tsx'
 ---
 
 # Naming Conventions
@@ -14,5 +14,5 @@ applyTo: "**/*.ts,**/*.tsx"
   (e.g., `TKey`, `TValue`)
 
 ```ts
-type RecordOfArrays<TItem> = Record<string, TItem[]>;
+type RecordOfArrays<TItem> = Record<string, TItem[]>
 ```

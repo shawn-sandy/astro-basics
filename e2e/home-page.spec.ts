@@ -1,7 +1,7 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from '@playwright/test'
 
-test("meta is correct", async ({ page }) => {
-  await page.goto("http://localhost:4321/");
+test('meta is correct', async ({ page }) => {
+  await page.goto('http://localhost:4321/')
   // await expect(page).toHaveTitle("Astro Kit");
-  expect(true).toBe(true);
-});
+  expect(true).toBe(true)
+})

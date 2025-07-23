@@ -5,25 +5,25 @@ Omit `readonly` only when the property is genuinely mutable.
 ```ts
 // BAD
 type User = {
-  id: string;
-};
+  id: string
+}
 
 const user: User = {
-  id: "1",
-};
+  id: '1',
+}
 
-user.id = "2";
+user.id = '2'
 ```
 
 ```ts
 // GOOD
 type User = {
-  readonly id: string;
-};
+  readonly id: string
+}
 
 const user: User = {
-  id: "1",
-};
+  id: '1',
+}
 
-user.id = "2"; // Error
+user.id = '2' // Error
 ```

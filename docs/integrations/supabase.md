@@ -5,6 +5,7 @@ This guide covers integrating Supabase into your Astro project for database func
 ## Overview
 
 Supabase is an open-source Firebase alternative that provides:
+
 - PostgreSQL database with real-time subscriptions
 - Authentication and authorization
 - Auto-generated APIs
@@ -45,6 +46,7 @@ npm install -D supabase
 ### 2. Get Project Credentials
 
 From your Supabase dashboard:
+
 1. Go to Settings → API
 2. Copy your project URL and anon key
 
@@ -97,8 +99,8 @@ if (!supabaseUrl || !supabaseServiceKey) {
 export const supabaseServer = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
-    persistSession: false
-  }
+    persistSession: false,
+  },
 })
 ```
 
@@ -164,14 +166,13 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
 import { supabaseServer } from '#/lib/supabase-server'
 
 export async function getStaticPaths() {
-  const { data: posts } = await supabaseServer
-    .from('posts')
-    .select('slug')
-    .eq('published', true)
+  const { data: posts } = await supabaseServer.from('posts').select('slug').eq('published', true)
 
-  return posts?.map(({ slug }) => ({
-    params: { slug }
-  })) || []
+  return (
+    posts?.map(({ slug }) => ({
+      params: { slug },
+    })) || []
+  )
 }
 
 const { slug } = Astro.params
@@ -217,11 +218,7 @@ export async function getPosts() {
 }
 
 export async function createPost(post: Partial<Post>) {
-  const { data, error } = await supabase
-    .from('posts')
-    .insert(post)
-    .select()
-    .single()
+  const { data, error } = await supabase.from('posts').insert(post).select().single()
 
   if (error) throw error
   return data
@@ -284,7 +281,7 @@ Configure Supabase to accept Clerk JWTs by setting up custom claims in your Supa
 
   const form = document.getElementById('auth-form') as HTMLFormElement
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', async e => {
     e.preventDefault()
     const formData = new FormData(form)
     const email = formData.get('email') as string
@@ -292,7 +289,7 @@ Configure Supabase to accept Clerk JWTs by setting up custom claims in your Supa
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
-      password
+      password,
     })
 
     if (error) {
@@ -320,7 +317,7 @@ export function subscribeToPostChanges(callback: (payload: any) => void) {
       {
         event: '*',
         schema: 'public',
-        table: 'posts'
+        table: 'posts',
       },
       callback
     )
@@ -328,7 +325,7 @@ export function subscribeToPostChanges(callback: (payload: any) => void) {
 }
 
 // Usage in component
-const channel = subscribeToPostChanges((payload) => {
+const channel = subscribeToPostChanges(payload => {
   console.log('Post changed:', payload)
   // Update UI accordingly
 })
@@ -361,11 +358,7 @@ export function PostsList() {
     // Subscribe to changes
     const channel = supabase
       .channel('posts')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'posts' },
-        () => loadPosts()
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => loadPosts())
       .subscribe()
 
     return () => {
@@ -385,7 +378,7 @@ export function PostsList() {
 
   return (
     <div>
-      {posts.map((post) => (
+      {posts.map(post => (
         <article key={post.id}>
           <h2>{post.title}</h2>
           <p>{post.content}</p>
@@ -411,26 +404,20 @@ export async function uploadFile(
 ): Promise<string | null> {
   const filePath = path || `${Date.now()}-${file.name}`
 
-  const { error } = await supabase.storage
-    .from(bucket)
-    .upload(filePath, file)
+  const { error } = await supabase.storage.from(bucket).upload(filePath, file)
 
   if (error) {
     console.error('Upload error:', error)
     return null
   }
 
-  const { data } = supabase.storage
-    .from(bucket)
-    .getPublicUrl(filePath)
+  const { data } = supabase.storage.from(bucket).getPublicUrl(filePath)
 
   return data.publicUrl
 }
 
 export async function deleteFile(bucket: string, path: string) {
-  const { error } = await supabase.storage
-    .from(bucket)
-    .remove([path])
+  const { error } = await supabase.storage.from(bucket).remove([path])
 
   return { error }
 }
@@ -459,12 +446,7 @@ export function ImageUpload() {
 
   return (
     <div>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleUpload}
-        disabled={uploading}
-      />
+      <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} />
       {uploading && <p>Uploading...</p>}
       {imageUrl && <img src={imageUrl} alt="Uploaded" />}
     </div>
@@ -485,15 +467,13 @@ async function migrateContent() {
   const posts = await getCollection('posts')
 
   for (const post of posts) {
-    const { error } = await supabaseServer
-      .from('posts')
-      .insert({
-        title: post.data.title,
-        content: post.body,
-        slug: post.slug,
-        published: post.data.featured || false,
-        created_at: post.data.pubDate,
-      })
+    const { error } = await supabaseServer.from('posts').insert({
+      title: post.data.title,
+      content: post.body,
+      slug: post.slug,
+      published: post.data.featured || false,
+      created_at: post.data.pubDate,
+    })
 
     if (error) {
       console.error(`Error migrating ${post.slug}:`, error)
@@ -539,7 +519,7 @@ export const PostSchema = z.object({
   title: z.string().min(1).max(200),
   content: z.string().min(1),
   slug: z.string().regex(/^[a-z0-9-]+$/),
-  published: z.boolean().default(false)
+  published: z.boolean().default(false),
 })
 
 export type PostInput = z.infer<typeof PostSchema>
@@ -562,7 +542,7 @@ export const supabasePooled = createClient(
     },
     auth: {
       autoRefreshToken: false,
-      persistSession: false
+      persistSession: false,
     },
     global: {
       headers: { 'x-application-name': 'astro-kit' },
@@ -599,7 +579,7 @@ describe('Posts', () => {
       title: 'Test Post',
       content: 'Test content',
       slug: 'test-post',
-      published: true
+      published: true,
     }
 
     const created = await createPost(newPost)
@@ -655,16 +635,19 @@ supabase db push
 ### Common Issues
 
 1. **Connection Errors**
+
    - Verify environment variables
    - Check Supabase project status
    - Ensure API keys are correct
 
 2. **Permission Denied**
+
    - Review RLS policies
    - Check user authentication status
    - Verify table permissions
 
 3. **Type Errors**
+
    - Regenerate types: `npx supabase gen types typescript`
    - Update import paths
    - Check schema changes
@@ -709,6 +692,7 @@ export const supabaseDebug = createClient(
 6. Set up proper testing and deployment pipelines
 
 For more advanced features, consider:
+
 - Edge functions for custom business logic
 - PostgREST API customization
 - Advanced real-time features

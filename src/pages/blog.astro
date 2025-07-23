@@ -1,15 +1,15 @@
 ---
-export const prerender = true;
-import { getCollection } from "astro:content";
-import Layout from "../layouts/Layout.astro";
-import BlogPosts from "../components/astro/BlogPosts.astro";
-const allPosts = await getCollection("posts");
+export const prerender = true
+import { getCollection } from 'astro:content'
+import Layout from '../layouts/Layout.astro'
+import BlogPosts from '../components/astro/BlogPosts.astro'
+const allPosts = await getCollection('posts')
 ---
 
 <Layout pageTitle="Blogs">
   <ul data-list="unstyled">
     {
-      allPosts.map((post) => (
+      allPosts.map(post => (
         <BlogPosts
           url={`posts/${post.slug}`}
           title={post.data.title}

@@ -34,8 +34,8 @@ playwright.config.ts         # Multi-browser config (Chrome, Firefox, Safari)
 - `src/libs/content.ts`
   - `Slugify()` function - URL slug generation
   - `Truncate()` function - Text truncation with ellipsis
-  
 - `src/utils/contact.ts`
+
   - Form validation logic
   - Email/phone validation functions
   - Error message handling
@@ -58,16 +58,19 @@ playwright.config.ts         # Multi-browser config (Chrome, Firefox, Safari)
 #### Target Components
 
 - `src/components/react/ContactForm.tsx`
+
   - Form submission validation
   - Field validation states
   - Error message display
 
 - `src/components/react/ContactUsForm.tsx`
+
   - User interaction flows
   - Form state management
   - Success/error handling
 
 - `src/components/react/Alert.tsx`
+
   - Different alert types/states
   - Conditional rendering
   - Accessibility attributes
@@ -81,14 +84,14 @@ playwright.config.ts         # Multi-browser config (Chrome, Firefox, Safari)
 
 ```javascript
 // Example test structure
-import { render, screen, fireEvent } from '@testing-library/react';
-import { ContactForm } from '../components/react/ContactForm';
+import { render, screen, fireEvent } from '@testing-library/react'
+import { ContactForm } from '../components/react/ContactForm'
 
 describe('ContactForm', () => {
   test('validates required fields', () => {
     // Test implementation
-  });
-});
+  })
+})
 ```
 
 ### Phase 3: Astro Component Integration Tests
@@ -112,13 +115,13 @@ describe('ContactForm', () => {
 
 ```typescript
 test('homepage loads and navigation works', async ({ page }) => {
-  await page.goto('/');
-  await expect(page).toHaveTitle('Astro Kit');
-  
+  await page.goto('/')
+  await expect(page).toHaveTitle('Astro Kit')
+
   // Test main navigation links
-  await page.click('text=Blog');
-  await expect(page.url()).toContain('/posts');
-});
+  await page.click('text=Blog')
+  await expect(page.url()).toContain('/posts')
+})
 ```
 
 #### 2. Content Discovery Journey
@@ -203,13 +206,13 @@ npm install --save-dev @testing-library/dom @testing-library/react @testing-libr
 Update `vitest.config.ts`:
 
 ```typescript
-import { getViteConfig } from "astro/config";
+import { getViteConfig } from 'astro/config'
 
 export default getViteConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
-    exclude: ["**/e2e/**", "**/__tests__/**", "**/node_modules/**"],
+    exclude: ['**/e2e/**', '**/__tests__/**', '**/node_modules/**'],
     coverage: {
       reporter: ['text', 'html', 'json'],
       threshold: {
@@ -217,12 +220,12 @@ export default getViteConfig({
           branches: 80,
           functions: 80,
           lines: 80,
-          statements: 80
-        }
-      }
-    }
+          statements: 80,
+        },
+      },
+    },
   },
-});
+})
 ```
 
 **Days 3-7: Core Utility Tests**
@@ -324,7 +327,7 @@ e2e/
 ### Quantitative Metrics
 
 - **Unit Tests**: 80%+ line coverage for utilities and React components
-- **Integration Tests**: 100% coverage of major user journeys  
+- **Integration Tests**: 100% coverage of major user journeys
 - **E2E Tests**: All critical paths and authentication flows covered
 - **Performance Tests**: Core Web Vitals benchmarks maintained
 
@@ -373,7 +376,7 @@ jobs:
 - ✅ Performance budgets respected
 - ✅ Zero accessibility violations
 
-### User Experience Metrics  
+### User Experience Metrics
 
 - ✅ Critical user journeys function flawlessly
 - ✅ Form submissions work reliably

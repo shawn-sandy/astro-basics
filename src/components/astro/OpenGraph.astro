@@ -1,33 +1,31 @@
 ---
 export type Props = {
   /** Description of the page */
-  description: string;
+  description: string
   /** Title of the page */
-  title: string;
+  title: string
   /** URL of the page */
-  url: string;
+  url: string
   /** Optional image URL for the page */
-  image?: string;
-  imgWidth?: string;
-  imgHeight?: string;
+  image?: string
+  imgWidth?: string
+  imgHeight?: string
   /** Optional type of the page, either "website" or "article" */
-  type?: "website" | "article" | "book" | "profile";
+  type?: 'website' | 'article' | 'book' | 'profile'
   /** Twitter username */
-  twitterUsername?: string;
-};
-const { description, title, url, image, type, twitterUsername, imgHeight, imgWidth } = Astro.props;
+  twitterUsername?: string
+}
+const { description, title, url, image, type, twitterUsername, imgHeight, imgWidth } = Astro.props
 ---
 
 <meta property="og:title" content={title} />
-<meta property="og:type" content={type || "website"} />
+<meta property="og:type" content={type || 'website'} />
 <meta property="og:image" content={image} />
 <meta property="og:url" content={url} />
 <meta property="og:description" content={description} />
 <!-- Twitter -->
-<meta property="og:image:width" content={imgWidth || "1280"} />
-<meta property="og:image:height" content={imgHeight || "640"} />
+<meta property="og:image:width" content={imgWidth || '1280'} />
+<meta property="og:image:height" content={imgHeight || '640'} />
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:image" content={image} />
 <meta property="twitter:site" content={twitterUsername} />
-
- 

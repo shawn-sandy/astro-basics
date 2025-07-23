@@ -1,18 +1,18 @@
 ---
 export type Props = {
-  headerTitle?: string;
-  headerDescription?: string;
-  headerImageUrl?: string;
-  headerImageAlt?: string;
-};
-const { headerTitle, headerDescription } = Astro.props;
+  headerTitle?: string
+  headerDescription?: string
+  headerImageUrl?: string
+  headerImageAlt?: string
+}
+const { headerTitle, headerDescription } = Astro.props
 ---
 
 <header>
   <section id="header">
-    <h1 data-ui="display">{headerTitle || "Header Title Here"}</h1>
+    <h1 data-ui="display">{headerTitle || 'Header Title Here'}</h1>
     <div>
-      <p>{headerDescription || "My really cool site description or slug"}</p>
+      <p>{headerDescription || 'My really cool site description or slug'}</p>
     </div>
   </section>
 </header>
