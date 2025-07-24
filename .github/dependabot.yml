@@ -16,7 +16,7 @@ updates:
     commit-message:
       prefix: 'chore' # Prefix for commit messages (e.g., chore, fix, feat)
       include: 'scope' # Include the scope in commit messages (optional)
-    open-pull-requests-limit: 5 # Maximum number of open PRs from Dependabot for npm
+    open-pull-requests-limit: 0 # Disabled - set to 5 to re-enable
     reviewers:
       - 'shawn-sandy' # Request a review from this user
     assignees:
