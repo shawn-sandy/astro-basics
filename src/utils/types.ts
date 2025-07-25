@@ -1,7 +1,7 @@
 export type SortType = {
   data: {
-    pubDate: Date;
-  };
-};
+    pubDate: Date
+  }
+}
 
-export type TODO = any;
+export type TODO = any

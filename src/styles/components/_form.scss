@@ -5,12 +5,10 @@ form {
   }
 
   label {
-    &:where(+ input[required],
-          + textarea[required],
-          + select[required]) {
+    &:where(+ input[required], + textarea[required], + select[required]) {
       &::after {
-        content: ' required *';
         color: var(--error-color);
+        content: " required *";
         font-size: smaller;
       }
     }
@@ -19,7 +17,10 @@ form {
   .error-msg {
     display: none;
   }
-  input, textarea, select {
+
+  input,
+  textarea,
+  select {
     // outline: 1px solid currentColor;
     background-color: whitesmoke;
   }
@@ -27,12 +28,14 @@ form {
   input:user-invalid:not(:focus),
   textarea:user-invalid:not(:focus),
   select:user-invalid:not(:focus) {
-    outline: thin solid var(--error-color);
     background-color: #ffe6e6;
+    outline: thin solid var(--error-color);
+
     + p {
       color: var(--error-color);
+
       &::before {
-        content: '⚠ ';
+        content: "⚠ ";
       }
     }
   }
@@ -40,12 +43,13 @@ form {
   input:user-valid:not(:focus),
   textarea:user-valid:not(:focus),
   select:user-valid:not(:focus) {
-    outline: thin solid var(--success-color);
     background-color: #e6ffe6;
+    outline: thin solid var(--success-color);
+
     + p {
       display: none;
     }
   }
 }
-// Add asterisk to labels of required fields
 
+// Add asterisk to labels of required fields

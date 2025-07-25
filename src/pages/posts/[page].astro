@@ -1,33 +1,33 @@
 ---
-export const prerender = true;
-import { PAGINATION_COUNT } from "#utils/site-config";
-import { getCollection } from "astro:content";
-import type { GetStaticPaths } from "astro";
-import Layout from "#layouts/Layout.astro";
-import Pagination from "#components/astro/Pagination.astro";
-import ContentList from "#components/astro/ContentList.astro";
-export const collection = "posts";
+export const prerender = true
+import { PAGINATION_COUNT } from '#utils/site-config'
+import { getCollection } from 'astro:content'
+import type { GetStaticPaths } from 'astro'
+import Layout from '#layouts/Layout.astro'
+import Pagination from '#components/astro/Pagination.astro'
+import ContentList from '#components/astro/ContentList.astro'
+export const collection = 'posts'
 
 type Props = {
-  pageSize: number;
+  pageSize: number
   page: {
-    currentPage: number;
-    url: { prev: string | undefined; next: string | undefined };
-    size: number;
-  };
-};
+    currentPage: number
+    url: { prev: string | undefined; next: string | undefined }
+    size: number
+  }
+}
 
 export const getStaticPaths = (async ({ paginate }) => {
   const postsCollection = (
     await getCollection(collection, ({ data }) => {
-      return data.publish === true;
+      return data.publish === true
     })
-  ).sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
-  return paginate(postsCollection, { pageSize: PAGINATION_COUNT });
-}) satisfies GetStaticPaths;
+  ).sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  return paginate(postsCollection, { pageSize: PAGINATION_COUNT })
+}) satisfies GetStaticPaths
 
-const { page } = Astro.props;
-const pageSize = PAGINATION_COUNT || 5;
+const { page } = Astro.props
+const pageSize = PAGINATION_COUNT || 5
 ---
 
 <Layout pageTitle="Blog Posts">

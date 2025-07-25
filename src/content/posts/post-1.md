@@ -2,15 +2,14 @@
 title: 'My First Blog Post'
 pubDate: 2022-07-01
 description: 'This is the first post of my new Astro blog.'
-author: 'Astro Learner' 
+author: 'Astro Learner'
 # image:
 #     url: 'https://picsum.photos/300'
 #     alt: 'The full Astro logo.'
 #     caption: The img caption from my first blog post.
-tags: ["astro", "blogging", "learning in public"]
+tags: ['astro', 'blogging', 'learning in public']
 publish: false
 ---
-
 
 publish on: 2022-07-01
 

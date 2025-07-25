@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.ts,**/*.tsx"
+applyTo: '**/*.ts,**/*.tsx'
 ---
 
 Use optional properties extremely sparingly. Only use them when the property is
@@ -13,21 +13,21 @@ function to be not authenticated.
 ```ts
 // BAD
 type AuthOptions = {
-  userId?: string;
-};
+  userId?: string
+}
 
 const func = (options: AuthOptions) => {
-  const userId = options.userId;
-};
+  const userId = options.userId
+}
 ```
 
 ```ts
 // GOOD
 type AuthOptions = {
-  userId: string | undefined;
-};
+  userId: string | undefined
+}
 
 const func = (options: AuthOptions) => {
-  const userId = options.userId;
-};
+  const userId = options.userId
+}
 ```

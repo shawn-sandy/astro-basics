@@ -1,4 +1,4 @@
-import { defineCollection, z } from "astro:content";
+import { defineCollection, z } from 'astro:content'
 
 const postsCollection = defineCollection({
   schema: z.object({
@@ -26,17 +26,17 @@ const postsCollection = defineCollection({
       })
       .optional(),
   }),
-});
+})
 
 const astroKitDocs = defineCollection({
   ...postsCollection,
-});
+})
 const content = defineCollection({
   ...postsCollection,
-});
+})
 
 export const collections = {
   posts: postsCollection,
   docs: astroKitDocs,
   content: content,
-};
+}

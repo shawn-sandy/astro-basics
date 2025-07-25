@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.ts,**/*.tsx"
+applyTo: '**/*.ts,**/*.tsx'
 ---
 
 # JSDoc Comments
@@ -16,10 +16,10 @@ same file.
 /**
  * Subtracts two numbers
  */
-const subtract = (a: number, b: number) => a - b;
+const subtract = (a: number, b: number) => a - b
 
 /**
  * Does the opposite to {@link subtract}
  */
-const add = (a: number, b: number) => a + b;
+const add = (a: number, b: number) => a + b
 ```

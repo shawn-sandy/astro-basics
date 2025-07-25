@@ -1,7 +1,7 @@
 ---
-import { TextToSpeech as TextToSpeechComponent } from "@fpkit/react";
+import { TextToSpeech as TextToSpeechComponent } from '@fpkit/react'
 
-const { text } = Astro.props;
+const { text } = Astro.props
 ---
 
 <TextToSpeechComponent initialText={text} client:idle />

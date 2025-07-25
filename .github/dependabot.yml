@@ -1,23 +1,23 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/" # Location of the package.json file (root directory in this case)
+  - package-ecosystem: 'npm'
+    directory: '/' # Location of the package.json file (root directory in this case)
     schedule:
-      interval: "weekly" # Options: daily, weekly, or monthly
-      day: "monday" # Day of the week for updates (optional, defaults to Monday)
-      time: "09:00" # Time when updates are created (optional, defaults to 05:00 UTC)
-      timezone: "Etc/UTC" # Timezone for the update schedule (optional, defaults to UTC)
+      interval: 'weekly' # Options: daily, weekly, or monthly
+      day: 'monday' # Day of the week for updates (optional, defaults to Monday)
+      time: '09:00' # Time when updates are created (optional, defaults to 05:00 UTC)
+      timezone: 'Etc/UTC' # Timezone for the update schedule (optional, defaults to UTC)
     ignore:
-      - dependency-name: "lodash" # Ignore updates for this dependency
-        versions: ["4.x"] # Ignore specific versions
+      - dependency-name: 'lodash' # Ignore updates for this dependency
+        versions: ['4.x'] # Ignore specific versions
     labels:
-      - "dependencies"
-      - "javascript"
+      - 'dependencies'
+      - 'javascript'
     commit-message:
-      prefix: "chore" # Prefix for commit messages (e.g., chore, fix, feat)
-      include: "scope" # Include the scope in commit messages (optional)
-    open-pull-requests-limit: 5 # Maximum number of open PRs from Dependabot for npm
+      prefix: 'chore' # Prefix for commit messages (e.g., chore, fix, feat)
+      include: 'scope' # Include the scope in commit messages (optional)
+    open-pull-requests-limit: 0 # Disabled - set to 5 to re-enable
     reviewers:
-      - "shawn-sandy" # Request a review from this user
+      - 'shawn-sandy' # Request a review from this user
     assignees:
-      - "shawn-sandy" # Assign the PR to this user
+      - 'shawn-sandy' # Assign the PR to this user

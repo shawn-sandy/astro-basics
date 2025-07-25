@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.tsx"
+applyTo: '**/*.tsx'
 ---
 
 # Return Types
@@ -10,8 +10,8 @@ assistants understand the function's purpose.
 
 ```ts
 const myFunc = (): string => {
-  return "hello";
-};
+  return 'hello'
+}
 ```
 
 One exception to this is components which return JSX.
@@ -20,6 +20,6 @@ as it is always JSX.
 
 ```tsx
 const MyComponent = () => {
-  return <div>Hello</div>;
-};
+  return <div>Hello</div>
+}
 ```

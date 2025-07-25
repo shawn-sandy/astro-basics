@@ -1,45 +1,33 @@
 ---
 // import { ClientOnly } from "astro:transitions";
-import Navigation from "#components/astro/Navigation.astro";
-import Footer from "#components/astro/Footer.astro";
-import Header from "#components/astro/Header.astro";
-import Sidebar from "#components/astro/Sidebar.astro";
-import AstroBreadcrumb from "#components/react/astro-breadcrumb.tsx";
-import { SITE_DESCRIPTION, SITE_TITLE } from "#utils/site-config";
-import "@fpkit/acss/styles";
-import "../styles/index.css";
-import {
-  SignedIn,
-  SignedOut,
-  UserButton,
-  SignInButton,
-} from "@clerk/astro/components";
+import Navigation from '#components/astro/Navigation.astro'
+import Footer from '#components/astro/Footer.astro'
+import Header from '#components/astro/Header.astro'
+import Sidebar from '#components/astro/Sidebar.astro'
+import AstroBreadcrumb from '#components/react/astro-breadcrumb.tsx'
+import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config'
+import '@fpkit/acss/styles'
+import '../styles/index.css'
+import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/astro/components'
 
 // types
 type routeItem = {
-  name: string;
-  url: string;
-  path?: string;
-};
+  name: string
+  url: string
+  path?: string
+}
 type Props = {
-  pageTitle?: string;
-  pageDescription?: string;
-  pageImageUrl?: string;
-  showBreadcrumb?: boolean;
-  breadcrumbRoutes?: routeItem[];
-  hideHeader?: boolean;
-};
+  pageTitle?: string
+  pageDescription?: string
+  pageImageUrl?: string
+  showBreadcrumb?: boolean
+  breadcrumbRoutes?: routeItem[]
+  hideHeader?: boolean
+}
 
-const showBreadcrumb =
-  Astro.props.showBreadcrumb === undefined ? true : Astro.props.showBreadcrumb;
+const showBreadcrumb = Astro.props.showBreadcrumb === undefined ? true : Astro.props.showBreadcrumb
 
-const {
-  pageTitle,
-  pageDescription,
-  breadcrumbRoutes,
-  pageImageUrl,
-  hideHeader,
-} = Astro.props;
+const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl, hideHeader } = Astro.props
 ---
 
 <html lang="en">
@@ -95,10 +83,7 @@ const {
         {
           showBreadcrumb && (
             <>
-              <AstroBreadcrumb
-                routes={breadcrumbRoutes || undefined}
-                client:load
-              />
+              <AstroBreadcrumb routes={breadcrumbRoutes || undefined} client:load />
             </>
           )
         }

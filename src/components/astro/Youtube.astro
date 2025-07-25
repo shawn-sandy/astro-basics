@@ -1,24 +1,19 @@
 ---
 // imports
-import { YouTube } from "@astro-community/astro-embed-youtube";
+import { YouTube } from '@astro-community/astro-embed-youtube'
 
 // types
 type Props = {
-  id: string;
-  poster?: string;
-  title?: string;
-  startTime?: number;
-  endTime?: number;
-};
+  id: string
+  poster?: string
+  title?: string
+  startTime?: number
+  endTime?: number
+}
 
-const { id, poster, title, startTime, endTime } = Astro.props;
+const { id, poster, title, startTime, endTime } = Astro.props
 ---
 
 <section>
-  <YouTube
-    id={id}
-    poster={poster}
-    title={title}
-    params={`start=${startTime}&end=${endTime}`}
-  />
+  <YouTube id={id} poster={poster} title={title} params={`start=${startTime}&end=${endTime}`} />
 </section>

@@ -1,14 +1,14 @@
 ---
-import Layout from "./Layout.astro";
+import Layout from './Layout.astro'
 
-const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props;
+const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 ---
 
 <Layout
   hideHeader={true}
   showBreadcrumb={false}
-  pageTitle={pageTitle || "Authentication"}
-  pageDescription={pageDescription || "Sign in to your account"}
+  pageTitle={pageTitle || 'Authentication'}
+  pageDescription={pageDescription || 'Sign in to your account'}
 >
   <slot />
 </Layout>

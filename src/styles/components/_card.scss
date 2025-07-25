@@ -1,46 +1,45 @@
 .card {
-    &:has(a:first-of-type:empty) {
-      position: relative;
-      display: grid;
-      grid-template-rows: "pile";
-      height: fit-content;
-      padding: 1.5rem;
-      border: lightgray solid thin;
-  
-      > * {
-        grid-area: pile;
-      }
-  
-      > a:empty {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 100%;
-        z-index: 99;
-        /* padding: var(--card-p); */
-        background-color: transparent;
-      }
-  
-      &:has(a:empty:hover) {
-        /* cursor: pointer; */
-        border: blue solid thin;
-      }
-  
-      div:has(a:not(empty), button:not(empty)) {
-        border: none;
-        z-index: 999;
-        height: min-content;
-        width: min-content;
-        min-width: 100px;
-        position: absolute;
-        right: 0;
-      }
-  
-      > div:first-of-type {
-        z-index: 1;
-        background: transparent;
-        width: auto;
-      }
+  &:has(a:first-of-type:empty) {
+    border: lightgray solid thin;
+    display: grid;
+    grid-template-rows: "pile";
+    height: fit-content;
+    padding: 1.5rem;
+    position: relative;
+
+    > * {
+      grid-area: pile;
+    }
+
+    > a:empty {
+      /* padding: var(--card-p); */
+      background-color: transparent;
+      bottom: 0;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      z-index: 99;
+    }
+
+    &:has(a:empty:hover) {
+      /* cursor: pointer; */
+      border: blue solid thin;
+    }
+
+    div:has(a:not(:empty), button:not(:empty)) {
+      border: none;
+      height: min-content;
+      min-width: 100px;
+      position: absolute;
+      right: 0;
+      width: min-content;
+      z-index: 999;
+    }
+
+    > div:first-of-type {
+      background: transparent;
+      width: auto;
+      z-index: 1;
     }
   }
-  
+}

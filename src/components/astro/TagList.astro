@@ -1,9 +1,9 @@
 ---
-import { getCollection } from "astro:content";
-const collection = Astro.props.collection || "Tags";
-const collectionTag = Astro.props.collectionTag || "posts";
-const allPosts = await getCollection(collectionTag);
-const tags = [...new Set(allPosts.map((post: any) => post.data.tags).flat())];
+import { getCollection } from 'astro:content'
+const collection = Astro.props.collection || 'Tags'
+const collectionTag = Astro.props.collectionTag || 'posts'
+const allPosts = await getCollection(collectionTag)
+const tags = [...new Set(allPosts.map((post: any) => post.data.tags).flat())]
 ---
 
 <h4 data-ui="display">
@@ -11,7 +11,7 @@ const tags = [...new Set(allPosts.map((post: any) => post.data.tags).flat())];
 </h4>
 <ul data-list="unstyled">
   {
-    tags?.map((tag) => (
+    tags?.map(tag => (
       <li class="tag">
         <a href={`/tags/${tag}`}>{tag}</a>
       </li>

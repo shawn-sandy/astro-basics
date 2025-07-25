@@ -1,42 +1,46 @@
 ---
-import type { TODO } from "#utils/types.js"
+import type { TODO } from '#utils/types.js'
 
 export type Props = {
-  headings?: TODO;
-  hash?: string;
+  headings?: TODO
+  hash?: string
 }
-const { headings } = Astro.props;
+const { headings } = Astro.props
 ---
 
-{headings?.length > 1 && (
-  <details>
-    <summary>&#9776; Table of Contents</summary>
-    <section>
-       <ul data-list="unstyled">
-      {headings.map((heading: TODO) => (
-        <li>
-         <a href={`#${heading.slug}`}>&#8595; 
-          {heading.text}</a>
-        </li>
-      ))}
-    </ul>
-    </section>
-  </details>
-  )}
-  <style>
-    a {
-      font-weight: 600;
-      font-size: var(--fs-4);
-    } 
-    details {
-      summary {
-        &:hover {
-          cursor: pointer;
-          font-weight: 600;
-        }
+{
+  headings?.length > 1 && (
+    <details>
+      <summary>&#9776; Table of Contents</summary>
+      <section>
+        <ul data-list="unstyled">
+          {headings.map((heading: TODO) => (
+            <li>
+              <a href={`#${heading.slug}`}>
+                &#8595;
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </details>
+  )
+}
+<style>
+  a {
+    font-weight: 600;
+    font-size: var(--fs-4);
+  }
+  details {
+    summary {
+      &:hover {
+        cursor: pointer;
+        font-weight: 600;
       }
-      > section {
-        padding-block-start: 0rem;
-      } 
     }
-  </style>
+    > section {
+      padding-block-start: 0rem;
+    }
+  }
+</style>
