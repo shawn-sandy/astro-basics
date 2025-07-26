@@ -28,13 +28,11 @@ jobs:
         run: |
           echo "Checking environment variables..."
           if [ -z "$PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
-            echo "⚠️  PUBLIC_CLERK_PUBLISHABLE_KEY not set, using test fallback"
-            echo "PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_Y2xlcmsuY29tJA" >> $GITHUB_ENV
+          echo "PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_TEST_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
           fi
           if [ -z "$CLERK_SECRET_KEY" ]; then
             echo "⚠️  CLERK_SECRET_KEY not set, using test fallback"
-            echo "CLERK_SECRET_KEY=sk_test_Y2xlcmsuY29tJA" >> $GITHUB_ENV
-          fi
+            echo "CLERK_SECRET_KEY=${{ secrets.CLERK_TEST_SECRET_KEY }}" >> $GITHUB_ENV
       - name: Run Playwright tests
         run: npx playwright test
       - uses: actions/upload-artifact@v4
