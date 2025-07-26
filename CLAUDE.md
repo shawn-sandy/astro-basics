@@ -99,6 +99,347 @@ import Header from '#components/astro/Header.astro'
 - Sass watcher compiles to `src/styles/index.css` (compressed)
 - Uses @fpkit/acss for additional CSS utilities
 
+## CSS & Styling Implementation
+
+### CSS Architecture
+
+#### File Structure & Organization
+
+```
+src/styles/
+├── index.scss              # Main stylesheet (source)
+├── index.css               # Compiled output (compressed)
+├── index.css.map           # Source map for debugging
+├── _base.scss              # Base styles and CSS custom properties
+└── components/
+    ├── _alert.scss         # Alert component styles
+    ├── _card.scss          # Card component with hover states
+    ├── _form.scss          # Form validation and styling
+    └── _header.scss        # Header component styles
+```
+
+#### Build System
+
+- **Source**: `src/styles/index.scss` (main SCSS file)
+- **Output**: `src/styles/index.css` (compressed CSS)
+- **Watch Command**: `npm run sass` (auto-compiles on changes)
+- **Development**: `npm run start` (dev server + sass watcher in parallel)
+
+#### Import Structure
+
+```scss
+// src/styles/index.scss
+@use './base'; // Base styles and CSS custom properties
+@use './components/card'; // Card component styles
+@use './components/form'; // Form validation styles
+@use './components/alert'; // Alert component styles
+```
+
+### CSS Custom Properties System
+
+#### Root-level Design Tokens
+
+```css
+:root {
+  --img-radius: 1rem; /* Image border radius */
+  --error-color: firebrick; /* Error state color */
+  --success-color: green; /* Success state color */
+  --max-content-width: 1280px; /* Maximum content width */
+}
+```
+
+#### Component-level Properties
+
+```scss
+// Example: Card component custom properties
+section:has([data-grid], [data-flex]) {
+  --card-gap: 1rem; // Gap between cards
+  --space-l: 3rem; // Large spacing
+  --px: 1rem; // Padding inline
+  --content-w: 100%; // Content width
+}
+```
+
+### Styling Conventions
+
+#### SCSS Best Practices
+
+```scss
+// Use @use instead of @import for better performance
+@use '#styles/variables' as *;
+@use '#styles/mixins' as *;
+
+.component-name {
+  // CSS custom properties with kebab-case
+  --primary-color: #{$color-primary};
+  --spacing-unit: #{$spacing-base};
+
+  // Component styles using custom properties
+  background-color: var(--primary-color);
+  padding: var(--spacing-unit);
+
+  // Nested selectors with BEM-like structure
+  &__element {
+    // Element styles
+  }
+
+  &--modifier {
+    // Modifier styles
+  }
+}
+```
+
+#### Modern CSS Features
+
+```scss
+// Logical properties for internationalization
+padding-block: 2rem; // Top and bottom padding
+padding-inline: 1rem; // Left and right padding
+margin-block-start: 1.5rem; // Top margin
+
+// CSS Grid with named areas
+grid-template-rows: 'pile'; // Named grid area
+grid-area: pile; // Assign to named area
+
+// Modern selectors
+section:has([data-grid]) {
+  // :has() pseudo-class
+  // Styles for sections containing data-grid elements
+}
+
+img + * {
+  // Adjacent sibling selector
+  padding-block-start: 1rem;
+}
+```
+
+### Component Styling Patterns
+
+#### Form Validation Styling
+
+```scss
+// Visual feedback for form validation
+form {
+  input:user-invalid:not(:focus) {
+    background-color: #ffe6e6;
+    outline: thin solid var(--error-color);
+
+    + p {
+      // Error message styling
+      color: var(--error-color);
+
+      &::before {
+        content: '⚠ '; // Warning icon prefix
+      }
+    }
+  }
+
+  input:user-valid:not(:focus) {
+    background-color: #e6ffe6;
+    outline: thin solid var(--success-color);
+
+    + p {
+      display: none; // Hide error message
+    }
+  }
+}
+```
+
+#### Alert Component Pattern
+
+```scss
+.alert {
+  border-radius: 0.25rem;
+  padding: 1rem;
+  padding-inline-start: 1.5rem; // Logical property
+
+  // Variant modifiers using BEM-like naming
+  &-error {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+  }
+
+  &-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+  }
+
+  &-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+  }
+}
+```
+
+#### Card Component with Advanced Interactions
+
+```scss
+.card {
+  &:has(a:first-of-type:empty) {
+    // Cards with empty anchor links
+    border: lightgray solid thin;
+    display: grid;
+    grid-template-rows: 'pile'; // Stack elements
+    position: relative;
+
+    > a:empty {
+      // Invisible overlay link
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      z-index: 99;
+      background-color: transparent;
+    }
+
+    &:has(a:empty:hover) {
+      // Hover state styling
+      border: blue solid thin;
+    }
+
+    div:has(a:not(:empty), button:not(:empty)) {
+      position: absolute; // Positioned action buttons
+      right: 0;
+      z-index: 999; // Above overlay link
+    }
+  }
+}
+```
+
+### Framework Integration
+
+#### @fpkit/acss Integration
+
+```typescript
+// Import order in Layout.astro
+import '@fpkit/acss/styles' // External utility framework
+import '../styles/index.css' // Project-specific styles
+```
+
+#### Utility Classes Usage
+
+```html
+<!-- Use @fpkit/acss utilities alongside custom styles -->
+<div data-grid="auto-fit" class="custom-component">
+  <div data-flex="center">Content</div>
+</div>
+```
+
+### Development Workflow
+
+#### CSS Development Commands
+
+```bash
+# Watch and compile SCSS files
+npm run sass
+
+# Run development server with SCSS watcher
+npm run start
+
+# Lint CSS/SCSS files
+npm run lint:styles
+
+# Fix CSS/SCSS linting issues
+npm run lint:styles:fix
+
+# Check all code quality (includes CSS)
+npm run lint:all
+
+# Fix all auto-fixable issues
+npm run fix:all
+```
+
+#### StyleLint Configuration
+
+- Configured for SCSS and CSS files in `src/**/*.{css,scss}`
+- Integrated with pre-commit hooks via Husky + lint-staged
+- Auto-fix capability for consistent code formatting
+
+### Responsive Design Patterns
+
+#### Content Width Management
+
+```css
+/* Consistent content width across layout */
+body > section,
+main {
+  margin: auto;
+  width: min(100%, var(--max-content-width)); /* Responsive width with max constraint */
+}
+
+/* Responsive padding */
+main > section {
+  padding-inline: 2rem; /* Consistent horizontal padding */
+}
+```
+
+#### Typography & Spacing
+
+```css
+/* Content-aware typography */
+article p {
+  max-width: 80ch; /* Optimal reading width */
+}
+
+p {
+  max-width: 60ch; /* General paragraph width */
+}
+
+/* Consistent vertical rhythm */
+article > * + * {
+  margin-block-start: 1.5rem; /* Vertical spacing between elements */
+}
+```
+
+### Accessibility Considerations
+
+#### Semantic Styling
+
+```css
+/* Enhance semantic elements */
+code {
+  color: rgb(158, 49, 49); /* Distinct code color */
+  font-size: smaller; /* Appropriate code size */
+}
+
+/* Focus states for interactive elements */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--primary-color); /* Clear focus indicators */
+}
+```
+
+#### Visual Feedback
+
+```css
+/* Form validation accessibility */
+form label:where(+ input[required])::after {
+  color: var(--error-color);
+  content: ' required *'; /* Screen reader friendly */
+  font-size: smaller;
+}
+```
+
+### Performance Considerations
+
+#### CSS Optimization
+
+- SCSS compiled to compressed CSS for production
+- Source maps generated for development debugging
+- Minimal CSS custom property usage for optimal performance
+- Logical properties for better browser optimization
+
+#### Best Practices
+
+- Use `@use` instead of `@import` for better SCSS performance
+- Leverage CSS custom properties for theming without JavaScript
+- Employ modern CSS features like `:has()` and logical properties
+- Organize component styles for better maintainability and tree-shaking
+
 ### Site Configuration
 
 - `src/utils/site-config.ts` - Contains site constants (title, description, `PAGINATION_COUNT: 2`, breadcrumbs, contact info)
