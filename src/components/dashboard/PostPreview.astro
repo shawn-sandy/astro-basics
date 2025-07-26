@@ -18,7 +18,7 @@ const { posts } = Astro.props
         <h4>{post.title}</h4>
         <p>{post.excerpt}</p>
         <div class="post-meta">
-          <span class={`status ${post.status.toLowerCase()}`}>{post.status}</span>
+          <span class={`status ${post.status?.toLowerCase() || ''}`}>{post.status}</span>
           <small>{post.date}</small>
         </div>
       </div>
