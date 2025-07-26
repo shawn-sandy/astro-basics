@@ -25,9 +25,7 @@ const user = await Astro.locals.currentUser()
           </div>
           <div class="user-info">
             <h1>
-              Welcome back, {
-                user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'User'
-              }!
+              Welcome back, {getDisplayName(user)}!
             </h1>
             <p class="user-email">{user?.emailAddresses?.[0]?.emailAddress}</p>
             <p class="user-joined">
