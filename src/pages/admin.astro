@@ -1,6 +1,7 @@
 ---
 import Auth from '#layouts/Auth.astro'
 import { SignedIn, SignedOut, UserButton } from '@clerk/astro/components'
+import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
 ---
 
 <Auth pageTitle="Admin - Astro Kit">
@@ -15,6 +16,9 @@ import { SignedIn, SignedOut, UserButton } from '@clerk/astro/components'
     </div>
   </SignedIn>
   <SignedOut isStatic={true}>
-    <p>Please sign in to access the admin dashboard.</p>
+    <SignedOutMessage
+      title="Admin Access Required"
+      message="Please sign in to access the admin dashboard."
+    />
   </SignedOut>
 </Auth>

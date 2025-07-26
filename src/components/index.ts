@@ -20,6 +20,7 @@ export { default as Social } from './astro/Social.astro'
 export { default as Sidebar } from './astro/Sidebar.astro'
 export { default as Breadcrumb } from './astro/Breadcrumb.astro'
 export { default as TextToSpeech } from './astro/TextToSpeech.astro'
+export { default as SignedOutMessage } from './astro/SignedOutMessage.astro'
 
 // Dashboard components
 export { default as DashboardCard } from './dashboard/DashboardCard.astro'
