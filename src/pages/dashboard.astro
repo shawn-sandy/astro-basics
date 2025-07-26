@@ -9,6 +9,7 @@ import {
   QuickActions,
   PostPreview,
 } from '#/components/dashboard'
+import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
 
 // Dashboard data
 const stats = [
@@ -101,11 +102,7 @@ const posts = [
   </SignedIn>
 
   <SignedOut>
-    <div class="auth-required">
-      <h1>Authentication Required</h1>
-      <p>Please sign in to access your personalized dashboard and manage your content.</p>
-      <a href="/sign-in" class="sign-in-btn">Sign In</a>
-    </div>
+    <SignedOutMessage />
   </SignedOut>
 </Auth>
 
@@ -124,37 +121,6 @@ const posts = [
     margin: 0 0 1rem 0;
     color: #1a202c;
     font-size: 1.25rem;
-  }
-
-  .auth-required {
-    text-align: center;
-    padding: 4rem 2rem;
-    max-width: 400px;
-    margin: 0 auto;
-  }
-
-  .auth-required h1 {
-    margin-bottom: 1rem;
-    color: #1a202c;
-  }
-
-  .auth-required p {
-    margin-bottom: 2rem;
-    color: #64748b;
-  }
-
-  .sign-in-btn {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: #3182ce;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: background 0.2s;
-  }
-
-  .sign-in-btn:hover {
-    background: #2c5aa0;
   }
 
   @media (max-width: 768px) {
