@@ -20,7 +20,16 @@ export default defineConfig({
   integrations: [react(), sitemap(), lighthouse(), embeds(), mdx(), clerk(), astroImageTools],
   output: 'server',
   // Choose adapter based on deployment target
-  adapter: process.env.NODE_ENV === 'development' || process.env.ASTRO_ADAPTER === 'node'
-    ? node({ mode: 'standalone' })
-    : netlify(),
+  adapter: (() => {
+    const adapter = process.env.ASTRO_ADAPTER;
+    if (adapter === 'node') {
+      return node({ mode: 'standalone' });
+    } else if (adapter === 'netlify' || process.env.NODE_ENV === 'production') {
+      return netlify();
+    } else if (process.env.NODE_ENV === 'development') {
+      return node({ mode: 'standalone' });
+    } else {
+      throw new Error('Invalid adapter configuration. Set ASTRO_ADAPTER to "node" or "netlify".');
+    }
+  })(),
 })
