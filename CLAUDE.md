@@ -48,6 +48,7 @@ This is **@shawnsandy/astro-kit**, a collection of reusable Astro components and
 
 - `npm run npm-update` - Update all dependencies to latest versions
 - `npm run npm-update-i` - Interactive dependency updates
+- `npx @astrojs/upgrade` - Official Astro core and integration updates (use astro-package-updater agent for comprehensive testing)
 
 ## Project Setup
 
@@ -61,7 +62,6 @@ This is **@shawnsandy/astro-kit**, a collection of reusable Astro components and
 ### Branch Structure
 
 - **Main branch**: `main` (use for pull requests)
-- **Current feature branch**: `feat/testing-setup`
 
 ## Architecture
 
@@ -537,6 +537,7 @@ This is published as an npm package with:
 - Enhanced parallel development with `npm run start` (dev + sass watching)
 - Uses `npm-run-all` for parallel script execution
 - Database-ready: Documentation exists for Astro DB integration (future enhancement)
+- **Current Astro Version**: 5.12.3 (use `npx @astrojs/upgrade` for updates)
 
 ### TypeScript Strict Configuration
 
@@ -738,6 +739,25 @@ youtubeId: 'optional-video-id'
 - Use semantic HTML elements (`<nav>`, `<main>`, `<article>`)
 - Ensure keyboard navigation support for interactive components
 - Test with screen readers and automated accessibility tools
+
+## Agent Integration
+
+This project includes specialized Claude Code agents in `.claude/agents/` for enhanced productivity:
+
+### Available Agents
+
+- **github-ticket-creator**: Creates comprehensive GitHub issues with proper team assignments, labels, and project context. Handles features, bugs, and enhancements with ready-to-execute `gh` commands.
+- **astro-package-updater**: Updates Astro core packages using official `npx @astrojs/upgrade` command and ensures project compatibility with comprehensive testing.
+- **astro-basics-code-reviewer**: Expert code review specialist for this project, focusing on Astro components, TypeScript, and SSR considerations.
+- **code-reviewer**: General code review specialist for quality, performance, security, accessibility, and maintainability.
+
+### Agent Usage
+
+Claude Code automatically suggests appropriate agents based on task context. You can also explicitly request agent usage:
+
+- Use `/agent github-ticket-creator` for creating GitHub issues
+- Use `/agent astro-package-updater` for Astro version updates
+- Agents are invoked automatically for code reviews after significant changes
 
 ## Documentation
 
