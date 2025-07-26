@@ -1,11 +1,47 @@
 ---
 import Auth from '#/layouts/Auth.astro'
 import { SignedIn, SignedOut, UserButton } from '@clerk/astro/components'
+
+// Get authentication data and user info
+const { userId } = Astro.locals.auth()
+
+// Redirect if not authenticated
+if (!userId) {
+  return Astro.redirect('/sign-in')
+}
+
+// Get full user details
+const user = await Astro.locals.currentUser()
 ---
 
 <Auth pageTitle="Dashboard - Astro Kit">
   <SignedIn>
     <div class="dashboard-container">
+      <!-- User Profile Section -->
+      <div class="dashboard-header">
+        <div class="user-profile">
+          <div class="user-avatar">
+            {user?.imageUrl && <img src={user.imageUrl} alt="Profile" class="profile-image" />}
+          </div>
+          <div class="user-info">
+            <h1>
+              Welcome back, {
+                user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'User'
+              }!
+            </h1>
+            <p class="user-email">{user?.emailAddresses?.[0]?.emailAddress}</p>
+            <p class="user-joined">
+              Member since {
+                user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Recently'
+              }
+            </p>
+          </div>
+        </div>
+        <div class="user-actions">
+          <UserButton />
+        </div>
+      </div>
+
       <div class="dashboard-grid">
         <div class="stats-section">
           <h2>Overview</h2>
@@ -106,7 +142,7 @@ import { SignedIn, SignedOut, UserButton } from '@clerk/astro/components'
   <SignedOut>
     <div class="auth-required">
       <h1>Authentication Required</h1>
-      <p>Please sign in to access your dashboard.</p>
+      <p>Please sign in to access your personalized dashboard and manage your content.</p>
       <a href="/sign-in" class="sign-in-btn">Sign In</a>
     </div>
   </SignedOut>
@@ -124,13 +160,53 @@ import { SignedIn, SignedOut, UserButton } from '@clerk/astro/components'
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
   }
 
-  .dashboard-header h1 {
-    margin: 0;
+  .user-profile {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .user-avatar {
+    flex-shrink: 0;
+  }
+
+  .profile-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e8f0;
+  }
+
+  .user-info h1 {
+    margin: 0 0 0.25rem 0;
     color: #1a202c;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .user-email {
+    margin: 0 0 0.25rem 0;
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+
+  .user-joined {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 0.75rem;
+  }
+
+  .user-actions {
+    display: flex;
+    align-items: center;
   }
 
   .dashboard-grid {
@@ -329,6 +405,23 @@ import { SignedIn, SignedOut, UserButton } from '@clerk/astro/components'
 
     .dashboard-container {
       padding: 1rem;
+    }
+
+    .dashboard-header {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .user-profile {
+      flex-direction: column;
+      text-align: center;
+      gap: 0.75rem;
+    }
+
+    .user-info h1 {
+      font-size: 1.25rem;
     }
 
     .action-buttons {
