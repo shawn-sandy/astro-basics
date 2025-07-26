@@ -1,139 +1,102 @@
 ---
 import Auth from '#/layouts/Auth.astro'
 import { SignedIn, SignedOut, UserButton } from '@clerk/astro/components'
+import {
+  DashboardCard,
+  DashboardLayout,
+  StatsCards,
+  ActivityFeed,
+  QuickActions,
+  PostPreview,
+} from '#/components/dashboard'
 
-// Get authentication data and user info
-const { userId } = Astro.locals.auth()
+// Dashboard data
+const stats = [
+  { title: 'Total Posts', value: '24' },
+  { title: 'Views', value: '1,234' },
+  { title: 'Comments', value: '89' },
+  { title: 'Likes', value: '456' },
+]
 
-// Redirect if not authenticated
-if (!userId) {
-  return Astro.redirect('/sign-in')
-}
+const activities = [
+  {
+    icon: '📝',
+    content: 'New blog post published: "Getting Started with Astro"',
+    timestamp: '2 hours ago',
+  },
+  {
+    icon: '💬',
+    content: 'New comment on "React Components in Astro"',
+    timestamp: '5 hours ago',
+  },
+  {
+    icon: '❤️',
+    content: 'Post liked: "Building Modern Web Apps"',
+    timestamp: '1 day ago',
+  },
+]
 
-// Get full user details
-const user = await Astro.locals.currentUser()
+const actions = [
+  {
+    href: '/admin/posts/new',
+    icon: '✏️',
+    label: 'Create New Post',
+    primary: true,
+  },
+  {
+    href: '/admin/posts',
+    icon: '📄',
+    label: 'Manage Posts',
+  },
+  {
+    href: '/admin/media',
+    icon: '🖼️',
+    label: 'Media Library',
+  },
+  {
+    href: '/admin/settings',
+    icon: '⚙️',
+    label: 'Settings',
+  },
+]
+
+const posts = [
+  {
+    title: 'Getting Started with Astro Components',
+    excerpt: 'A comprehensive guide to building reusable components...',
+    status: 'Published' as const,
+    date: '3 days ago',
+  },
+  {
+    title: 'React Integration in Astro',
+    excerpt: 'Learn how to seamlessly integrate React components...',
+    status: 'Draft' as const,
+    date: '1 week ago',
+  },
+]
 ---
 
 <Auth pageTitle="Dashboard - Astro Kit">
   <SignedIn>
     <div class="dashboard-container">
-      <!-- User Profile Section -->
-      <div class="dashboard-header">
-        <div class="user-profile">
-          <div class="user-avatar">
-            {user?.imageUrl && <img src={user.imageUrl} alt="Profile" class="profile-image" />}
-          </div>
-          <div class="user-info">
-            <h1>
-              Welcome back, {getDisplayName(user)}!
-            </h1>
-            <p class="user-email">{user?.emailAddresses?.[0]?.emailAddress}</p>
-            <p class="user-joined">
-              Member since {
-                user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Recently'
-              }
-            </p>
-          </div>
-        </div>
-        <div class="user-actions">
-          <UserButton />
-        </div>
-      </div>
-
-      <div class="dashboard-grid">
+      <DashboardLayout columns="1fr 1fr" gap="2rem" className="dashboard-grid">
         <div class="stats-section">
           <h2>Overview</h2>
-          <div class="stats-cards">
-            <div class="stat-card">
-              <h3>Total Posts</h3>
-              <p class="stat-number">24</p>
-            </div>
-            <div class="stat-card">
-              <h3>Views</h3>
-              <p class="stat-number">1,234</p>
-            </div>
-            <div class="stat-card">
-              <h3>Comments</h3>
-              <p class="stat-number">89</p>
-            </div>
-            <div class="stat-card">
-              <h3>Likes</h3>
-              <p class="stat-number">456</p>
-            </div>
-          </div>
+          <StatsCards stats={stats} />
         </div>
 
-        <div class="recent-activity">
-          <h2>Recent Activity</h2>
-          <div class="activity-list">
-            <div class="activity-item">
-              <span class="activity-icon">📝</span>
-              <div class="activity-content">
-                <p>New blog post published: "Getting Started with Astro"</p>
-                <small>2 hours ago</small>
-              </div>
-            </div>
-            <div class="activity-item">
-              <span class="activity-icon">💬</span>
-              <div class="activity-content">
-                <p>New comment on "React Components in Astro"</p>
-                <small>5 hours ago</small>
-              </div>
-            </div>
-            <div class="activity-item">
-              <span class="activity-icon">❤️</span>
-              <div class="activity-content">
-                <p>Post liked: "Building Modern Web Apps"</p>
-                <small>1 day ago</small>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DashboardCard title="Recent Activity">
+          <ActivityFeed activities={activities} />
+        </DashboardCard>
 
-        <div class="quick-actions">
-          <h2>Quick Actions</h2>
-          <div class="action-buttons">
-            <a href="/admin/posts/new" class="action-btn primary">
-              <span>✏️</span>
-              Create New Post
-            </a>
-            <a href="/admin/posts" class="action-btn">
-              <span>📄</span>
-              Manage Posts
-            </a>
-            <a href="/admin/media" class="action-btn">
-              <span>🖼️</span>
-              Media Library
-            </a>
-            <a href="/admin/settings" class="action-btn">
-              <span>⚙️</span>
-              Settings
-            </a>
-          </div>
-        </div>
+        <DashboardCard title="Quick Actions">
+          <QuickActions actions={actions} />
+        </DashboardCard>
 
-        <div class="content-preview">
-          <h2>Recent Posts</h2>
-          <div class="post-list">
-            <div class="post-item">
-              <h4>Getting Started with Astro Components</h4>
-              <p>A comprehensive guide to building reusable components...</p>
-              <div class="post-meta">
-                <span>Published</span>
-                <small>3 days ago</small>
-              </div>
-            </div>
-            <div class="post-item">
-              <h4>React Integration in Astro</h4>
-              <p>Learn how to seamlessly integrate React components...</p>
-              <div class="post-meta">
-                <span>Draft</span>
-                <small>1 week ago</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        <DashboardCard title="Recent Posts">
+          <PostPreview posts={posts} />
+        </DashboardCard>
+      </DashboardLayout>
     </div>
   </SignedIn>
 
@@ -153,212 +116,14 @@ const user = await Astro.locals.currentUser()
     padding: 2rem;
   }
 
-  .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-  }
-
-  .user-profile {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .user-avatar {
-    flex-shrink: 0;
-  }
-
-  .profile-image {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #e2e8f0;
-  }
-
-  .user-info h1 {
-    margin: 0 0 0.25rem 0;
-    color: #1a202c;
-    font-size: 1.5rem;
-    font-weight: 600;
-  }
-
-  .user-email {
-    margin: 0 0 0.25rem 0;
-    color: #64748b;
-    font-size: 0.875rem;
-  }
-
-  .user-joined {
-    margin: 0;
-    color: #94a3b8;
-    font-size: 0.75rem;
-  }
-
-  .user-actions {
-    display: flex;
-    align-items: center;
-  }
-
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
-
   .stats-section {
     grid-column: 1 / -1;
   }
 
-  .stats-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-
-  .stat-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-  }
-
-  .stat-card h3 {
-    margin: 0 0 0.5rem 0;
-    color: #64748b;
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-  }
-
-  .stat-number {
-    margin: 0;
-    font-size: 2rem;
-    font-weight: bold;
-    color: #1a202c;
-  }
-
-  .recent-activity,
-  .quick-actions,
-  .content-preview {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-  }
-
-  .recent-activity h2,
-  .quick-actions h2,
-  .content-preview h2 {
+  .stats-section h2 {
     margin: 0 0 1rem 0;
     color: #1a202c;
     font-size: 1.25rem;
-  }
-
-  .activity-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .activity-item {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-start;
-  }
-
-  .activity-icon {
-    font-size: 1.25rem;
-  }
-
-  .activity-content p {
-    margin: 0 0 0.25rem 0;
-    color: #1a202c;
-  }
-
-  .activity-content small {
-    color: #64748b;
-  }
-
-  .action-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .action-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    text-decoration: none;
-    color: #4a5568;
-    transition: all 0.2s;
-  }
-
-  .action-btn:hover {
-    background: #f7fafc;
-    border-color: #cbd5e0;
-  }
-
-  .action-btn.primary {
-    background: #3182ce;
-    color: white;
-    border-color: #3182ce;
-  }
-
-  .action-btn.primary:hover {
-    background: #2c5aa0;
-  }
-
-  .post-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .post-item {
-    padding: 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-  }
-
-  .post-item h4 {
-    margin: 0 0 0.5rem 0;
-    color: #1a202c;
-  }
-
-  .post-item p {
-    margin: 0 0 0.5rem 0;
-    color: #64748b;
-    font-size: 0.875rem;
-  }
-
-  .post-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .post-meta span {
-    padding: 0.25rem 0.5rem;
-    background: #e2e8f0;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    color: #4a5568;
   }
 
   .auth-required {
@@ -393,37 +158,8 @@ const user = await Astro.locals.currentUser()
   }
 
   @media (max-width: 768px) {
-    .dashboard-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .stats-cards {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
     .dashboard-container {
       padding: 1rem;
-    }
-
-    .dashboard-header {
-      flex-direction: column;
-      gap: 1rem;
-      text-align: center;
-      padding: 1rem;
-    }
-
-    .user-profile {
-      flex-direction: column;
-      text-align: center;
-      gap: 0.75rem;
-    }
-
-    .user-info h1 {
-      font-size: 1.25rem;
-    }
-
-    .action-buttons {
-      gap: 0.5rem;
     }
   }
 </style>

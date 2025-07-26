@@ -1,0 +1,30 @@
+---
+export type Props = {
+  readonly columns?: string
+  readonly gap?: string
+  readonly className?: string
+}
+
+const { columns = '1fr 1fr', gap = '2rem', className = '' } = Astro.props
+---
+
+<div
+  class={`dashboard-layout ${className}`}
+  style={`--layout-columns: ${columns}; --layout-gap: ${gap}`}
+>
+  <slot />
+</div>
+
+<style>
+  .dashboard-layout {
+    display: grid;
+    grid-template-columns: var(--layout-columns, 1fr 1fr);
+    gap: var(--layout-gap, 2rem);
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,68 @@
+---
+export type Props = {
+  readonly stats: readonly {
+    readonly title: string
+    readonly value: string | number
+    readonly icon?: string
+  }[]
+}
+
+const { stats } = Astro.props
+---
+
+<div class="stats-cards">
+  {
+    stats.map(stat => (
+      <div class="stat-card">
+        {stat.icon && <span class="stat-icon">{stat.icon}</span>}
+        <h3>{stat.title}</h3>
+        <p class="stat-number">{stat.value}</p>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+  }
+
+  .stat-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .stat-card h3 {
+    margin: 0 0 0.5rem 0;
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  .stat-number {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1a202c;
+  }
+
+  @media (max-width: 768px) {
+    .stats-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
