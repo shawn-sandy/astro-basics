@@ -69,10 +69,10 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl, hideHeader }
     {
       !hideHeader && (
         <Header
-          headerTitle={pageTitle}
-          headerDescription={pageDescription}
-          headerImageUrl={pageImageUrl}
-          headerImageAlt={pageTitle}
+          headerTitle={pageTitle || ''}
+          headerDescription={pageDescription || ''}
+          headerImageUrl={pageImageUrl || ''}
+          headerImageAlt={pageTitle || ''}
         />
       )
     }
