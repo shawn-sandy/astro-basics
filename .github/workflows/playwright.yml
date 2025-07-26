@@ -28,9 +28,17 @@ jobs:
         run: |
           echo "Checking environment variables..."
           if [ -z "$PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
-          echo "PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_TEST_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
+            if [ -z "${{ secrets.CLERK_TEST_PUBLISHABLE_KEY }}" ]; then
+              echo "❌ Error: CLERK_TEST_PUBLISHABLE_KEY is not defined in secrets. Exiting."
+              exit 1
+            fi
+            echo "PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_TEST_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
           fi
           if [ -z "$CLERK_SECRET_KEY" ]; then
+            if [ -z "${{ secrets.CLERK_TEST_SECRET_KEY }}" ]; then
+              echo "❌ Error: CLERK_TEST_SECRET_KEY is not defined in secrets. Exiting."
+              exit 1
+            fi
             echo "⚠️  CLERK_SECRET_KEY not set, using test fallback"
             echo "CLERK_SECRET_KEY=${{ secrets.CLERK_TEST_SECRET_KEY }}" >> $GITHUB_ENV
       - name: Run Playwright tests
