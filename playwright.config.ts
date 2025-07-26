@@ -3,9 +3,13 @@ import { devices, type PlaywrightTestConfig } from '@playwright/test'
 /**
  * Playwright configuration for Astro project
  * See https://playwright.dev/docs/test-configuration
+ * Playwright configuration for Astro project
+ * See https://playwright.dev/docs/test-configuration
  */
 const config: PlaywrightTestConfig = {
   testDir: './e2e',
+
+  // Test execution settings
 
   // Test execution settings
   fullyParallel: true,

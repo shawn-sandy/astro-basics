@@ -29,7 +29,7 @@ This points to a failure in starting the Astro/Vite development server, which Pl
 
 ## Implementation Details
 
-### Files Modified:
+### Files Modified
 
 1. **`.github/workflows/playwright.yml`**:
 
@@ -61,6 +61,7 @@ This points to a failure in starting the Astro/Vite development server, which Pl
    ```
 
 3. **`astro.config.mjs`**:
+
    ```javascript
    adapter: process.env.CI || process.env.ASTRO_ADAPTER === 'node'
      ? node({ mode: 'standalone' })
