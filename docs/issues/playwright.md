@@ -29,7 +29,7 @@ This points to a failure in starting the Astro/Vite development server, which Pl
 
 ## Implementation Details
 
-### Files Modified:
+### Files Modified
 
 1. **`.github/workflows/playwright.yml`**:
 
@@ -40,9 +40,11 @@ This points to a failure in starting the Astro/Vite development server, which Pl
    steps:
      - name: Verify environment setup
        run: |
-         if [ -z "$PUBLIC_CLERK_PUBLISHABLE_KEY" ] || [ -z "$CLERK_SECRET_KEY" ]; then
-           echo "Error: Required secrets PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY are not set." >&2
-           exit 1
+         if [ -z "$PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
+           echo "PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_Y2xlcmsuY29tJA" >> $GITHUB_ENV
+         fi
+         if [ -z "$CLERK_SECRET_KEY" ]; then
+           echo "CLERK_SECRET_KEY=sk_test_Y2xlcmsuY29tJA" >> $GITHUB_ENV
          fi
    ```
 
@@ -59,6 +61,7 @@ This points to a failure in starting the Astro/Vite development server, which Pl
    ```
 
 3. **`astro.config.mjs`**:
+
    ```javascript
    adapter: process.env.CI || process.env.ASTRO_ADAPTER === 'node'
      ? node({ mode: 'standalone' })

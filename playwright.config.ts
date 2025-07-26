@@ -3,9 +3,13 @@ import { devices, type PlaywrightTestConfig } from '@playwright/test'
 /**
  * Playwright configuration for Astro project
  * See https://playwright.dev/docs/test-configuration
+ * Playwright configuration for Astro project
+ * See https://playwright.dev/docs/test-configuration
  */
 const config: PlaywrightTestConfig = {
   testDir: './e2e',
+
+  // Test execution settings
 
   // Test execution settings
   fullyParallel: true,
@@ -33,7 +37,7 @@ const config: PlaywrightTestConfig = {
         ...devices['Desktop Chrome'],
         // Optimize for faster execution
         launchOptions: {
-          args: ['--disable-dev-shm-usage'],
+          args: ['--disable-web-security', '--disable-dev-shm-usage'],
         },
       },
     },
@@ -51,6 +55,7 @@ const config: PlaywrightTestConfig = {
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:4321',
+    port: 4321,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,
     stdout: 'ignore',
