@@ -3,13 +3,27 @@
  */
 
 /**
+ * Type definition for user object from authentication providers
+ */
+export interface User {
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  name?: string;
+  displayName?: string;
+  username?: string;
+  email?: string;
+  emailAddresses?: { emailAddress: string }[];
+}
+
+/**
  * Safely extracts a display name from user object
  * Handles various user object formats (Clerk, Auth0, etc.)
  *
  * @param user - User object from authentication provider
  * @returns Safe display name string
  */
-export function getDisplayName(user: any): string {
+export function getDisplayName(user: User): string {
   if (!user) {
     return 'Guest'
   }
