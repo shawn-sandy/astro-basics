@@ -4,10 +4,14 @@ import Youtube from '#components/astro/Youtube.astro'
 import Img from '#components/astro/Img.astro'
 import Toc from '#components/astro/Toc.astro'
 import TextToSpeech from '#components/astro/TextToSpeech.astro'
+import { sanitizeImageUrl } from '#/utils/security'
 import type { TODO } from '#utils/types.js'
 const frontmatter = Astro.props.frontmatter
 const headings = Astro.props.headings
 const { slug } = Astro.params
+
+// Sanitize image URL to prevent XSS attacks
+const safeImageUrl = frontmatter.image?.url ? sanitizeImageUrl(frontmatter.image.url) : null
 
 type ContentRoute = {
   name: string
@@ -30,10 +34,10 @@ const contentRoute: ContentRoute[] = [
   breadcrumbRoutes={contentRoute}
 >
   {
-    frontmatter.image && (
+    safeImageUrl && (
       <>
         <Img
-          imgSrc={frontmatter.image.url}
+          imgSrc={safeImageUrl}
           imgAlt={frontmatter.image?.alt}
           imgCaption={frontmatter.image?.caption}
         />

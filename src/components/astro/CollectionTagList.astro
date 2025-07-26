@@ -7,6 +7,7 @@ import type { TODO } from '#utils/types'
 import Placeholder from '#components/views/Placeholder.astro'
 import Pagination from '#components/astro/Pagination.astro'
 import Img from '#components/astro/Img.astro'
+import { sanitizeImageUrl } from '#/utils/security'
 
 /**
  * The props for the CollectionList component.
@@ -75,13 +76,18 @@ const collectionResults = (await getCollection(collection || 'posts'))
                   descId={`desc-${post.slug}`}
                 >
                   <p>
-                    {post.data.image && post.data?.image && (
-                      <Img
-                        imgSrc={post.data.image.url}
-                        imgAlt={post.data.image?.alt}
-                        imgCaption={post.data.image?.caption}
-                      />
-                    )}
+                    {post.data.image &&
+                      post.data?.image &&
+                      (() => {
+                        const safeImageUrl = sanitizeImageUrl(post.data.image.url)
+                        return safeImageUrl ? (
+                          <Img
+                            imgSrc={safeImageUrl}
+                            imgAlt={post.data.image?.alt}
+                            imgCaption={post.data.image?.caption}
+                          />
+                        ) : null
+                      })()}
                   </p>
                 </BlogPostsDesc>
                 {showLinks && (
