@@ -33,7 +33,7 @@ const config: PlaywrightTestConfig = {
         ...devices['Desktop Chrome'],
         // Optimize for faster execution
         launchOptions: {
-          args: ['--disable-web-security', '--disable-dev-shm-usage'],
+          args: ['--disable-dev-shm-usage'],
         },
       },
     },
