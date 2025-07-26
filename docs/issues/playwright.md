@@ -40,11 +40,9 @@ This points to a failure in starting the Astro/Vite development server, which Pl
    steps:
      - name: Verify environment setup
        run: |
-         if [ -z "$PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
-           echo "PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_Y2xlcmsuY29tJA" >> $GITHUB_ENV
-         fi
-         if [ -z "$CLERK_SECRET_KEY" ]; then
-           echo "CLERK_SECRET_KEY=sk_test_Y2xlcmsuY29tJA" >> $GITHUB_ENV
+         if [ -z "$PUBLIC_CLERK_PUBLISHABLE_KEY" ] || [ -z "$CLERK_SECRET_KEY" ]; then
+           echo "Error: Required secrets PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY are not set." >&2
+           exit 1
          fi
    ```
 
