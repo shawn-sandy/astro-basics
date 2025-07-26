@@ -91,13 +91,12 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl, hideHeader }
       <section aria-label="main-content">
         <article>
           <slot />
-
-          <aside>
-            <slot name="sidebar" />
-            <Sidebar />
-            <slot name="sidebar-footer" />
-          </aside>
         </article>
+        <aside>
+          <slot name="sidebar" />
+          <Sidebar />
+          <slot name="sidebar-footer" />
+        </aside>
       </section>
       <Footer />
     </main>
