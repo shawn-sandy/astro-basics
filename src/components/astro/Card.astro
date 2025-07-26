@@ -1,5 +1,6 @@
 ---
 import { Card as CardComponent } from '@fpkit/acss'
+import { sanitizeImageUrl } from '#/utils/security'
 
 type Props = {
   cardTitle?: string
@@ -8,10 +9,13 @@ type Props = {
 }
 
 const { cardTitle, cardImage, cardLink } = Astro.props as Props
+
+// Sanitize the image URL to prevent XSS attacks
+const safeCardImage = sanitizeImageUrl(cardImage, 'https://picsum.photos/200')
 ---
 
 <CardComponent>
-  {cardImage && <img src={cardImage ?? 'https://picsum.photos/200'} alt="" />}
+  {safeCardImage && <img src={safeCardImage} alt="" />}
   <CardComponent.Title>{cardTitle ?? 'Card Feature'}</CardComponent.Title>
   <CardComponent.Content>
     <slot />
