@@ -20,7 +20,7 @@ export default defineConfig({
   integrations: [react(), sitemap(), lighthouse(), embeds(), mdx(), clerk(), astroImageTools],
   output: 'server',
   // Choose adapter based on deployment target
-  adapter: process.env.CI || process.env.ASTRO_ADAPTER === 'node' 
+  adapter: process.env.NODE_ENV === 'development' || process.env.ASTRO_ADAPTER === 'node'
     ? node({ mode: 'standalone' })
     : netlify(),
 })
