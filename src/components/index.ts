@@ -20,3 +20,33 @@ export { default as Social } from './astro/Social.astro'
 export { default as Sidebar } from './astro/Sidebar.astro'
 export { default as Breadcrumb } from './astro/Breadcrumb.astro'
 export { default as TextToSpeech } from './astro/TextToSpeech.astro'
+
+// Export React components with session types
+export { UserProfileCard, SessionStatus, UserActions } from './react/UserProfile'
+
+// Export TypeScript types for session and authentication
+export type {
+  UserProfile,
+  UserSession,
+  AuthState,
+  OrganizationProfile,
+  OrganizationMembership,
+  SessionClaims,
+  SessionMetadata,
+  EnhancedUserSession,
+  SessionResult,
+  AuthEvent,
+  UserProfileKeys,
+  UserProfileUpdate,
+} from '../types'
+
+export {
+  isAuthenticated,
+  hasOrganization,
+  safeGetUser,
+  safeGetSession,
+  transformClerkUser,
+  transformClerkSession,
+  transformClerkOrganization,
+  transformClerkMembership,
+} from '../types'
