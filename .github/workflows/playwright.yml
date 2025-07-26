@@ -39,8 +39,13 @@ jobs:
               echo "❌ Error: CLERK_TEST_SECRET_KEY is not defined in secrets. Exiting."
               exit 1
             fi
-            echo "⚠️  CLERK_SECRET_KEY not set, using test fallback"
-            echo "CLERK_SECRET_KEY=${{ secrets.CLERK_TEST_SECRET_KEY }}" >> $GITHUB_ENV
+            if [ -z "${{ secrets.CLERK_TEST_SECRET_KEY }}" ]; then
+              echo "❌ CLERK_TEST_SECRET_KEY is not set. Failing the workflow."
+              exit 1
+            else
+              echo "⚠️  CLERK_SECRET_KEY not set, using test fallback"
+              echo "CLERK_SECRET_KEY=${{ secrets.CLERK_TEST_SECRET_KEY }}" >> $GITHUB_ENV
+            fi
       - name: Run Playwright tests
         run: npx playwright test
       - uses: actions/upload-artifact@v4
