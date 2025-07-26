@@ -10,6 +10,9 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    env:
+      PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,6 +24,17 @@ jobs:
         run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
+      - name: Verify environment setup
+        run: |
+          echo "Checking environment variables..."
+          if [ -z "$PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
+            echo "⚠️  PUBLIC_CLERK_PUBLISHABLE_KEY not set, using test fallback"
+            echo "PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_Y2xlcmsuY29tJA" >> $GITHUB_ENV
+          fi
+          if [ -z "$CLERK_SECRET_KEY" ]; then
+            echo "⚠️  CLERK_SECRET_KEY not set, using test fallback"
+            echo "CLERK_SECRET_KEY=sk_test_Y2xlcmsuY29tJA" >> $GITHUB_ENV
+          fi
       - name: Run Playwright tests
         run: npx playwright test
       - uses: actions/upload-artifact@v4

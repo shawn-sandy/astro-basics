@@ -67,8 +67,10 @@ const config: PlaywrightTestConfig = {
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run start',
+    command: process.env.CI ? 'ASTRO_ADAPTER=node npm run dev' : 'npm run start',
     url: 'http://localhost:4321',
+    port: 4321,
+    timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,
   },
 }
