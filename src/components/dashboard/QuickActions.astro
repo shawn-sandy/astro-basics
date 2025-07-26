@@ -1,0 +1,64 @@
+---
+export type Props = {
+  readonly actions: readonly {
+    readonly href: string
+    readonly icon: string
+    readonly label: string
+    readonly primary?: boolean
+  }[]
+}
+
+const { actions } = Astro.props
+---
+
+<div class="action-buttons">
+  {
+    actions.map(action => (
+      <a href={action.href} class={`action-btn ${action.primary ? 'primary' : ''}`}>
+        <span>{action.icon}</span>
+        {action.label}
+      </a>
+    ))
+  }
+</div>
+
+<style>
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #4a5568;
+    transition: all 0.2s;
+  }
+
+  .action-btn:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+  }
+
+  .action-btn.primary {
+    background: #3182ce;
+    color: white;
+    border-color: #3182ce;
+  }
+
+  .action-btn.primary:hover {
+    background: #2c5aa0;
+  }
+
+  @media (max-width: 768px) {
+    .action-buttons {
+      gap: 0.5rem;
+    }
+  }
+</style>
