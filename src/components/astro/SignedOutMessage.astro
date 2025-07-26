@@ -1,0 +1,60 @@
+---
+export interface Props {
+  title?: string
+  message?: string
+  signInUrl?: string
+  className?: string
+}
+
+const {
+  title = 'Authentication Required',
+  message = 'Please sign in to access your personalized dashboard and manage your content.',
+  signInUrl = '/sign-in',
+  className = '',
+} = Astro.props
+---
+
+<div class={`auth-required ${className}`}>
+  <h1>{title}</h1>
+  <p>{message}</p>
+  <a href={signInUrl} class="sign-in-btn">Sign In</a>
+</div>
+
+<style>
+  .auth-required {
+    text-align: center;
+    padding: 4rem 2rem;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .auth-required h1 {
+    margin-bottom: 1rem;
+    color: var(--text-primary, #1a202c);
+  }
+
+  .auth-required p {
+    margin-bottom: 2rem;
+    color: var(--text-secondary, #64748b);
+  }
+
+  .sign-in-btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--button-primary-bg, #3182ce);
+    color: var(--button-primary-text, white);
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+
+  .sign-in-btn:hover {
+    background: var(--button-primary-hover, #2c5aa0);
+  }
+
+  @media (max-width: 768px) {
+    .auth-required {
+      padding: 2rem 1rem;
+    }
+  }
+</style>
