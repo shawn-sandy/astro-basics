@@ -51,6 +51,10 @@
     "fix:all": "npm run lint && npm run lint:styles:fix && npm run format && npm run lint:md:fix",
     "npm-update": "npx npm-check-updates -u",
     "npm-update-i": "npx npm-check-updates -i",
+    "ticket:validate": "gh auth status && gh repo view && echo '✅ GitHub CLI ready for ticket creation'",
+    "ticket:create": "gh issue create --web",
+    "ticket:list": "gh issue list --state open",
+    "ticket:labels": "gh label list",
     "prepare": "husky"
   },
   "lint-staged": {
