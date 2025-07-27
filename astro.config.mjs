@@ -31,8 +31,11 @@ export default defineConfig({
       return netlify();
     } else if (process.env.NODE_ENV === 'development') {
       return node({ mode: 'standalone' });
-    } else if (!adapter || process.env.NODE_ENV === 'production') {
+    } else if (!adapter) {
       // Default to netlify when no adapter is defined
+      return netlify();
+    } else if (process.env.NODE_ENV === 'production') {
+      // Ensure a fallback for production if no valid adapter is set
       return netlify();
     } else {
       throw new Error('Invalid adapter configuration. Set ASTRO_ADAPTER to "node", "netlify", or "vercel".');
