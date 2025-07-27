@@ -2,13 +2,15 @@
 /// <reference types="astro/client" />
 /// <reference types="@clerk/astro/client" />
 
+import type { UserResource } from '@clerk/types'
+
 declare namespace App {
   interface Locals {
     auth(): {
       userId: string | null
-      user: any
+      user: UserResource | null
       redirectToSignIn(): Response
     }
-    currentUser(): Promise<any>
+    currentUser(): Promise<UserResource | null>
   }
 }
