@@ -1,0 +1,133 @@
+name: Enhancement
+description: Suggest an improvement to existing functionality
+title: 'enhance: '
+labels: ['enhancement', 'p3-medium']
+projects: ['shawn-sandy/1']
+assignees:
+  - shawn-sandy
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement! Please fill out this form to help us understand your enhancement request.
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current Behavior
+      description: Describe how the feature currently works
+      placeholder: Explain the current state of the feature...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-improvement
+    attributes:
+      label: Proposed Improvement
+      description: What improvement would you like to see?
+      placeholder: Describe the enhancement you're proposing...
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Benefits
+      description: What benefits would this improvement provide?
+      placeholder: |
+        - Better performance
+        - Improved developer experience
+        - Enhanced user experience
+        - Easier maintenance
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-ideas
+    attributes:
+      label: Implementation Ideas
+      description: Any ideas on how this could be implemented?
+      placeholder: Share any implementation thoughts or approaches...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: component-type
+    attributes:
+      label: Component Type
+      description: What type of component would this enhance?
+      options:
+        - Astro Component
+        - React Component
+        - SCSS/Styling
+        - Build System
+        - Authentication
+        - Testing
+        - Documentation
+        - Developer Experience
+        - Performance
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this enhancement?
+      options:
+        - p1-critical
+        - p2-high
+        - p3-medium
+        - p4-low
+      default: 2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Estimated Effort
+      description: How much work do you think this requires?
+      options:
+        - xs (< 1 hour)
+        - s (1-4 hours)
+        - m (4-8 hours)
+        - l (1-2 days)
+        - xl (> 2 days)
+      default: 2
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: breaking-changes
+    attributes:
+      label: Breaking Changes
+      description: Would this enhancement introduce breaking changes?
+      options:
+        - label: This enhancement may introduce breaking changes
+          required: false
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What needs to be done for this enhancement to be complete?
+      placeholder: |
+        - [ ] Enhancement works as described
+        - [ ] Backwards compatibility maintained (if applicable)
+        - [ ] Tests are updated and passing
+        - [ ] Documentation is updated
+        - [ ] Performance impact is minimal
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples
+      placeholder: Any additional information that might be helpful...
+    validations:
+      required: false

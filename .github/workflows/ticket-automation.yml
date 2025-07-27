@@ -1,0 +1,182 @@
+name: Ticket Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticket_type:
+        description: 'Type of ticket to create'
+        required: true
+        default: 'feature'
+        type: choice
+        options:
+          - feature
+          - bug
+          - enhancement
+          - epic
+      ticket_title:
+        description: 'Ticket title (without prefix)'
+        required: true
+        type: string
+      ticket_description:
+        description: 'Ticket description'
+        required: true
+        type: string
+      priority:
+        description: 'Priority level'
+        required: true
+        default: 'p3-medium'
+        type: choice
+        options:
+          - p1-critical
+          - p2-high
+          - p3-medium
+          - p4-low
+      component:
+        description: 'Component type'
+        required: true
+        default: 'astro'
+        type: choice
+        options:
+          - astro
+          - react
+          - scss
+          - build
+          - auth
+          - test
+          - docs
+      effort:
+        description: 'Estimated effort'
+        required: true
+        default: 'm'
+        type: choice
+        options:
+          - xs
+          - s
+          - m
+          - l
+          - xl
+      assignee:
+        description: 'Assignee (GitHub username)'
+        required: false
+        default: 'shawn-sandy'
+        type: string
+
+jobs:
+  create-ticket:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate GitHub CLI
+        run: |
+          if ! command -v gh &> /dev/null; then
+            echo "GitHub CLI is not available"
+            exit 1
+          fi
+          echo "✅ GitHub CLI is available"
+
+      - name: Authenticate GitHub CLI
+        run: gh auth status
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Issue
+        id: create_issue
+        run: |
+          # Construct ticket title with conventional commit prefix
+          case "${{ github.event.inputs.ticket_type }}" in
+            "feature")
+              TITLE_PREFIX="feat: "
+              LABELS="feature,${{ github.event.inputs.component }},${{ github.event.inputs.priority }},${{ github.event.inputs.effort }}"
+              ;;
+            "bug")
+              TITLE_PREFIX="fix: "
+              LABELS="bug,${{ github.event.inputs.component }},${{ github.event.inputs.priority }},${{ github.event.inputs.effort }}"
+              ;;
+            "enhancement")
+              TITLE_PREFIX="enhance: "
+              LABELS="enhancement,${{ github.event.inputs.component }},${{ github.event.inputs.priority }},${{ github.event.inputs.effort }}"
+              ;;
+            "epic")
+              TITLE_PREFIX="epic: "
+              LABELS="epic,${{ github.event.inputs.component }},${{ github.event.inputs.priority }},xl"
+              ;;
+            *)
+              TITLE_PREFIX="${{ github.event.inputs.ticket_type }}: "
+              LABELS="${{ github.event.inputs.ticket_type }},${{ github.event.inputs.component }},${{ github.event.inputs.priority }},${{ github.event.inputs.effort }}"
+              ;;
+          esac
+
+          FULL_TITLE="${TITLE_PREFIX}${{ github.event.inputs.ticket_title }}"
+
+          # Create the issue
+          ISSUE_URL=$(gh issue create \
+            --title "$FULL_TITLE" \
+            --body "${{ github.event.inputs.ticket_description }}" \
+            --label "$LABELS" \
+            --assignee "${{ github.event.inputs.assignee }}")
+
+          echo "issue_url=$ISSUE_URL" >> $GITHUB_OUTPUT
+          echo "✅ Issue created: $ISSUE_URL"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate Issue Creation
+        run: |
+          if [ -z "${{ steps.create_issue.outputs.issue_url }}" ]; then
+            echo "❌ Failed to create issue"
+            exit 1
+          fi
+
+          # Extract issue number from URL
+          ISSUE_NUMBER=$(echo "${{ steps.create_issue.outputs.issue_url }}" | grep -o '[0-9]*$')
+
+          # Verify issue exists
+          gh issue view "$ISSUE_NUMBER" --json title,labels,assignees
+          echo "✅ Issue validation successful"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on Issue with Additional Context
+        run: |
+          ISSUE_NUMBER=$(echo "${{ steps.create_issue.outputs.issue_url }}" | grep -o '[0-9]*$')
+
+          gh issue comment "$ISSUE_NUMBER" --body "
+          ## Automated Ticket Creation
+
+          This ticket was created via GitHub Actions workflow automation.
+
+          **Workflow Details:**
+          - Run ID: ${{ github.run_id }}
+          - Triggered by: @${{ github.actor }}
+          - Repository: ${{ github.repository }}
+          - Branch: ${{ github.ref_name }}
+
+          **Ticket Configuration:**
+          - Type: ${{ github.event.inputs.ticket_type }}
+          - Component: ${{ github.event.inputs.component }}
+          - Priority: ${{ github.event.inputs.priority }}
+          - Effort: ${{ github.event.inputs.effort }}
+
+          For questions about this automation, see [ticket-automation.yml](.github/workflows/ticket-automation.yml).
+          "
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Output Summary
+        run: |
+          echo "## Ticket Creation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Successfully created issue:** ${{ steps.create_issue.outputs.issue_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Details:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Title: ${{ github.event.inputs.ticket_type }}: ${{ github.event.inputs.ticket_title }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Type: ${{ github.event.inputs.ticket_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Component: ${{ github.event.inputs.component }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Priority: ${{ github.event.inputs.priority }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Effort: ${{ github.event.inputs.effort }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Assignee: ${{ github.event.inputs.assignee }}" >> $GITHUB_STEP_SUMMARY

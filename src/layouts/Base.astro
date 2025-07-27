@@ -1,0 +1,86 @@
+---
+// import { ClientOnly } from "astro:transitions";
+import Navigation from '#components/astro/Navigation.astro'
+import Footer from '#components/astro/Footer.astro'
+import Header from '#components/astro/Header.astro'
+import Sidebar from '#components/astro/Sidebar.astro'
+import AstroBreadcrumb from '#components/react/astro-breadcrumb.tsx'
+import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config'
+import '@fpkit/acss/styles'
+import '../styles/index.css'
+import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/astro/components'
+
+// types
+type routeItem = {
+  name: string
+  url: string
+  path?: string
+}
+type Props = {
+  pageTitle?: string
+  pageDescription?: string
+  pageImageUrl?: string
+  showBreadcrumb?: boolean
+  breadcrumbRoutes?: routeItem[]
+  hideHeader?: boolean
+}
+
+const showBreadcrumb = Astro.props.showBreadcrumb === undefined ? true : Astro.props.showBreadcrumb
+
+const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl, hideHeader } = Astro.props
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="description" content={SITE_DESCRIPTION} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle || SITE_TITLE}</title>
+    <!-- <ViewTransitions /> -->
+  </head>
+  <body>
+    <Navigation>
+      <ul slot="login">
+        <li>
+          <SignedIn isStatic={true}>
+            <a href="/events">Events</a>
+          </SignedIn>
+        </li>
+        <li>
+          <SignedIn isStatic={true}>
+            <a href="/dashboard">Dashboard</a>
+          </SignedIn>
+        </li>
+        <li>
+          <SignedIn isStatic={true}>
+            <UserButton />
+          </SignedIn>
+          <SignedOut isStatic={true}>
+            <SignInButton mode="modal" />
+          </SignedOut>
+        </li>
+      </ul>
+    </Navigation>
+
+    {
+      !hideHeader && (
+        <Header
+          headerTitle={pageTitle || ''}
+          headerDescription={pageDescription || ''}
+          headerImageUrl={pageImageUrl || ''}
+          headerImageAlt={pageTitle || ''}
+        />
+      )
+    }
+
+    <slot name="featured" />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

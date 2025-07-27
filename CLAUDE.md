@@ -50,6 +50,15 @@ This is **@shawnsandy/astro-kit**, a collection of reusable Astro components and
 - `npm run npm-update-i` - Interactive dependency updates
 - `npx @astrojs/upgrade` - Official Astro core and integration updates (use astro-package-updater agent for comprehensive testing)
 
+### GitHub Ticket Management
+
+- `npm run ticket:validate` - Validate GitHub CLI authentication and repository access
+- `npm run ticket:create` - Create GitHub issue via web interface (uses issue templates)
+- `npm run ticket:list` - List open GitHub issues
+- `npm run ticket:labels` - View available GitHub labels
+
+**Automated Ticket Creation**: Use the `github-ticket-creator` agent for comprehensive ticket generation with proper labels, assignments, and project context. The agent supports both manual command generation and automatic execution when requested.
+
 ## Project Setup
 
 ### Initial Setup
@@ -746,7 +755,7 @@ This project includes specialized Claude Code agents in `.claude/agents/` for en
 
 ### Available Agents
 
-- **github-ticket-creator**: Creates comprehensive GitHub issues with proper team assignments, labels, and project context. Handles features, bugs, and enhancements with ready-to-execute `gh` commands.
+- **github-ticket-creator**: Creates comprehensive GitHub issues with proper team assignments, labels, and project context. Features automatic execution capabilities, authentication validation, and error handling for reliable ticket creation.
 - **astro-package-updater**: Updates Astro core packages using official `npx @astrojs/upgrade` command and ensures project compatibility with comprehensive testing.
 - **astro-basics-code-reviewer**: Expert code review specialist for this project, focusing on Astro components, TypeScript, and SSR considerations.
 - **code-reviewer**: General code review specialist for quality, performance, security, accessibility, and maintainability.
@@ -758,6 +767,22 @@ Claude Code automatically suggests appropriate agents based on task context. You
 - Use `/agent github-ticket-creator` for creating GitHub issues
 - Use `/agent astro-package-updater` for Astro version updates
 - Agents are invoked automatically for code reviews after significant changes
+
+### GitHub Issue Management
+
+#### Issue Templates
+
+Standardized GitHub issue templates are available in `.github/ISSUE_TEMPLATE/`:
+
+- **Feature Request** (`feature_request.yml`) - For new features and functionality
+- **Bug Report** (`bug_report.yml`) - For reporting bugs and issues
+- **Enhancement** (`enhancement.yml`) - For improving existing features
+
+#### Automated Workflows
+
+- **Ticket Automation** (`.github/workflows/ticket-automation.yml`) - Workflow for creating tickets via GitHub Actions with manual dispatch
+- **Manual Scripts** - Use `npm run ticket:*` commands for local ticket management
+- **Agent Integration** - The `github-ticket-creator` agent provides intelligent ticket creation with validation and error handling
 
 ## Documentation
 

@@ -1,0 +1,116 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for astro-basics
+title: 'feat: '
+labels: ['feature', 'p3-medium']
+projects: ['shawn-sandy/1']
+assignees:
+  - shawn-sandy
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new feature! Please fill out this form to help us understand your request.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      description: What feature would you like to see added?
+      placeholder: Describe the feature you'd like to request...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve?
+      placeholder: Explain the problem or use case this feature addresses...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like this feature to work?
+      placeholder: Describe your ideal solution...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What other solutions have you considered?
+      placeholder: Describe any alternative solutions or workarounds...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: component-type
+    attributes:
+      label: Component Type
+      description: What type of component is this related to?
+      options:
+        - Astro Component
+        - React Component
+        - SCSS/Styling
+        - Utility/Helper
+        - Configuration
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature?
+      options:
+        - p1-critical
+        - p2-high
+        - p3-medium
+        - p4-low
+      default: 2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Estimated Effort
+      description: How much work do you think this requires?
+      options:
+        - xs (< 1 hour)
+        - s (1-4 hours)
+        - m (4-8 hours)
+        - l (1-2 days)
+        - xl (> 2 days)
+      default: 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What needs to be done for this feature to be complete?
+      placeholder: |
+        - [ ] Feature works as described
+        - [ ] Tests are written and passing
+        - [ ] Documentation is updated
+        - [ ] No breaking changes introduced
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples
+      placeholder: Any additional information that might be helpful...
+    validations:
+      required: false

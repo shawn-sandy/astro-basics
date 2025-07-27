@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/shawn-sandy/astro-kit#readme
+    about: Check the documentation for usage guides and examples
+  - name: 💬 Discussions
+    url: https://github.com/shawn-sandy/astro-kit/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🔧 Support
+    url: https://github.com/shawn-sandy/astro-kit/discussions/categories/q-a
+    about: Get help with using astro-basics components
