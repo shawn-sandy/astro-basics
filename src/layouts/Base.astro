@@ -3,12 +3,12 @@
 import Navigation from '#components/astro/Navigation.astro'
 import Footer from '#components/astro/Footer.astro'
 import Header from '#components/astro/Header.astro'
-import Sidebar from '#components/astro/Sidebar.astro'
-import AstroBreadcrumb from '#components/react/astro-breadcrumb.tsx'
+
 import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config'
 import '@fpkit/acss/styles'
 import '../styles/index.css'
 import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/astro/components'
+import AstroBreadcrumb from '#components/react/astro-breadcrumb.tsx'
 
 // types
 type routeItem = {
@@ -78,7 +78,19 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl, hideHeader }
     }
 
     <slot name="featured" />
+    ) }
+
+    <slot name="featured" />
     <main>
+      <section>
+        {
+          showBreadcrumb && (
+            <>
+              <AstroBreadcrumb routes={breadcrumbRoutes || []} client:load />
+            </>
+          )
+        }
+      </section>
       <slot />
     </main>
     <Footer />
