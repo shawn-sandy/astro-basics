@@ -4,6 +4,7 @@ import mdx from '@astrojs/mdx'
 import remarkToc from 'remark-toc'
 import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis'
 import netlify from '@astrojs/netlify'
+import vercel from '@astrojs/vercel'
 import sitemap from '@astrojs/sitemap'
 import embeds from 'astro-embed/integration'
 // import spotlightjs from "@spotlightjs/astro";
@@ -24,12 +25,17 @@ export default defineConfig({
     const adapter = process.env.ASTRO_ADAPTER;
     if (adapter === 'node') {
       return node({ mode: 'standalone' });
-    } else if (adapter === 'netlify' || process.env.NODE_ENV === 'production') {
+    } else if (adapter === 'vercel') {
+      return vercel();
+    } else if (adapter === 'netlify') {
       return netlify();
     } else if (process.env.NODE_ENV === 'development') {
       return node({ mode: 'standalone' });
+    } else if (!adapter || process.env.NODE_ENV === 'production') {
+      // Default to netlify when no adapter is defined
+      return netlify();
     } else {
-      throw new Error('Invalid adapter configuration. Set ASTRO_ADAPTER to "node" or "netlify".');
+      throw new Error('Invalid adapter configuration. Set ASTRO_ADAPTER to "node", "netlify", or "vercel".');
     }
   })(),
 })
