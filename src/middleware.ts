@@ -1,7 +1,8 @@
 // src/middleware.ts
+
 import { clerkMiddleware, createRouteMatcher } from '@clerk/astro/server'
 
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)'])
+const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)', '/organization(.*)'])
 
 export const onRequest = clerkMiddleware((auth, context, next) => {
   // If the current route is protected and the user is not authenticated, redirect to sign-in
