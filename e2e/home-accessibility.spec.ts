@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test'
-import { BASE_URL } from './test-utils'
+import { BASE_URL, waitForPageReady } from './test-utils'
 
 test.describe('Home Page Accessibility', () => {
   test('is keyboard accessible', async ({ page }) => {
     await page.goto(BASE_URL)
+    await waitForPageReady(page)
 
     // Test that focusable elements exist
     const focusableElements = page.locator(
@@ -19,6 +20,7 @@ test.describe('Home Page Accessibility', () => {
 
   test('images have accessibility attributes', async ({ page }) => {
     await page.goto(BASE_URL)
+    await waitForPageReady(page)
 
     const images = page.locator('img')
     const imageCount = await images.count()
