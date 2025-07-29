@@ -121,7 +121,12 @@
 
 <script>
   // Only run PWA script if element exists (i.e., PWA is enabled)
-  if (document.getElementById('pwa-install-prompt')) {
+  const pwaInstallElement = document.getElementById('pwa-install-prompt')
+  if (!pwaInstallElement) {
+    // PWA install prompt not present, do nothing
+    return
+  }
+  if (pwaInstallElement) {
     interface BeforeInstallPromptEvent extends Event {
       prompt(): Promise<void>
       userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
