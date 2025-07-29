@@ -188,4 +188,16 @@ form select:user-valid:not(:focus) + p {
   background-color: #d1ecf1;
   border-color: #bee5eb;
   color: #0c5460;
+}
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+.centered-column {
+  flex-direction: column;
+}
+.centered-row {
+  flex-direction: row;
 } /*# sourceMappingURL=index.css.map */
