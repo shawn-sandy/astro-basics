@@ -1,4 +1,5 @@
 ---
+import MainSection from '#components/astro/MainSection.astro'
 import Base from './Base.astro'
 
 const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
@@ -11,5 +12,7 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
   pageDescription=""
   pageImageUrl={pageImageUrl}
 >
-  <slot />
+  <MainSection showBreadcrumb={false}>
+    <slot />
+  </MainSection>
 </Base>
