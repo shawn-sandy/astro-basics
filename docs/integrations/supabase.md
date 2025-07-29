@@ -14,7 +14,7 @@ Supabase is an open-source Firebase alternative that provides:
 
 ## Prerequisites
 
-- Supabase account (<https://supabase.com>)
+- Supabase account ([Supabase](https://supabase.com))
 - Existing Astro project
 - Node.js 18+ installed
 
