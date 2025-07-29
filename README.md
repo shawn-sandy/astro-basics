@@ -29,6 +29,7 @@ This project demonstrates Astro's capabilities for building fast, content-focuse
 - SCSS compilation with Sass watcher
 - Pre-commit hooks with Husky + lint-staged
 - Complete linting setup (ESLint, StyleLint, Prettier, Markdown)
+- GitHub Copilot integration with project-specific instructions
 
 ## Quick Start
 
