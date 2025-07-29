@@ -1,24 +1,29 @@
 ---
 import Base from './Base.astro'
 import Sidebar from '#components/astro/Sidebar.astro'
+import MainSection from '#components/astro/MainSection.astro'
 const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 ---
 
 <Base
   hideHeader={hideHeader || false}
-  showBreadcrumb={true}
   pageTitle={pageTitle || 'Authentication'}
   pageDescription={pageDescription || 'Sign in to your account'}
   pageImageUrl={pageImageUrl}
 >
-  <section aria-label="main-content">
-    <article>
-      <slot />
-    </article>
-    <aside>
-      <slot name="sidebar" />
-      <Sidebar />
-      <slot name="sidebar-footer" />
-    </aside>
-  </section>
+  <MainSection showBreadcrumb={true}>
+    <div slot="featured">
+      <slot name="featured" />
+    </div>
+    <section aria-label="main-content">
+      <article>
+        <slot />
+      </article>
+      <aside>
+        <slot name="sidebar" />
+        <Sidebar />
+        <slot name="sidebar-footer" />
+      </aside>
+    </section>
+  </MainSection>
 </Base>

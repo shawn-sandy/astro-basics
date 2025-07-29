@@ -3,7 +3,6 @@ import AstroBreadcrumb from '#components/react/astro-breadcrumb.tsx'
 
 export type Props = {
   showBreadcrumb?: boolean
-  hideHeader?: boolean
   breadcrumbRoutes?: Array<{
     name: string
     url: string
@@ -11,18 +10,19 @@ export type Props = {
   }>
 }
 
-const { showBreadcrumb = false, breadcrumbRoutes = [], hideHeader = false } = Astro.props
+const { showBreadcrumb, breadcrumbRoutes } = Astro.props
 ---
 
-<main>
-  <div>
+<>
+  <slot name="featured" />
+  <main>
     {
       showBreadcrumb && (
-        <>
+        <section>
           <AstroBreadcrumb routes={breadcrumbRoutes || []} client:load />
-        </>
+        </section>
       )
     }
-  </div>
-  <slot />
-</main>
+    <slot />
+  </main>
+</>
