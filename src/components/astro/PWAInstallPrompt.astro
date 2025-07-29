@@ -182,7 +182,7 @@
 
   // Handle dismiss button click
   dismissBtn?.addEventListener('click', () => {
-    localStorage.setItem('pwa-install-dismissed', 'true')
+    localStorage.setItem('pwa-install-dismissed', Date.now().toString())
     hideInstallPrompt()
   })
 
