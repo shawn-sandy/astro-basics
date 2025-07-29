@@ -6,14 +6,14 @@
  * Type definition for user object from authentication providers
  */
 export interface User {
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  name?: string;
-  displayName?: string;
-  username?: string;
-  email?: string;
-  emailAddresses?: { emailAddress: string }[];
+  firstName?: string
+  lastName?: string
+  fullName?: string
+  name?: string
+  displayName?: string
+  username?: string
+  email?: string
+  emailAddresses?: { emailAddress: string }[]
 }
 
 /**

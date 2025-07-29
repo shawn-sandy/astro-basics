@@ -1,21 +1,15 @@
-# @shawnsandy/astro-kit
+# Astro Basics Website
 
-A collection of reusable Astro components and utilities for building content-rich websites.
-The project serves both as a component library and a working Astro site demonstrating the components.
-
-## Installation
-
-```bash
-npm install @shawnsandy/astro-kit
-```
+A content-rich Astro website showcasing reusable components and modern web development practices.
+This project demonstrates Astro's capabilities for building fast, content-focused websites with authentication, collections, and interactive components.
 
 ## Project Features
 
-### Component Library
+### Component Architecture
 
 - **Astro Components** (`src/components/astro/`): Server-side rendered .astro components
 - **React Components** (`src/components/react/`): Client-side interactive components
-- Components exported through `src/components/index.ts`
+- **Component exports** through `src/components/index.ts` for internal organization
 
 ### Content Management
 
@@ -73,7 +67,7 @@ npm run fix:all      # Fix all auto-fixable issues
 
 ```astro
 ---
-// Using path aliases
+// Using path aliases for internal component imports
 import Header from '#components/astro/Header.astro'
 import { ThemeToggle } from '#components/react/ThemeToggle'
 import { SITE_TITLE } from '#utils/site-config'

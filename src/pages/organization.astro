@@ -1,0 +1,15 @@
+---
+export const prerender = true
+import Auth from '#/layouts/Auth.astro'
+import { OrganizationProfile, SignedIn } from '@clerk/astro/components'
+---
+
+<Auth pageTitle="Organization - Astro Kit">
+  <section>
+    <h2>Your Organization Profile</h2>
+    <p>Manage your organization's settings and profile information below.</p>
+    <SignedIn isStatic={true}>
+      <OrganizationProfile />
+    </SignedIn>
+  </section>
+</Auth>

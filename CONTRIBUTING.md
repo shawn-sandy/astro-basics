@@ -1,6 +1,6 @@
-# Contributing to @shawnsandy/astro-kit
+# Contributing to Astro Basics Website
 
-Thank you for your interest in contributing to @shawnsandy/astro-kit! This document outlines the process for contributing to this project.
+Thank you for your interest in contributing to the Astro Basics Website! This document outlines the process for contributing to this project.
 
 ## Table of Contents
 
@@ -31,8 +31,8 @@ This project adheres to a code of conduct that promotes a welcoming and inclusiv
 2. Clone your fork locally:
 
    ```bash
-   git clone https://github.com/your-username/astro-kit.git
-   cd astro-kit
+   git clone https://github.com/your-username/astro-basics.git
+   cd astro-basics
    ```
 
 3. Install dependencies:
