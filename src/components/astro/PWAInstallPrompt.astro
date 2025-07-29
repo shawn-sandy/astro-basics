@@ -1,0 +1,200 @@
+---
+// PWA Install Prompt Component
+// Shows a prompt to install the app when it's installable
+---
+
+<div id="pwa-install-prompt" class="pwa-install-banner" style="display: none;">
+  <div class="pwa-install-content">
+    <div class="pwa-install-icon">📱</div>
+    <div class="pwa-install-text">
+      <h3>Install AstroKit</h3>
+      <p>Add this app to your home screen for quick access!</p>
+    </div>
+    <div class="pwa-install-actions">
+      <button id="pwa-install-btn" class="pwa-install-button">Install</button>
+      <button id="pwa-dismiss-btn" class="pwa-dismiss-button">Maybe Later</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .pwa-install-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1e293b;
+    color: white;
+    padding: 1rem;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+
+  .pwa-install-banner.show {
+    transform: translateY(0);
+  }
+
+  .pwa-install-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .pwa-install-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+
+  .pwa-install-text {
+    flex: 1;
+  }
+
+  .pwa-install-text h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .pwa-install-text p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.9rem;
+  }
+
+  .pwa-install-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .pwa-install-button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .pwa-install-button:hover {
+    background: #2563eb;
+  }
+
+  .pwa-dismiss-button {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .pwa-dismiss-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 640px) {
+    .pwa-install-content {
+      flex-direction: column;
+      text-align: center;
+      gap: 0.75rem;
+    }
+
+    .pwa-install-actions {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .pwa-install-button,
+    .pwa-dismiss-button {
+      flex: 1;
+    }
+  }
+</style>
+
+<script>
+  interface BeforeInstallPromptEvent extends Event {
+    prompt(): Promise<void>
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+  }
+
+  let deferredPrompt: BeforeInstallPromptEvent | null = null
+  const installPrompt = document.getElementById('pwa-install-prompt')
+  const installBtn = document.getElementById('pwa-install-btn')
+  const dismissBtn = document.getElementById('pwa-dismiss-btn')
+
+  // Listen for the beforeinstallprompt event
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault()
+    deferredPrompt = e as BeforeInstallPromptEvent
+
+    // Check if user has previously dismissed the prompt
+    const dismissed = localStorage.getItem('pwa-install-dismissed')
+    if (!dismissed) {
+      showInstallPrompt()
+    }
+  })
+
+  // Show the install prompt
+  function showInstallPrompt() {
+    if (installPrompt) {
+      installPrompt.style.display = 'block'
+      setTimeout(() => {
+        installPrompt.classList.add('show')
+      }, 100)
+    }
+  }
+
+  // Hide the install prompt
+  function hideInstallPrompt() {
+    if (installPrompt) {
+      installPrompt.classList.remove('show')
+      setTimeout(() => {
+        installPrompt.style.display = 'none'
+      }, 300)
+    }
+  }
+
+  // Handle install button click
+  installBtn?.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt()
+      const { outcome } = await deferredPrompt.userChoice
+
+      if (outcome === 'accepted') {
+        console.log('User accepted the install prompt')
+      } else {
+        console.log('User dismissed the install prompt')
+      }
+
+      deferredPrompt = null
+      hideInstallPrompt()
+    }
+  })
+
+  // Handle dismiss button click
+  dismissBtn?.addEventListener('click', () => {
+    localStorage.setItem('pwa-install-dismissed', 'true')
+    hideInstallPrompt()
+  })
+
+  // Listen for app installation
+  window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed')
+    hideInstallPrompt()
+  })
+
+  // Check if app is already installed
+  if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+    // App is running in standalone mode (already installed)
+    console.log('App is running in standalone mode')
+  }
+</script>

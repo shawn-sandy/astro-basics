@@ -86,6 +86,7 @@
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/react": "^18.2.69",
     "@types/react-dom": "^18.2.22",
+    "@vite-pwa/astro": "^1.1.0",
     "astro": "^5.12.3",
     "astro-embed": "^0.9.0",
     "astro-imagetools": "^0.9.0",
@@ -93,7 +94,12 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rehype-accessible-emojis": "^0.3.2",
-    "remark-toc": "^9.0.0"
+    "remark-toc": "^9.0.0",
+    "sharp": "^0.34.3",
+    "workbox-core": "^7.3.0",
+    "workbox-precaching": "^7.3.0",
+    "workbox-routing": "^7.3.0",
+    "workbox-strategies": "^7.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",

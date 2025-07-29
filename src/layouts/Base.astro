@@ -3,6 +3,7 @@
 import Navigation from '#components/astro/Navigation.astro'
 import Footer from '#components/astro/Footer.astro'
 import Header from '#components/astro/Header.astro'
+import PWAInstallPrompt from '#components/astro/PWAInstallPrompt.astro'
 
 import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config'
 import '@fpkit/acss/styles'
@@ -35,9 +36,23 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl, hideHeader }
     <meta charset="utf-8" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="description" content={SITE_DESCRIPTION} />
+
+    <!-- PWA Meta Tags -->
+    <meta name="description" content={pageDescription || SITE_DESCRIPTION} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="theme-color" content="#1e293b" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="AstroKit" />
+    <meta name="application-name" content="AstroKit" />
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle || SITE_TITLE}</title>
     <!-- <ViewTransitions /> -->
@@ -93,5 +108,8 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl, hideHeader }
       <slot />
     </main>
     <Footer />
+
+    <!-- PWA Install Prompt -->
+    <PWAInstallPrompt />
   </body>
 </html>

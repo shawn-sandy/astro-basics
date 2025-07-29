@@ -1,0 +1,74 @@
+---
+import Base from '#layouts/Base.astro'
+---
+
+<Base
+  pageTitle="You're Offline"
+  pageDescription="You are currently offline. Please check your internet connection."
+  hideHeader={false}
+>
+  <section data-flex="column center" style="min-height: 60vh; text-align: center; padding: 2rem;">
+    <div style="max-width: 500px;">
+      <h1 style="font-size: 3rem; margin-bottom: 1rem;">📱</h1>
+      <h2 style="margin-bottom: 1rem;">You're Offline</h2>
+      <p style="margin-bottom: 2rem; color: #666;">
+        It looks like you're not connected to the internet. Don't worry - you can still browse some
+        of our cached content!
+      </p>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">What you can do:</h3>
+        <ul style="text-align: left; margin: 0 auto; display: inline-block;">
+          <li>Check your internet connection</li>
+          <li>Try refreshing the page</li>
+          <li>Browse our cached component documentation</li>
+          <li>View previously loaded pages</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <button
+          onclick="window.location.reload()"
+          style="background: #1e293b; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; margin-right: 1rem;"
+        >
+          Try Again
+        </button>
+        <a
+          href="/"
+          style="background: #f8fafc; color: #1e293b; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 0.5rem; text-decoration: none; display: inline-block;"
+        >
+          Go Home
+        </a>
+      </div>
+
+      <div
+        style="margin-top: 2rem; padding: 1rem; background: #f8fafc; border-radius: 0.5rem; border-left: 4px solid #3b82f6;"
+      >
+        <p style="margin: 0; font-size: 0.9rem; color: #4b5563;">
+          <strong>Tip:</strong> Once you're back online, this page will automatically update with the
+          latest content.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Auto-reload when connection is restored
+    window.addEventListener('online', () => {
+      window.location.reload()
+    })
+
+    // Check connection status
+    function updateConnectionStatus() {
+      if (navigator.onLine) {
+        document.body.style.borderTop = '3px solid #10b981'
+      } else {
+        document.body.style.borderTop = '3px solid #ef4444'
+      }
+    }
+
+    window.addEventListener('online', updateConnectionStatus)
+    window.addEventListener('offline', updateConnectionStatus)
+    updateConnectionStatus()
+  </script>
+</Base>
