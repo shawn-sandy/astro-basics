@@ -1,0 +1,91 @@
+---
+// Offline Status Indicator Component
+// Shows the user's connection status
+---
+
+<div id="offline-indicator" class="offline-indicator" style="display: none;">
+  <div class="offline-content">
+    <span class="offline-icon">📡</span>
+    <span class="offline-text">You're offline</span>
+  </div>
+</div>
+
+<style>
+  .offline-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #ef4444;
+    color: white;
+    padding: 0.5rem;
+    text-align: center;
+    z-index: 2000;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .offline-indicator.show {
+    transform: translateY(0);
+  }
+
+  .offline-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .offline-icon {
+    font-size: 1rem;
+  }
+
+  .offline-text {
+    margin: 0;
+  }
+
+  /* When online, show a brief success message */
+  .offline-indicator.online {
+    background: #10b981;
+  }
+</style>
+
+<script>
+  const offlineIndicator = document.getElementById('offline-indicator')
+  const offlineText = document.querySelector('.offline-text')
+
+  function updateConnectionStatus() {
+    if (!offlineIndicator || !offlineText) return
+
+    if (navigator.onLine) {
+      // Show brief online message
+      offlineIndicator.classList.add('online')
+      offlineIndicator.classList.remove('show')
+      offlineText.textContent = 'Back online!'
+
+      // Hide after 2 seconds
+      setTimeout(() => {
+        offlineIndicator.style.display = 'none'
+        offlineIndicator.classList.remove('online')
+      }, 2000)
+    } else {
+      // Show offline message
+      offlineIndicator.classList.remove('online')
+      offlineIndicator.style.display = 'block'
+      offlineText.textContent = "You're offline"
+
+      setTimeout(() => {
+        offlineIndicator.classList.add('show')
+      }, 100)
+    }
+  }
+
+  // Listen for online/offline events
+  window.addEventListener('online', updateConnectionStatus)
+  window.addEventListener('offline', updateConnectionStatus)
+
+  // Check initial status
+  updateConnectionStatus()
+</script>

@@ -4,6 +4,7 @@ import Navigation from '#components/astro/Navigation.astro'
 import Footer from '#components/astro/Footer.astro'
 import Header from '#components/astro/Header.astro'
 import PWAInstallPrompt from '#components/astro/PWAInstallPrompt.astro'
+import OfflineIndicator from '#components/astro/OfflineIndicator.astro'
 
 import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config'
 import '@fpkit/acss/styles'
@@ -58,6 +59,9 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl, hideHeader }
     <!-- <ViewTransitions /> -->
   </head>
   <body>
+    <!-- Offline Status Indicator -->
+    <OfflineIndicator />
+
     <Navigation>
       <ul slot="login">
         <li>
