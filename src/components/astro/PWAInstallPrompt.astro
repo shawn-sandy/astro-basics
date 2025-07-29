@@ -5,10 +5,6 @@
 const isPWAEnabled = import.meta.env.PWA_ENABLED === 'true'
 ---
 
---- // PWA Install Prompt Component // Shows a prompt to install the app when it's installable //
-Only renders if PWA is enabled via environment variable const isPWAEnabled =
-import.meta.env.PWA_ENABLED === 'true' ---
-
 {
   isPWAEnabled && (
     <div id="pwa-install-prompt" class="pwa-install-banner" style="display: none;">
