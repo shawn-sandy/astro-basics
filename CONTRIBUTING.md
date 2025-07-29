@@ -284,6 +284,13 @@ export function ComponentName({ title, onClick, className = '' }: Props) {
 - Follow existing documentation patterns
 - Update CLAUDE.md if adding project-level changes
 
+### GitHub Copilot Integration
+
+This project includes `copilot.instructions.md` at the repository root to provide context-aware
+suggestions for GitHub Copilot users. This file contains project-specific patterns, conventions,
+and examples that help Copilot understand the codebase architecture and generate appropriate
+suggestions.
+
 ## Questions or Issues?
 
 - Open an issue for bugs or feature requests
