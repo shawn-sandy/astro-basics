@@ -1,31 +1,20 @@
 ---
 // PWA Install Prompt Component
-// Shows a prompt to install the app when it's installable
-// Only renders if PWA is enabled via environment variable
-const isPWAEnabled = import.meta.env.PWA_ENABLED === 'true'
 ---
 
-{
-  isPWAEnabled && (
-    <div id="pwa-install-prompt" class="pwa-install-banner" style="display: none;">
-      <div class="pwa-install-content">
-        <div class="pwa-install-icon">📱</div>
-        <div class="pwa-install-text">
-          <h3>Install AstroKit</h3>
-          <p>Add this app to your home screen for quick access!</p>
-        </div>
-        <div class="pwa-install-actions">
-          <button id="pwa-install-btn" class="pwa-install-button">
-            Install
-          </button>
-          <button id="pwa-dismiss-btn" class="pwa-dismiss-button">
-            Maybe Later
-          </button>
-        </div>
-      </div>
+<div id="pwa-install-prompt" class="pwa-install-banner" style="display: none;">
+  <div class="pwa-install-content">
+    <div class="pwa-install-icon">📱</div>
+    <div class="pwa-install-text">
+      <h3>Install AstroKit</h3>
+      <p>Add this app to your home screen for quick access!</p>
     </div>
-  )
-}
+    <div class="pwa-install-actions">
+      <button id="pwa-install-btn" class="pwa-install-button"> Install </button>
+      <button id="pwa-dismiss-btn" class="pwa-dismiss-button"> Maybe Later </button>
+    </div>
+  </div>
+</div>
 
 <style>
   .pwa-install-banner {
