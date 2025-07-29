@@ -4,11 +4,10 @@ import Auth from '#/layouts/Auth.astro'
 import { SignedOut, SignIn } from '@clerk/astro/components'
 ---
 
-<Auth pageTitle="Sign In - Astro Kit">
+<Auth pageTitle="Sign In - Astro Kit" hideHeader={true}>
   <section class="centered centered-column">
     <h2>Welcome Back!</h2>
     <p>Please sign in to continue.</p>
-
     <SignedOut isStatic={true}>
       <SignIn />
     </SignedOut>
