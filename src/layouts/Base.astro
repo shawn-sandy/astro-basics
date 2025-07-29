@@ -95,11 +95,8 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl, hideHeader }
       )
     }
 
-    <slot name="featured" />
-
-    <slot name="featured" />
     <main>
-      <section>
+      <div>
         {
           showBreadcrumb && (
             <>
@@ -107,7 +104,7 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl, hideHeader }
             </>
           )
         }
-      </section>
+      </div>
       <slot />
     </main>
     <Footer />

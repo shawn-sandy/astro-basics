@@ -702,6 +702,7 @@ export const GET: APIRoute = async context => {
    ```
 
 3. **Add Navigation Link**:
+
    ```astro
    <SignedIn isStatic={true}>
      <a href="/new-protected-route">New Feature</a>
@@ -727,6 +728,7 @@ export const GET: APIRoute = async context => {
    ```
 
 3. **Verify Middleware Execution**:
+
    ```typescript
    export const onRequest = clerkMiddleware((auth, context, next) => {
      console.log('Middleware executing for:', context.request.url)

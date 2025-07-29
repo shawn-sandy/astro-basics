@@ -1,0 +1,14 @@
+.centered {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+
+  &-column {
+    flex-direction: column;
+  }
+
+  &-row {
+    flex-direction: row;
+  }
+}

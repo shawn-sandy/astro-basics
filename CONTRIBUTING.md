@@ -29,22 +29,30 @@ This project adheres to a code of conduct that promotes a welcoming and inclusiv
 
 1. Fork the repository on GitHub
 2. Clone your fork locally:
+
    ```bash
    git clone https://github.com/your-username/astro-basics.git
    cd astro-basics
    ```
+
 3. Install dependencies:
+
    ```bash
    npm install
    ```
+
 4. Set up pre-commit hooks:
+
    ```bash
    npm run prepare
    ```
+
 5. Copy environment variables:
+
    ```bash
    cp .env.example .env
    ```
+
 6. Configure Clerk keys in `.env` for authentication features
 
 ## Development Workflow
@@ -75,6 +83,7 @@ This project adheres to a code of conduct that promotes a welcoming and inclusiv
 3. Make your changes following the [code style guidelines](#code-style-guidelines)
 
 4. Run quality checks frequently:
+
    ```bash
    npm run fix:all     # Fix all auto-fixable issues
    npm run lint:all    # Check all linting rules
@@ -170,6 +179,7 @@ import { PAGINATION_COUNT } from '#utils/site-config'
    - Example: `feat: add new pagination component`
 
 3. **Push to your fork**:
+
    ```bash
    git push origin feat/your-feature-name
    ```
