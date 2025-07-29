@@ -29,7 +29,7 @@ type Props = {
 
 const showBreadcrumb = Astro.props.showBreadcrumb === undefined ? true : Astro.props.showBreadcrumb
 
-const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl, hideHeader } = Astro.props
+const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 ---
 
 <html lang="en">
@@ -94,19 +94,7 @@ const { pageTitle, pageDescription, breadcrumbRoutes, pageImageUrl, hideHeader }
         />
       )
     }
-
-    <main>
-      <div>
-        {
-          showBreadcrumb && (
-            <>
-              <AstroBreadcrumb routes={breadcrumbRoutes || []} client:load />
-            </>
-          )
-        }
-      </div>
-      <slot />
-    </main>
+    <slot />
     <Footer />
 
     <!-- PWA Install Prompt -->
