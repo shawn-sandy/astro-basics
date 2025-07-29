@@ -36,7 +36,7 @@ npm install -D supabase
 
 ### 1. Create Supabase Project
 
-1. Go to <https://supabase.com/dashboard>
+1. Go to [Supabase dashboard](https://supabase.com/dashboard)
 2. Click "New Project"
 3. Choose your organization
 4. Set project name and database password
