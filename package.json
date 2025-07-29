@@ -1,24 +1,20 @@
 {
-  "name": "@shawnsandy/astro-kit",
+  "name": "astro-basics-website",
   "type": "module",
   "version": "0.1.0",
-  "private": false,
-  "description": "A collection of Astro components and utilities",
+  "private": true,
+  "description": "Astro-based website demonstrating components and utilities",
   "author": "Shawn Sandy",
   "license": "MIT",
   "keywords": [
-    "astro-component",
-    "withastro",
     "astro",
-    "components",
-    "ui"
+    "website",
+    "content",
+    "blog"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/shawn-sandy/astro-kit"
-  },
-  "publishConfig": {
-    "access": "public"
+    "url": "https://github.com/shawn-sandy/astro-basics"
   },
   "exports": {
     ".": "./src/components/index.ts",
