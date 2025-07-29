@@ -9,9 +9,63 @@ The project now includes full PWA support with:
 - **Web App Manifest** for installability
 - **Service Worker** for offline functionality and caching
 - **App Icons** in multiple sizes for various devices
-- **Install Prompt** that appears when the app is installable
+- **Install Prompt** that appears when the app is installable (can be disabled via environment variable)
 - **Offline Indicator** to show connection status
 - **Offline Fallback Page** for when users are offline
+- **Environment-based Control** for enabling/disabling PWA features
+
+## Environment Configuration
+
+### PWA_ENABLED Environment Variable
+
+The PWA install prompt can be controlled via the `PWA_ENABLED` environment variable:
+
+```bash
+# Enable PWA install prompt (default for production)
+PWA_ENABLED=true
+
+# Disable PWA install prompt (recommended for development)
+PWA_ENABLED=false
+```
+
+**Default Behavior:**
+
+- If `PWA_ENABLED` is not set or is any value other than `"true"`, the PWA install prompt will not appear
+- This provides a fail-safe approach to prevent unwanted PWA prompts in development environments
+
+**Usage in Different Environments:**
+
+- **Development**: Set `PWA_ENABLED=false` to avoid PWA installation prompts during development
+- **Staging**: Can be disabled (`PWA_ENABLED=false`) for stakeholder reviews without install prompts
+- **Production**: Set `PWA_ENABLED=true` to enable the full PWA experience for end users
+
+### Setting Up Environment Variables
+
+1. **Copy the example environment file:**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Configure PWA settings in `.env`:**
+
+   ```bash
+   # PWA Configuration
+   PWA_ENABLED=true
+   ```
+
+3. **Environment-specific configurations:**
+
+   ```bash
+   # Development
+   PWA_ENABLED=false
+
+   # Staging
+   PWA_ENABLED=false
+
+   # Production
+   PWA_ENABLED=true
+   ```
 
 ## Features
 
@@ -214,10 +268,16 @@ Potential improvements:
 
 **Install prompt not showing:**
 
+- Check `PWA_ENABLED` environment variable is set to `"true"`
 - Check HTTPS is enabled
 - Verify manifest has no errors
 - Ensure service worker is registered
 - Check browser support
+
+**PWA prompt appearing in development:**
+
+- Set `PWA_ENABLED=false` in your `.env` file
+- Restart the development server after changing environment variables
 
 **Service worker not updating:**
 
@@ -239,6 +299,9 @@ console.log('SW registered:', 'serviceWorker' in navigator)
 
 # Check manifest
 console.log('Manifest:', await navigator.serviceWorker.ready)
+
+# Check PWA environment variable
+console.log('PWA Enabled:', import.meta.env.PWA_ENABLED)
 
 # Test offline mode
 // In DevTools Network tab, select "Offline"

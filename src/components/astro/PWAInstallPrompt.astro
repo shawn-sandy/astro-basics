@@ -1,21 +1,35 @@
 ---
 // PWA Install Prompt Component
 // Shows a prompt to install the app when it's installable
+// Only renders if PWA is enabled via environment variable
+const isPWAEnabled = import.meta.env.PWA_ENABLED === 'true'
 ---
 
-<div id="pwa-install-prompt" class="pwa-install-banner" style="display: none;">
-  <div class="pwa-install-content">
-    <div class="pwa-install-icon">📱</div>
-    <div class="pwa-install-text">
-      <h3>Install AstroKit</h3>
-      <p>Add this app to your home screen for quick access!</p>
+--- // PWA Install Prompt Component // Shows a prompt to install the app when it's installable //
+Only renders if PWA is enabled via environment variable const isPWAEnabled =
+import.meta.env.PWA_ENABLED === 'true' ---
+
+{
+  isPWAEnabled && (
+    <div id="pwa-install-prompt" class="pwa-install-banner" style="display: none;">
+      <div class="pwa-install-content">
+        <div class="pwa-install-icon">📱</div>
+        <div class="pwa-install-text">
+          <h3>Install AstroKit</h3>
+          <p>Add this app to your home screen for quick access!</p>
+        </div>
+        <div class="pwa-install-actions">
+          <button id="pwa-install-btn" class="pwa-install-button">
+            Install
+          </button>
+          <button id="pwa-dismiss-btn" class="pwa-dismiss-button">
+            Maybe Later
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="pwa-install-actions">
-      <button id="pwa-install-btn" class="pwa-install-button">Install</button>
-      <button id="pwa-dismiss-btn" class="pwa-dismiss-button">Maybe Later</button>
-    </div>
-  </div>
-</div>
+  )
+}
 
 <style>
   .pwa-install-banner {
@@ -121,80 +135,83 @@
 </style>
 
 <script>
-  interface BeforeInstallPromptEvent extends Event {
-    prompt(): Promise<void>
-    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
-  }
-
-  let deferredPrompt: BeforeInstallPromptEvent | null = null
-  const installPrompt = document.getElementById('pwa-install-prompt')
-  const installBtn = document.getElementById('pwa-install-btn')
-  const dismissBtn = document.getElementById('pwa-dismiss-btn')
-
-  // Listen for the beforeinstallprompt event
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault()
-    deferredPrompt = e as BeforeInstallPromptEvent
-
-    // Check if user has previously dismissed the prompt
-    const dismissed = localStorage.getItem('pwa-install-dismissed')
-    if (!dismissed) {
-      showInstallPrompt()
+  // Only run PWA script if element exists (i.e., PWA is enabled)
+  if (document.getElementById('pwa-install-prompt')) {
+    interface BeforeInstallPromptEvent extends Event {
+      prompt(): Promise<void>
+      userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
     }
-  })
 
-  // Show the install prompt
-  function showInstallPrompt() {
-    if (installPrompt) {
-      installPrompt.style.display = 'block'
-      setTimeout(() => {
-        installPrompt.classList.add('show')
-      }, 100)
-    }
-  }
+    let deferredPrompt: BeforeInstallPromptEvent | null = null
+    const installPrompt = document.getElementById('pwa-install-prompt')
+    const installBtn = document.getElementById('pwa-install-btn')
+    const dismissBtn = document.getElementById('pwa-dismiss-btn')
 
-  // Hide the install prompt
-  function hideInstallPrompt() {
-    if (installPrompt) {
-      installPrompt.classList.remove('show')
-      setTimeout(() => {
-        installPrompt.style.display = 'none'
-      }, 300)
-    }
-  }
+    // Listen for the beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault()
+      deferredPrompt = e as BeforeInstallPromptEvent
 
-  // Handle install button click
-  installBtn?.addEventListener('click', async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt()
-      const { outcome } = await deferredPrompt.userChoice
-
-      if (outcome === 'accepted') {
-        console.log('User accepted the install prompt')
-      } else {
-        console.log('User dismissed the install prompt')
+      // Check if user has previously dismissed the prompt
+      const dismissed = localStorage.getItem('pwa-install-dismissed')
+      if (!dismissed) {
+        showInstallPrompt()
       }
+    })
 
-      deferredPrompt = null
-      hideInstallPrompt()
+    // Show the install prompt
+    function showInstallPrompt() {
+      if (installPrompt) {
+        installPrompt.style.display = 'block'
+        setTimeout(() => {
+          installPrompt.classList.add('show')
+        }, 100)
+      }
     }
-  })
 
-  // Handle dismiss button click
-  dismissBtn?.addEventListener('click', () => {
-    localStorage.setItem('pwa-install-dismissed', Date.now().toString())
-    hideInstallPrompt()
-  })
+    // Hide the install prompt
+    function hideInstallPrompt() {
+      if (installPrompt) {
+        installPrompt.classList.remove('show')
+        setTimeout(() => {
+          installPrompt.style.display = 'none'
+        }, 300)
+      }
+    }
 
-  // Listen for app installation
-  window.addEventListener('appinstalled', () => {
-    console.log('PWA was installed')
-    hideInstallPrompt()
-  })
+    // Handle install button click
+    installBtn?.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt()
+        const { outcome } = await deferredPrompt.userChoice
 
-  // Check if app is already installed
-  if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-    // App is running in standalone mode (already installed)
-    console.log('App is running in standalone mode')
+        if (outcome === 'accepted') {
+          console.log('User accepted the install prompt')
+        } else {
+          console.log('User dismissed the install prompt')
+        }
+
+        deferredPrompt = null
+        hideInstallPrompt()
+      }
+    })
+
+    // Handle dismiss button click
+    dismissBtn?.addEventListener('click', () => {
+      localStorage.setItem('pwa-install-dismissed', Date.now().toString())
+      hideInstallPrompt()
+    })
+
+    // Listen for app installation
+    window.addEventListener('appinstalled', () => {
+      console.log('PWA was installed')
+      hideInstallPrompt()
+    })
+
+    // Check if app is already installed
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+      // App is running in standalone mode (already installed)
+      console.log('App is running in standalone mode')
+    }
   }
 </script>

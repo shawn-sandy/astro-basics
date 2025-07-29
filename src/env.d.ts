@@ -14,3 +14,7 @@ declare namespace App {
     currentUser(): Promise<UserResource | null>
   }
 }
+
+interface ImportMetaEnv {
+  readonly PWA_ENABLED: string
+}
