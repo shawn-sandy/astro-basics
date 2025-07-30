@@ -91,7 +91,12 @@ jobs:
           if [ "$success" != "true" ]; then
             echo "⚠️  Playwright browser installation failed, but continuing with system browser fallback"
             # Set environment variable to use system browser
-            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser" >> $GITHUB_ENV
+            chromium_path=$(which chromium-browser || echo "")
+            if [ -n "$chromium_path" ]; then
+              echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$chromium_path" >> $GITHUB_ENV
+            else
+              echo "⚠️  Chromium browser not found. Ensure it is installed and available in PATH."
+            fi
           fi
 
       - name: Verify Playwright installation
