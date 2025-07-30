@@ -1,0 +1,119 @@
+---
+import Card from './Card.astro'
+import {
+  getTopFeatures,
+  getAllFeatures,
+  getFeaturesByCategory,
+  type FeatureCard,
+} from '#/data/features'
+
+export type Props = {
+  /** Number of feature cards to display (default: 6) */
+  count?: number
+  /** Filter by category (optional) */
+  category?: FeatureCard['category']
+  /** Show all features regardless of count */
+  showAll?: boolean
+  /** Custom title for the features section */
+  sectionTitle?: string
+  /** Custom CSS class for the container */
+  className?: string
+}
+
+const {
+  count = 6,
+  category,
+  showAll = false,
+  sectionTitle = 'Key Features',
+  className = '',
+} = Astro.props
+
+// Get features based on props
+let features: FeatureCard[]
+if (category) {
+  features = getFeaturesByCategory(category)
+} else if (showAll) {
+  features = getAllFeatures()
+} else {
+  features = getTopFeatures(count)
+}
+---
+
+<section class={`features-section ${className}`}>
+  {
+    sectionTitle && (
+      <header class="features-header">
+        <h2 class="features-title">{sectionTitle}</h2>
+        <p class="features-subtitle">
+          Discover the powerful features that make this Astro project stand out
+        </p>
+      </header>
+    )
+  }
+
+  <div class="features-grid">
+    {
+      features.map(feature => (
+        <Card cardTitle={feature.title} {...(feature.link && { cardLink: feature.link })}>
+          <p>{feature.description}</p>
+        </Card>
+      ))
+    }
+  </div>
+</section>
+
+<style lang="scss">
+  .features-section {
+    padding: 2rem 0;
+  }
+
+  .features-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .features-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--color-text-primary, #1e293b);
+  }
+
+  .features-subtitle {
+    font-size: 1.125rem;
+    color: var(--color-text-secondary, #64748b);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .features-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .features-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .features-section {
+      padding: 4rem 0;
+    }
+
+    .features-title {
+      font-size: 3rem;
+    }
+  }
+</style>
