@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is **@shawnsandy/astro-kit**, a collection of reusable Astro components and utilities for building content-rich websites. The project serves both as a component library and a working Astro site demonstrating the components.
+This is **astro-basics-website**, a collection of reusable Astro components and utilities for building content-rich websites. The project serves both as a component library and a working Astro site demonstrating the components.
 
 ## Essential Commands
 
@@ -51,7 +51,7 @@ This is **@shawnsandy/astro-kit**, a collection of reusable Astro components and
 
 ### Branch Structure
 
-- **Main branch**: `main` (use for pull requests)
+- **Main branch**: `primary` (use for pull requests)
 
 ## Architecture
 
