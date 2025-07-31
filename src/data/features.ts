@@ -31,7 +31,7 @@ export const projectFeatures: FeatureCard[] = [
     title: 'Content Management System',
     description:
       'Powerful content collections with MDX support, RSS feeds, tagging system, and publication workflow. Perfect for blogs, documentation, and content-rich websites.',
-    image: 'https://picsum.photos/400/250?random=1',
+
     link: '/docs/1',
     category: 'core',
     priority: 100,
@@ -40,7 +40,7 @@ export const projectFeatures: FeatureCard[] = [
     title: 'Authentication & Security',
     description:
       'Complete Clerk integration with protected routes, user management, and security utilities. XSS protection, input validation, and trusted domain validation built-in.',
-    image: 'https://picsum.photos/400/250?random=2',
+
     link: '/signin',
     category: 'security',
     priority: 95,
@@ -49,7 +49,7 @@ export const projectFeatures: FeatureCard[] = [
     title: 'Progressive Web App',
     description:
       'Full PWA implementation with offline support, service workers, install prompts, and native app-like experience. Works seamlessly across all devices.',
-    image: 'https://picsum.photos/400/250?random=3',
+
     link: '/',
     category: 'user-experience',
     priority: 90,
