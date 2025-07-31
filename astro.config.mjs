@@ -35,7 +35,8 @@ export default defineConfig({
       manifest: {
         name: 'Astro Kit - Component Library & Demo',
         short_name: 'AstroKit',
-        description: 'A collection of reusable Astro components and utilities for building content-rich websites',
+        description:
+          'A collection of reusable Astro components and utilities for building content-rich websites',
         theme_color: '#1e293b',
         background_color: '#ffffff',
         display: 'standalone',
