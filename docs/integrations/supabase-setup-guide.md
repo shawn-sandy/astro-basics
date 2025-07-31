@@ -488,9 +488,14 @@ export const updatePost = async (id: string, updates: Partial<InsertDto<'posts'>
 
 ### 8. Deployment Configuration
 
-#### 8.1 Environment Variables for Production
+#### 8.1 Netlify Deployment Setup
 
-Ensure these are set in your deployment platform:
+Since this project is configured for Netlify deployment, follow these steps for Supabase integration:
+
+##### 8.1.1 Environment Variables in Netlify
+
+1. **Go to Netlify Dashboard** → Your Site → Site settings → Environment variables
+2. **Add the following environment variables:**
 
 ```bash
 SUPABASE_URL=your_production_supabase_url
@@ -499,7 +504,129 @@ SUPABASE_ANON_KEY=your_production_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
-#### 8.2 Update Astro Config for Edge Functions (Optional)
+##### 8.1.2 Netlify Build Settings
+
+Your existing `astro.config.mjs` is already configured with Netlify adapter:
+
+```typescript
+// astro.config.mjs - Current configuration supports Netlify
+import netlify from '@astrojs/netlify'
+
+export default defineConfig({
+  // ... existing config
+  adapter: netlify(), // Already configured
+})
+```
+
+##### 8.1.3 Netlify Functions with Supabase (Optional)
+
+If you want to use Netlify Functions for server-side operations:
+
+1. **Create `/netlify/functions` directory**
+2. **Add Supabase function example:**
+
+```typescript
+// netlify/functions/supabase-admin.ts
+import { Handler } from '@netlify/functions'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY! // Use service role for admin operations
+)
+
+export const handler: Handler = async (event, context) => {
+  // Verify authentication/authorization here
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Method not allowed' }),
+    }
+  }
+
+  try {
+    const { action, data } = JSON.parse(event.body || '{}')
+
+    switch (action) {
+      case 'create-post':
+        const { data: post, error } = await supabase.from('posts').insert(data).select().single()
+
+        if (error) throw error
+
+        return {
+          statusCode: 200,
+          body: JSON.stringify({ success: true, data: post }),
+        }
+
+      default:
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: 'Unknown action' }),
+        }
+    }
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Internal server error' }),
+    }
+  }
+}
+```
+
+##### 8.1.4 Netlify Edge Functions with Supabase (Advanced)
+
+For global distribution and faster response times:
+
+```typescript
+// netlify/edge-functions/supabase-edge.ts
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+export default async (request: Request, context: any) => {
+  const supabase = createClient(
+    Netlify.env.get('SUPABASE_URL'),
+    Netlify.env.get('SUPABASE_ANON_KEY')
+  )
+
+  // Your edge function logic here
+  const { data, error } = await supabase.from('posts').select('*').eq('published', true).limit(10)
+
+  if (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  return new Response(JSON.stringify(data), {
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+export const config = {
+  path: '/api/posts',
+}
+```
+
+##### 8.1.5 Netlify Deployment Checklist
+
+- [ ] Environment variables set in Netlify dashboard
+- [ ] Build command: `npm run build` (already configured)
+- [ ] Publish directory: `dist` (already configured)
+- [ ] Node.js version: 18+ (recommended for Supabase)
+- [ ] Deploy previews enabled for testing
+
+#### 8.2 Environment Variables for Other Platforms
+
+For other deployment platforms, ensure these are set:
+
+```bash
+SUPABASE_URL=your_production_supabase_url
+SUPABASE_ANON_KEY=your_production_anon_key
+# Optional: Service role key for admin operations
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
+
+#### 8.3 Update Astro Config for Edge Functions (Optional)
 
 If using Supabase Edge Functions:
 
@@ -514,6 +641,47 @@ export default defineConfig({
     },
   },
 })
+```
+
+#### 8.4 Netlify-Specific Optimizations
+
+##### 8.4.1 Prerendering Static Content
+
+Leverage Astro's static generation for better performance:
+
+```typescript
+// astro.config.mjs
+export default defineConfig({
+  // ... existing config
+  output: 'hybrid', // Use hybrid mode for mixed static/server pages
+})
+```
+
+Then in your pages:
+
+```typescript
+// src/pages/posts/[...slug].astro
+export const prerender = true // Static generation for blog posts
+
+// src/pages/api/posts.ts
+// Server-side for dynamic API routes (prerender = false by default)
+```
+
+##### 8.4.2 Netlify Cache Headers
+
+Add cache headers for better performance:
+
+```typescript
+// netlify.toml
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "public, max-age=300" # 5 minute cache for API responses
+
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable" # 1 year cache for assets
 ```
 
 ## Testing Your Integration
