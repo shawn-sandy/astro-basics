@@ -14,8 +14,6 @@ export type Props = {
   category?: FeatureCard['category']
   /** Show all features regardless of count */
   showAll?: boolean
-  /** Custom title for the features section */
-  sectionTitle?: string
   /** Custom CSS class for the container */
   className?: string
 }
@@ -24,7 +22,6 @@ const {
   count = 6,
   category,
   showAll = false,
-  sectionTitle = 'Key Features',
   className = '',
 } = Astro.props
 
