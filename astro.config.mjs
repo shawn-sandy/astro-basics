@@ -62,9 +62,9 @@ export default defineConfig({
   // Choose adapter based on deployment target
   adapter: (() => {
     // Force node adapter for development/testing
-    // if (process.env.NODE_ENV === 'development' || process.env.CI === 'true') {
-    //   return node({ mode: 'standalone' })
-    // }
+    if (process.env.NODE_ENV === 'development') {
+      return node({ mode: 'standalone' })
+    }
 
     const adapter = process.env.ASTRO_ADAPTER
     switch (adapter) {
