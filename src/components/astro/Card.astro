@@ -11,7 +11,9 @@ type Props = {
 const { cardTitle, cardImage, cardLink } = Astro.props as Props
 
 // Sanitize the image URL to prevent XSS attacks
-const safeCardImage = sanitizeImageUrl(cardImage, 'https://picsum.photos/200')
+const safeCardImage = cardImage
+  ? sanitizeImageUrl(cardImage, 'https://picsum.photos/200')
+  : undefined
 ---
 
 <CardComponent>

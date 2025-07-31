@@ -39,81 +39,23 @@ if (category) {
 }
 ---
 
-<section class={`features-section ${className}`}>
+<div data-flex="cols-3">
   {
-    sectionTitle && (
-      <header class="features-header">
-        <h2 class="features-title">{sectionTitle}</h2>
-        <p class="features-subtitle">
-          Discover the powerful features that make this Astro project stand out
-        </p>
-      </header>
-    )
+    features.map(feature => (
+      <Card cardTitle={feature.title} {...(feature.link && { cardLink: feature.link })}>
+        <p>{feature.description}</p>
+      </Card>
+    ))
   }
-
-  <div class="features-grid">
-    {
-      features.map(feature => (
-        <Card cardTitle={feature.title} {...(feature.link && { cardLink: feature.link })}>
-          <p>{feature.description}</p>
-        </Card>
-      ))
-    }
-  </div>
-</section>
-
-<style lang="scss">
-  .features-section {
-    padding: 2rem 0;
+</div>
+<style>
+  [data-grid],
+  [data-flex] {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
   }
-
-  .features-header {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-
-  .features-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    color: var(--color-text-primary, #1e293b);
-  }
-
-  .features-subtitle {
-    font-size: 1.125rem;
-    color: var(--color-text-secondary, #64748b);
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-  }
-
-  @media (min-width: 768px) {
-    .features-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .features-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  @media (min-width: 1200px) {
-    .features-section {
-      padding: 4rem 0;
-    }
-
-    .features-title {
-      font-size: 3rem;
-    }
+  [data-card] {
+    border-radius: 0;
   }
 </style>

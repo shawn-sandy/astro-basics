@@ -1,8 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import CollectionList from '#components/astro/CollectionList.astro'
+import { FeatureCards } from '#components/index.ts'
 import Featured from '#components/astro/Featured.astro'
-import Welcome from '#components/astro/Welcome.astro'
 import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config.js'
 ---
 
@@ -12,9 +12,14 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config.js'
   showBreadcrumb={false}
   pageImageUrl="/images/astro-kit-cover.webp"
 >
-  <section slot="featured">
-    <Featured />
-  </section>
+  <div slot="featured">
+    <!-- <section>
+      <Featured />
+    </section> -->
+    <section>
+      <FeatureCards />
+    </section>
+  </div>
   <section>
     <CollectionList pageSize={2} />
   </section>
