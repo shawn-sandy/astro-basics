@@ -3,8 +3,8 @@
 import Navigation from '#components/astro/Navigation.astro'
 import Footer from '#components/astro/Footer.astro'
 import Header from '#components/astro/Header.astro'
-import PWAInstallPrompt from '#components/astro/PWAInstallPrompt.astro'
-import OfflineIndicator from '#components/astro/OfflineIndicator.astro'
+// import PWAInstallPrompt from '#components/astro/PWAInstallPrompt.astro'
+// import OfflineIndicator from '#components/astro/OfflineIndicator.astro'
 
 import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config'
 import '@fpkit/acss/styles'
@@ -58,7 +58,7 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
   </head>
   <body>
     <!-- Offline Status Indicator -->
-    <OfflineIndicator />
+    <!-- <OfflineIndicator /> -->
 
     <Navigation>
       <ul slot="login">
@@ -92,6 +92,6 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
     <Footer />
 
     <!-- PWA Install Prompt -->
-    {isPWAEnabled && <PWAInstallPrompt />}
+    <!-- {isPWAEnabled && <PWAInstallPrompt />} -->
   </body>
 </html>
