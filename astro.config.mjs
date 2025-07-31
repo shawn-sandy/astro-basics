@@ -60,6 +60,11 @@ export default defineConfig({
   output: 'server',
   // Choose adapter based on deployment target
   adapter: (() => {
+    // Force node adapter for development/testing
+    if (process.env.NODE_ENV === 'development' || process.env.CI === 'true') {
+      return node({ mode: 'standalone' })
+    }
+    
     const adapter = process.env.ASTRO_ADAPTER
     if (adapter === 'node') {
       return node({ mode: 'standalone' })
@@ -67,8 +72,6 @@ export default defineConfig({
       return vercel()
     } else if (adapter === 'netlify') {
       return netlify()
-    } else if (process.env.NODE_ENV === 'development') {
-      return node({ mode: 'standalone' })
     } else if (process.env.NODE_ENV === 'production') {
       // Ensure a fallback for production if no valid adapter is set
       return netlify()

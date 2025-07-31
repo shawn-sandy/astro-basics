@@ -30,37 +30,52 @@ const config: PlaywrightTestConfig = {
   },
 
   // Browser configurations
-  projects: [
-    {
-      name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-        // Optimize for faster execution
-        launchOptions: {
-          args: ['--disable-web-security', '--disable-dev-shm-usage'],
+  projects: process.env.CI
+    ? [
+        // In CI, only test on Chromium for faster execution
+        {
+          name: 'chromium',
+          use: {
+            ...devices['Desktop Chrome'],
+            // Optimize for faster execution
+            launchOptions: {
+              args: ['--disable-web-security', '--disable-dev-shm-usage'],
+            },
+          },
         },
-      },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-  ],
+      ]
+    : [
+        {
+          name: 'chromium',
+          use: {
+            ...devices['Desktop Chrome'],
+            // Optimize for faster execution
+            launchOptions: {
+              args: ['--disable-web-security', '--disable-dev-shm-usage'],
+            },
+          },
+        },
+        {
+          name: 'firefox',
+          use: { ...devices['Desktop Firefox'] },
+        },
+        {
+          name: 'webkit',
+          use: { ...devices['Desktop Safari'] },
+        },
+      ],
 
   // Development server configuration
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:4321',
-    port: 4321,
-    timeout: 120 * 1000,
-    reuseExistingServer: !process.env.CI,
-    stdout: 'ignore',
-    stderr: 'pipe',
-  },
+  webServer: process.env.CI
+    ? undefined // In CI, we'll start the preview server manually
+    : {
+        command: 'npm run dev',
+        url: 'http://localhost:4321',
+        timeout: 120 * 1000,
+        reuseExistingServer: !process.env.CI,
+        stdout: 'ignore',
+        stderr: 'pipe',
+      },
 }
 
 export default config

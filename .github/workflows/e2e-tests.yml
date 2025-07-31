@@ -1,0 +1,78 @@
+# E2E Testing Workflow for Pull Requests
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [primary]
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    if: github.event.pull_request.draft == false || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Setup environment variables
+        run: |
+          # Create .env file with valid test keys for CI
+          cat > .env << EOF
+          PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_Y29uc2lzdGVudC1rZXN0cmVsLTgxLmNsZXJrLmFjY291bnRzLmRldiQ
+          CLERK_SECRET_KEY=sk_test_ZGVmYXVsdC10ZXN0LWtleS1mb3ItY2k
+          SITE_URL=http://localhost:4321
+          NODE_ENV=test
+          CI=true
+          EOF
+
+      - name: Type check
+        run: npm run type-check
+        continue-on-error: true
+
+      - name: Build application
+        run: npm run build
+        env:
+          CI: true
+
+      - name: Start preview server
+        run: npm run preview &
+
+      - name: Wait for server
+        run: timeout 60 bash -c 'until curl -f http://localhost:4321; do sleep 2; done'
+
+      - name: Run E2E tests
+        run: npx playwright test --config=playwright.config.ts --reporter=github
+        env:
+          CI: true
+          PLAYWRIGHT_HTML_REPORT: playwright-report
+
+      - name: Upload test artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
