@@ -10,7 +10,7 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config'
 import '@fpkit/acss/styles'
 import '../styles/index.css'
 import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/astro/components'
-const isPWAEnabled = (import.meta.env.PWA_ENABLED === 'true') || false
+const isPWAEnabled = import.meta.env.PWA_ENABLED === 'true' || false
 // types
 type routeItem = {
   name: string
@@ -62,11 +62,6 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 
     <Navigation>
       <ul slot="login">
-        <li>
-          <SignedIn isStatic={true}>
-            <a href="/events">Events</a>
-          </SignedIn>
-        </li>
         <li>
           <SignedIn isStatic={true}>
             <a href="/dashboard">Dashboard</a>
