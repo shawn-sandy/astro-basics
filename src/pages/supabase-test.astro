@@ -1,0 +1,219 @@
+---
+import Base from '#layouts/Base.astro'
+
+const pageTitle = 'Supabase Connection Test'
+const pageDescription = 'Test page to verify Supabase integration is working correctly'
+---
+
+<Base pageTitle={pageTitle} pageDescription={pageDescription}>
+  <div class="test-container">
+    <h1>Supabase Connection Test</h1>
+    <p>This page tests the Supabase integration setup.</p>
+
+    <div class="test-section">
+      <h2>Connection Test</h2>
+      <button id="testConnection" type="button">Test Connection</button>
+      <div id="connectionResult" class="result-box"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Query Test</h2>
+      <button id="testQuery" type="button">Test Query</button>
+      <div id="queryResult" class="result-box"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Setup Instructions</h2>
+      <ol>
+        <li>
+          Create a Supabase project at <a href="https://supabase.com" target="_blank"
+            >supabase.com</a
+          >
+        </li>
+        <li>Copy your project URL and anon key from Settings > API</li>
+        <li>
+          Add them to your <code>.env</code> file:
+          <pre><code>SUPABASE_URL=your_project_url_here
+SUPABASE_ANON_KEY=your_anon_key_here</code></pre>
+        </li>
+        <li>Restart your development server</li>
+        <li>Test the connection using the buttons above</li>
+      </ol>
+    </div>
+
+    <div class="test-section">
+      <h2>Next Steps</h2>
+      <ul>
+        <li>Create your database schema in the Supabase dashboard</li>
+        <li>Set up Row Level Security (RLS) policies</li>
+        <li>Generate TypeScript types for your database</li>
+        <li>Implement authentication if needed</li>
+        <li>Add real-time subscriptions for dynamic data</li>
+      </ul>
+    </div>
+  </div>
+</Base>
+
+<style lang="scss">
+  .test-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .test-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+  }
+
+  .test-section h2 {
+    margin-top: 0;
+    color: #1a202c;
+  }
+
+  button {
+    background: #3182ce;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+
+    &:hover {
+      background: #2c5aa0;
+    }
+
+    &:disabled {
+      background: #a0aec0;
+      cursor: not-allowed;
+    }
+  }
+
+  .result-box {
+    min-height: 100px;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+
+  .success {
+    border-color: #48bb78;
+    background: #f0fff4;
+    color: #22543d;
+  }
+
+  .error {
+    border-color: #f56565;
+    background: #fffafa;
+    color: #742a2a;
+  }
+
+  code {
+    background: #edf2f7;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  pre {
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+
+  ol,
+  ul {
+    line-height: 1.6;
+  }
+
+  li {
+    margin: 0.5rem 0;
+  }
+
+  a {
+    color: #3182ce;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+</style>
+
+<script>
+  const testConnection = async () => {
+    const button = document.getElementById('testConnection') as HTMLButtonElement
+    const resultDiv = document.getElementById('connectionResult') as HTMLDivElement
+
+    button.disabled = true
+    button.textContent = 'Testing...'
+    resultDiv.className = 'result-box'
+    resultDiv.textContent = 'Testing connection...'
+
+    try {
+      const response = await fetch('/api/supabase-test')
+      const data = await response.json()
+
+      resultDiv.textContent = JSON.stringify(data, null, 2)
+      resultDiv.className = `result-box ${data.success ? 'success' : 'error'}`
+    } catch (error) {
+      resultDiv.textContent = `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      resultDiv.className = 'result-box error'
+    } finally {
+      button.disabled = false
+      button.textContent = 'Test Connection'
+    }
+  }
+
+  const testQuery = async () => {
+    const button = document.getElementById('testQuery') as HTMLButtonElement
+    const resultDiv = document.getElementById('queryResult') as HTMLDivElement
+
+    button.disabled = true
+    button.textContent = 'Testing...'
+    resultDiv.className = 'result-box'
+    resultDiv.textContent = 'Testing query...'
+
+    try {
+      const response = await fetch('/api/supabase-test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'test-query',
+        }),
+      })
+      const data = await response.json()
+
+      resultDiv.textContent = JSON.stringify(data, null, 2)
+      resultDiv.className = `result-box ${data.success ? 'success' : 'error'}`
+    } catch (error) {
+      resultDiv.textContent = `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      resultDiv.className = 'result-box error'
+    } finally {
+      button.disabled = false
+      button.textContent = 'Test Query'
+    }
+  }
+
+  document.getElementById('testConnection')?.addEventListener('click', testConnection)
+  document.getElementById('testQuery')?.addEventListener('click', testQuery)
+</script>
