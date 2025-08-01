@@ -127,7 +127,7 @@ const popularPosts = await db
               </div>
               {post.tags && (
                 <div class="tags">
-                  {JSON.parse(post.tags).map((tag: string) => (
+                  {safeParseTags(post.tags).map((tag: string) => (
                     <a href={`/tags/${tag}`} class="tag">
                       {tag}
                     </a>
