@@ -1,0 +1,365 @@
+---
+import { db, Post, User, Comment } from 'astro:db'
+import { eq, desc, and, sql } from 'astro:db'
+import Layout from '#layouts/Layout.astro'
+import Card from '#components/astro/Card.astro'
+import TagList from '#components/astro/TagList.astro'
+import { SITE_TITLE, SITE_DESCRIPTION } from '#utils/site-config'
+
+// Get all published posts from database
+const posts = await db
+  .select()
+  .from(Post)
+  .where(eq(Post.published, true))
+  .orderBy(desc(Post.pubDate))
+  .all()
+
+// Get featured posts
+const featuredPosts = await db
+  .select()
+  .from(Post)
+  .where(and(eq(Post.published, true), eq(Post.featured, true)))
+  .orderBy(desc(Post.pubDate))
+  .limit(3)
+  .all()
+
+// Get posts with author information
+const postsWithAuthors = await db
+  .select({
+    id: Post.id,
+    title: Post.title,
+    slug: Post.slug,
+    excerpt: Post.excerpt,
+    author: Post.author,
+    pubDate: Post.pubDate,
+    tags: Post.tags,
+    featured: Post.featured,
+    viewCount: Post.viewCount,
+    userName: User.name,
+    userAvatar: User.avatar,
+    commentCount:
+      sql`(SELECT COUNT(*) FROM ${Comment} WHERE ${Comment.postId} = ${Post.id} AND ${Comment.approved} = true)`.as(
+        'commentCount'
+      ),
+  })
+  .from(Post)
+  .leftJoin(User, eq(Post.userId, User.id))
+  .where(eq(Post.published, true))
+  .orderBy(desc(Post.pubDate))
+  .all()
+
+// Get popular posts (by view count)
+const popularPosts = await db
+  .select()
+  .from(Post)
+  .where(eq(Post.published, true))
+  .orderBy(desc(Post.viewCount))
+  .limit(5)
+  .all()
+---
+
+<Layout
+  title={`Blog - ${SITE_TITLE}`}
+  description={`${SITE_DESCRIPTION} - Read our latest blog posts`}
+>
+  <main>
+    <header class="page-header">
+      <h1>Blog (Database Version)</h1>
+      <p>This page demonstrates querying blog posts from Astro DB</p>
+    </header>
+
+    {
+      featuredPosts.length > 0 && (
+        <section class="featured-section">
+          <h2>Featured Posts</h2>
+          <div class="featured-grid">
+            {featuredPosts.map(post => (
+              <Card
+                title={post.title}
+                href={`/blog/${post.slug}`}
+                footer={`By ${post.author} on ${post.pubDate.toLocaleDateString()}`}
+              >
+                <p>{post.excerpt}</p>
+                {post.tags && (
+                  <div class="tags">
+                    {JSON.parse(post.tags).map((tag: string) => (
+                      <span class="tag">{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <section class="posts-section">
+      <h2>All Posts with Author Info</h2>
+      <div class="posts-list">
+        {
+          postsWithAuthors.map(post => (
+            <article class="post-item">
+              <div class="post-header">
+                <h3>
+                  <a href={`/blog/${post.slug}`}>{post.title}</a>
+                </h3>
+                {post.featured && <span class="featured-badge">Featured</span>}
+              </div>
+              <p class="post-excerpt">{post.excerpt}</p>
+              <div class="post-meta">
+                <div class="author-info">
+                  {post.userAvatar && (
+                    <img
+                      src={post.userAvatar}
+                      alt={post.userName || post.author}
+                      class="author-avatar"
+                    />
+                  )}
+                  <span>By {post.userName || post.author}</span>
+                </div>
+                <time datetime={post.pubDate.toISOString()}>
+                  {post.pubDate.toLocaleDateString()}
+                </time>
+                <span class="stats">
+                  {post.viewCount} views • {post.commentCount} comments
+                </span>
+              </div>
+              {post.tags && (
+                <div class="tags">
+                  {JSON.parse(post.tags).map((tag: string) => (
+                    <a href={`/tags/${tag}`} class="tag">
+                      {tag}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <section class="popular-posts">
+        <h3>Popular Posts</h3>
+        <ol class="popular-list">
+          {
+            popularPosts.map(post => (
+              <li>
+                <a href={`/blog/${post.slug}`}>{post.title}</a>
+                <span class="view-count">{post.viewCount} views</span>
+              </li>
+            ))
+          }
+        </ol>
+      </section>
+    </aside>
+  </main>
+</Layout>
+
+<style>
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 2rem;
+  }
+
+  .page-header {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .featured-section {
+    grid-column: 1 / -1;
+    margin-bottom: 3rem;
+  }
+
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .posts-section {
+    grid-column: 1;
+  }
+
+  .posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .post-item {
+    border-bottom: 1px solid var(--color-border, #e5e7eb);
+    padding-bottom: 2rem;
+  }
+
+  .post-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .post-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+
+  .post-header a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .post-header a:hover {
+    color: var(--color-primary, #0066cc);
+  }
+
+  .featured-badge {
+    background: var(--color-accent, #ff6b6b);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .post-excerpt {
+    color: var(--color-text-secondary, #6b7280);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--color-text-muted, #9ca3af);
+    margin-bottom: 1rem;
+  }
+
+  .author-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .author-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .stats {
+    margin-left: auto;
+  }
+
+  .tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    background: var(--color-bg-secondary, #f3f4f6);
+    color: var(--color-text-secondary, #6b7280);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .tag:hover {
+    background: var(--color-primary, #0066cc);
+    color: white;
+  }
+
+  .sidebar {
+    grid-column: 2;
+  }
+
+  .popular-posts {
+    background: var(--color-bg-secondary, #f9fafb);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+  }
+
+  .popular-posts h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+  }
+
+  .popular-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .popular-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border, #e5e7eb);
+  }
+
+  .popular-list li:last-child {
+    border-bottom: none;
+  }
+
+  .popular-list a {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .popular-list a:hover {
+    color: var(--color-primary, #0066cc);
+  }
+
+  .view-count {
+    font-size: 0.75rem;
+    color: var(--color-text-muted, #9ca3af);
+  }
+
+  @media (max-width: 768px) {
+    main {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .posts-section,
+    .sidebar {
+      grid-column: 1;
+    }
+
+    .featured-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .post-meta {
+      flex-wrap: wrap;
+    }
+
+    .stats {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+</style>

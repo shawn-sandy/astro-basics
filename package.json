@@ -51,6 +51,10 @@
     "ticket:create": "gh issue create --web",
     "ticket:list": "gh issue list --state open",
     "ticket:labels": "gh label list",
+    "db:push": "astro db push",
+    "db:push:remote": "astro db push --remote",
+    "db:verify": "astro db verify",
+    "db:execute": "astro db execute",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -71,6 +75,7 @@
   },
   "dependencies": {
     "@astro-community/astro-embed-youtube": "^0.5.6",
+    "@astrojs/db": "^0.16.0",
     "@astrojs/mdx": "^4.3.1",
     "@astrojs/netlify": "^6.5.3",
     "@astrojs/node": "^9.3.0",

@@ -16,6 +16,8 @@ import lighthouse from 'astro-lighthouse'
 import node from '@astrojs/node'
 import clerk from '@clerk/astro'
 
+import db from '@astrojs/db'
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://example.com',
@@ -57,6 +59,7 @@ export default defineConfig({
         ],
       },
     }),
+    db(),
   ],
   output: 'server',
   // Choose adapter based on deployment target
