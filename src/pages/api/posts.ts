@@ -233,7 +233,9 @@ export const PATCH: APIRoute = async ({ request }) => {
 export const DELETE: APIRoute = async ({ request }) => {
   try {
     const url = new URL(request.url)
-    const postId = parseInt(url.pathname.split('/').pop() || '0')
+    // Extract post ID from path using regex: matches /api/posts/:id
+    const match = url.pathname.match(/^\/api\/posts\/(\d+)(?:\/)?$/)
+    const postId = match ? parseInt(match[1], 10) : 0
 
     if (!postId) {
       return new Response(JSON.stringify({ error: 'Post ID is required' }), {
