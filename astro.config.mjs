@@ -1,5 +1,4 @@
 import { defineConfig } from 'astro/config'
-import { loadEnv } from 'vite'
 import react from '@astrojs/react'
 import mdx from '@astrojs/mdx'
 import remarkToc from 'remark-toc'
@@ -18,12 +17,6 @@ import node from '@astrojs/node'
 import clerk from '@clerk/astro'
 
 import db from '@astrojs/db'
-
-// Load environment variables
-const env = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), '')
-
-// Check if database is configured
-const isDatabaseEnabled = env.ASTRO_DATABASE_FILE || env.ASTRO_DATABASE_URL || process.env.ASTRO_DATABASE_FILE || process.env.ASTRO_DATABASE_URL
 
 // https://astro.build/config
 export default defineConfig({
@@ -66,10 +59,17 @@ export default defineConfig({
         ],
       },
     }),
-    // Conditionally include database integration
-    ...(isDatabaseEnabled ? [db()] : []),
+    // Always include database integration for build consistency
+    db(),
   ],
   output: 'server',
+  vite: {
+    build: {
+      rollupOptions: {
+        external: ['astro:db']
+      }
+    }
+  },
   // Choose adapter based on deployment target
   adapter: (() => {
     // Force node adapter for development/testing
