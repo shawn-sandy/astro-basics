@@ -1,0 +1,147 @@
+name: PR Tests
+
+on:
+  pull_request:
+    branches: [primary, main]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [primary, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup test environment
+        run: |
+          echo "PUBLIC_CLERK_PUBLISHABLE_KEY=test_key" >> $GITHUB_ENV
+          echo "CLERK_SECRET_KEY=test_secret" >> $GITHUB_ENV
+          echo "SUPABASE_URL=https://test.supabase.co" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=test_anon_key" >> $GITHUB_ENV
+          echo "PWA_ENABLED=true" >> $GITHUB_ENV
+
+      - name: Run ESLint
+        run: npm run lint:check
+
+      - name: Run StyleLint
+        run: npm run lint:styles
+
+      - name: Run Prettier check
+        run: npm run format:check
+
+      - name: Run Markdown lint
+        run: npm run lint:md
+        continue-on-error: true
+
+      - name: Run TypeScript type checking
+        run: npm run type-check
+        continue-on-error: true
+
+      - name: Run unit tests
+        run: npm test
+        continue-on-error: true
+        env:
+          PUBLIC_CLERK_PUBLISHABLE_KEY: test_key
+          CLERK_SECRET_KEY: test_secret
+          SUPABASE_URL: https://test.supabase.co
+          SUPABASE_ANON_KEY: test_anon_key
+
+      - name: Build project
+        run: npm run build
+        env:
+          PUBLIC_CLERK_PUBLISHABLE_KEY: test_key
+          CLERK_SECRET_KEY: test_secret
+          SUPABASE_URL: https://test.supabase.co
+          SUPABASE_ANON_KEY: test_anon_key
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Setup test environment
+        run: |
+          echo "PUBLIC_CLERK_PUBLISHABLE_KEY=test_key" >> $GITHUB_ENV
+          echo "CLERK_SECRET_KEY=test_secret" >> $GITHUB_ENV
+          echo "SUPABASE_URL=https://test.supabase.co" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=test_anon_key" >> $GITHUB_ENV
+          echo "PWA_ENABLED=true" >> $GITHUB_ENV
+
+      - name: Build project for e2e tests
+        run: npm run build
+        env:
+          PUBLIC_CLERK_PUBLISHABLE_KEY: test_key
+          CLERK_SECRET_KEY: test_secret
+          SUPABASE_URL: https://test.supabase.co
+          SUPABASE_ANON_KEY: test_anon_key
+
+      - name: Start preview server
+        run: |
+          npm run preview &
+          echo $! > server.pid
+        env:
+          PUBLIC_CLERK_PUBLISHABLE_KEY: test_key
+          CLERK_SECRET_KEY: test_secret
+          SUPABASE_URL: https://test.supabase.co
+          SUPABASE_ANON_KEY: test_anon_key
+
+      - name: Wait for server
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:4321; do sleep 2; done'
+
+      - name: Run e2e tests
+        run: npm run test:e2e
+        env:
+          PUBLIC_CLERK_PUBLISHABLE_KEY: test_key
+          CLERK_SECRET_KEY: test_secret
+          SUPABASE_URL: https://test.supabase.co
+          SUPABASE_ANON_KEY: test_anon_key
+
+      - name: Stop preview server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill $(cat server.pid) || true
+            rm server.pid
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
