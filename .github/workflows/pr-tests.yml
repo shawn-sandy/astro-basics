@@ -29,6 +29,8 @@ jobs:
 
       - name: Setup test environment
         run: |
+          echo "CI=true" >> $GITHUB_ENV
+          echo "ASTRO_ADAPTER=node" >> $GITHUB_ENV
           echo "PUBLIC_CLERK_PUBLISHABLE_KEY=test_key" >> $GITHUB_ENV
           echo "CLERK_SECRET_KEY=test_secret" >> $GITHUB_ENV
           echo "SUPABASE_URL=https://test.supabase.co" >> $GITHUB_ENV
@@ -64,6 +66,8 @@ jobs:
       - name: Build project
         run: npm run build
         env:
+          CI: true
+          ASTRO_ADAPTER: node
           PUBLIC_CLERK_PUBLISHABLE_KEY: test_key
           CLERK_SECRET_KEY: test_secret
           SUPABASE_URL: https://test.supabase.co
@@ -94,6 +98,8 @@ jobs:
 
       - name: Setup test environment
         run: |
+          echo "CI=true" >> $GITHUB_ENV
+          echo "ASTRO_ADAPTER=node" >> $GITHUB_ENV
           echo "PUBLIC_CLERK_PUBLISHABLE_KEY=test_key" >> $GITHUB_ENV
           echo "CLERK_SECRET_KEY=test_secret" >> $GITHUB_ENV
           echo "SUPABASE_URL=https://test.supabase.co" >> $GITHUB_ENV
@@ -103,6 +109,8 @@ jobs:
       - name: Build project for e2e tests
         run: npm run build
         env:
+          CI: true
+          ASTRO_ADAPTER: node
           PUBLIC_CLERK_PUBLISHABLE_KEY: test_key
           CLERK_SECRET_KEY: test_secret
           SUPABASE_URL: https://test.supabase.co
@@ -113,6 +121,8 @@ jobs:
           npm run preview &
           echo $! > server.pid
         env:
+          CI: true
+          ASTRO_ADAPTER: node
           PUBLIC_CLERK_PUBLISHABLE_KEY: test_key
           CLERK_SECRET_KEY: test_secret
           SUPABASE_URL: https://test.supabase.co
@@ -125,6 +135,8 @@ jobs:
       - name: Run e2e tests
         run: npm run test:e2e
         env:
+          CI: true
+          ASTRO_ADAPTER: node
           PUBLIC_CLERK_PUBLISHABLE_KEY: test_key
           CLERK_SECRET_KEY: test_secret
           SUPABASE_URL: https://test.supabase.co
