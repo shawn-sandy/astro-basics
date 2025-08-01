@@ -11,6 +11,9 @@ body > section {
   margin: auto;
   width: min(100%, var(--max-content-width));
 }
+body > nav {
+  min-height: 4rem;
+}
 main {
   margin: auto;
   padding-block: 2rem;
@@ -190,10 +193,10 @@ form select:user-valid:not(:focus) + p {
   color: #0c5460;
 }
 .centered {
-  display: flex;
-  justify-content: center;
   align-items: center;
+  display: flex;
   gap: 1rem;
+  justify-content: center;
 }
 .centered-column {
   flex-direction: column;

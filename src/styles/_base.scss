@@ -12,6 +12,10 @@ body {
     margin: auto;
     width: min(100%, var(--max-content-width));
   }
+
+  > nav {
+    min-height: 4rem;
+  }
 }
 
 main {
