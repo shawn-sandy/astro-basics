@@ -1,60 +1,35 @@
 #!/usr/bin/env node
 
 /**
- * Conditional build script for Astro DB projects
+ * Simplified build script for Netlify deployment
  *
- * This script determines the appropriate build command based on:
- * - Database environment variables
- * - Environment mode (development vs production)
+ * This script uses environment variables to determine build approach:
+ * - If ASTRO_DATABASE_URL exists, build with --remote
+ * - Otherwise, build normally (database will be handled as external)
  */
 
 import { execSync } from 'child_process'
-import { loadEnv } from 'vite'
 
-// Load environment variables
-const mode = process.env.NODE_ENV || 'production'
-const env = loadEnv(mode, process.cwd(), '')
-
-// Check if database is configured
-const isDatabaseEnabled = !!(
-  env.ASTRO_DATABASE_FILE ||
-  env.ASTRO_DATABASE_URL ||
-  process.env.ASTRO_DATABASE_FILE ||
-  process.env.ASTRO_DATABASE_URL
+// Simple environment check
+const hasRemoteDb = !!(
+  process.env.ASTRO_DATABASE_URL ||
+  process.env.TURSO_DATABASE_URL ||
+  process.env.DATABASE_URL
 )
+const isNetlify = process.env.NETLIFY === 'true'
 
-console.log(`🔍 Build Environment: ${mode}`)
-console.log(`🗄️  Database enabled: ${isDatabaseEnabled}`)
+console.log(`🔍 Build Environment: ${process.env.NODE_ENV || 'production'}`)
+console.log(`🌐 Netlify Build: ${isNetlify}`)
+console.log(`🗄️  Remote Database: ${hasRemoteDb}`)
 
-if (isDatabaseEnabled) {
-  console.log(`📊 Database config found:`)
-  if (env.ASTRO_DATABASE_FILE || process.env.ASTRO_DATABASE_FILE) {
-    console.log(
-      `   - Local database file: ${env.ASTRO_DATABASE_FILE || process.env.ASTRO_DATABASE_FILE}`
-    )
-  }
-  if (env.ASTRO_DATABASE_URL || process.env.ASTRO_DATABASE_URL) {
-    console.log(`   - Remote database URL configured`)
-  }
-}
+// For Netlify, always use standard build - database is handled as external
+let buildCommand = 'astro build'
 
-let buildCommand
-
-if (!isDatabaseEnabled) {
-  console.log(`⚙️  Building without database integration...`)
-  buildCommand = 'astro build'
+if (hasRemoteDb && !isNetlify) {
+  console.log(`🚀 Building with remote database...`)
+  buildCommand = 'astro build --remote'
 } else {
-  // For production builds with database, we need to check the environment
-  const isProduction = mode === 'production' || process.env.CI === 'true'
-  const hasRemoteDb = !!(env.ASTRO_DATABASE_URL || process.env.ASTRO_DATABASE_URL)
-
-  if (isProduction || hasRemoteDb) {
-    console.log(`🚀 Building for production with remote database...`)
-    buildCommand = 'astro build --remote'
-  } else {
-    console.log(`🔧 Building for development with local database...`)
-    buildCommand = 'astro build'
-  }
+  console.log(`🏗️  Building with standard configuration...`)
 }
 
 console.log(`🏗️  Running: ${buildCommand}`)

@@ -27,7 +27,7 @@
   "scripts": {
     "dev": "astro dev --open",
     "start": "run-p dev sass",
-    "build": "node scripts/build.js",
+    "build": "astro build",
     "build:local": "astro build",
     "build:remote": "astro build --remote",
     "preview": "astro preview",
