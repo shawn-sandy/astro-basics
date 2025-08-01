@@ -34,6 +34,13 @@ This is **astro-basics-website**, a collection of reusable Astro components and 
 - `npm run npm-update-i` - Interactive dependency updates
 - `npx @astrojs/upgrade` - Official Astro core and integration updates
 
+### Database Management (Astro DB)
+
+- `npm run db:push` - Push schema changes to local database
+- `npm run db:push:remote` - Push schema changes to production database
+- `npm run db:verify` - Verify database schema integrity
+- `npm run db:execute` - Execute custom SQL commands
+
 ### GitHub Ticket Management
 
 - `npm run ticket:validate` - Validate GitHub CLI authentication
@@ -48,6 +55,8 @@ This is **astro-basics-website**, a collection of reusable Astro components and 
 2. **Setup pre-commit hooks**: `npm run prepare` (sets up Husky)
 3. **Copy environment variables**: Copy `.env.example` to `.env` and configure Clerk keys
 4. **Start development**: `npm run start` (dev server + SCSS watcher)
+   - Database is auto-created at `.astro/content.db` on first run
+   - Sample data is automatically seeded from `db/seed.ts`
 
 ### Branch Structure
 
@@ -63,13 +72,22 @@ The project exports components through `src/components/index.ts` with two main c
 - **React Components** (`src/components/react/`): Client-side React components (.tsx)
 - **Dashboard Components** (`src/components/dashboard/`): Protected dashboard components
 
-### Content Collections
+### Data Architecture
 
-Three main collections defined in `src/content/config.ts` with shared schema:
+**Content Collections** (Static content):
 
 - `posts` - Blog posts
 - `docs` - Documentation content
 - `content` - General content articles
+
+**Astro DB** (Dynamic data):
+
+- `User` - User accounts and profiles
+- `Post` - Database-stored blog posts with analytics
+- `Comment` - Post comments with threading support
+- `Analytics` - Page view tracking and statistics
+- `ContactSubmission` - Form submissions management
+- `Newsletter` - Email subscriber management
 
 Schema includes: title, pubDate, description, author, tags, featured status, breadcrumbSlug, publish status, and optional YouTube integration.
 
@@ -206,11 +224,13 @@ const MyComponent = () => {
 
 ### Key Integrations
 
-- React support for interactive components
-- MDX with remark-toc and rehype-accessible-emojis
-- astro-imagetools for image optimization
-- astro-embed for enhanced content embedding
-- Sentry for error monitoring, Spotlight for development debugging
+- **Astro DB**: Type-safe database with local SQLite development and LibSQL production
+- **React**: Client islands for interactive components
+- **MDX**: Enhanced markdown with remark-toc and rehype-accessible-emojis
+- **astro-imagetools**: Image optimization and processing
+- **astro-embed**: Enhanced content embedding capabilities
+- **PWA**: Service worker and offline capabilities via @vite-pwa/astro
+- **Sentry**: Error monitoring with Spotlight for development debugging
 
 ## Package Structure
 
@@ -292,6 +312,36 @@ youtube:
 - Use `getCollection()` with proper filtering for published content
 - Leverage `slugify()` utility from `#libs/content` for URL generation
 - All three collections (`posts`, `docs`, `content`) share the same schema
+
+### Database Usage Patterns
+
+```typescript
+// Import database utilities
+import { db, Post, User, Comment } from 'astro:db'
+import { eq, desc, and, or, like } from 'astro:db'
+
+// Basic queries
+const posts = await db
+  .select()
+  .from(Post)
+  .where(eq(Post.published, true))
+  .orderBy(desc(Post.pubDate))
+  .all()
+
+// Joins and aggregations
+const postsWithAuthors = await db
+  .select({
+    title: Post.title,
+    author: User.name,
+    commentCount: sql`(SELECT COUNT(*) FROM ${Comment} WHERE ${Comment.postId} = ${Post.id})`,
+  })
+  .from(Post)
+  .leftJoin(User, eq(Post.userId, User.id))
+  .all()
+```
+
+Database file location: `.astro/content.db` (auto-created)
+Reset database: `rm -rf .astro && npm run dev`
 
 ## Development Workflow
 
