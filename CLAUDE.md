@@ -10,7 +10,7 @@ This is **astro-basics-website**, a collection of reusable Astro components and 
 
 ### Development & Build
 
-- `npm run dev` - Start Astro development server
+- `npm run dev` - Start Astro development server on port 4321
 - `npm run start` - Start dev server with Sass watcher in parallel (recommended for development)
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
@@ -39,6 +39,7 @@ This is **astro-basics-website**, a collection of reusable Astro components and 
 - `npm run ticket:validate` - Validate GitHub CLI authentication
 - `npm run ticket:create` - Create GitHub issue via web interface
 - `npm run ticket:list` - List open GitHub issues
+- `npm run ticket:labels` - List available labels
 
 ## Project Setup
 
@@ -46,12 +47,19 @@ This is **astro-basics-website**, a collection of reusable Astro components and 
 
 1. **Install dependencies**: `npm install`
 2. **Setup pre-commit hooks**: `npm run prepare` (sets up Husky)
-3. **Copy environment variables**: Copy `.env.example` to `.env` and configure Clerk keys
+3. **Copy environment variables**: Copy `.env.example` to `.env` and configure required keys:
+   - `PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk authentication (required)
+   - `CLERK_SECRET_KEY` - Clerk authentication (required)
+   - `SUPABASE_URL` - Supabase database URL (optional)
+   - `SUPABASE_ANON_KEY` - Supabase anonymous key (optional)
+   - `TURSO_DATABASE_URL` - Turso database URL (optional)
+   - `TURSO_AUTH_TOKEN` - Turso authentication token (optional)
 4. **Start development**: `npm run start` (dev server + SCSS watcher)
 
 ### Branch Structure
 
 - **Main branch**: `primary` (use for pull requests)
+- **Current feature branch**: `feat/turso-setup`
 
 ## Architecture
 
@@ -193,8 +201,13 @@ const MyComponent = () => {
 ### Testing Configuration
 
 - **Unit Tests**: Vitest in `/tests` directory (excludes e2e)
-- **E2E Tests**: Playwright in `/e2e` directory (Chrome, Firefox, Safari on port 4321)
-- Test results in `/test-results`, reports in `/playwright-report`
+  - Configuration: `vitest.config.ts`
+  - Run specific test: `npm test path/to/test.test.ts`
+- **E2E Tests**: Playwright in `/e2e` directory
+  - Browsers: Chrome, Firefox, Safari (CI runs Chrome only)
+  - Port: 4321 (matches dev server)
+  - Configuration: `playwright.config.ts`
+  - Test results in `/test-results`, reports in `/playwright-report`
 
 ### Development Notes
 
@@ -211,13 +224,21 @@ const MyComponent = () => {
 - astro-imagetools for image optimization
 - astro-embed for enhanced content embedding
 - Sentry for error monitoring, Spotlight for development debugging
+- PWA support via @vite-pwa/astro (manifest and service worker)
+- Lighthouse integration for performance audits
+
+### Database Integrations
+
+- **Supabase**: Client initialized in components when environment variables are present
+- **Turso**: LibSQL client in `src/libs/turso.ts` (requires TURSO_DATABASE_URL and TURSO_AUTH_TOKEN)
 
 ## Package Structure
 
-This is published as an npm package with:
+This is published as an npm package (@astro-basics-website) with:
 
 - Main export: `src/components/index.ts` (all components)
 - Astro-specific export: `src/components/astro` (Astro components only)
+- Repository: https://github.com/shawn-sandy/astro-basics
 
 ## Component Templates
 
