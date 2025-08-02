@@ -81,6 +81,7 @@
     "@clerk/astro": "^2.10.8",
     "@fpkit/acss": "^0.5.9",
     "@fpkit/react": "^0.4.3",
+    "@libsql/client": "^0.15.10",
     "@sentry/astro": "^10.0.0",
     "@spotlightjs/astro": "^2.2.2",
     "@supabase/supabase-js": "^2.53.0",
