@@ -62,7 +62,7 @@ export default defineConfig({
   // Choose adapter based on deployment target
   adapter: (() => {
     // Force node adapter for development/testing
-    // if (process.env.NODE_ENV === 'development' || process.env.CI === 'true') {
+    // if (process.env.CI === 'true') {
     //   return node({ mode: 'standalone' })
     // }
 
