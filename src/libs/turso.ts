@@ -7,7 +7,7 @@ if (!TURSO_DATABASE_URL) {
   throw new Error('TURSO_DATABASE_URL must be set in your .env file or environment variables.')
 }
 if (!TURSO_AUTH_TOKEN) {
-  throw new Error('TURSO_AUTH_TOKEN must be set in the environment variables.')
+  throw new Error('TURSO_AUTH_TOKEN must be set in your .env file or environment variables.')
 }
 
 const client = createClient({
