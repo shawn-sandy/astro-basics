@@ -1,4 +1,4 @@
-import { createClient } from '@libsql/client/web'
+import { createClient } from '@libsql/client'
 
 const TURSO_DATABASE_URL = import.meta.env.TURSO_DATABASE_URL
 const TURSO_AUTH_TOKEN = import.meta.env.TURSO_AUTH_TOKEN
