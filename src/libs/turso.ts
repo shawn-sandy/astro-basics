@@ -4,7 +4,7 @@ const TURSO_DATABASE_URL = import.meta.env.TURSO_DATABASE_URL
 const TURSO_AUTH_TOKEN = import.meta.env.TURSO_AUTH_TOKEN
 
 if (!TURSO_DATABASE_URL) {
-  throw new Error('TURSO_DATABASE_URL must be set in the environment variables.')
+  throw new Error('TURSO_DATABASE_URL must be set in your .env file or environment variables.')
 }
 if (!TURSO_AUTH_TOKEN) {
   throw new Error('TURSO_AUTH_TOKEN must be set in the environment variables.')
