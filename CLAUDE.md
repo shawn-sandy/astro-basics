@@ -238,7 +238,7 @@ This is published as an npm package (@astro-basics-website) with:
 
 - Main export: `src/components/index.ts` (all components)
 - Astro-specific export: `src/components/astro` (Astro components only)
-- Repository: https://github.com/shawn-sandy/astro-basics
+- Repository: <https://github.com/shawn-sandy/astro-basics>
 
 ## Component Templates
 
@@ -329,8 +329,9 @@ youtube:
 - `src/utils/contact.ts` - Form validation utilities
 - `src/constants/formErrors.ts` - Form error constants
 
-### Documentation
+### Documentation Guidelines
 
 - Comprehensive development docs in `docs/` folder
 - PRD (Product Requirements Document) in `/docs/PRD/` for feature planning
 - Linting guide available at `/docs/LINTING_GUIDE.md`
+- Always place project-related markdown files documentation, guides, or information in the `/docs` folder
