@@ -71,6 +71,7 @@
   },
   "dependencies": {
     "@astro-community/astro-embed-youtube": "^0.5.6",
+    "@astrojs/db": "^0.16.0",
     "@astrojs/mdx": "^4.3.1",
     "@astrojs/netlify": "^6.5.3",
     "@astrojs/node": "^9.3.0",
