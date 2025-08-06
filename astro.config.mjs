@@ -16,41 +16,51 @@ import lighthouse from 'astro-lighthouse'
 import node from '@astrojs/node'
 import clerk from '@clerk/astro'
 
-import db from '@astrojs/db';
+import db from '@astrojs/db'
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://example.com',
-  integrations: [react(), sitemap(), lighthouse(), embeds(), mdx(), clerk(), astroImageTools, AstroPWA({
-    registerType: 'autoUpdate',
-    workbox: {
-      globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2,ttf,eot}'],
-    },
-    manifest: {
-      name: 'Astro Kit - Component Library & Demo',
-      short_name: 'AstroKit',
-      description:
-        'A collection of reusable Astro components and utilities for building content-rich websites',
-      theme_color: '#1e293b',
-      background_color: '#ffffff',
-      display: 'standalone',
-      orientation: 'portrait',
-      scope: '/',
-      start_url: '/',
-      icons: [
-        {
-          src: '/icons/icon-192x192.png',
-          sizes: '192x192',
-          type: 'image/png',
-        },
-        {
-          src: '/icons/icon-512x512.png',
-          sizes: '512x512',
-          type: 'image/png',
-        },
-      ],
-    },
-  }), db()],
+  site: process.env.SITE_URL || 'https://example.com',
+  integrations: [
+    react(),
+    sitemap(),
+    lighthouse(),
+    embeds(),
+    mdx(),
+    clerk(),
+    astroImageTools,
+    AstroPWA({
+      registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2,ttf,eot}'],
+      },
+      manifest: {
+        name: 'Astro Kit - Component Library & Demo',
+        short_name: 'AstroKit',
+        description:
+          'A collection of reusable Astro components and utilities for building content-rich websites',
+        theme_color: '#1e293b',
+        background_color: '#ffffff',
+        display: 'standalone',
+        orientation: 'portrait',
+        scope: '/',
+        start_url: '/',
+        icons: [
+          {
+            src: '/icons/icon-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: '/icons/icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
+      },
+    }),
+    db(),
+  ],
   output: 'server',
   // Choose adapter based on deployment target
   adapter: (() => {
