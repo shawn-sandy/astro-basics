@@ -18,7 +18,7 @@ import clerk from '@clerk/astro'
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://example.com',
+  site: process.env.SITE_URL || 'https://example.com',
   integrations: [
     react(),
     sitemap(),
@@ -61,11 +61,6 @@ export default defineConfig({
   output: 'server',
   // Choose adapter based on deployment target
   adapter: (() => {
-    // Force node adapter for development/testing
-    // if (process.env.NODE_ENV === 'development' || process.env.CI === 'true') {
-    //   return node({ mode: 'standalone' })
-    // }
-
     const adapter = process.env.ASTRO_ADAPTER
     switch (adapter) {
       case 'node':
