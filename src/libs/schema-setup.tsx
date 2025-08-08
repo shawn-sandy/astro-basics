@@ -1,10 +1,12 @@
 import client from './turso'
 
 export interface Message {
+  id: number
+  name: string
   email: string
-  name: string | null
+  message: string
   subject: string | null
-  message: string | null
+  created_at: string
 }
 
 export interface SchemaSetupResult {
@@ -17,10 +19,12 @@ export async function setupDatabaseSchema(): Promise<SchemaSetupResult> {
   try {
     const schema = `
   CREATE TABLE IF NOT EXISTS messages (
-    email VARCHAR(255) PRIMARY KEY,
-    name TEXT,  
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    message TEXT NOT NULL,
     subject TEXT,
-    message TEXT
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 `
 
