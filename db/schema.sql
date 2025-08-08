@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS messages (name TEXT, email TEXT PRIMARY KEY, message TEXT, subject TEXT);

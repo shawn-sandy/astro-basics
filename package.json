@@ -51,6 +51,7 @@
     "ticket:create": "gh issue create --web",
     "ticket:list": "gh issue list --state open",
     "ticket:labels": "gh label list",
+    "db:setup": "node --env-file=.env scripts/setup-db.js",
     "prepare": "husky"
   },
   "lint-staged": {
