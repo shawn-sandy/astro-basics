@@ -1,4 +1,5 @@
-import React, { ChangeEvent, FormEvent } from 'react'
+import React from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
 
 interface FormData {
   name: string
