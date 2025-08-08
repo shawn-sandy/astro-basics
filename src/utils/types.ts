@@ -4,4 +4,4 @@ export type SortType = {
   }
 }
 
-export type TODO = any
+export type TODO = unknown
