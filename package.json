@@ -45,9 +45,9 @@
     "lint:md:fix": "markdownlint '**/*.md' --ignore node_modules --fix",
     "lint:all": "npm run lint:check && npm run lint:styles && npm run format:check && npm run type-check && npm run lint:md",
     "fix:all": "npm run lint && npm run lint:styles:fix && npm run format && npm run lint:md:fix",
-    "db:setup": "node scripts/setup-db.js",
-    "db:reset": "node scripts/setup-db.js --reset",
-    "db:check": "node scripts/setup-db.js --check",
+    "db:setup": "node --env-file=.env scripts/setup-db.js",
+    "db:reset": "node --env-file=.env scripts/setup-db.js --reset",
+    "db:check": "node --env-file=.env scripts/setup-db.js --check",
     "db:migrate": "node scripts/migrate.js --up",
     "db:migrate:status": "node scripts/migrate.js --status",
     "db:migrate:create": "node scripts/migrate.js --create",
@@ -58,7 +58,6 @@
     "ticket:create": "gh issue create --web",
     "ticket:list": "gh issue list --state open",
     "ticket:labels": "gh label list",
-    "db:setup": "node --env-file=.env scripts/setup-db.js",
     "prepare": "husky"
   },
   "lint-staged": {

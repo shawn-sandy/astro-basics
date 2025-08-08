@@ -109,17 +109,105 @@ async function dropSchema() {
 async function setupSchema() {
   const schema = loadSchema()
 
-  if (args.verbose) {
-    console.log('📝 Executing SQL:\n', schema)
+  // Split the schema into individual statements, handling comments, multi-line statements, and BEGIN/END blocks
+  const statements = []
+  let currentStatement = ''
+  let inMultiLineComment = false
+  let inBeginEndBlock = false
+  let beginEndDepth = 0
+
+  const lines = schema.split('\n')
+
+  for (const line of lines) {
+    const trimmedLine = line.trim().toUpperCase()
+    const originalLine = line.trim()
+
+    // Skip empty lines
+    if (!originalLine) continue
+
+    // Skip single-line comments
+    if (originalLine.startsWith('--')) continue
+
+    // Handle multi-line comments
+    if (originalLine.includes('/*')) {
+      inMultiLineComment = true
+    }
+    if (originalLine.includes('*/')) {
+      inMultiLineComment = false
+      continue
+    }
+    if (inMultiLineComment) continue
+
+    // Add line to current statement
+    currentStatement += line + '\n'
+
+    // Track BEGIN/END blocks (for triggers, functions, etc.)
+    if (trimmedLine === 'BEGIN') {
+      inBeginEndBlock = true
+      beginEndDepth++
+    } else if (trimmedLine.endsWith('BEGIN')) {
+      inBeginEndBlock = true
+      beginEndDepth++
+    } else if (trimmedLine === 'END;') {
+      beginEndDepth--
+      if (beginEndDepth <= 0) {
+        inBeginEndBlock = false
+        beginEndDepth = 0
+        // Complete statement - add it
+        const cleanStatement = currentStatement.trim()
+        if (cleanStatement) {
+          statements.push(cleanStatement)
+        }
+        currentStatement = ''
+      }
+    } else if (originalLine.endsWith(';') && !inBeginEndBlock) {
+      // Regular statement ending with semicolon (not in BEGIN/END block)
+      const cleanStatement = currentStatement.trim()
+      if (cleanStatement) {
+        statements.push(cleanStatement)
+      }
+      currentStatement = ''
+    }
   }
 
-  const result = await client.execute(schema)
-
-  if (args.verbose) {
-    console.log('   Rows affected:', result.rowsAffected)
+  // Add any remaining statement (in case last statement doesn't end with semicolon)
+  if (currentStatement.trim()) {
+    statements.push(currentStatement.trim())
   }
 
-  return result
+  if (args.verbose) {
+    console.log('📝 Executing SQL statements:')
+    statements.forEach((stmt, i) => {
+      const firstLine = stmt.split('\n')[0]
+      console.log(`   ${i + 1}. ${firstLine.substring(0, 60)}${firstLine.length > 60 ? '...' : ''}`)
+    })
+  }
+
+  let totalRowsAffected = 0
+
+  // Execute each statement individually
+  for (let i = 0; i < statements.length; i++) {
+    const statement = statements[i]
+
+    if (args.verbose) {
+      console.log(`   Executing statement ${i + 1}/${statements.length}...`)
+    }
+
+    try {
+      const result = await client.execute(statement)
+      totalRowsAffected += result.rowsAffected || 0
+    } catch (error) {
+      const firstLine = statement.split('\n')[0]
+      console.error(`   ❌ Failed on statement ${i + 1}: ${firstLine.substring(0, 50)}...`)
+      throw error
+    }
+  }
+
+  if (args.verbose) {
+    console.log('   Total rows affected:', totalRowsAffected)
+  }
+
+  return { rowsAffected: totalRowsAffected }
 }
 
 // Main execution
