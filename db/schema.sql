@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL CHECK(length(name) <= 255),
-  email TEXT NOT NULL CHECK(email GLOB '*@*.*'),
+  email TEXT NOT NULL CHECK(email LIKE '%_@_%._%'),
   subject TEXT CHECK(length(subject) <= 500),
   message TEXT NOT NULL CHECK(length(message) <= 5000),
   is_read BOOLEAN DEFAULT FALSE,
