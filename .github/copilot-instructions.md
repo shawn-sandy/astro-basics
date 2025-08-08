@@ -201,7 +201,7 @@ npx @astrojs/upgrade      # Official Astro updates
 
 ### Performance
 
-- **Build time**: 10-15 seconds (very fast)
+- **Build time**: 10-13 seconds (very fast)
 - **Dev server startup**: ~3 seconds
 - **SCSS compilation**: ~1-2 seconds
 - **Full linting**: ~10-20 seconds
