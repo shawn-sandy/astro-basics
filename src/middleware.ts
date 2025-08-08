@@ -1,18 +1,10 @@
 // src/middleware.ts
 
 import { clerkMiddleware, createRouteMatcher } from '@clerk/astro/server'
+import { validateEnvVars } from '#utils/env-config'
 
 // Validate required environment variables
-if (!import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY) {
-  throw new Error(
-    'Missing required environment variable: PUBLIC_CLERK_PUBLISHABLE_KEY. Please check your .env file.'
-  )
-}
-if (!import.meta.env.CLERK_SECRET_KEY) {
-  throw new Error(
-    'Missing required environment variable: CLERK_SECRET_KEY. Please check your .env file.'
-  )
-}
+validateEnvVars('clerk')
 
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)', '/organization(.*)'])
 

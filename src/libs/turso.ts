@@ -1,18 +1,11 @@
 import { createClient } from '@libsql/client'
+import { getTursoConfig } from '#utils/env-config'
 
-const TURSO_DATABASE_URL = import.meta.env.TURSO_DATABASE_URL
-const TURSO_AUTH_TOKEN = import.meta.env.TURSO_AUTH_TOKEN
-
-if (!TURSO_DATABASE_URL) {
-  throw new Error('TURSO_DATABASE_URL must be set in your .env file or environment variables.')
-}
-if (!TURSO_AUTH_TOKEN) {
-  throw new Error('TURSO_AUTH_TOKEN must be set in your .env file or environment variables.')
-}
+const config = getTursoConfig()
 
 const client = createClient({
-  url: TURSO_DATABASE_URL,
-  authToken: TURSO_AUTH_TOKEN,
+  url: config.url,
+  authToken: config.authToken,
 })
 
 export default client
