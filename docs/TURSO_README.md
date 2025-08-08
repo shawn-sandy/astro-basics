@@ -75,16 +75,45 @@ TURSO_AUTH_TOKEN=your-auth-token
 
 ### 3. Create Turso Client
 
-The project already includes a Turso client at `src/libs/turso.ts`:
+The project includes an improved Turso client at `src/libs/turso.ts` with built-in error handling and lazy initialization:
 
 ```typescript
-import { createClient } from '@libsql/client/web'
+import { createClient } from '@libsql/client'
+import type { Client, InArgs } from '@libsql/client'
 
-export const turso = createClient({
-  url: import.meta.env.TURSO_DATABASE_URL!,
-  authToken: import.meta.env.TURSO_AUTH_TOKEN!,
-})
+// The client now includes:
+// ✅ Lazy initialization - no crashes on import
+// ✅ Configuration validation - clear error messages
+// ✅ Error boundaries - graceful failure handling
+// ✅ Singleton pattern - efficient resource usage
+
+// Check if Turso is properly configured
+import { isTursoConfigured } from '#libs/turso'
+
+if (isTursoConfigured()) {
+  // Safe to use Turso
+  const client = getTursoClient()
+} else {
+  // Handle unconfigured state gracefully
+  console.log('Turso database not configured, falling back to alternative')
+}
 ```
+
+#### Key Improvements
+
+**Before (Problematic):**
+
+- Module crashed immediately if environment variables were missing
+- No graceful fallback when database was unavailable
+- Poor error messages for configuration issues
+- Eager client creation regardless of usage
+
+**After (Fixed):**
+
+- Module imports safely even without configuration
+- Lazy initialization only when database is actually needed
+- Clear, descriptive error messages for configuration issues
+- Graceful error handling with proper fallbacks
 
 ## Database Setup
 
@@ -118,25 +147,62 @@ CREATE INDEX idx_posts_published ON posts(published);
 
 ## Usage Examples
 
-### Basic Query
+### Configuration Checking
+
+Before using the database, always check if it's configured:
 
 ```typescript
-import { turso } from '#libs/turso'
+import { isTursoConfigured, validateTursoConfig } from '#libs/turso'
 
-// Fetch all posts
-const { rows } = await turso.execute('SELECT * FROM posts WHERE published = TRUE')
-const posts = rows
+// Check configuration status
+if (isTursoConfigured()) {
+  // Safe to use database
+} else {
+  // Handle unconfigured state
+  console.log('Database not configured, using fallback')
+}
+
+// Validate configuration (throws descriptive error)
+try {
+  validateTursoConfig()
+  console.log('Database configuration is valid')
+} catch (error) {
+  console.error('Configuration error:', error.message)
+}
+```
+
+### Basic Query with Error Handling
+
+```typescript
+import { executeQuery, getTursoClient } from '#libs/turso'
+
+try {
+  // Option 1: Use the helper function (recommended)
+  const posts = await executeQuery<Post[]>('SELECT * FROM posts WHERE published = TRUE')
+
+  // Option 2: Use the client directly
+  const client = getTursoClient()
+  const { rows } = await client.execute('SELECT * FROM posts WHERE published = TRUE')
+} catch (error) {
+  console.error('Database operation failed:', error.message)
+  // Handle error appropriately (show fallback content, etc.)
+}
 ```
 
 ### Parameterized Queries
 
 ```typescript
-// Fetch a single post by slug
-const { rows } = await turso.execute({
-  sql: 'SELECT * FROM posts WHERE slug = ? AND published = TRUE',
-  args: [slug],
-})
-const post = rows[0]
+import { executeQuery } from '#libs/turso'
+
+try {
+  // Fetch a single post by slug with type safety
+  const post = await executeQuery<Post>('SELECT * FROM posts WHERE slug = ? AND published = TRUE', [
+    slug,
+  ])
+} catch (error) {
+  console.error('Failed to fetch post:', error.message)
+  // Handle error (show 404 page, fallback content, etc.)
+}
 ```
 
 ### Insert Data
@@ -173,38 +239,95 @@ const result = await turso.execute({
 
 ```astro
 ---
-import { turso } from '#libs/turso'
+import { isTursoConfigured, executeQuery } from '#libs/turso'
 
-// Fetch posts for the homepage
-const { rows } = await turso.execute(`
-  SELECT * FROM posts 
-  WHERE published = TRUE 
-  ORDER BY created_at DESC 
-  LIMIT 10
-`)
+interface Post {
+  id: number
+  slug: string
+  title: string
+  content: string
+  author: string
+  created_at: string
+}
 
-const posts = rows.map(row => ({
-  id: row.id,
-  slug: row.slug,
-  title: row.title,
-  content: row.content,
-  author: row.author,
-  createdAt: row.created_at,
-  tags: row.tags ? row.tags.split(',') : [],
-}))
+let posts: Post[] = []
+let errorMessage = ''
+
+// Graceful handling of database operations
+if (isTursoConfigured()) {
+  try {
+    posts = await executeQuery<Post[]>(`
+      SELECT * FROM posts 
+      WHERE published = TRUE 
+      ORDER BY created_at DESC 
+      LIMIT 10
+    `)
+  } catch (error) {
+    console.error('Failed to load posts:', error.message)
+    errorMessage = 'Unable to load posts at this time'
+    // Could also load from static files as fallback
+  }
+} else {
+  // Fallback when database is not configured
+  errorMessage = 'Database not configured - showing demo content'
+  posts = [
+    {
+      id: 1,
+      slug: 'demo-post',
+      title: 'Demo Post',
+      content: 'This is demo content shown when the database is not configured.',
+      author: 'System',
+      created_at: new Date().toISOString(),
+    },
+  ]
+}
 ---
 
 <div>
   {
-    posts.map(post => (
-      <article key={post.id}>
-        <h2>{post.title}</h2>
-        <p>By {post.author}</p>
-        <div>{post.content}</div>
-      </article>
-    ))
+    errorMessage && (
+      <div class="alert alert-info">
+        <p>{errorMessage}</p>
+      </div>
+    )
+  }
+
+  {
+    posts.length > 0 ? (
+      posts.map(post => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+          <p>By {post.author}</p>
+          <div>{post.content}</div>
+        </article>
+      ))
+    ) : (
+      <div class="no-content">
+        <p>No posts available at this time.</p>
+      </div>
+    )
   }
 </div>
+
+<style>
+  .alert {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.375rem;
+  }
+
+  .alert-info {
+    background-color: #e1f5fe;
+    border: 1px solid #0288d1;
+    color: #0277bd;
+  }
+
+  .no-content {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+  }
+</style>
 ```
 
 ### API Routes Example
@@ -213,33 +336,73 @@ Create an API route at `src/pages/api/posts/[slug].ts`:
 
 ```typescript
 import type { APIRoute } from 'astro'
-import { turso } from '#libs/turso'
+import { isTursoConfigured, executeQuery } from '#libs/turso'
+
+interface Post {
+  id: number
+  slug: string
+  title: string
+  content: string
+  author: string
+  published: boolean
+}
 
 export const GET: APIRoute = async ({ params }) => {
   const { slug } = params
 
-  try {
-    const { rows } = await turso.execute({
-      sql: 'SELECT * FROM posts WHERE slug = ? AND published = TRUE',
-      args: [slug!],
-    })
-
-    if (rows.length === 0) {
-      return new Response(JSON.stringify({ error: 'Post not found' }), {
-        status: 404,
+  // Early return if database not configured
+  if (!isTursoConfigured()) {
+    return new Response(
+      JSON.stringify({
+        error: 'Database service unavailable',
+        message: 'Database not configured',
+      }),
+      {
+        status: 503,
         headers: { 'Content-Type': 'application/json' },
-      })
+      }
+    )
+  }
+
+  try {
+    const posts = await executeQuery<Post[]>(
+      'SELECT * FROM posts WHERE slug = ? AND published = TRUE',
+      [slug!]
+    )
+
+    if (posts.length === 0) {
+      return new Response(
+        JSON.stringify({
+          error: 'Post not found',
+          message: `No post found with slug: ${slug}`,
+        }),
+        {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
     }
 
-    return new Response(JSON.stringify(rows[0]), {
+    return new Response(JSON.stringify(posts[0]), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=300', // 5 minute cache
+      },
     })
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Database error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    console.error('Database error in API route:', error)
+
+    return new Response(
+      JSON.stringify({
+        error: 'Database error',
+        message: 'Unable to fetch post at this time',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
   }
 }
 ```
