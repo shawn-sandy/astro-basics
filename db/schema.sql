@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS messages (
-  email TEXT PRIMARY KEY,
+  email VARCHAR(255) PRIMARY KEY,
   name TEXT,
   subject TEXT,
   message TEXT
