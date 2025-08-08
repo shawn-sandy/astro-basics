@@ -26,219 +26,206 @@ const client = createClient({
   authToken: TURSO_AUTH_TOKEN,
 })
 
-// Result type for consistent error handling (using JSDoc for type documentation)
-/**
- * @typedef {Object} SuccessResult
- * @property {true} ok
- * @property {*} value
- */
+// Import security utilities (when running as module)
+// For standalone script execution, these functions are defined below
+let validateEmail, validateName, validateMessage, validateSubject
+let insertMessage, getMessages
 
-/**
- * @typedef {Object} ErrorResult
- * @property {false} ok
- * @property {Error} error
- */
+try {
+  // Try to import from utils module
+  const securityUtils = await import('../src/utils/database-security.js')
+  validateEmail = securityUtils.validateEmail
+  validateName = securityUtils.validateName
+  validateMessage = securityUtils.validateMessage
+  validateSubject = securityUtils.validateSubject
+  console.log('📋 Using security functions from utils module')
+} catch {
+  // Fallback to inline functions for standalone execution
+  console.log('📋 Using inline security functions for standalone execution')
 
-/**
- * @typedef {SuccessResult | ErrorResult} Result
- */
+  /**
+   * Validates email format and length
+   */
+  validateEmail = email => {
+    if (typeof email !== 'string') {
+      return { ok: false, error: new Error('Email must be a string') }
+    }
 
-/**
- * Validates email format and length
- * @param {*} email - Email to validate
- * @returns {Result} ValidationResult with the validated email or an error
- */
-function validateEmail(email) {
-  if (typeof email !== 'string') {
-    return { ok: false, error: new Error('Email must be a string') }
+    const trimmedEmail = email.trim()
+
+    if (trimmedEmail.length === 0) {
+      return { ok: false, error: new Error('Email is required') }
+    }
+
+    if (trimmedEmail.length > 254) {
+      return { ok: false, error: new Error('Email too long (max 254 characters)') }
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(trimmedEmail)) {
+      return { ok: false, error: new Error('Invalid email format') }
+    }
+
+    return { ok: true, value: trimmedEmail }
   }
 
-  const trimmedEmail = email.trim()
+  /**
+   * Validates name field with SQL injection protection
+   */
+  validateName = name => {
+    if (typeof name !== 'string') {
+      return { ok: false, error: new Error('Name must be a string') }
+    }
 
-  if (trimmedEmail.length === 0) {
-    return { ok: false, error: new Error('Email is required') }
+    const trimmedName = name.trim()
+
+    if (trimmedName.length === 0) {
+      return { ok: false, error: new Error('Name is required') }
+    }
+
+    if (trimmedName.length > 100) {
+      return { ok: false, error: new Error('Name too long (max 100 characters)') }
+    }
+
+    // SQL injection pattern detection
+    const dangerousPatterns = [
+      /['";]/, // SQL quotes and semicolons
+      /--/, // SQL comments
+      /\/\*/, // Multi-line SQL comments
+      /\*\//, // End of multi-line SQL comments
+      /\bunion\b/i, // SQL UNION
+      /\bselect\b/i, // SQL SELECT
+      /\binsert\b/i, // SQL INSERT
+      /\bupdate\b/i, // SQL UPDATE
+      /\bdelete\b/i, // SQL DELETE
+      /\bdrop\b/i, // SQL DROP
+    ]
+
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(trimmedName)) {
+        return { ok: false, error: new Error('Name contains potentially dangerous characters') }
+      }
+    }
+
+    return { ok: true, value: trimmedName }
   }
 
-  if (trimmedEmail.length > 254) {
-    return { ok: false, error: new Error('Email too long (max 254 characters)') }
+  /**
+   * Validates message content
+   */
+  validateMessage = message => {
+    if (typeof message !== 'string') {
+      return { ok: false, error: new Error('Message must be a string') }
+    }
+
+    const trimmedMessage = message.trim()
+
+    if (trimmedMessage.length === 0) {
+      return { ok: false, error: new Error('Message is required') }
+    }
+
+    if (trimmedMessage.length > 5000) {
+      return { ok: false, error: new Error('Message too long (max 5000 characters)') }
+    }
+
+    return { ok: true, value: trimmedMessage }
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(trimmedEmail)) {
-    return { ok: false, error: new Error('Invalid email format') }
+  /**
+   * Validates optional subject field
+   */
+  validateSubject = subject => {
+    if (subject === null || subject === undefined || subject === '') {
+      return { ok: true, value: null }
+    }
+
+    if (typeof subject !== 'string') {
+      return { ok: false, error: new Error('Subject must be a string') }
+    }
+
+    const trimmedSubject = subject.trim()
+
+    if (trimmedSubject.length > 200) {
+      return { ok: false, error: new Error('Subject too long (max 200 characters)') }
+    }
+
+    return { ok: true, value: trimmedSubject }
   }
 
-  return { ok: true, value: trimmedEmail }
-}
+  /**
+   * Safely insert a message using parameterized queries
+   */
+  insertMessage = async (client, messageData) => {
+    try {
+      // Validate all input data
+      const nameResult = validateName(messageData.name)
+      if (!nameResult.ok) {
+        return { ok: false, error: nameResult.error }
+      }
 
-/**
- * Validates name field
- * @param {*} name - Name to validate
- * @returns {Result} ValidationResult with the validated name or an error
- */
-function validateName(name) {
-  if (typeof name !== 'string') {
-    return { ok: false, error: new Error('Name must be a string') }
-  }
+      const emailResult = validateEmail(messageData.email)
+      if (!emailResult.ok) {
+        return { ok: false, error: emailResult.error }
+      }
 
-  const trimmedName = name.trim()
+      const messageResult = validateMessage(messageData.message)
+      if (!messageResult.ok) {
+        return { ok: false, error: messageResult.error }
+      }
 
-  if (trimmedName.length === 0) {
-    return { ok: false, error: new Error('Name is required') }
-  }
+      const subjectResult = validateSubject(messageData.subject)
+      if (!subjectResult.ok) {
+        return { ok: false, error: subjectResult.error }
+      }
 
-  if (trimmedName.length > 100) {
-    return { ok: false, error: new Error('Name too long (max 100 characters)') }
-  }
+      // Use parameterized query to prevent SQL injection
+      const result = await client.execute({
+        sql: 'INSERT INTO messages (name, email, message, subject) VALUES (?, ?, ?, ?)',
+        args: [nameResult.value, emailResult.value, messageResult.value, subjectResult.value],
+      })
 
-  // Basic SQL injection pattern detection
-  const dangerousPatterns = [
-    /['";]/, // SQL quotes and semicolons
-    /--/, // SQL comments
-    /\/\*/, // Multi-line SQL comments
-    /\*\//, // End of multi-line SQL comments
-    /\bunion\b/i, // SQL UNION
-    /\bselect\b/i, // SQL SELECT
-    /\binsert\b/i, // SQL INSERT
-    /\bupdate\b/i, // SQL UPDATE
-    /\bdelete\b/i, // SQL DELETE
-    /\bdrop\b/i, // SQL DROP
-  ]
+      console.log('✅ Message inserted successfully')
+      console.log('   Rows affected:', result.rowsAffected)
 
-  for (const pattern of dangerousPatterns) {
-    if (pattern.test(trimmedName)) {
-      return { ok: false, error: new Error('Name contains potentially dangerous characters') }
+      return { ok: true, value: result }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      console.error('❌ Failed to insert message:', errorMessage)
+
+      // Return generic error to prevent information leakage
+      return { ok: false, error: new Error('Database operation failed') }
     }
   }
 
-  return { ok: true, value: trimmedName }
-}
+  /**
+   * Safely retrieve messages using parameterized queries
+   */
+  getMessages = async (client, limit = 10) => {
+    try {
+      // Validate limit parameter
+      const numLimit = typeof limit === 'string' ? parseInt(limit, 10) : limit
+      if (typeof numLimit !== 'number' || isNaN(numLimit) || numLimit < 1 || numLimit > 1000) {
+        return { ok: false, error: new Error('Invalid limit parameter (must be 1-1000)') }
+      }
 
-/**
- * Validates message content
- * @param {*} message - Message to validate
- * @returns {Result} ValidationResult with the validated message or an error
- */
-function validateMessage(message) {
-  if (typeof message !== 'string') {
-    return { ok: false, error: new Error('Message must be a string') }
-  }
+      // Use parameterized query
+      const result = await client.execute({
+        sql: 'SELECT id, name, email, message, subject, created_at FROM messages ORDER BY created_at DESC LIMIT ?',
+        args: [numLimit],
+      })
 
-  const trimmedMessage = message.trim()
+      console.log('✅ Messages retrieved successfully')
+      console.log('   Count:', result.rows.length)
 
-  if (trimmedMessage.length === 0) {
-    return { ok: false, error: new Error('Message is required') }
-  }
+      return { ok: true, value: result }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      console.error('❌ Failed to retrieve messages:', errorMessage)
 
-  if (trimmedMessage.length > 5000) {
-    return { ok: false, error: new Error('Message too long (max 5000 characters)') }
-  }
-
-  return { ok: true, value: trimmedMessage }
-}
-
-/**
- * Validates optional subject field
- * @param {*} subject - Subject to validate
- * @returns {Result} ValidationResult with the validated subject or an error
- */
-function validateSubject(subject) {
-  if (subject === null || subject === undefined || subject === '') {
-    return { ok: true, value: null }
-  }
-
-  if (typeof subject !== 'string') {
-    return { ok: false, error: new Error('Subject must be a string') }
-  }
-
-  const trimmedSubject = subject.trim()
-
-  if (trimmedSubject.length > 200) {
-    return { ok: false, error: new Error('Subject too long (max 200 characters)') }
-  }
-
-  return { ok: true, value: trimmedSubject }
-}
-
-/**
- * Safely insert a message using parameterized queries
- * @param {*} client - Database client
- * @param {*} messageData - Message data to insert
- * @returns {Promise<Result>} Promise with the result of the operation
- */
-async function insertMessage(client, messageData) {
-  try {
-    // Validate all input data
-    const nameResult = validateName(messageData.name)
-    if (!nameResult.ok) {
-      return { ok: false, error: nameResult.error }
+      return { ok: false, error: new Error('Database operation failed') }
     }
-
-    const emailResult = validateEmail(messageData.email)
-    if (!emailResult.ok) {
-      return { ok: false, error: emailResult.error }
-    }
-
-    const messageResult = validateMessage(messageData.message)
-    if (!messageResult.ok) {
-      return { ok: false, error: messageResult.error }
-    }
-
-    const subjectResult = validateSubject(messageData.subject)
-    if (!subjectResult.ok) {
-      return { ok: false, error: subjectResult.error }
-    }
-
-    // Use parameterized query to prevent SQL injection
-    const result = await client.execute({
-      sql: 'INSERT INTO messages (name, email, message, subject) VALUES (?, ?, ?, ?)',
-      args: [nameResult.value, emailResult.value, messageResult.value, subjectResult.value],
-    })
-
-    console.log('✅ Message inserted successfully')
-    console.log('   Rows affected:', result.rowsAffected)
-
-    return { ok: true, value: result }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    console.error('❌ Failed to insert message:', errorMessage)
-
-    // Return generic error to prevent information leakage
-    return { ok: false, error: new Error('Database operation failed') }
   }
-}
-
-/**
- * Safely retrieve messages using parameterized queries
- * @param {*} client - Database client
- * @param {number} limit - Maximum number of messages to retrieve
- * @returns {Promise<Result>} Promise with the result of the operation
- */
-async function getMessages(client, limit = 10) {
-  try {
-    // Validate limit parameter
-    const numLimit = typeof limit === 'string' ? parseInt(limit, 10) : limit
-    if (isNaN(numLimit) || numLimit < 1 || numLimit > 1000) {
-      return { ok: false, error: new Error('Invalid limit parameter (must be 1-1000)') }
-    }
-
-    // Use parameterized query
-    const result = await client.execute({
-      sql: 'SELECT id, name, email, message, subject, created_at FROM messages ORDER BY created_at DESC LIMIT ?',
-      args: [numLimit],
-    })
-
-    console.log('✅ Messages retrieved successfully')
-    console.log('   Count:', result.rows.length)
-
-    return { ok: true, value: result }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    console.error('❌ Failed to retrieve messages:', errorMessage)
-
-    return { ok: false, error: new Error('Database operation failed') }
-  }
-}
+} // End of fallback functions
 
 async function setupDatabase() {
   try {
@@ -339,8 +326,5 @@ async function setupDatabase() {
     process.exit(1)
   }
 }
-
-// Export functions for testing
-export { validateEmail, validateName, validateMessage, validateSubject, insertMessage, getMessages }
 
 setupDatabase()
