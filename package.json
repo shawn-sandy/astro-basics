@@ -48,6 +48,7 @@
     "db:setup": "node --env-file=.env scripts/setup-db.js",
     "db:reset": "node --env-file=.env scripts/setup-db.js --reset",
     "db:check": "node --env-file=.env scripts/setup-db.js --check",
+    "db:seed:messages": "node --env-file=.env scripts/seed-messages.js",
     "db:migrate": "node scripts/migrate.js --up",
     "db:migrate:status": "node scripts/migrate.js --status",
     "db:migrate:create": "node scripts/migrate.js --create",
