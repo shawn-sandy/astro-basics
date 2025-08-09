@@ -1,0 +1,75 @@
+---
+import Auth from '#/layouts/Auth.astro'
+import { getMessages, isTursoConfigured, type MessageRow } from '#/libs/turso'
+
+let messages: MessageRow[] = []
+let error: string | null = null
+
+if (isTursoConfigured()) {
+  try {
+    messages = await getMessages({
+      is_archived: false,
+      limit: 50,
+    })
+  } catch (err) {
+    error = err instanceof Error ? err.message : 'Failed to load messages'
+    console.error('Error fetching messages:', err)
+  }
+} else {
+  error = 'Database not configured'
+}
+---
+
+<Auth
+  hideHeader={false}
+  showBreadcrumb={true}
+  pageTitle="Message Center"
+  pageDescription="Your message center overview"
+>
+  <section>
+    {
+      error ? (
+        <div class="alert alert-error">
+          <p>Error: {error}</p>
+        </div>
+      ) : messages.length === 0 ? (
+        <p>No messages found.</p>
+      ) : (
+        <>
+          <div class="messages-list">
+            <p>
+              Found {messages.length} message{messages.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+          <ul class="messages-list messages" data-list="unstyled">
+            {messages.map(message => (
+              <li data-message-id={message.id}>
+                <h3>{message.subject}</h3>
+                <p>{message.message}</p>
+              </li>
+            ))}
+          </ul>
+        </>
+      )
+    }
+  </section>
+</Auth>
+
+<style>
+  .messages-list {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+    text-align: left;
+  }
+
+  .messages-list p {
+    text-align: left;
+  }
+
+  .messages {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+</style>
