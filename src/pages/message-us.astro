@@ -1,7 +1,5 @@
 ---
-import MainSection from '#components/astro/MainSection.astro'
 import Auth from '#layouts/Auth.astro'
-// import Base from '#layouts/Base.astro'
 
 const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 ---
@@ -17,18 +15,19 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
   <section class="message-us">
     <h1>Contact Us</h1>
     <p>If you have any questions or feedback, please feel free to reach out to us!</p>
-    <form action="">
+    <form id="contact-form">
+      <div id="form-message" class="form-message"></div>
       <label for="name">Name:</label>
-      <input type="text" id="name" name="name" required />
+      <input type="text" id="name" name="name" required maxlength="255" />
 
       <label for="email">Email:</label>
       <input type="email" id="email" name="email" required />
 
       <label for="subject">Subject:</label>
-      <input type="text" id="subject" name="subject" required />
+      <input type="text" id="subject" name="subject" maxlength="500" />
 
       <label for="message">Message:</label>
-      <textarea id="message" name="message" rows="4" required></textarea>
+      <textarea id="message" name="message" rows="4" required maxlength="5000"></textarea>
 
       <button type="submit">Send Message</button>
     </form>
@@ -41,4 +40,79 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
     margin-inline: auto;
     padding: 1rem;
   }
+
+  .form-message {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 4px;
+    display: none;
+  }
+
+  .form-message.success {
+    display: block;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .form-message.error {
+    display: block;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+
+  button[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 </style>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement
+  const formMessage = document.getElementById('form-message') as HTMLDivElement
+  const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault()
+
+    // Clear previous messages
+    formMessage.textContent = ''
+    formMessage.className = 'form-message'
+
+    // Disable submit button
+    submitButton.disabled = true
+    submitButton.textContent = 'Sending...'
+
+    // Get form data
+    const formData = new FormData(form)
+    const data = Object.fromEntries(formData.entries())
+
+    try {
+      const response = await fetch('/api/message-us', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        formMessage.textContent = result.message || 'Your message has been sent successfully!'
+        formMessage.className = 'form-message success'
+        form.reset()
+      } else {
+        formMessage.textContent = result.error || 'Something went wrong. Please try again.'
+        formMessage.className = 'form-message error'
+      }
+    } catch (error) {
+      formMessage.textContent = 'Network error. Please check your connection and try again.'
+      formMessage.className = 'form-message error'
+    } finally {
+      submitButton.disabled = false
+      submitButton.textContent = 'Send Message'
+    }
+  })
+</script>

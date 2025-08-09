@@ -151,5 +151,163 @@ export function resetTursoClient(): void {
   cachedEnv = null
 }
 
+// Message insertion types
+export interface MessageData {
+  name: string
+  email: string
+  subject?: string
+  message: string
+  ip_address?: string
+  user_agent?: string
+}
+
+export interface MessageRow extends MessageData {
+  id: number
+  is_read: boolean
+  is_archived: boolean
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Insert a new message into the database
+ * @param data Message data to insert
+ * @returns The inserted message ID
+ */
+export async function insertMessage(data: MessageData): Promise<number> {
+  const query = `
+    INSERT INTO messages (name, email, subject, message, ip_address, user_agent)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `
+
+  const params = [
+    data.name,
+    data.email,
+    data.subject || null,
+    data.message,
+    data.ip_address || null,
+    data.user_agent || null,
+  ]
+
+  try {
+    const result = await executeQuery(query, params)
+
+    if (!result.lastInsertRowid) {
+      throw new Error('Failed to get inserted message ID')
+    }
+
+    return Number(result.lastInsertRowid)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Failed to insert message:', errorMessage)
+    throw new Error(`Failed to save message: ${errorMessage}`)
+  }
+}
+
+/**
+ * Get a message by ID
+ * @param id Message ID
+ * @returns The message or null if not found
+ */
+export async function getMessageById(id: number): Promise<MessageRow | null> {
+  const query = 'SELECT * FROM messages WHERE id = ?'
+
+  try {
+    const result = await executeQuery(query, [id])
+
+    if (result.rows.length === 0) {
+      return null
+    }
+
+    return result.rows[0] as MessageRow
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Failed to get message:', errorMessage)
+    throw new Error(`Failed to retrieve message: ${errorMessage}`)
+  }
+}
+
+/**
+ * Get all messages with optional filtering
+ * @param options Query options
+ * @returns Array of messages
+ */
+export async function getMessages(options?: {
+  is_read?: boolean
+  is_archived?: boolean
+  limit?: number
+  offset?: number
+}): Promise<MessageRow[]> {
+  let query = 'SELECT * FROM messages WHERE 1=1'
+  const params: unknown[] = []
+
+  if (options?.is_read !== undefined) {
+    query += ' AND is_read = ?'
+    params.push(options.is_read ? 1 : 0)
+  }
+
+  if (options?.is_archived !== undefined) {
+    query += ' AND is_archived = ?'
+    params.push(options.is_archived ? 1 : 0)
+  }
+
+  query += ' ORDER BY created_at DESC'
+
+  if (options?.limit) {
+    query += ' LIMIT ?'
+    params.push(options.limit)
+
+    if (options.offset) {
+      query += ' OFFSET ?'
+      params.push(options.offset)
+    }
+  }
+
+  try {
+    const result = await executeQuery(query, params)
+    return result.rows as MessageRow[]
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Failed to get messages:', errorMessage)
+    throw new Error(`Failed to retrieve messages: ${errorMessage}`)
+  }
+}
+
+/**
+ * Mark a message as read
+ * @param id Message ID
+ * @returns Success status
+ */
+export async function markMessageAsRead(id: number): Promise<boolean> {
+  const query = 'UPDATE messages SET is_read = TRUE WHERE id = ?'
+
+  try {
+    const result = await executeQuery(query, [id])
+    return (result.rowsAffected ?? 0) > 0
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Failed to mark message as read:', errorMessage)
+    throw new Error(`Failed to update message: ${errorMessage}`)
+  }
+}
+
+/**
+ * Archive a message
+ * @param id Message ID
+ * @returns Success status
+ */
+export async function archiveMessage(id: number): Promise<boolean> {
+  const query = 'UPDATE messages SET is_archived = TRUE WHERE id = ?'
+
+  try {
+    const result = await executeQuery(query, [id])
+    return (result.rowsAffected ?? 0) > 0
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Failed to archive message:', errorMessage)
+    throw new Error(`Failed to archive message: ${errorMessage}`)
+  }
+}
+
 // Export the default client getter for backwards compatibility
 export default getTursoClient
