@@ -279,7 +279,7 @@ export async function getMessages(options?: {
  * @returns Success status
  */
 export async function markMessageAsRead(id: number): Promise<boolean> {
-  const query = 'UPDATE messages SET is_read = TRUE WHERE id = ?'
+  const query = 'UPDATE messages SET is_read = 1 WHERE id = ?'
 
   try {
     const result = await executeQuery(query, [id])
