@@ -297,7 +297,7 @@ export async function markMessageAsRead(id: number): Promise<boolean> {
  * @returns Success status
  */
 export async function archiveMessage(id: number): Promise<boolean> {
-  const query = 'UPDATE messages SET is_archived = TRUE WHERE id = ?'
+  const query = 'UPDATE messages SET is_archived = 1 WHERE id = ?'
 
   try {
     const result = await executeQuery(query, [id])
