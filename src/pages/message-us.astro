@@ -19,15 +19,19 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
       <div id="form-message" class="form-message"></div>
       <label for="name">Name:</label>
       <input type="text" id="name" name="name" required maxlength="255" />
+      <p class="error-message" id="name-error">Name is required</p>
 
       <label for="email">Email:</label>
       <input type="email" id="email" name="email" required />
+      <p class="error-message" id="email-error">Email is required</p>
 
       <label for="subject">Subject:</label>
-      <input type="text" id="subject" name="subject" maxlength="500" />
+      <input type="text" id="subject" required name="subject" maxlength="500" />
+      <p class="error-message" id="subject-error">Subject is required</p>
 
       <label for="message">Message:</label>
       <textarea id="message" name="message" rows="4" required maxlength="5000"></textarea>
+      <p class="error-message" id="message-error">Message is required</p>
 
       <button type="submit">Send Message</button>
     </form>
@@ -35,6 +39,21 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 </Auth>
 
 <style>
+  input + .error-message,
+  textarea + .error-message {
+    display: none;
+  }
+
+  input:user-invalid + .error-message,
+  textarea:user-invalid + .error-message {
+    display: block;
+  }
+
+  input:invalid + .error-message,
+  textarea:invalid + .error-message {
+    display: block;
+  }
+
   .message-us {
     width: 600px;
     margin-inline: auto;
