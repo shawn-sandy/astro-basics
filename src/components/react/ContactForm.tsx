@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
 import { FORM_ERROR_MESSAGES } from '#constants/formErrors'
+import { isValidEmail } from '#utils/email-validation'
 
 import Alert from './Alert'
 
@@ -51,9 +52,7 @@ const ContactForm: React.FC = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  const isValidEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  }
+  // Using imported isValidEmail function from utils
 
   const isValidPhone = (phone: string) => {
     return /^[\d\s-()]{7,}$/.test(phone)
