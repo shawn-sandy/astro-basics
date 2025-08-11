@@ -1,3 +1,5 @@
+import { isIP } from 'node:net'
+
 import type { APIRoute } from 'astro'
 
 import { insertMessage, isTursoConfigured } from '#libs/turso'
@@ -123,7 +125,7 @@ export const POST: APIRoute = async ({ request }) => {
       email: String(email).trim().toLowerCase(),
       subject: subject ? String(subject).trim() : undefined,
       message: String(message).trim(),
-      ip_address: ip_address.substring(0, 45), // Limit to schema constraint
+      ip_address: isIP(ip_address) && ip_address.length <= 45 ? ip_address : 'unknown', // Validate IP address
       user_agent: user_agent?.substring(0, 500), // Limit to schema constraint
     }
 
