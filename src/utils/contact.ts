@@ -37,7 +37,7 @@ export function validateForm(form: HTMLFormElement) {
     }
 
     function isValidEmail(email: string) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)
     }
 
     function isValidPhone(phone: string) {

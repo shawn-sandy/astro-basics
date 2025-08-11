@@ -2,6 +2,7 @@ import React, { useState, type ChangeEvent } from 'react'
 import type { FormEvent } from 'react'
 
 import { CONTACT_INFO } from '#utils/site-config.js'
+import { isValidEmail } from '#utils/email-validation'
 
 import ContactFormView from './view/ContactFormView'
 
@@ -76,7 +77,7 @@ const ContactForm: React.FC = () => {
     return isValid
   }
 
-  const isValidEmail = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  // Using imported isValidEmail function from utils
   const isValidPhone = (phone: string): boolean => /^[\d\s-()]{7,}$/.test(phone)
 
   return (
