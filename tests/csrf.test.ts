@@ -46,9 +46,9 @@ describe('generateCsrfToken', () => {
     }
   })
 
-  it('should generate unique tokens on each call', () => {
-    const result1 = generateCsrfToken()
-    const result2 = generateCsrfToken()
+  it('should generate unique tokens on each call', async () => {
+    const result1 = await generateCsrfToken()
+    const result2 = await generateCsrfToken()
     
     expect(result1.ok).toBe(true)
     expect(result2.ok).toBe(true)
