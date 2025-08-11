@@ -13,7 +13,7 @@
  * - Multiple subdomains: user@mail.domain.com
  * - International TLDs: user@domain.travel
  */
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/
 
 /**
  * More strict RFC 5322 compliant regex for comprehensive validation
