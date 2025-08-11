@@ -21,9 +21,9 @@ describe('generateCsrfToken', () => {
     }
   })
 
-  it('should generate tokens with custom length', () => {
+  it('should generate tokens with custom length', async () => {
     const customLength = 16
-    const result = generateCsrfToken({ tokenLength: customLength })
+    const result = await generateCsrfToken({ tokenLength: customLength })
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.value.token).toHaveLength(customLength * 2)
