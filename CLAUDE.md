@@ -4,7 +4,53 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**astro-basics-website** is a content-rich Astro website that serves as both a component library and a demonstration site. It uses server-side rendering (`output: "server"`), integrates Clerk authentication, and supports multiple database backends (Supabase, Turso).
+**astro-basics-website** is a content-rich Astro website that serves as both a component library and a
+demonstration site. It uses server-side rendering (`output: "server"`), integrates Clerk authentication,
+and supports multiple database backends (Supabase, Turso).
+
+### Repository Structure
+
+```
+src/
+├── components/          # Reusable components
+│   ├── astro/          # Server-rendered Astro components
+│   ├── react/          # Client-side React components
+│   └── dashboard/      # Protected dashboard components
+├── pages/              # Route pages and API endpoints
+├── content/            # Content collections (posts, docs, content)
+├── layouts/            # Page layouts (Base, Post, etc.)
+├── styles/             # SCSS stylesheets
+│   ├── components/     # Component-specific styles
+│   └── index.scss      # Main stylesheet entry
+├── libs/               # Database clients and utilities
+├── utils/              # Helper functions and configs
+├── constants/          # Application constants
+└── middleware.ts       # Clerk authentication middleware
+
+scripts/                # Database and migration scripts
+e2e/                   # Playwright E2E tests
+tests/                 # Vitest unit tests
+docs/                  # Project documentation
+```
+
+### Key Features
+
+- **Component Library**: Exportable Astro/React components via package.json exports
+- **Content Management**: Three content collections with MDX support
+- **Authentication**: Clerk integration with protected routes
+- **Database Support**: Turso (LibSQL) and Supabase backends
+- **PWA Ready**: Service worker and offline support
+- **Testing**: Unit (Vitest) and E2E (Playwright) test suites
+- **Performance**: Lighthouse monitoring, image optimization
+- **Developer Experience**: Hot reload, SCSS watching, comprehensive linting
+
+## Initial Setup
+
+1. **Install dependencies**: `npm install` (takes ~4 minutes, warnings are expected)
+2. **Setup environment**: `cp .env.example .env` and configure keys
+3. **Install pre-commit hooks**: `npm run prepare` (Husky setup)
+4. **Install Playwright browsers** (for E2E tests): `npx playwright install`
+5. **Start development**: `npm run start`
 
 ## Essential Commands
 
@@ -19,10 +65,11 @@ npm run sass          # Watch and compile SCSS (src/styles/index.scss → index.
 ### Build & Testing
 
 ```bash
-npm run build         # Production build
+npm run build         # Production build (10-15 seconds)
 npm run preview       # Preview production build
 npm test              # Run Vitest unit tests (excludes e2e)
-npm run test:e2e      # Run Playwright e2e tests
+npm run test:e2e      # Run Playwright e2e tests (requires: npx playwright install)
+npm run test:e2e:report  # Show Playwright test report
 ```
 
 ### Code Quality (Run before commits)
@@ -31,6 +78,10 @@ npm run test:e2e      # Run Playwright e2e tests
 npm run fix:all       # Auto-fix all issues (ESLint, StyleLint, Prettier, Markdown)
 npm run lint:all      # Check all linting without fixes
 npm run type-check    # TypeScript type checking
+npm run lint          # ESLint fix
+npm run lint:check    # ESLint check only
+npm run lint:styles:fix  # StyleLint fix
+npm run format        # Prettier formatting
 ```
 
 ### Single Test Execution
@@ -38,6 +89,28 @@ npm run type-check    # TypeScript type checking
 ```bash
 npm test path/to/test.test.ts       # Run specific Vitest test
 npx playwright test path/to/e2e.spec.ts  # Run specific Playwright test
+```
+
+### Database Commands
+
+```bash
+npm run db:setup      # Initialize database
+npm run db:reset      # Reset database
+npm run db:check      # Check database connection
+npm run db:seed:messages  # Seed messages table
+npm run db:migrate    # Run migrations up
+npm run db:migrate:status  # Check migration status
+npm run db:migrate:create  # Create new migration
+npm run db:migrate:rollback  # Rollback migration
+```
+
+### GitHub Integration
+
+```bash
+npm run ticket:validate  # Verify GitHub CLI setup
+npm run ticket:create    # Create GitHub issue (web)
+npm run ticket:list      # List open issues
+npm run ticket:labels    # List available labels
 ```
 
 ## Architecture
@@ -51,6 +124,28 @@ The project exports components through `src/components/index.ts`:
 - **Dashboard Components** (`/dashboard/`): Protected routes requiring authentication
 
 Components are consumed internally via path aliases (`#components/astro/Header.astro`).
+
+### Page Routes
+
+Key routes in the application:
+
+- `/` - Homepage
+- `/posts` - Blog posts listing
+- `/posts/[...slug]` - Individual blog post
+- `/docs` - Documentation listing
+- `/docs/[...slug]` - Individual doc page
+- `/content` - Content collection pages
+- `/dashboard/*` - Protected dashboard (requires auth)
+- `/forum/*` - Protected forum (requires auth)
+- `/organization/*` - Protected organization pages (requires auth)
+- `/api/*` - API endpoints
+
+### API Endpoints
+
+Available API routes:
+
+- `/api/posts` - Get posts collection data
+- Additional API routes can be added in `src/pages/api/`
 
 ### Authentication Flow
 
@@ -149,10 +244,80 @@ TURSO_AUTH_TOKEN=...
 ## Branch Structure
 
 - **Main branch**: `primary` (target for PRs)
-- **Current feature**: `feat/turso-db`
+- **Feature branches**: `feat/[feature-name]` convention
 
-## Key Utilities
+## Key Utilities and Libraries
 
 - `src/utils/site-config.ts`: Site constants, PAGINATION_COUNT=2
 - `src/libs/content.ts`: Slugify, Truncate utilities
 - `src/constants/formErrors.ts`: Form validation messages
+- `src/libs/turso.ts`: Turso database client with retry logic and message operations
+- `src/libs/supabase.ts`: Supabase client initialization
+
+## Project-Specific Patterns
+
+### Turso Database Operations
+
+The project includes comprehensive Turso integration with:
+
+- Connection validation and retry logic (3 attempts with exponential backoff)
+- Message CRUD operations (insertMessage, getMessages, markMessageAsRead, archiveMessage)
+- Transaction support via executeTransaction
+- Proper error handling with descriptive messages
+
+### PWA Configuration
+
+Progressive Web App setup with:
+
+- Service worker auto-update strategy
+- Manifest with Astro Kit branding
+- Workbox integration for offline support
+
+### Integrations
+
+Active integrations in `astro.config.mjs`:
+
+- Clerk authentication
+- React for interactive components
+- MDX with remark-toc and rehype-accessible-emojis
+- Sitemap generation
+- Astro Image Tools
+- PWA support via @vite-pwa/astro
+- Lighthouse performance monitoring
+
+## Dependency Management
+
+```bash
+npm run npm-update    # Update all dependencies
+npm run npm-update-i  # Interactive dependency updates
+```
+
+## Configuration Files
+
+### Key Config Files
+
+- `astro.config.mjs` - Astro configuration with integrations and adapter setup
+- `tsconfig.json` - TypeScript with strict mode and path aliases
+- `vitest.config.ts` - Unit test configuration (excludes e2e)
+- `playwright.config.ts` - E2E test configuration (port 4321)
+- `.env.example` - Environment variable template
+- `package.json` - Dependencies and scripts, includes package exports
+
+### Linting Configuration
+
+- `.eslintrc.json` - ESLint rules for JS/TS/Astro
+- `.stylelintrc.json` - StyleLint for SCSS/CSS
+- `.prettierrc` - Code formatting rules
+- `.markdownlint.json` - Markdown linting rules
+- `.husky/` - Pre-commit hooks configuration
+- `lint-staged` config in package.json
+
+## Known Considerations
+
+- TypeScript strict mode with additional safety rules (noUncheckedIndexedAccess, exactOptionalPropertyTypes)
+- Pre-commit hooks via Husky and lint-staged
+- Playwright requires browser installation: `npx playwright install`
+- Build warnings for getStaticPaths in dynamic pages are expected
+- Dummy Clerk keys allow building but cause runtime auth errors
+- npm install shows warnings but completes successfully
+- E2E tests require dev server running on port 4321
