@@ -321,3 +321,5 @@ npm run npm-update-i  # Interactive dependency updates
 - Dummy Clerk keys allow building but cause runtime auth errors
 - npm install shows warnings but completes successfully
 - E2E tests require dev server running on port 4321
+
+- always store \*.md docs in /docs organize and place in subdirectories if necessary
