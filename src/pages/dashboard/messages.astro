@@ -1,5 +1,6 @@
 ---
 import Auth from '#layouts/Auth.astro'
+import MessageList from '#components/dashboard/MessageList.astro'
 import { getMessages, isTursoConfigured, type MessageRow } from '#libs/turso'
 
 let messages: MessageRow[] = []
@@ -36,19 +37,7 @@ if (isTursoConfigured()) {
         <p>No messages found.</p>
       ) : (
         <>
-          <div class="messages-list">
-            <p>
-              Found {messages.length} message{messages.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-          <ul class="messages-list messages" data-list="unstyled">
-            {messages.map(message => (
-              <li data-message-id={message.id}>
-                <h3>{message.subject}</h3>
-                <p>{message.message}</p>
-              </li>
-            ))}
-          </ul>
+          <MessageList messages={messages} />
         </>
       )
     }
@@ -56,20 +45,14 @@ if (isTursoConfigured()) {
 </Auth>
 
 <style>
-  .messages-list {
+  .message-count {
     max-width: 800px;
     margin: 0 auto;
     padding: 1rem;
     text-align: left;
   }
 
-  .messages-list p {
+  .message-count p {
     text-align: left;
-  }
-
-  .messages {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
   }
 </style>
