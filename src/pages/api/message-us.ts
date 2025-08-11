@@ -4,8 +4,15 @@ import type { APIRoute } from 'astro'
 
 import { insertMessage, isTursoConfigured } from '#libs/turso'
 import type { MessageData } from '#libs/turso'
+import {
+  validateCsrfToken,
+  extractCsrfTokenFromForm,
+  extractCsrfTokenFromJson,
+  parseCsrfTokenFromCookie,
+  CSRF_CONFIG,
+} from '#utils/csrf'
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   // Check if Turso is configured
   if (!isTursoConfigured()) {
     return new Response(
@@ -24,12 +31,15 @@ export const POST: APIRoute = async ({ request }) => {
     // Parse form data
     const contentType = request.headers.get('content-type')
     let data: Record<string, unknown>
+    let csrfToken: string | undefined
 
     if (contentType?.includes('application/json')) {
       data = await request.json()
+      csrfToken = extractCsrfTokenFromJson(data)
     } else if (contentType?.includes('application/x-www-form-urlencoded')) {
       const formData = await request.formData()
       data = Object.fromEntries(formData.entries())
+      csrfToken = extractCsrfTokenFromForm(formData)
     } else {
       return new Response(
         JSON.stringify({
@@ -38,6 +48,54 @@ export const POST: APIRoute = async ({ request }) => {
         }),
         {
           status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    // CSRF Token Validation
+    const csrfCookieValue = cookies.get(CSRF_CONFIG.COOKIE_NAME)?.value
+    const csrfTokenResult = parseCsrfTokenFromCookie(csrfCookieValue)
+
+    if (!csrfTokenResult.ok) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'CSRF validation failed',
+        }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    const expectedToken = csrfTokenResult.value?.token
+    const expiresAt = csrfTokenResult.value?.expiresAt
+
+    const validationResult = validateCsrfToken(csrfToken, expectedToken, expiresAt)
+
+    if (!validationResult.ok) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'CSRF validation failed',
+        }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    if (!validationResult.value.isValid) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `CSRF validation failed: ${validationResult.value.reason || 'Invalid token'}`,
+        }),
+        {
+          status: 403,
           headers: { 'Content-Type': 'application/json' },
         }
       )

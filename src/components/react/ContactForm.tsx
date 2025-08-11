@@ -1,11 +1,16 @@
 import React, { useState } from 'react'
 
 import { FORM_ERROR_MESSAGES } from '#constants/formErrors'
+import { CSRF_CONFIG } from '#utils/csrf'
 import { isValidEmail } from '#utils/email-validation'
 
 import Alert from './Alert'
 
-const ContactForm: React.FC = () => {
+interface ContactFormProps {
+  readonly csrfToken?: string
+}
+
+const ContactForm: React.FC<ContactFormProps> = ({ csrfToken }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -88,6 +93,7 @@ const ContactForm: React.FC = () => {
         aria-label="Contact us"
       >
         <input type="hidden" name="form-name" value="contact-us" />
+        {csrfToken && <input type="hidden" name={CSRF_CONFIG.FIELD_NAME} value={csrfToken} />}
         <div hidden className="hidden">
           <input name="bot-field" />
         </div>
