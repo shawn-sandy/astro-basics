@@ -11,8 +11,8 @@ import {
 } from '#utils/csrf'
 
 describe('generateCsrfToken', () => {
-  it('should generate a valid CSRF token with default options', () => {
-    const result = generateCsrfToken()
+  it('should generate a valid CSRF token with default options', async () => {
+    const result = await generateCsrfToken()
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.value.token).toHaveLength(CSRF_CONFIG.TOKEN_LENGTH * 2) // hex encoding doubles length
