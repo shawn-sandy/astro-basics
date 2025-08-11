@@ -25,5 +25,5 @@ import ContactForm from '#components/react/ContactForm'
     -->
   </section>
 
-  <ContactForm client:load />
+  <ContactForm client:load csrfToken={Astro.locals.csrfToken} />
 </Layout>
