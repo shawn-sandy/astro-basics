@@ -23,6 +23,14 @@ This project demonstrates Astro's capabilities for building fast, content-focuse
 - Protected routes via middleware
 - Environment-based configuration
 
+### Database Integration
+
+- **Turso (LibSQL)** edge database for message storage
+- Automatic retry logic with exponential backoff
+- Transaction support for complex operations
+- Message CRUD operations with type safety
+- Support for both Turso and Supabase backends
+
 ### Development Tools
 
 - Comprehensive testing setup (Vitest + Playwright)
@@ -37,8 +45,12 @@ This project demonstrates Astro's capabilities for building fast, content-focuse
 
 1. **Install dependencies**: `npm install`
 2. **Setup pre-commit hooks**: `npm run prepare`
-3. **Copy environment variables**: Copy `.env.example` to `.env` and configure Clerk keys
-4. **Start development**: `npm run start` (dev server + SCSS watcher)
+3. **Copy environment variables**: Copy `.env.example` to `.env` and configure:
+   - Clerk authentication keys (required)
+   - Turso database credentials (optional, for message system)
+   - Supabase credentials (optional, alternative to Turso)
+4. **Setup database** (if using message system): `npm run db:setup`
+5. **Start development**: `npm run start` (dev server + SCSS watcher)
 
 ### Development Commands
 
@@ -61,6 +73,12 @@ npm run lint         # Run ESLint with auto-fix
 npm run format       # Format code with Prettier
 npm run type-check   # Run TypeScript type checking
 npm run fix:all      # Fix all auto-fixable issues
+
+# Database Management
+npm run db:setup     # Initialize Turso database schema
+npm run db:reset     # Reset database (drop and recreate)
+npm run db:check     # Check database connection
+npm run db:seed:messages  # Seed sample messages
 ```
 
 ### Component Usage
@@ -96,6 +114,35 @@ Three main collections defined in `src/content/config.ts`:
 - SCSS-based styling in `src/styles/`
 - Component-specific styles in `src/styles/components/`
 - Uses @fpkit/acss for additional CSS utilities
+
+### Database Configuration
+
+The project supports two database backends:
+
+#### Turso (LibSQL)
+
+Edge-first SQLite database, ideal for low-latency global applications:
+
+```env
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your-auth-token
+```
+
+Features:
+
+- Automatic retry logic (3 attempts with exponential backoff)
+- Connection pooling and error recovery
+- Type-safe message operations
+- Transaction support
+
+#### Supabase (Alternative)
+
+PostgreSQL database with real-time capabilities:
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+```
 
 ### Deployment
 
