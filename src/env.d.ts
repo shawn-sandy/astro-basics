@@ -12,6 +12,7 @@ declare namespace App {
       redirectToSignIn(): Response
     }
     currentUser(): Promise<UserResource | null>
+    csrfToken?: string
   }
 }
 

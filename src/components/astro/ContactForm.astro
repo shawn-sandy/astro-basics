@@ -1,5 +1,9 @@
 ---
 import { CONTACT_INFO } from '#utils/site-config.js'
+import { CSRF_CONFIG } from '#utils/csrf.js'
+
+// Get CSRF token from locals (set by middleware)
+const csrfToken = Astro.locals.csrfToken
 ---
 
 <form
@@ -10,6 +14,8 @@ import { CONTACT_INFO } from '#utils/site-config.js'
   name="contact-us"
   data-netlify-honeypot="bot-field"
 >
+  {csrfToken && <input type="hidden" name={CSRF_CONFIG.FIELD_NAME} value={csrfToken} />}
+  
   {
     CONTACT_INFO.isNetlify && (
       <p class="hidden">

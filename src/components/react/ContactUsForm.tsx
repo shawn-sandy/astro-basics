@@ -1,8 +1,8 @@
 import React, { useState, type ChangeEvent } from 'react'
 import type { FormEvent } from 'react'
 
-import { CONTACT_INFO } from '#utils/site-config.js'
 import { isValidEmail } from '#utils/email-validation'
+import { CONTACT_INFO } from '#utils/site-config.js'
 
 import ContactFormView from './view/ContactFormView'
 
