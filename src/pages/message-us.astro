@@ -44,8 +44,8 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
     display: none;
   }
 
-  input:invalid + .error-message,
-  textarea:invalid + .error-message {
+  input:user-invalid + .error-message,
+  textarea:user-invalid + .error-message {
     display: block;
   }
 

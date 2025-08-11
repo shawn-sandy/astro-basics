@@ -21,7 +21,7 @@ const { messages, classes } = Astro.props
         <h3>{message.subject}</h3>
         <p>
           <strong>From:</strong> {message.name}{' '}
-          <a href={`mailto:${message.email}`}>{message.email}</a>
+          <a href={`mailto:${encodeURIComponent(message.email)}`}>{message.email}</a>
           <br />
           <strong>Date:</strong> {new Date(message.created_at).toLocaleString()}
         </p>
