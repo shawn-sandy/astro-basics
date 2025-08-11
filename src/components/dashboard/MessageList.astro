@@ -9,7 +9,7 @@ export type Props = {
 const { messages, classes } = Astro.props
 ---
 
-<ul class="messages-list messages" data-list="unstyled">
+<ul class=`messages-list messages ${classes}` data-list="unstyled">
   <li>
     <p class="message-list">
       Found {messages.length} message{messages.length !== 1 ? 's' : ''}
