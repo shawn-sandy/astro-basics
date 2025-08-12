@@ -52,40 +52,4 @@
   }
 </style>
 
-<script>
-  const offlineIndicator = document.getElementById('offline-indicator')
-  const offlineText = document.querySelector('.offline-text')
-
-  function updateConnectionStatus() {
-    if (!offlineIndicator || !offlineText) return
-
-    if (navigator.onLine) {
-      // Show brief online message
-      offlineIndicator.classList.add('online')
-      offlineIndicator.classList.remove('show')
-      offlineText.textContent = 'Back online!'
-
-      // Hide after 2 seconds
-      setTimeout(() => {
-        offlineIndicator.style.display = 'none'
-        offlineIndicator.classList.remove('online')
-      }, 2000)
-    } else {
-      // Show offline message
-      offlineIndicator.classList.remove('online')
-      offlineIndicator.style.display = 'block'
-      offlineText.textContent = "You're offline"
-
-      setTimeout(() => {
-        offlineIndicator.classList.add('show')
-      }, 100)
-    }
-  }
-
-  // Listen for online/offline events
-  window.addEventListener('online', updateConnectionStatus)
-  window.addEventListener('offline', updateConnectionStatus)
-
-  // Check initial status
-  updateConnectionStatus()
-</script>
+<script type="module" src="/scripts/init.js"></script>
