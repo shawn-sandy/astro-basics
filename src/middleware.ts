@@ -12,6 +12,11 @@ import {
   createCsrfCookieOptions,
   CSRF_CONFIG,
 } from '#utils/csrf'
+import {
+  messageRateLimiter,
+  getClientIP,
+  createRateLimitResponse,
+} from '#utils/rate-limiter'
 
 // Validate required environment variables - but allow dummy values in development
 const hasValidClerkKeys = 
@@ -77,6 +82,25 @@ const csrfMiddleware: MiddlewareHandler = async (context, next) => {
 }
 
 /**
+ * Rate limiting middleware for API endpoints
+ */
+const rateLimitMiddleware: MiddlewareHandler = async (context, next) => {
+  const { url, request } = context
+  
+  // Only apply rate limiting to the message-us POST endpoint
+  if (request.method === 'POST' && url.pathname === '/api/message-us') {
+    const clientIP = getClientIP(request)
+    const rateLimitResult = messageRateLimiter.checkLimit(clientIP)
+    
+    if (!rateLimitResult.allowed) {
+      return createRateLimitResponse(rateLimitResult)
+    }
+  }
+  
+  return next()
+}
+
+/**
  * Clerk authentication middleware
  */
 const authMiddleware = clerkMiddleware((auth, context, next) => {
@@ -89,7 +113,7 @@ const authMiddleware = clerkMiddleware((auth, context, next) => {
   return next()
 })
 
-// Export middleware - use auth only if we have valid keys
+// Export middleware - include rate limiting before auth/CSRF
 export const onRequest = hasValidClerkKeys 
-  ? sequence(csrfMiddleware, authMiddleware)
-  : csrfMiddleware
+  ? sequence(rateLimitMiddleware, csrfMiddleware, authMiddleware)
+  : sequence(rateLimitMiddleware, csrfMiddleware)

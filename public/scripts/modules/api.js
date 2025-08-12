@@ -7,7 +7,7 @@
  * Makes a secure API request with proper error handling
  * @param {string} url - The API endpoint
  * @param {RequestInit} options - Fetch options
- * @returns {Promise<{data?: any, error?: string, success: boolean}>}
+ * @returns {Promise<{data?: any, error?: string, success: boolean, rateLimited?: boolean, retryAfter?: number}>}
  */
 export async function apiRequest(url, options = {}) {
   try {
@@ -23,6 +23,15 @@ export async function apiRequest(url, options = {}) {
 
     if (response.ok) {
       return { data, success: true };
+    } else if (response.status === 429) {
+      // Rate limited - extract retry information
+      const retryAfter = data.retryAfter || parseInt(response.headers.get('Retry-After') || '0', 10);
+      return { 
+        error: data.error || 'Too many requests. Please wait before trying again.', 
+        success: false,
+        rateLimited: true,
+        retryAfter
+      };
     } else {
       return { 
         error: data.error || 'Request failed', 
