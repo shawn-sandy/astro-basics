@@ -159,8 +159,8 @@ export function sanitizeMessageData(data: {
   }
 
   // Detect suspicious content
-  Object.values(sanitized).forEach(value => {
-    if (value && detectSuspiciousContent(value)) {
+  Object.values(sanitized).filter(Boolean).forEach(value => {
+    if (detectSuspiciousContent(value)) {
       throw new Error('Suspicious content detected')
     }
   })
