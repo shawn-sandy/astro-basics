@@ -28,7 +28,7 @@ import Base from '#layouts/Base.astro'
 
       <div style="margin-bottom: 2rem;">
         <button
-          onclick="window.location.reload()"
+          id="refresh-button"
           style="background: #1e293b; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; margin-right: 1rem;"
         >
           Try Again
@@ -52,23 +52,9 @@ import Base from '#layouts/Base.astro'
     </div>
   </section>
 
-  <script>
-    // Auto-reload when connection is restored
-    window.addEventListener('online', () => {
-      window.location.reload()
-    })
-
-    // Check connection status
-    function updateConnectionStatus() {
-      if (navigator.onLine) {
-        document.body.style.borderTop = '3px solid #10b981'
-      } else {
-        document.body.style.borderTop = '3px solid #ef4444'
-      }
-    }
-
-    window.addEventListener('online', updateConnectionStatus)
-    window.addEventListener('offline', updateConnectionStatus)
-    updateConnectionStatus()
+  <script type="module" src="/scripts/init.js"></script>
+  <script type="module">
+    import { handleRefresh } from '/scripts/features/connection-status.js';
+    document.getElementById('refresh-button')?.addEventListener('click', handleRefresh);
   </script>
 </Base>
