@@ -11,6 +11,7 @@ import {
   parseCsrfTokenFromCookie,
   CSRF_CONFIG,
 } from '#utils/csrf'
+import { sanitizeMessageData } from '#utils/input-sanitization'
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   // Check if Turso is configured
@@ -101,67 +102,59 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       )
     }
 
-    // Validate required fields
-    const { name, email, subject, message } = data
+    // Sanitize and validate message data
+    // This removes dangerous characters, normalizes input, and detects suspicious content
+    let sanitizedData
+    try {
+      sanitizedData = sanitizeMessageData(data)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Invalid input data'
 
-    if (!name || !email || !message) {
+      // Handle different types of validation errors
+      if (errorMessage.includes('Suspicious content detected')) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Message contains prohibited content',
+          }),
+          {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        )
+      }
+
+      if (errorMessage.includes('Invalid input types')) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Name, email, and message are required fields',
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        )
+      }
+
+      if (errorMessage.includes('Required fields cannot be empty')) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Name, email, and message cannot be empty',
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        )
+      }
+
+      // Generic validation error
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Name, email, and message are required fields',
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
-    }
-
-    // Validate field types and lengths
-    if (typeof name !== 'string' || name.length > 255) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Name must be a string with maximum 255 characters',
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
-    }
-
-    if (typeof email !== 'string' || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Please provide a valid email address',
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
-    }
-
-    if (subject && (typeof subject !== 'string' || subject.length > 500)) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Subject must be a string with maximum 500 characters',
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
-    }
-
-    if (typeof message !== 'string' || message.length > 5000) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Message must be a string with maximum 5000 characters',
+          error: 'Invalid input data. Please check your submission.',
         }),
         {
           status: 400,
@@ -177,12 +170,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       'unknown'
     const user_agent = request.headers.get('user-agent') || undefined
 
-    // Prepare message data
+    // Prepare message data using sanitized inputs
     const messageData: MessageData = {
-      name: String(name).trim(),
-      email: String(email).trim().toLowerCase(),
-      subject: subject ? String(subject).trim() : undefined,
-      message: String(message).trim(),
+      name: sanitizedData.name,
+      email: sanitizedData.email,
+      subject: sanitizedData.subject,
+      message: sanitizedData.message,
       ip_address: isIP(ip_address) && ip_address.length <= 45 ? ip_address : 'unknown', // Validate IP address
       user_agent: user_agent?.substring(0, 500), // Limit to schema constraint
     }

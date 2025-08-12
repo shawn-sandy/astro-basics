@@ -164,8 +164,9 @@ Content-Security-Policy:
 - [x] Text-based sanitization for name, email, subject, message fields
 - [x] Suspicious content detection (script injection, SQL injection patterns)
 - [x] Type validation and length enforcement
-- [ ] Integration with message-us API endpoint
-- [ ] Unit tests for sanitization logic
+- [x] Integration with message-us API endpoint (`/src/pages/api/message-us.ts`)
+- [x] Comprehensive unit tests for sanitization logic (`/tests/input-sanitization.test.ts`)
+- [x] API integration tests (`/tests/api/message-us.test.ts`)
 
 **Rationale:** DOMPurify not needed since:
 
@@ -236,11 +237,16 @@ Content-Security-Policy:
 - URL validation for XSS prevention (`/src/utils/security.ts`)
 - Text-based input sanitization (`/src/utils/input-sanitization.ts`)
 
+**Input Sanitization** ✅
+
+- Custom sanitization utilities with comprehensive validation
+- API integration with error handling for malicious content
+- Comprehensive test coverage (unit and integration tests)
+
 ### ⏳ Pending
 
 1. **Rate Limiting** - Spam protection for `/api/message-us`
-2. **Input Sanitization** - API integration and testing
-3. **CSP Headers** - Two-phase implementation:
+2. **CSP Headers** - Two-phase implementation:
    - Phase 1: Script refactoring ([Issue #222](https://github.com/shawn-sandy/astro-basics/issues/222))
    - Phase 2: Strict CSP implementation
 
@@ -254,12 +260,12 @@ Content-Security-Policy:
 
 - Phase 1: Refactor inline scripts to external files (2-3 days)
 - Phase 2: Implement strict CSP headers (1 day)
-- Add server-side input sanitization
 
 ### Completed:
 
 - ✅ CSRF protection (2025-08-12)
 - ✅ XSS protection (Skipped - Astro handles automatically)
+- ✅ Input sanitization (2025-08-12)
 
 ## Risk Assessment
 
@@ -293,8 +299,8 @@ Content-Security-Policy:
 
 - [x] XSS payloads tested (Astro auto-escaping verified)
 - [x] CSRF protection validated (2025-08-12)
+- [x] Input sanitization confirmed (2025-08-12)
 - [ ] Rate limiting verified
-- [ ] Input sanitization confirmed
 - [ ] CSP headers validated
 
 ### Reference Documentation
