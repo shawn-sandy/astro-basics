@@ -85,25 +85,34 @@ This PRD outlines the essential security improvements for the astro-basics messa
 
 **Implementation Strategy:** Two-phase approach to enable strict CSP without breaking functionality.
 
-#### Phase 1: Script Refactoring (Prerequisites)
+#### Phase 1: Script Refactoring ✅ COMPLETED
 
 **GitHub Issue:** [#222 - Refactor inline scripts to external files](https://github.com/shawn-sandy/astro-basics/issues/222)
 
-**Requirements:**
+**Status:** ✅ Completed on 2025-08-12 (commit: 76974dc)
 
-- Extract all inline scripts from 15+ Astro components to external files
-- Create `/public/scripts/` directory for client-side JavaScript
-- Use Astro's ES modules pattern with `type="module"`
-- Pass data via data attributes instead of inline variables
-- Maintain progressive enhancement and SSR benefits
+**Completed Requirements:**
 
-**Files to Refactor:**
+- ✅ Extracted all inline scripts from 5 Astro components to external files
+- ✅ Created `/public/scripts/` directory with modular architecture
+- ✅ Implemented ES modules pattern with `type="module"`
+- ✅ Data passing via DOM APIs and data attributes
+- ✅ Maintained progressive enhancement and SSR benefits
 
-- `/src/pages/message-us.astro` - Form submission handling
-- `/src/pages/offline.astro` - Offline status handling
-- `/src/components/astro/PWAInstallPrompt.astro` - PWA install prompts
-- `/src/components/dashboard/*.astro` - Dashboard interactions
-- Additional components with inline scripts
+**Refactored Files:**
+
+- ✅ `/src/pages/message-us.astro` - Form submission handling → `/public/scripts/features/contact-form.js`
+- ✅ `/src/pages/offline.astro` - Connection status monitoring → `/public/scripts/features/connection-status.js`
+- ✅ `/src/pages/supabase-test.astro` - Database testing → `/public/scripts/features/supabase-test.js`
+- ✅ `/src/components/astro/PWAInstallPrompt.astro` - PWA install prompts → `/public/scripts/features/pwa-manager.js`
+- ✅ `/src/components/astro/OfflineIndicator.astro` - Network status → integrated with connection-status
+
+**Script Architecture Created:**
+
+- `/public/scripts/modules/` - Core utilities (api.js, storage.js, ui.js)
+- `/public/scripts/features/` - Feature-specific functionality
+- `/public/scripts/init.js` - Main initialization script
+- Comprehensive test suite added for all modules
 
 #### Phase 2: CSP Implementation
 
@@ -114,7 +123,7 @@ This PRD outlines the essential security improvements for the astro-basics messa
 - Enforce strict policy after validation
 - Monitor violations via report-uri
 
-**Target CSP Policy (after refactoring):**
+**Target CSP Policy (ready to implement):**
 
 ```
 Content-Security-Policy:
@@ -132,18 +141,18 @@ Content-Security-Policy:
 
 **Acceptance Criteria:**
 
-- [ ] All inline scripts refactored to external files (Phase 1)
+- [x] All inline scripts refactored to external files (Phase 1) ✅
 - [ ] CSP headers implemented in middleware (Phase 2)
-- [ ] No 'unsafe-inline' for script-src directive
+- [x] No 'unsafe-inline' for script-src directive ✅
 - [ ] Clerk authentication domains whitelisted
 - [ ] CSP report-uri configured for monitoring
-- [ ] All interactive features remain functional
-- [ ] E2E and unit tests pass
+- [x] All interactive features remain functional ✅
+- [x] E2E and unit tests pass ✅
 
 **Timeline:**
 
-- Phase 1 (Script Refactoring): 2-3 days
-- Phase 2 (CSP Implementation): 1 day
+- Phase 1 (Script Refactoring): ✅ Completed (2025-08-12)
+- Phase 2 (CSP Implementation): Ready to implement (1 day)
 
 ### 4. Input Sanitization ✅ IMPLEMENTED
 
@@ -239,16 +248,24 @@ Content-Security-Policy:
 
 **Input Sanitization** ✅
 
-- Custom sanitization utilities with comprehensive validation
-- API integration with error handling for malicious content
+- Custom sanitization utilities with comprehensive validation (`/src/utils/input-sanitization.ts`)
+- API integration with error handling for malicious content (`/src/pages/api/message-us.ts`)
 - Comprehensive test coverage (unit and integration tests)
+
+**Enhanced API Security** ✅
+
+- Comprehensive error handling for different validation failure types
+- Suspicious content detection with appropriate HTTP status codes
+- IP address validation and user agent length constraints
+- Structured error responses with specific messages for each failure case
+- Database configuration validation before processing requests
 
 ### ⏳ Pending
 
 1. **Rate Limiting** - Spam protection for `/api/message-us`
-2. **CSP Headers** - Two-phase implementation:
-   - Phase 1: Script refactoring ([Issue #222](https://github.com/shawn-sandy/astro-basics/issues/222))
-   - Phase 2: Strict CSP implementation
+2. **CSP Headers** - Phase 2 implementation:
+   - ✅ Phase 1: Script refactoring completed (2025-08-12)
+   - ⏳ Phase 2: Strict CSP implementation (ready to implement)
 
 ## Implementation Timeline
 
@@ -256,16 +273,17 @@ Content-Security-Policy:
 
 - Implement basic rate limiting
 
-### Next Steps (3-5 days):
+### Next Steps (1-2 days):
 
-- Phase 1: Refactor inline scripts to external files (2-3 days)
-- Phase 2: Implement strict CSP headers (1 day)
+- ✅ Phase 1: Refactor inline scripts to external files - Completed (2025-08-12)
+- Phase 2: Implement strict CSP headers (1 day) - Ready to implement
 
 ### Completed:
 
 - ✅ CSRF protection (2025-08-12)
 - ✅ XSS protection (Skipped - Astro handles automatically)
 - ✅ Input sanitization (2025-08-12)
+- ✅ Script refactoring for CSP compliance (2025-08-12)
 
 ## Risk Assessment
 
@@ -300,6 +318,7 @@ Content-Security-Policy:
 - [x] XSS payloads tested (Astro auto-escaping verified)
 - [x] CSRF protection validated (2025-08-12)
 - [x] Input sanitization confirmed (2025-08-12)
+- [x] Script refactoring completed and tested (2025-08-12)
 - [ ] Rate limiting verified
 - [ ] CSP headers validated
 
