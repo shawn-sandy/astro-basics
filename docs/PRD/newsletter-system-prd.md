@@ -140,6 +140,7 @@ CREATE INDEX idx_event_type ON newsletter_events(event_type);
 
 - **Purpose**: Handle new subscriptions
 - **Request Body**:
+
   ```json
   {
     "email": "user@example.com",
@@ -149,13 +150,16 @@ CREATE INDEX idx_event_type ON newsletter_events(event_type);
     "tags": ["interested-in-astro"]
   }
   ```
+
 - **Response**:
+
   ```json
   {
     "success": true,
     "message": "Please check your email to confirm subscription"
   }
   ```
+
 - **Security**: Rate limiting, CSRF protection, email validation
 
 #### GET /api/newsletter/confirm
@@ -184,6 +188,7 @@ CREATE INDEX idx_event_type ON newsletter_events(event_type);
 
 - **Purpose**: Create new campaign
 - **Request Body**:
+
   ```json
   {
     "name": "January Newsletter",
