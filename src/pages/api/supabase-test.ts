@@ -1,9 +1,42 @@
 import type { APIRoute } from 'astro'
 
-import { supabase } from '#libs/supabase'
+import { getSupabase, isSupabaseConfigured } from '#libs/supabase'
 
 export const GET: APIRoute = async () => {
   try {
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured()) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Supabase not configured',
+          error: 'Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables',
+        }),
+        {
+          status: 503,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+    }
+
+    const supabase = getSupabase()
+    if (!supabase) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Failed to initialize Supabase client',
+        }),
+        {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+    }
+
     // Test basic connection by checking auth
     const { data, error } = await supabase.auth.getSession()
 
@@ -58,6 +91,39 @@ export const GET: APIRoute = async () => {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured()) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Supabase not configured',
+          error: 'Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables',
+        }),
+        {
+          status: 503,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+    }
+
+    const supabase = getSupabase()
+    if (!supabase) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Failed to initialize Supabase client',
+        }),
+        {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+    }
+
     const body = await request.json()
     const { action } = body
 

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 
-import { createServerSupabaseClient } from '#libs/supabase-native'
+import { createServerSupabaseClient, isSupabaseConfigured } from '#libs/supabase-native'
 
 export const GET: APIRoute = async ({ locals }) => {
   console.log('🔍 Profile API - userId:', locals.userId)
@@ -23,8 +23,34 @@ export const GET: APIRoute = async ({ locals }) => {
     )
   }
 
+  // Check if Supabase is configured
+  if (!isSupabaseConfigured()) {
+    return new Response(
+      JSON.stringify({
+        error: 'Supabase not configured',
+        message: 'User profile feature requires Supabase configuration',
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
+  }
+
   try {
     const supabase = createServerSupabaseClient(locals.clerkToken)
+
+    if (!supabase) {
+      return new Response(
+        JSON.stringify({
+          error: 'Failed to initialize Supabase client',
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    }
 
     // Fetch user profile with preferences using native integration
     const { data, error } = await supabase
@@ -88,9 +114,35 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     })
   }
 
+  // Check if Supabase is configured
+  if (!isSupabaseConfigured()) {
+    return new Response(
+      JSON.stringify({
+        error: 'Supabase not configured',
+        message: 'User profile feature requires Supabase configuration',
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
+  }
+
   try {
     const body = await request.json()
     const supabase = createServerSupabaseClient(locals.clerkToken)
+
+    if (!supabase) {
+      return new Response(
+        JSON.stringify({
+          error: 'Failed to initialize Supabase client',
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    }
 
     // Prepare update data (only allow certain fields to be updated)
     const allowedFields = ['username', 'full_name', 'avatar_url', 'metadata']

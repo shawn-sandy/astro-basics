@@ -1,15 +1,34 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.SUPABASE_URL
 const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase environment variables. Please check SUPABASE_URL and SUPABASE_ANON_KEY in your .env file.'
-  )
+// Create a null-safe Supabase client
+let _supabaseClient: SupabaseClient | null = null
+
+// Check if Supabase is configured
+export function isSupabaseConfigured(): boolean {
+  return !!(supabaseUrl && supabaseAnonKey)
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Get Supabase client (lazy initialization)
+export function getSupabase(): SupabaseClient | null {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn(
+      'Supabase not configured. Please check SUPABASE_URL and SUPABASE_ANON_KEY in your .env file.'
+    )
+    return null
+  }
+
+  if (!_supabaseClient) {
+    _supabaseClient = createClient(supabaseUrl, supabaseAnonKey)
+  }
+
+  return _supabaseClient
+}
+
+// Export for backward compatibility - will be null if not configured
+export const supabase = getSupabase()
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type Database = {}
