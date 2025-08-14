@@ -1,4 +1,5 @@
-import { useAuth } from '@clerk/clerk-react'
+import { $authStore } from '@clerk/astro/client'
+import { useStore } from '@nanostores/react'
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { useEffect, useState, useCallback, useRef } from 'react'
@@ -6,7 +7,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import type { Database } from '#libs/database.types'
 
 export function useSupabase() {
-  const { getToken, isLoaded, isSignedIn } = useAuth()
+  const { getToken, isLoaded, userId } = useStore($authStore)
   const [client, setClient] = useState<SupabaseClient<Database> | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -27,7 +28,7 @@ export function useSupabase() {
       let token: string | null = null
 
       // Only try to get token if user is signed in
-      if (isSignedIn) {
+      if (userId) {
         try {
           token = await getToken({ template: 'supabase' })
           tokenRef.current = token
@@ -59,18 +60,18 @@ export function useSupabase() {
     } finally {
       setLoading(false)
     }
-  }, [getToken, isSignedIn])
+  }, [getToken, userId])
 
   // Initialize client when auth state changes
   useEffect(() => {
     if (isLoaded) {
       initClient()
     }
-  }, [isLoaded, isSignedIn, initClient])
+  }, [isLoaded, userId, initClient])
 
   // Refresh token periodically for long-running sessions
   useEffect(() => {
-    if (!isSignedIn || !client) return
+    if (!userId || !client) return
 
     const refreshInterval = window.setInterval(
       async () => {
@@ -90,13 +91,13 @@ export function useSupabase() {
     ) // Refresh every 5 minutes
 
     return () => window.clearInterval(refreshInterval)
-  }, [isSignedIn, client, getToken, initClient])
+  }, [userId, client, getToken, initClient])
 
   return {
     client,
     loading: !isLoaded || loading,
     error,
-    isAuthenticated: isSignedIn && !!tokenRef.current,
+    isAuthenticated: !!userId && !!tokenRef.current,
     refreshClient: initClient,
   }
 }

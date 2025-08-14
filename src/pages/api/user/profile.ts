@@ -1,32 +1,41 @@
 import type { APIRoute } from 'astro'
 
-import { getAuthenticatedSupabase } from '#libs/supabase-server'
+import { createServerSupabaseClient } from '#libs/supabase-native'
 
-export const GET: APIRoute = async context => {
-  const auth = context.locals.auth()
+export const GET: APIRoute = async ({ locals }) => {
+  console.log('🔍 Profile API - userId:', locals.userId)
+  console.log('🔍 Profile API - clerkToken:', locals.clerkToken ? 'present' : 'missing')
 
-  if (!auth.userId) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    })
+  if (!locals.userId || !locals.clerkToken) {
+    console.log('❌ Profile API - Unauthorized: userId or token missing')
+    return new Response(
+      JSON.stringify({
+        error: 'Unauthorized',
+        debug: {
+          hasUserId: !!locals.userId,
+          hasToken: !!locals.clerkToken,
+        },
+      }),
+      {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
   }
 
   try {
-    const supabase = await getAuthenticatedSupabase(context)
+    const supabase = createServerSupabaseClient(locals.clerkToken)
 
-    if (!supabase) {
-      return new Response(JSON.stringify({ error: 'Database not configured' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
-
-    // Fetch user profile from Supabase
+    // Fetch user profile with preferences using native integration
     const { data, error } = await supabase
       .from('users')
-      .select('*')
-      .eq('clerk_id', auth.userId)
+      .select(
+        `
+        *,
+        user_preferences (*)
+      `
+      )
+      .eq('clerk_id', locals.userId)
       .single()
 
     if (error) {
@@ -71,10 +80,8 @@ export const GET: APIRoute = async context => {
   }
 }
 
-export const PATCH: APIRoute = async context => {
-  const auth = context.locals.auth()
-
-  if (!auth.userId) {
+export const PATCH: APIRoute = async ({ request, locals }) => {
+  if (!locals.userId || !locals.clerkToken) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
@@ -82,15 +89,8 @@ export const PATCH: APIRoute = async context => {
   }
 
   try {
-    const body = await context.request.json()
-    const supabase = await getAuthenticatedSupabase(context)
-
-    if (!supabase) {
-      return new Response(JSON.stringify({ error: 'Database not configured' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
+    const body = await request.json()
+    const supabase = createServerSupabaseClient(locals.clerkToken)
 
     // Prepare update data (only allow certain fields to be updated)
     const allowedFields = ['username', 'full_name', 'avatar_url', 'metadata']
@@ -119,7 +119,7 @@ export const PATCH: APIRoute = async context => {
     const { data, error } = await supabase
       .from('users')
       .update(updateData)
-      .eq('clerk_id', auth.userId)
+      .eq('clerk_id', locals.userId)
       .select()
       .single()
 

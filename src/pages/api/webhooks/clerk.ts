@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro'
 import { Webhook } from 'svix'
 
-import { createServerSupabaseClient } from '#libs/supabase-server'
+import { supabaseServiceRole } from '#libs/supabase-native'
 
 const webhookSecret = import.meta.env.CLERK_WEBHOOK_SECRET
 
@@ -53,13 +53,8 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response('Invalid signature', { status: 400 })
   }
 
-  // Get Supabase client with service role
-  const supabase = createServerSupabaseClient()
-
-  if (!supabase) {
-    console.error('Supabase client not configured')
-    return new Response('Database not configured', { status: 500 })
-  }
+  // Use service role client for webhook operations
+  const supabase = supabaseServiceRole
 
   // Handle different event types
   switch (evt.type) {
