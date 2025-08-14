@@ -1,4 +1,5 @@
-import { useUser } from '@clerk/clerk-react'
+import { $authStore } from '@clerk/astro/client'
+import { useStore } from '@nanostores/react'
 import { useEffect, useState } from 'react'
 
 import { useSupabase } from '#hooks/useSupabase'
@@ -7,14 +8,14 @@ import type { Database } from '#libs/database.types'
 type Message = Database['public']['Tables']['messages']['Row']
 
 export function MessagesList() {
-  const { user, isLoaded } = useUser()
+  const { userId, isLoaded } = useStore($authStore)
   const { client, loading: clientLoading, isAuthenticated } = useSupabase()
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!client || !user || !isAuthenticated) {
+    if (!client || !userId || !isAuthenticated) {
       setLoading(false)
       return
     }
@@ -31,7 +32,7 @@ export function MessagesList() {
           .from('messages')
           .select('*')
           .or(
-            `clerk_user_id.eq.${user.id},user_id.in.(select id from users where clerk_id='${user.id}')`
+            `clerk_user_id.eq.${userId},user_id.in.(select id from users where clerk_id='${userId}')`
           )
           .order('created_at', { ascending: false })
           .limit(50)
@@ -50,7 +51,7 @@ export function MessagesList() {
               event: '*',
               schema: 'public',
               table: 'messages',
-              filter: `clerk_user_id=eq.${user.id}`,
+              filter: `clerk_user_id=eq.${userId}`,
             },
             payload => {
               if (payload.eventType === 'INSERT') {
@@ -80,7 +81,7 @@ export function MessagesList() {
         subscription.unsubscribe()
       }
     }
-  }, [client, user, isAuthenticated])
+  }, [client, userId, isAuthenticated])
 
   const markAsRead = async (messageId: number) => {
     if (!client) return
@@ -90,7 +91,7 @@ export function MessagesList() {
         .from('messages')
         .update({ is_read: true })
         .eq('id', messageId)
-        .eq('clerk_user_id', user?.id)
+        .eq('clerk_user_id', userId)
 
       if (error) throw error
     } catch (err) {
@@ -106,7 +107,7 @@ export function MessagesList() {
         .from('messages')
         .update({ is_archived: true })
         .eq('id', messageId)
-        .eq('clerk_user_id', user?.id)
+        .eq('clerk_user_id', userId)
 
       if (error) throw error
     } catch (err) {
@@ -122,7 +123,7 @@ export function MessagesList() {
         .from('messages')
         .delete()
         .eq('id', messageId)
-        .eq('clerk_user_id', user?.id)
+        .eq('clerk_user_id', userId)
 
       if (error) throw error
     } catch (err) {
@@ -138,7 +139,7 @@ export function MessagesList() {
     )
   }
 
-  if (!user || !isAuthenticated) {
+  if (!userId || !isAuthenticated) {
     return (
       <div className="messages-auth-required">
         <p>Please sign in to view your messages</p>

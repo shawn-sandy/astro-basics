@@ -1,5 +1,6 @@
 ---
-import Layout from '#layouts/BaseLayout.astro'
+import Auth from '#layouts/Auth.astro'
+import Base from '#layouts/Base.astro'
 import {
   SignedIn,
   SignedOut,
@@ -15,7 +16,7 @@ if (!userId) {
 }
 ---
 
-<Layout title="Organization - Astro Basics">
+<Auth title="Organization - Astro Basics">
   <main class="container organization-page">
     <SignedIn client:load>
       <div class="org-header">
@@ -74,7 +75,7 @@ if (!userId) {
       </div>
     </SignedOut>
   </main>
-</Layout>
+</Auth>
 
 <style>
   .organization-page {
