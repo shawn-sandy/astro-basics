@@ -1,8 +1,10 @@
 # Clerk + Supabase Integration Setup Instructions
 
-## Prerequisites Checklist
+## Overview
 
-Before starting the integration:
+This guide establishes JWT-based authentication between Clerk and Supabase, enabling secure user authentication and basic user information tracking (name, email, last login timestamp).
+
+## Prerequisites
 
 - [ ] Active Clerk application with valid API keys
 - [ ] Active Supabase project with database access
@@ -94,160 +96,74 @@ Click **Save** to apply the configuration.
 
 4. Click **Save Template**
 
-### 2.2 Configure Webhook Endpoint (Optional but Recommended)
+### 2.2 Configure Webhook for User Sync
 
 1. Go to **Webhooks** → **Add Endpoint**
 2. Set endpoint URL: `https://your-domain.com/api/webhooks/clerk`
 3. Select events:
-   - `user.created`
-   - `user.updated`
-   - `user.deleted`
+   - `user.created` - Create user record
+   - `user.updated` - Update name/email
+   - `session.created` - Track last login
 4. Copy the **Signing Secret** for your `.env` file
 
-## Step 3: Environment Variables Setup
+## Step 3: Environment Variables
 
-Update your `.env` file with the following variables:
+Add these variables to your `.env` file:
 
 ```env
-# Clerk Configuration (existing)
+# Clerk Configuration
 PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your-key
 CLERK_SECRET_KEY=sk_test_your-key
-
-# New: Clerk Webhook Secret (from Step 2.2)
 CLERK_WEBHOOK_SECRET=whsec_your-webhook-secret
 
-# Supabase Configuration (enhanced)
+# Supabase Configuration
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
-# Public keys for client-side usage
-PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-### Where to Find These Keys:
+**Finding Your Keys**:
 
-**Supabase Keys**:
+- **Clerk**: Dashboard → API Keys
+- **Supabase**: Settings → API (use `anon` key for client, `service_role` for server)
 
-1. Go to Supabase Dashboard → **Settings** → **API**
-2. Find:
-   - `URL`: Your project URL
-   - `anon public`: Your anonymous key (safe for client-side)
-   - `service_role`: Your service key (server-side only, keep secret!)
+## Step 4: Database Schema
 
-## Step 4: Database Schema Setup
-
-### 4.1 Run Migration Script
-
-Create and run the following migration in Supabase SQL Editor:
+Run this migration in Supabase SQL Editor:
 
 ```sql
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- Create users table
+-- Create minimal users table for login tracking
 CREATE TABLE IF NOT EXISTS public.users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clerk_id TEXT UNIQUE NOT NULL,
-  email TEXT UNIQUE NOT NULL,
-  username TEXT UNIQUE,
-  full_name TEXT,
-  avatar_url TEXT,
-  metadata JSONB DEFAULT '{}',
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  email TEXT NOT NULL,
+  name TEXT,
   last_sign_in_at TIMESTAMPTZ,
-  CONSTRAINT users_clerk_id_key UNIQUE (clerk_id)
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Add user relationship to messages table
-ALTER TABLE public.messages
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
-ADD COLUMN IF NOT EXISTS clerk_user_id TEXT;
-
--- Create indexes
+-- Create index for fast lookups
 CREATE INDEX IF NOT EXISTS idx_users_clerk_id ON public.users(clerk_id);
-CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
-CREATE INDEX IF NOT EXISTS idx_messages_user_id ON public.messages(user_id);
-CREATE INDEX IF NOT EXISTS idx_messages_clerk_user_id ON public.messages(clerk_user_id);
 
--- Enable RLS
+-- Enable Row Level Security
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies for users table
+-- RLS Policy: Users can only view their own record
 CREATE POLICY "Users can view own profile"
   ON public.users FOR SELECT
   USING (auth.jwt()->>'sub' = clerk_id);
-
-CREATE POLICY "Users can update own profile"
-  ON public.users FOR UPDATE
-  USING (auth.jwt()->>'sub' = clerk_id);
-
--- Create RLS policies for messages table
-CREATE POLICY "Users can view own messages"
-  ON public.messages FOR SELECT
-  USING (
-    auth.jwt()->>'sub' = clerk_user_id
-    OR EXISTS (
-      SELECT 1 FROM public.users
-      WHERE users.id = messages.user_id
-      AND users.clerk_id = auth.jwt()->>'sub'
-    )
-  );
-
-CREATE POLICY "Users can create messages"
-  ON public.messages FOR INSERT
-  WITH CHECK (auth.jwt()->>'sub' = clerk_user_id);
-
-CREATE POLICY "Users can update own messages"
-  ON public.messages FOR UPDATE
-  USING (auth.jwt()->>'sub' = clerk_user_id);
-
-CREATE POLICY "Users can delete own messages"
-  ON public.messages FOR DELETE
-  USING (auth.jwt()->>'sub' = clerk_user_id);
-
--- Create updated_at trigger
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users
-FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-```
-
-### 4.2 Verify RLS Policies
-
-Test your RLS policies in Supabase SQL Editor:
-
-```sql
--- Test as authenticated user (will fail without proper JWT)
-SET request.jwt.claim.sub = 'user_123';
-
--- This should return empty (no matching user)
-SELECT * FROM public.users;
-
--- Reset to default
-RESET request.jwt.claim.sub;
 ```
 
 ## Step 5: Code Implementation
 
-### 5.1 Create Server-Side Supabase Client
+### 5.1 Supabase Server Client
 
 Create `src/libs/supabase-server.ts`:
 
 ```typescript
 import { createClient } from '@supabase/supabase-js'
-import type { SupabaseClient } from '@supabase/supabase-js'
 
-export function createServerSupabaseClient(clerkToken?: string): SupabaseClient {
+export function createServerSupabaseClient(clerkToken?: string) {
   const supabaseUrl = import.meta.env.SUPABASE_URL
   const supabaseKey = clerkToken
     ? import.meta.env.SUPABASE_ANON_KEY
@@ -269,18 +185,78 @@ export function createServerSupabaseClient(clerkToken?: string): SupabaseClient 
 }
 ```
 
-### 5.2 Update API Routes
+### 5.2 Webhook Handler for User Sync
 
-Example protected API route:
+Create `src/pages/api/webhooks/clerk.ts`:
 
 ```typescript
-// src/pages/api/user-messages.ts
 import type { APIRoute } from 'astro'
-import { createServerSupabaseClient } from '#/libs/supabase-server'
+import { Webhook } from 'svix'
+import { createServerSupabaseClient } from '#libs/supabase-server'
+
+export const POST: APIRoute = async ({ request }) => {
+  const webhookSecret = import.meta.env.CLERK_WEBHOOK_SECRET
+  if (!webhookSecret) {
+    return new Response('Webhook secret not configured', { status: 500 })
+  }
+
+  // Verify webhook signature
+  const svix_id = request.headers.get('svix-id')
+  const svix_timestamp = request.headers.get('svix-timestamp')
+  const svix_signature = request.headers.get('svix-signature')
+
+  if (!svix_id || !svix_timestamp || !svix_signature) {
+    return new Response('Missing webhook headers', { status: 400 })
+  }
+
+  const body = await request.text()
+  const wh = new Webhook(webhookSecret)
+
+  let evt
+  try {
+    evt = wh.verify(body, {
+      'svix-id': svix_id,
+      'svix-timestamp': svix_timestamp,
+      'svix-signature': svix_signature,
+    })
+  } catch (err) {
+    return new Response('Invalid webhook signature', { status: 400 })
+  }
+
+  const supabase = createServerSupabaseClient()
+
+  // Handle different event types
+  switch (evt.type) {
+    case 'user.created':
+    case 'user.updated':
+      await supabase.from('users').upsert({
+        clerk_id: evt.data.id,
+        email: evt.data.email_addresses[0]?.email_address,
+        name: `${evt.data.first_name || ''} ${evt.data.last_name || ''}`.trim(),
+      })
+      break
+
+    case 'session.created':
+      await supabase
+        .from('users')
+        .update({ last_sign_in_at: new Date().toISOString() })
+        .eq('clerk_id', evt.data.user_id)
+      break
+  }
+
+  return new Response('Webhook processed', { status: 200 })
+}
+```
+
+### 5.3 Example Protected API Route
+
+```typescript
+// src/pages/api/user-profile.ts
+import type { APIRoute } from 'astro'
+import { createServerSupabaseClient } from '#libs/supabase-server'
 
 export const GET: APIRoute = async context => {
   const auth = context.locals.auth()
-
   if (!auth.userId) {
     return new Response('Unauthorized', { status: 401 })
   }
@@ -289,174 +265,56 @@ export const GET: APIRoute = async context => {
   const token = await auth.getToken({ template: 'supabase' })
   const supabase = createServerSupabaseClient(token)
 
-  const { data, error } = await supabase
-    .from('messages')
-    .select('*')
-    .order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('users').select('*').single()
 
   if (error) {
-    console.error('Supabase error:', error)
-    return new Response('Failed to fetch messages', { status: 500 })
+    return new Response('Failed to fetch profile', { status: 500 })
   }
 
-  return new Response(JSON.stringify({ messages: data }), {
+  return new Response(JSON.stringify(data), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   })
 }
 ```
 
-## Step 6: Testing the Integration
+## Step 6: Verification
 
-### 6.1 Test Authentication Flow
+### Quick Test Checklist
 
-1. Start your development server: `npm run dev`
-2. Sign in with Clerk
-3. Check browser DevTools Network tab for API calls
-4. Verify JWT token is being sent to Supabase
+1. **Test Authentication Flow**:
 
-### 6.2 Test Database Access
+   - Sign in with Clerk
+   - Check webhook logs in Clerk dashboard
+   - Verify user record created in Supabase
 
-Create a test page to verify the integration:
-
-```astro
----
-// src/pages/test-integration.astro
-import Layout from '#/layouts/Base.astro'
-
-const auth = Astro.locals.auth()
-if (!auth.userId) {
-  return Astro.redirect('/login')
-}
-
-const token = await auth.getToken({ template: 'supabase' })
-console.log('Clerk token generated:', !!token)
----
-
-<Layout title="Integration Test">
-  <h1>Clerk + Supabase Integration Test</h1>
-  <p>User ID: {auth.userId}</p>
-  <p>Token Generated: {token ? 'Yes' : 'No'}</p>
-</Layout>
-```
-
-### 6.3 Verify RLS Policies
-
-Test that users can only see their own data:
-
-```typescript
-// Test in browser console or API route
-const response = await fetch('/api/user-messages')
-const data = await response.json()
-console.log('User messages:', data)
-```
-
-## Step 7: Troubleshooting
-
-### Common Issues and Solutions
-
-#### Issue: "Invalid JWT" error from Supabase
-
-**Solution**:
-
-- Verify JWKS URL is correct in Supabase provider settings
-- Check that Clerk JWT template name matches in code
-- Ensure JWT claims are properly configured
-
-#### Issue: RLS policies blocking all access
-
-**Solution**:
-
-- Verify `auth.jwt()->>'sub'` matches `clerk_id` in users table
-- Check that JWT token is being sent in Authorization header
-- Test with service role key to bypass RLS for debugging
-
-#### Issue: Webhook not syncing users
-
-**Solution**:
-
-- Verify webhook secret in environment variables
-- Check webhook logs in Clerk dashboard
-- Ensure webhook endpoint is publicly accessible
-
-### Debug Checklist
-
-1. [ ] Clerk authentication working (can sign in/out)
-2. [ ] JWT template created in Clerk dashboard
-3. [ ] Custom provider configured in Supabase
-4. [ ] Environment variables correctly set
-5. [ ] Database schema and RLS policies created
-6. [ ] Server-side token generation working
-7. [ ] Supabase client receiving JWT token
-8. [ ] RLS policies allowing appropriate access
-
-## Step 8: Production Deployment
-
-### Pre-deployment Checklist
-
-1. [ ] All environment variables set in production
-2. [ ] Database migrations run in production
-3. [ ] Webhook endpoint configured for production URL
-4. [ ] SSL certificate valid for webhook endpoint
-5. [ ] Rate limiting configured for API endpoints
-6. [ ] Error monitoring set up (Sentry, etc.)
-7. [ ] Database backups configured
-8. [ ] Security headers configured
-
-### Deployment Steps
-
-1. **Set Production Environment Variables**
+2. **Test API Access**:
 
    ```bash
-   # On Vercel, Netlify, or your hosting provider
-   PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
-   CLERK_SECRET_KEY=sk_live_...
-   CLERK_WEBHOOK_SECRET=whsec_...
-   SUPABASE_URL=https://prod-project.supabase.co
-   SUPABASE_ANON_KEY=...
-   SUPABASE_SERVICE_KEY=...
+   # Test the user profile endpoint
+   curl https://your-domain.com/api/user-profile \
+     -H "Cookie: __session=your-clerk-session"
    ```
 
-2. **Run Database Migrations**
+3. **Verify Database**:
+   - Check Supabase dashboard for user records
+   - Confirm `last_sign_in_at` updates on login
 
-   - Execute migration SQL in Supabase production dashboard
-   - Verify tables and RLS policies created
+### Common Issues
 
-3. **Update Webhook URL**
-
-   - In Clerk Dashboard, update webhook to production URL
-   - Test webhook with Clerk's webhook tester
-
-4. **Deploy Application**
-
-   ```bash
-   npm run build
-   npm run deploy  # or git push for auto-deploy
-   ```
-
-5. **Post-deployment Verification**
-   - Test user sign-up flow
-   - Verify user data syncs to Supabase
-   - Check RLS policies work correctly
-   - Monitor error logs for issues
+| Issue               | Solution                                                          |
+| ------------------- | ----------------------------------------------------------------- |
+| Invalid JWT error   | Verify JWKS URL in Supabase matches your Clerk instance           |
+| Webhook not working | Check webhook secret and ensure endpoint is publicly accessible   |
+| RLS blocking access | Ensure JWT token contains correct `sub` claim matching `clerk_id` |
 
 ## Additional Resources
 
-- [Clerk Documentation](https://clerk.com/docs)
-- [Supabase Auth Documentation](https://supabase.com/docs/guides/auth)
-- [JWT.io Debugger](https://jwt.io/) - For debugging JWT tokens
-- [Supabase RLS Guide](https://supabase.com/docs/guides/auth/row-level-security)
-
-## Support Contacts
-
-For integration issues:
-
-- Clerk Support: support@clerk.com
-- Supabase Support: support@supabase.com
-- Project Team: [Your contact info]
+- [Clerk JWT Templates](https://clerk.com/docs/backend-requests/making/jwt-templates)
+- [Supabase Custom JWT](https://supabase.com/docs/guides/auth/jwt)
+- [Row Level Security Guide](https://supabase.com/docs/guides/auth/row-level-security)
 
 ---
 
-_Setup Guide Version: 1.0_  
-_Last Updated: 2025-01-13_  
-_Estimated Setup Time: 30-45 minutes_
+_Setup Time: ~30 minutes_  
+_Last Updated: January 2025_
