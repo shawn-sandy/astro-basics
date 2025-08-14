@@ -1,5 +1,3 @@
-import { isIP } from 'node:net'
-
 import type { APIRoute } from 'astro'
 
 import { insertMessage, isTursoConfigured } from '#libs/turso'
@@ -11,6 +9,7 @@ import {
   parseCsrfTokenFromCookie,
   CSRF_CONFIG,
 } from '#utils/csrf'
+import { extractClientIP } from '#utils/ip-validation'
 import { sanitizeMessageData } from '#utils/input-sanitization'
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -164,10 +163,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Get client IP and user agent
-    const ip_address =
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      request.headers.get('x-real-ip') ||
-      'unknown'
+    const ip_address = extractClientIP(request)
     const user_agent = request.headers.get('user-agent') || undefined
 
     // Prepare message data using sanitized inputs
@@ -176,7 +172,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       email: sanitizedData.email,
       subject: sanitizedData.subject,
       message: sanitizedData.message,
-      ip_address: isIP(ip_address) && ip_address.length <= 45 ? ip_address : 'unknown', // Validate IP address
+      ip_address, // Now properly normalized and validated
       user_agent: user_agent?.substring(0, 500), // Limit to schema constraint
     }
 
