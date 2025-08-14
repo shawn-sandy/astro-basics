@@ -344,6 +344,40 @@ describe('POST /api/message-us', () => {
         })
       )
     })
+
+    it('should normalize IPv6 addresses', async () => {
+      const { insertMessage } = await import('#libs/turso')
+      const insertMessageSpy = vi.mocked(insertMessage)
+
+      const request = createMockRequest(validMessageData)
+      request.headers.set('x-forwarded-for', '[2001:0db8:0000:0000:0000:0000:0000:0001]:8080')
+      const cookies = createMockCookies()
+
+      await POST({ request, cookies } as any)
+
+      expect(insertMessageSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ip_address: '::1',
+        })
+      )
+    })
+
+    it('should handle IPv6 addresses without truncation', async () => {
+      const { insertMessage } = await import('#libs/turso')
+      const insertMessageSpy = vi.mocked(insertMessage)
+
+      const request = createMockRequest(validMessageData)
+      request.headers.set('x-forwarded-for', '2001:db8:85a3::8a2e:370:7334')
+      const cookies = createMockCookies()
+
+      await POST({ request, cookies } as any)
+
+      expect(insertMessageSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ip_address: '2001:db8:85a3::8a2e:370:7334',
+        })
+      )
+    })
   })
 })
 
