@@ -10,11 +10,11 @@
  * @param {'success'|'error'|'info'} type - Message type
  */
 export function showMessage(element, message, type = 'info') {
-  if (!element) return;
-  
-  element.textContent = message;
-  element.className = `form-message ${type}`;
-  element.style.display = 'block';
+  if (!element) return
+
+  element.textContent = message
+  element.className = `form-message ${type}`
+  element.style.display = 'block'
 }
 
 /**
@@ -22,11 +22,11 @@ export function showMessage(element, message, type = 'info') {
  * @param {HTMLElement} element - Target element
  */
 export function clearMessage(element) {
-  if (!element) return;
-  
-  element.textContent = '';
-  element.className = 'form-message';
-  element.style.display = 'none';
+  if (!element) return
+
+  element.textContent = ''
+  element.className = 'form-message'
+  element.style.display = 'none'
 }
 
 /**
@@ -37,16 +37,16 @@ export function clearMessage(element) {
  * @param {string} defaultText - Default button text
  */
 export function toggleButtonLoading(button, loading, loadingText = 'Loading...', defaultText = '') {
-  if (!button) return;
-  
+  if (!button) return
+
   if (loading) {
-    button.disabled = true;
-    button.dataset.originalText = button.textContent;
-    button.textContent = loadingText;
+    button.disabled = true
+    button.dataset.originalText = button.textContent
+    button.textContent = loadingText
   } else {
-    button.disabled = false;
-    button.textContent = button.dataset.originalText || defaultText;
-    delete button.dataset.originalText;
+    button.disabled = false
+    button.textContent = button.dataset.originalText || defaultText
+    delete button.dataset.originalText
   }
 }
 
@@ -57,19 +57,23 @@ export function toggleButtonLoading(button, loading, loadingText = 'Loading...',
  * @returns {Object} Object with data attribute values
  */
 export function getDataAttributes(element, prefix = '') {
-  if (!element) return {};
-  
-  const data = {};
-  const attrs = element.dataset;
-  
+  if (!element) return {}
+
+  const data = {}
+  const attrs = element.dataset
+
   for (const [key, value] of Object.entries(attrs)) {
     if (!prefix || key.startsWith(prefix)) {
-      const cleanKey = prefix ? key.replace(prefix, '').toLowerCase() : key;
-      data[cleanKey] = value;
+      const cleanKey = prefix
+        ? key.startsWith(prefix)
+          ? key.slice(prefix.length).replace(/^([A-Z])/, m => m.toLowerCase())
+          : key
+        : key
+      data[cleanKey] = value
     }
   }
-  
-  return data;
+
+  return data
 }
 
 /**
@@ -80,10 +84,10 @@ export function getDataAttributes(element, prefix = '') {
  */
 export function safeQuerySelector(selector, context = document) {
   try {
-    return context.querySelector(selector);
+    return context.querySelector(selector)
   } catch (e) {
-    console.warn(`Invalid selector: ${selector}`, e);
-    return null;
+    console.warn(`Invalid selector: ${selector}`, e)
+    return null
   }
 }
 
@@ -95,9 +99,9 @@ export function safeQuerySelector(selector, context = document) {
  */
 export function safeQuerySelectorAll(selector, context = document) {
   try {
-    return context.querySelectorAll(selector);
+    return context.querySelectorAll(selector)
   } catch (e) {
-    console.warn(`Invalid selector: ${selector}`, e);
-    return [];
+    console.warn(`Invalid selector: ${selector}`, e)
+    return []
   }
 }
