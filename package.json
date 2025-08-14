@@ -106,6 +106,7 @@
     "rehype-accessible-emojis": "^0.3.2",
     "remark-toc": "^9.0.0",
     "sharp": "^0.34.3",
+    "svix": "^1.71.0",
     "workbox-core": "^7.3.0",
     "workbox-precaching": "^7.3.0",
     "workbox-routing": "^7.3.0",
