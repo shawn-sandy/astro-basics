@@ -143,7 +143,7 @@ describe('UI Module', () => {
       
       for (const [key, value] of Object.entries(element.dataset)) {
         if (key.startsWith(prefix)) {
-          const cleanKey = key.replace(prefix, '').toLowerCase()
+          const cleanKey = key.slice(prefix.length).replace(/^([A-Z])/, (m) => m.toLowerCase())
           data[cleanKey] = value
         }
       }

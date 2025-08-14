@@ -64,7 +64,11 @@ export function getDataAttributes(element, prefix = '') {
   
   for (const [key, value] of Object.entries(attrs)) {
     if (!prefix || key.startsWith(prefix)) {
-      const cleanKey = prefix ? key.replace(prefix, '').toLowerCase() : key;
+      const cleanKey = prefix
+        ? key.startsWith(prefix)
+          ? key.slice(prefix.length).replace(/^([A-Z])/, (m) => m.toLowerCase())
+          : key
+        : key;
       data[cleanKey] = value;
     }
   }
