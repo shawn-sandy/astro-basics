@@ -4,6 +4,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/astro/server'
 import type { MiddlewareHandler } from 'astro'
 import { sequence } from 'astro:middleware'
 
+import { getSupabaseServiceRole, isSupabaseConfigured } from '#libs/supabase-native'
 import {
   generateCsrfToken,
   parseCsrfTokenFromCookie,
@@ -25,6 +26,38 @@ if (!hasValidClerkKeys) {
 }
 
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)', '/organization(.*)'])
+
+/**
+ * Sync user data from Clerk to Supabase by updating last_sign_in_at
+ * Simple sync that just updates the last sign in timestamp
+ */
+async function updateUserLastSignIn(userId: string): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    return
+  }
+
+  const supabase = getSupabaseServiceRole()
+  if (!supabase) {
+    return
+  }
+
+  try {
+    // Simply update the last_sign_in_at timestamp for existing user
+    const { error } = await supabase
+      .from('users')
+      .update({ last_sign_in_at: new Date().toISOString() })
+      .eq('clerk_id', userId)
+
+    if (error && error.code !== 'PGRST116') {
+      // PGRST116 = not found, which is ok for new users
+      console.warn('Failed to update last sign in:', error)
+    } else if (!error) {
+      console.log('✅ Last sign in updated for user:', userId)
+    }
+  } catch (error) {
+    console.warn('⚠️ Failed to update user last sign in:', error)
+  }
+}
 
 /**
  * CSRF middleware - generates and manages CSRF tokens
@@ -116,6 +149,14 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
       const token = await auth().getToken()
       locals.clerkToken = token
       console.log('✅ Auth middleware - User authenticated:', locals.userId)
+
+      // Update last sign in timestamp (async, don't block request)
+      // Only sync on protected routes to avoid unnecessary calls
+      if (isProtectedRoute(context.request)) {
+        updateUserLastSignIn(locals.userId).catch(error => {
+          console.warn('Background user sync failed:', error)
+        })
+      }
     } catch (error) {
       console.error('❌ Failed to get Clerk token:', error)
     }
