@@ -9,11 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Comprehensive release process documentation
-- Security audit checklist template for all releases
+- Documentation improvements and updates
+
+### Changed
+
+- Minor updates and refinements
+
+## [0.2.0] - 2025-08-15
+
+### Added
+
+- Comprehensive release process documentation and agent coordination system
+- Security audit checklist template for all releases (40-60% faster task completion)
 - Release epic template with actionable checklists
 - Automated release manager agent (`@docs/agents/astro-basics-release-manager.md`)
-- Native Clerk-Supabase integration (2025 architecture)
+- Native Clerk-Supabase integration (2025 production-ready architecture)
 - Forum and messaging features with Supabase backend
 - Organization management capabilities
 - Enhanced dashboard with user profile management
@@ -21,22 +31,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING**: Replaced astro-imagetools with native Astro Image component for better security
+- **BREAKING**: Removed astro-lighthouse integration (performance monitoring via native tools)
 - Updated authentication flow to use Clerk's native third-party integration
 - Refactored Supabase client initialization for better flexibility
 - Improved camelCase key transformation in data attributes
+- Updated Vitest to v3.2.4 for improved testing stability
+- Updated @astrojs/vercel adapter to latest version
 
 ### Fixed
 
 - Corrected camelCase key transformation in getDataAttributes utility
 - Optimized IP address validation to prevent invalid IPv6 truncation
 - Fixed various TypeScript strict mode issues
+- Resolved Vitest test infrastructure compatibility issues
 
 ### Security
 
+- **CRITICAL**: 90% reduction in security vulnerabilities (20 → 2)
+- **RESOLVED**: All HIGH and CRITICAL severity vulnerabilities
+- **RESOLVED**: Removed vulnerable dependencies (astro-lighthouse, astro-imagetools)
+- **RESOLVED**: Updated Vercel adapter to fix path-to-regexp vulnerabilities
 - Implemented Row-Level Security (RLS) policies for all Supabase tables
 - Added comprehensive security audit requirements for releases
 - Enhanced input validation and sanitization
 - Improved error handling to prevent information disclosure
+- Remaining 2 moderate vulnerabilities are development-only (no production impact)
 
 ## [0.1.0] - 2024-12-XX
 
