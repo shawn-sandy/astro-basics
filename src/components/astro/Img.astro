@@ -13,6 +13,6 @@ const { imgSrc, imgAlt, imgWidth, imgHeight, imgCaption } = Astro.props
 ---
 
 <figure>
-  <Image src={imgSrc} alt={imgAlt || ''} width={imgWidth || 1200} height={imgHeight || 600} />
+  <Image src={imgSrc} alt={imgAlt} width={imgWidth || 1200} height={imgHeight || 600} />
   {imgCaption && <figcaption>{imgCaption}</figcaption>}
 </figure>
