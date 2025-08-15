@@ -60,6 +60,10 @@ export default defineConfig({
   ],
   output: 'server',
   vite: {
+    server: {
+      host: true,
+      allowedHosts: ['476cd5383d8f.ngrok-free.app']
+    },
     ssr: {
       noExternal: ['astro-imagetools']
     }
