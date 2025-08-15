@@ -59,6 +59,11 @@ export default defineConfig({
     }),
   ],
   output: 'server',
+  vite: {
+    ssr: {
+      noExternal: ['astro-imagetools']
+    }
+  },
   // Choose adapter based on deployment target
   adapter: (() => {
     const adapter = process.env.ASTRO_ADAPTER
