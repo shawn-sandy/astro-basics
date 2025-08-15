@@ -1,14 +1,18 @@
 ---
-export const prerender = false
-import { getCollection } from 'astro:content'
+export const prerender = true
+import { getCollection, type CollectionEntry } from 'astro:content'
 import MarkdownPostLayout from '../../layouts/MarkdownPostLayout.astro'
 
 export async function getStaticPaths() {
-  const blogEntries = await getCollection('docs')
-  return blogEntries.map(entry => ({
+  const docs = await getCollection('docs')
+  return docs.map((entry: CollectionEntry<'docs'>) => ({
     params: { slug: entry.slug },
     props: { entry },
   }))
+}
+
+export type Props = {
+  entry: CollectionEntry<'docs'>
 }
 
 const { entry } = Astro.props

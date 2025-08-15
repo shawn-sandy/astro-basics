@@ -1,11 +1,11 @@
 ---
-export const prerender = false
+export const prerender = true
 import { getCollection, type CollectionEntry } from 'astro:content'
 import MarkdownPostLayout from '#layouts/MarkdownPostLayout.astro'
 
 export async function getStaticPaths() {
-  const blogEntries = await getCollection('posts')
-  return blogEntries.map(entry => ({
+  const posts = await getCollection('posts')
+  return posts.map((entry: CollectionEntry<'posts'>) => ({
     params: { slug: entry.slug },
     props: { entry },
   }))
@@ -15,7 +15,7 @@ export type Props = {
   entry: CollectionEntry<'posts'>
 }
 
-const { entry } = Astro.props as Props
+const { entry } = Astro.props
 const { Content, headings } = await entry.render()
 ---
 
