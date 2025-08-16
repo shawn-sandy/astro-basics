@@ -1,81 +1,164 @@
 import { $authStore } from '@clerk/astro/client'
 import { useStore } from '@nanostores/react'
 import React from 'react'
+import type { UserProfileApiResponse, ApiError } from '#types/clerk'
 
-interface UserPreferences {
-  theme?: string
-  notifications?: boolean
-  [key: string]: unknown
-}
-
-interface UserData {
-  user: {
-    clerk_id?: string
-    email?: string
-    username?: string
-    full_name?: string
-    avatar_url?: string
-    created_at?: string
-    user_preferences?: UserPreferences[]
-  } | null
-  message?: string
+interface UserProfileState {
+  data: UserProfileApiResponse | null
+  isLoading: boolean
+  error: ApiError | null
+  retryCount: number
 }
 
 export function UserProfile() {
   const { userId } = useStore($authStore)
-  const [userData, setUserData] = React.useState<UserData | null>(null)
-  const [isLoading, setIsLoading] = React.useState(true)
+  const [state, setState] = React.useState<UserProfileState>({
+    data: null,
+    isLoading: true,
+    error: null,
+    retryCount: 0
+  })
 
-  React.useEffect(() => {
-    async function fetchUser() {
-      if (!userId) {
-        setIsLoading(false)
-        return
-      }
-
-      try {
-        // Fetch user data from our API endpoint
-        const response = await window.fetch('/api/user/profile')
-        const data = await response.json()
-
-        if (response.ok) {
-          setUserData(data)
-        } else {
-          // If no profile synced yet, show basic info
-          setUserData({
-            user: {
-              clerk_id: userId,
-              email: 'Not synced',
-              username: 'Not synced',
-              full_name: 'Not synced',
-              created_at: new Date().toISOString(),
-            },
-          })
-        }
-      } catch (error) {
-        console.error('Failed to fetch user profile:', error)
-        // Show basic userId even if fetch fails
-        setUserData({
-          user: {
-            clerk_id: userId,
-            email: 'Unable to fetch',
-            username: 'Unable to fetch',
-            full_name: 'Unable to fetch',
-            created_at: new Date().toISOString(),
-          },
-        })
-      } finally {
-        setIsLoading(false)
-      }
+  const fetchUser = React.useCallback(async (retryAttempt = 0) => {
+    if (!userId) {
+      setState(prev => ({ 
+        ...prev, 
+        isLoading: false,
+        error: null
+      }))
+      return
     }
 
-    fetchUser()
+    setState(prev => ({ ...prev, isLoading: true, error: null }))
+
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout
+
+      const response = await fetch('/api/user/profile', {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
+        }
+      })
+
+      clearTimeout(timeoutId)
+
+      let data: UserProfileApiResponse
+      try {
+        data = await response.json()
+      } catch (parseError) {
+        throw new Error(`Invalid JSON response: ${response.status}`)
+      }
+
+      if (response.ok) {
+        setState(prev => ({
+          ...prev,
+          data,
+          isLoading: false,
+          error: null,
+          retryCount: 0
+        }))
+      } else {
+        // Handle different HTTP error codes
+        let errorType: ApiError['type'] = 'server'
+        let errorMessage = data.error || `HTTP ${response.status}`
+        let retryable = false
+
+        switch (response.status) {
+          case 401:
+            errorType = 'auth'
+            errorMessage = 'Authentication required. Please sign in again.'
+            retryable = false
+            break
+          case 403:
+            errorType = 'auth'
+            errorMessage = 'Access denied. Insufficient permissions.'
+            retryable = false
+            break
+          case 404:
+            errorType = 'server'
+            errorMessage = 'Profile service not found.'
+            retryable = true
+            break
+          case 429:
+            errorType = 'network'
+            errorMessage = 'Too many requests. Please try again later.'
+            retryable = true
+            break
+          case 500:
+          case 502:
+          case 503:
+          case 504:
+            errorType = 'server'
+            errorMessage = 'Server error. Please try again.'
+            retryable = true
+            break
+          default:
+            errorType = 'unknown'
+            retryable = response.status < 500
+        }
+
+        setState(prev => ({
+          ...prev,
+          data: null,
+          isLoading: false,
+          error: { 
+            type: errorType, 
+            message: errorMessage, 
+            retryable,
+            timestamp: Date.now()
+          },
+          retryCount: retryAttempt
+        }))
+      }
+    } catch (error) {
+      let errorType: ApiError['type'] = 'network'
+      let errorMessage = 'Network error occurred'
+      let retryable = true
+
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          errorMessage = 'Request timed out. Please check your connection.'
+        } else if (error.message.includes('Failed to fetch')) {
+          errorMessage = 'Unable to connect to server. Please check your internet connection.'
+        } else {
+          errorMessage = error.message
+          errorType = 'unknown'
+        }
+      }
+
+      setState(prev => ({
+        ...prev,
+        data: null,
+        isLoading: false,
+        error: { 
+          type: errorType, 
+          message: errorMessage, 
+          retryable,
+          timestamp: Date.now()
+        },
+        retryCount: retryAttempt
+      }))
+    }
   }, [userId])
 
-  if (isLoading) {
+  const handleRetry = React.useCallback(() => {
+    if (state.retryCount < 3) { // Max 3 retries
+      fetchUser(state.retryCount + 1)
+    }
+  }, [fetchUser, state.retryCount])
+
+  React.useEffect(() => {
+    fetchUser()
+  }, [fetchUser])
+
+  // Loading state
+  if (state.isLoading) {
     return (
       <div className="user-profile user-profile--loading">
-        <div className="user-profile__skeleton">
+        <div className="user-profile__skeleton" role="status" aria-label="Loading profile">
           <div className="skeleton-avatar" />
           <div className="skeleton-text" />
           <div className="skeleton-text" />
@@ -84,6 +167,7 @@ export function UserProfile() {
     )
   }
 
+  // Not signed in
   if (!userId) {
     return (
       <div className="user-profile user-profile--signed-out">
@@ -92,7 +176,33 @@ export function UserProfile() {
     )
   }
 
-  const user = userData?.user
+  // Error state
+  if (state.error) {
+    return (
+      <div className="user-profile user-profile--error">
+        <div className="error-content">
+          <h3>Unable to Load Profile</h3>
+          <p>{state.error.message}</p>
+          {state.error.retryable && state.retryCount < 3 && (
+            <button 
+              onClick={handleRetry}
+              className="retry-button"
+              type="button"
+            >
+              Try Again ({3 - state.retryCount} attempts left)
+            </button>
+          )}
+          {state.error.type === 'auth' && (
+            <a href="/sign-in" className="auth-link">
+              Sign In Again
+            </a>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  const user = state.data?.user
 
   return (
     <div className="user-profile">
@@ -100,13 +210,24 @@ export function UserProfile() {
         {user?.avatar_url && (
           <img
             src={user.avatar_url}
-            alt={`${user.full_name || user.username || 'User'} avatar`}
+            alt={`${user.full_name || user.username || 'User'} profile picture`}
             className="user-profile__avatar"
+            loading="lazy"
+            onError={(e) => {
+              // Handle broken image
+              e.currentTarget.style.display = 'none'
+            }}
           />
         )}
         <div className="user-profile__info">
-          <h2 className="user-profile__name">{user?.full_name || user?.username || 'User'}</h2>
-          {user?.username && <p className="user-profile__username">@{user.username}</p>}
+          <h2 className="user-profile__name" id="user-profile-name">
+            {user?.full_name || user?.username || 'User'}
+          </h2>
+          {user?.username && (
+            <p className="user-profile__username" aria-describedby="user-profile-name">
+              @{user.username}
+            </p>
+          )}
         </div>
       </div>
 
