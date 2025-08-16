@@ -2,6 +2,7 @@
 import Base from '#layouts/Base.astro'
 import { SignedIn, SignedOut } from '@clerk/astro/components'
 import UserProfile from '#components/react/UserProfile'
+import UserInfo from '#components/astro/UserInfo.astro'
 ---
 
 <Base pageTitle="User Profile Test" pageDescription="Testing the UserProfile component">
@@ -9,7 +10,15 @@ import UserProfile from '#components/react/UserProfile'
     <h1>User Profile Test</h1>
 
     <SignedIn>
-      <UserProfile client:load />
+      <div class="profile-section">
+        <h2>Server-Side Rendered (Astro Component)</h2>
+        <UserInfo />
+      </div>
+
+      <div class="profile-section">
+        <h2>Client-Side Rendered (React Component)</h2>
+        <UserProfile client:load />
+      </div>
     </SignedIn>
 
     <SignedOut>
@@ -31,6 +40,16 @@ import UserProfile from '#components/react/UserProfile'
   h1 {
     margin-bottom: 2rem;
     color: var(--color-text-primary, #1f2937);
+  }
+
+  h2 {
+    margin-bottom: 1rem;
+    color: var(--color-text-primary, #1f2937);
+    font-size: 1.125rem;
+  }
+
+  .profile-section {
+    margin-bottom: 2rem;
   }
 
   .alert {
