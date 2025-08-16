@@ -1,0 +1,61 @@
+---
+import Base from '#layouts/Base.astro'
+import { SignedIn, SignedOut } from '@clerk/astro/components'
+import UserProfile from '#components/react/UserProfile'
+---
+
+<Base pageTitle="User Profile Test" pageDescription="Testing the UserProfile component">
+  <main class="container">
+    <h1>User Profile Test</h1>
+
+    <SignedIn>
+      <UserProfile client:load />
+    </SignedIn>
+
+    <SignedOut>
+      <div class="alert alert--info">
+        <p>Please sign in to view your profile</p>
+        <a href="/login" class="btn btn--primary">Sign In</a>
+      </div>
+    </SignedOut>
+  </main>
+</Base>
+
+<style>
+  .container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+  h1 {
+    margin-bottom: 2rem;
+    color: var(--color-text-primary, #1f2937);
+  }
+
+  .alert {
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 2rem;
+  }
+
+  .alert p {
+    margin: 0 0 1rem 0;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #3b82f6;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+
+  .btn:hover {
+    background: #2563eb;
+  }
+</style>
