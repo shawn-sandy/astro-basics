@@ -37,7 +37,17 @@ if (user?.publicMetadata) {
 // Get primary email
 const primaryEmail = user?.emailAddresses?.find(email => email.id === user?.primaryEmailAddressId)
 
-// Format dates
+/**
+ * Formats a timestamp into a human-readable date string.
+ *
+ * @param {number | undefined} timestamp - Unix timestamp in milliseconds
+ * @returns {string} Formatted date string (e.g., "January 15, 2024") or "N/A" if timestamp is undefined
+ * @example
+ * ```js
+ * formatDate(1642291200000) // Returns "January 15, 2022"
+ * formatDate(undefined) // Returns "N/A"
+ * ```
+ */
 const formatDate = (timestamp: number | undefined) => {
   if (!timestamp) return 'N/A'
   return new Date(timestamp).toLocaleDateString('en-US', {
@@ -47,6 +57,17 @@ const formatDate = (timestamp: number | undefined) => {
   })
 }
 
+/**
+ * Formats a timestamp into a human-readable date and time string.
+ *
+ * @param {number | undefined} timestamp - Unix timestamp in milliseconds
+ * @returns {string} Formatted date and time string (e.g., "Jan 15, 2024, 02:30 PM") or "N/A" if timestamp is undefined
+ * @example
+ * ```js
+ * formatDateTime(1642291200000) // Returns "Jan 15, 2022, 12:00 PM"
+ * formatDateTime(undefined) // Returns "N/A"
+ * ```
+ */
 const formatDateTime = (timestamp: number | undefined) => {
   if (!timestamp) return 'N/A'
   return new Date(timestamp).toLocaleString('en-US', {

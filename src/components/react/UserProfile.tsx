@@ -5,11 +5,30 @@ import React from 'react'
 import { useFetchWithState } from '#hooks/useFetch'
 import type { UserProfileApiResponse } from '#types/clerk'
 
+/**
+ * UserProfile component that displays user profile information from Clerk authentication.
+ * Handles loading states, error states, and retry logic for fetching user data.
+ *
+ * @returns {JSX.Element} Rendered user profile component with avatar, name, email, and metadata
+ * @example
+ * ```tsx
+ * <UserProfile />
+ * ```
+ */
 export function UserProfile() {
   const { userId } = useStore($authStore)
   const { data, isLoading, error, retryCount, execute, retry } =
     useFetchWithState<UserProfileApiResponse>()
 
+  /**
+   * Fetches the current user's profile data from the API.
+   * Only executes if a userId is present and uses caching prevention headers.
+   *
+   * @async
+   * @function fetchUser
+   * @returns {Promise<void>} Promise that resolves when the fetch operation completes
+   * @throws {Error} Network or API errors are caught and logged
+   */
   const fetchUser = React.useCallback(async () => {
     if (!userId) return
 
@@ -27,6 +46,17 @@ export function UserProfile() {
     }
   }, [userId, execute])
 
+  /**
+   * Handles retry attempts for failed user profile fetch operations.
+   * Only allows retries if the current retry count is less than 3.
+   *
+   * @function handleRetry
+   * @returns {void}
+   * @example
+   * ```tsx
+   * <button onClick={handleRetry}>Try Again</button>
+   * ```
+   */
   const handleRetry = React.useCallback(() => {
     if (retryCount < 3) {
       retry()
