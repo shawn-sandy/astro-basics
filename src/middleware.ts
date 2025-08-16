@@ -12,6 +12,7 @@ import {
   createCsrfCookieOptions,
   CSRF_CONFIG,
 } from '#utils/csrf'
+import { logger } from '#utils/logger'
 import { messageRateLimiter, getClientIP, createRateLimitResponse } from '#utils/rate-limiter'
 
 // Validate required environment variables - but allow dummy values in development
@@ -22,7 +23,7 @@ const hasValidClerkKeys =
   import.meta.env.CLERK_SECRET_KEY !== 'YOUR_CLERK_SECRET_KEY'
 
 if (!hasValidClerkKeys) {
-  console.warn('Using dummy Clerk keys - authentication will not work properly in development')
+  logger.warn('Using dummy Clerk keys - authentication will not work properly in development')
 }
 
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)', '/organization(.*)'])
@@ -50,12 +51,15 @@ async function updateUserLastSignIn(userId: string): Promise<void> {
 
     if (error && error.code !== 'PGRST116') {
       // PGRST116 = not found, which is ok for new users
-      console.warn('Failed to update last sign in:', error)
+      logger.warn('Failed to update last sign in', { userId, error: error.message })
     } else if (!error) {
-      console.log('✅ Last sign in updated for user:', userId)
+      logger.debug('Last sign in updated for user', { userId })
     }
   } catch (error) {
-    console.warn('⚠️ Failed to update user last sign in:', error)
+    logger.warn('Failed to update user last sign in', {
+      userId,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
   }
 }
 
@@ -102,7 +106,9 @@ const csrfMiddleware: MiddlewareHandler = async (context, next) => {
       }
     } catch (error) {
       // Silently handle CSRF middleware errors to not break the app
-      console.warn('CSRF middleware error:', error)
+      logger.warn('CSRF middleware error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
     }
   }
 
@@ -148,20 +154,26 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
     try {
       const token = await auth().getToken()
       locals.clerkToken = token
-      console.log('✅ Auth middleware - User authenticated:', locals.userId)
+      logger.debug('Auth middleware - User authenticated', { userId: locals.userId })
 
       // Update last sign in timestamp (async, don't block request)
       // Only sync on protected routes to avoid unnecessary calls
       if (isProtectedRoute(context.request)) {
         updateUserLastSignIn(locals.userId).catch(error => {
-          console.warn('Background user sync failed:', error)
+          logger.warn('Background user sync failed', {
+            userId: locals.userId,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          })
         })
       }
     } catch (error) {
-      console.error('❌ Failed to get Clerk token:', error)
+      logger.error('Failed to get Clerk token', {
+        userId: locals.userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
     }
   } else {
-    console.log('❌ Auth middleware - No user ID found')
+    logger.debug('Auth middleware - No user ID found')
   }
 
   // Allow other requests to proceed

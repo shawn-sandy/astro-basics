@@ -1,19 +1,32 @@
 import type { APIRoute } from 'astro'
 
 import { createServerSupabaseClient, isSupabaseConfigured } from '#libs/supabase-native'
+import { logger, logApiRequest, logApiResponse, logApiError } from '#utils/logger'
 
 export const GET: APIRoute = async ({ locals }) => {
-  console.log('🔍 Profile API - userId:', locals.userId)
-  console.log('🔍 Profile API - clerkToken:', locals.clerkToken ? 'present' : 'missing')
+  const enhancedLocals = locals as typeof locals & {
+    userId?: string | null
+    clerkToken?: string | null
+  }
+  logApiRequest('/api/user/profile', 'GET', enhancedLocals.userId)
 
-  if (!locals.userId || !locals.clerkToken) {
-    console.log('❌ Profile API - Unauthorized: userId or token missing')
+  logger.debug('Profile API - Authentication check', {
+    userId: enhancedLocals.userId,
+    hasToken: !!enhancedLocals.clerkToken,
+  })
+
+  if (!enhancedLocals.userId || !enhancedLocals.clerkToken) {
+    logger.warn('Profile API - Unauthorized access attempt', {
+      endpoint: '/api/user/profile',
+      hasUserId: !!enhancedLocals.userId,
+      hasToken: !!enhancedLocals.clerkToken,
+    })
     return new Response(
       JSON.stringify({
         error: 'Unauthorized',
         debug: {
-          hasUserId: !!locals.userId,
-          hasToken: !!locals.clerkToken,
+          hasUserId: !!enhancedLocals.userId,
+          hasToken: !!enhancedLocals.clerkToken,
         },
       }),
       {
@@ -38,7 +51,7 @@ export const GET: APIRoute = async ({ locals }) => {
   }
 
   try {
-    const supabase = createServerSupabaseClient(locals.clerkToken)
+    const supabase = createServerSupabaseClient(enhancedLocals.clerkToken)
 
     if (!supabase) {
       return new Response(
@@ -61,12 +74,17 @@ export const GET: APIRoute = async ({ locals }) => {
         user_preferences (*)
       `
       )
-      .eq('clerk_id', locals.userId)
+      .eq('clerk_id', enhancedLocals.userId)
       .single()
 
     if (error) {
       if (error.code === 'PGRST116') {
         // User not found in database - this is expected for new users
+        logger.info('User profile not found in database - new user', {
+          endpoint: '/api/user/profile',
+          userId: enhancedLocals.userId,
+        })
+        logApiResponse('/api/user/profile', 200, enhancedLocals.userId)
         return new Response(
           JSON.stringify({
             user: null,
@@ -81,6 +99,7 @@ export const GET: APIRoute = async ({ locals }) => {
       throw error
     }
 
+    logApiResponse('/api/user/profile', 200, enhancedLocals.userId)
     return new Response(
       JSON.stringify({
         user: data,
@@ -92,7 +111,7 @@ export const GET: APIRoute = async ({ locals }) => {
       }
     )
   } catch (error) {
-    console.error('Failed to fetch user profile:', error)
+    logApiError('/api/user/profile', error, enhancedLocals.userId)
     return new Response(
       JSON.stringify({
         error: 'Failed to fetch user profile',
@@ -107,7 +126,19 @@ export const GET: APIRoute = async ({ locals }) => {
 }
 
 export const PATCH: APIRoute = async ({ request, locals }) => {
-  if (!locals.userId || !locals.clerkToken) {
+  const enhancedLocals = locals as typeof locals & {
+    userId?: string | null
+    clerkToken?: string | null
+  }
+  logApiRequest('/api/user/profile', 'PATCH', enhancedLocals.userId)
+
+  if (!enhancedLocals.userId || !enhancedLocals.clerkToken) {
+    logger.warn('Profile API PATCH - Unauthorized access attempt', {
+      endpoint: '/api/user/profile',
+      method: 'PATCH',
+      hasUserId: !!enhancedLocals.userId,
+      hasToken: !!enhancedLocals.clerkToken,
+    })
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
@@ -130,7 +161,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
 
   try {
     const body = await request.json()
-    const supabase = createServerSupabaseClient(locals.clerkToken)
+    const supabase = createServerSupabaseClient(enhancedLocals.clerkToken)
 
     if (!supabase) {
       return new Response(
@@ -171,12 +202,17 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     const { data, error } = await supabase
       .from('users')
       .update(updateData)
-      .eq('clerk_id', locals.userId)
+      .eq('clerk_id', enhancedLocals.userId)
       .select()
       .single()
 
     if (error) {
       if (error.code === 'PGRST116') {
+        logger.warn('Profile update failed - user not found', {
+          endpoint: '/api/user/profile',
+          method: 'PATCH',
+          userId: enhancedLocals.userId,
+        })
         return new Response(
           JSON.stringify({
             error: 'User profile not found',
@@ -190,6 +226,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
       throw error
     }
 
+    logApiResponse('/api/user/profile', 200, enhancedLocals.userId)
     return new Response(
       JSON.stringify({
         user: data,
@@ -201,7 +238,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
       }
     )
   } catch (error) {
-    console.error('Failed to update user profile:', error)
+    logApiError('/api/user/profile', error, enhancedLocals.userId)
     return new Response(
       JSON.stringify({
         error: 'Failed to update user profile',

@@ -2,12 +2,15 @@ import type { APIRoute } from 'astro'
 import { Webhook } from 'svix'
 
 import { getSupabaseServiceRole, isSupabaseConfigured } from '#libs/supabase-native'
+import { logger } from '#utils/logger'
 
 const webhookSecret = import.meta.env.CLERK_WEBHOOK_SECRET
 
 export const POST: APIRoute = async ({ request }) => {
+  logger.debug('Clerk webhook received', { endpoint: '/api/webhooks/clerk' })
+
   if (!webhookSecret) {
-    console.error('CLERK_WEBHOOK_SECRET not configured')
+    logger.error('Clerk webhook secret not configured', { endpoint: '/api/webhooks/clerk' })
     return new Response('Webhook secret not configured', { status: 500 })
   }
 
@@ -49,13 +52,16 @@ export const POST: APIRoute = async ({ request }) => {
       'svix-signature': svixSignature,
     }) as WebhookEvent
   } catch (err) {
-    console.error('Webhook verification failed:', err)
+    logger.error('Clerk webhook verification failed', {
+      endpoint: '/api/webhooks/clerk',
+      error: err instanceof Error ? err.message : 'Unknown error',
+    })
     return new Response('Invalid signature', { status: 400 })
   }
 
   // Check if Supabase is configured
   if (!isSupabaseConfigured()) {
-    console.warn('Supabase not configured - skipping user sync')
+    logger.warn('Supabase not configured - skipping user sync', { endpoint: '/api/webhooks/clerk' })
     return new Response('Webhook received but Supabase not configured', { status: 200 })
   }
 
