@@ -1,6 +1,7 @@
 ---
 import { clerkClient } from '@clerk/astro/server'
 import type { User } from '@clerk/backend'
+import { formatMetadataForDisplay } from '#utils/sanitize'
 
 // Get the current user's auth info
 const auth = Astro.locals.auth()
@@ -17,6 +18,19 @@ if (userId) {
   } catch (err) {
     console.error('Failed to fetch user data:', err)
     error = `Failed to load user information: ${err instanceof Error ? err.message : 'Unknown error'}`
+  }
+}
+
+// Add error boundary for metadata display
+let sanitizedMetadata = ''
+let metadataError = false
+
+if (user?.publicMetadata) {
+  try {
+    sanitizedMetadata = formatMetadataForDisplay(user.publicMetadata)
+  } catch (error) {
+    console.error('Failed to sanitize metadata:', error)
+    metadataError = true
   }
 }
 
@@ -127,9 +141,15 @@ const formatDateTime = (timestamp: number | undefined) => {
           {user.publicMetadata && Object.keys(user.publicMetadata).length > 0 && (
             <div class="user-info__row">
               <span class="user-info__label">Metadata:</span>
-              <pre class="user-info__value user-info__value--code">
-                {JSON.stringify(user.publicMetadata, null, 2)}
-              </pre>
+              {metadataError ? (
+                <span class="user-info__value user-info__value--error">
+                  Metadata temporarily unavailable
+                </span>
+              ) : (
+                <pre class="user-info__value user-info__value--code" aria-label="User metadata">
+                  {sanitizedMetadata}
+                </pre>
+              )}
             </div>
           )}
         </div>
@@ -258,6 +278,11 @@ const formatDateTime = (timestamp: number | undefined) => {
 
   .user-info__error {
     color: #dc2626;
+  }
+
+  .user-info__value--error {
+    color: #dc2626;
+    font-style: italic;
   }
 
   @media (max-width: 640px) {
