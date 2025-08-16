@@ -1,0 +1,205 @@
+---
+import Auth from '#/layouts/Auth.astro'
+import { SignedIn, SignedOut } from '@clerk/astro/components'
+import UserInfo from '#/components/astro/UserInfo.astro'
+import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
+---
+
+<Auth pageTitle="My Profile - Astro Kit" pageDescription="User profile and account settings">
+  <SignedIn>
+    <div class="profile-page">
+      <div class="profile-header">
+        <h1>My Profile</h1>
+        <p class="profile-subtitle">Manage your account information and settings</p>
+      </div>
+
+      <div class="profile-content">
+        <div class="profile-main">
+          <UserInfo />
+        </div>
+
+        <div class="profile-sidebar">
+          <div class="profile-actions">
+            <h3>Account Actions</h3>
+            <div class="action-links">
+              <a href="/dashboard" class="action-link">
+                <span class="action-icon">📊</span>
+                Back to Dashboard
+              </a>
+              <a href="/settings" class="action-link">
+                <span class="action-icon">⚙️</span>
+                Account Settings
+              </a>
+              <a href="/security" class="action-link">
+                <span class="action-icon">🔒</span>
+                Security Settings
+              </a>
+              <a href="/preferences" class="action-link">
+                <span class="action-icon">🎨</span>
+                Preferences
+              </a>
+            </div>
+          </div>
+
+          <div class="profile-help">
+            <h3>Need Help?</h3>
+            <p>
+              If you need to update your profile information or have questions about your account,
+              please contact support.
+            </p>
+            <a href="/support" class="help-link">Contact Support</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </SignedIn>
+
+  <SignedOut>
+    <SignedOutMessage />
+  </SignedOut>
+</Auth>
+
+<style>
+  .profile-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .profile-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border, #e5e7eb);
+  }
+
+  .profile-header h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary, #1f2937);
+  }
+
+  .profile-subtitle {
+    margin: 0;
+    font-size: 1.125rem;
+    color: var(--color-text-secondary, #6b7280);
+  }
+
+  .profile-content {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 3rem;
+  }
+
+  .profile-main {
+    min-width: 0; /* Prevents grid overflow */
+  }
+
+  .profile-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .profile-actions,
+  .profile-help {
+    background: var(--color-surface, #ffffff);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .profile-actions h3,
+  .profile-help h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary, #1f2937);
+  }
+
+  .action-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .action-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--color-text-primary, #1f2937);
+    transition: background-color 0.2s ease;
+  }
+
+  .action-link:hover {
+    background: var(--color-background, #f9fafb);
+    color: var(--color-primary, #3b82f6);
+  }
+
+  .action-icon {
+    font-size: 1.125rem;
+    min-width: 20px;
+  }
+
+  .profile-help p {
+    margin: 0 0 1rem 0;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary, #6b7280);
+    line-height: 1.5;
+  }
+
+  .help-link {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--color-primary, #3b82f6);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+
+  .help-link:hover {
+    background: var(--color-primary-dark, #2563eb);
+  }
+
+  /* Responsive design */
+  @media (max-width: 1024px) {
+    .profile-content {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .profile-sidebar {
+      order: -1; /* Move sidebar above main content on mobile */
+    }
+  }
+
+  @media (max-width: 768px) {
+    .profile-page {
+      padding: 1rem;
+    }
+
+    .profile-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+    }
+
+    .profile-header h1 {
+      font-size: 2rem;
+    }
+
+    .action-links {
+      gap: 0.25rem;
+    }
+
+    .action-link {
+      padding: 0.5rem;
+    }
+  }
+</style>

@@ -22,6 +22,7 @@ export { default as Sidebar } from './astro/Sidebar.astro'
 export { default as Breadcrumb } from './astro/Breadcrumb.astro'
 export { default as TextToSpeech } from './astro/TextToSpeech.astro'
 export { default as SignedOutMessage } from './astro/SignedOutMessage.astro'
+export { default as UserInfo } from './astro/UserInfo.astro'
 
 // Dashboard components
 export { default as DashboardCard } from './dashboard/DashboardCard.astro'
@@ -30,3 +31,6 @@ export { default as StatsCards } from './dashboard/StatsCards.astro'
 export { default as ActivityFeed } from './dashboard/ActivityFeed.astro'
 export { default as QuickActions } from './dashboard/QuickActions.astro'
 export { default as PostPreview } from './dashboard/PostPreview.astro'
+
+// React components
+export { default as UserProfile } from './react/UserProfile'

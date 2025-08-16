@@ -10,6 +10,7 @@ import {
   PostPreview,
 } from '#/components/dashboard'
 import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
+import UserInfo from '#/components/astro/UserInfo.astro'
 
 // Dashboard data
 const stats = [
@@ -81,6 +82,10 @@ const posts = [
   <SignedIn>
     <div class="dashboard-container">
       <DashboardLayout columns="1fr 1fr" gap="2rem" className="dashboard-grid">
+        <DashboardCard title="Profile" className="profile-section">
+          <UserInfo />
+        </DashboardCard>
+
         <div class="stats-section">
           <h2>Overview</h2>
           <StatsCards stats={stats} />
@@ -111,6 +116,10 @@ const posts = [
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+  }
+
+  .profile-section {
+    grid-column: 1 / -1;
   }
 
   .stats-section {

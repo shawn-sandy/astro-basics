@@ -41,7 +41,6 @@ export function UserProfile() {
         if (response.ok) {
           setUserData(data)
         } else {
-          console.log('User profile response:', data)
           // If no profile synced yet, show basic info
           setUserData({
             user: {
