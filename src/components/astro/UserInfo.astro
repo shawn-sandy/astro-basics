@@ -1,0 +1,282 @@
+---
+import { clerkClient } from '@clerk/astro/server'
+import type { User } from '@clerk/backend'
+
+// Get the current user's auth info
+const auth = Astro.locals.auth()
+const { userId } = auth
+
+let user: User | null = null
+let error: string | null = null
+
+if (userId) {
+  try {
+    // Fetch full user data from Clerk - pass Astro context
+    const client = clerkClient(Astro)
+    user = await client.users.getUser(userId)
+  } catch (err) {
+    console.error('Failed to fetch user data:', err)
+    error = `Failed to load user information: ${err instanceof Error ? err.message : 'Unknown error'}`
+  }
+}
+
+// Get primary email
+const primaryEmail = user?.emailAddresses?.find(email => email.id === user?.primaryEmailAddressId)
+
+// Format dates
+const formatDate = (timestamp: number | undefined) => {
+  if (!timestamp) return 'N/A'
+  return new Date(timestamp).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+const formatDateTime = (timestamp: number | undefined) => {
+  if (!timestamp) return 'N/A'
+  return new Date(timestamp).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+---
+
+<div class="user-info">
+  {
+    !userId ? (
+      <div class="user-info__signed-out">
+        <p>Please sign in to view your profile</p>
+      </div>
+    ) : error ? (
+      <div class="user-info__error">
+        <p>{error}</p>
+      </div>
+    ) : user ? (
+      <>
+        <div class="user-info__header">
+          {user.imageUrl && (
+            <img
+              src={user.imageUrl}
+              alt={`${user.fullName || user.username || 'User'} avatar`}
+              class="user-info__avatar"
+            />
+          )}
+          <div class="user-info__details">
+            <h2 class="user-info__name">
+              {user.fullName || (user.firstName && user.lastName)
+                ? `${user.firstName} ${user.lastName}`
+                : user.username || 'User'}
+            </h2>
+            {user.username && <p class="user-info__username">@{user.username}</p>}
+          </div>
+        </div>
+
+        <div class="user-info__content">
+          <div class="user-info__row">
+            <span class="user-info__label">Email:</span>
+            <span class="user-info__value">
+              {primaryEmail?.emailAddress || user.emailAddresses?.[0]?.emailAddress || 'No email'}
+              {primaryEmail?.verification?.status === 'verified' && (
+                <span class="user-info__badge user-info__badge--verified">Verified</span>
+              )}
+            </span>
+          </div>
+
+          <div class="user-info__row">
+            <span class="user-info__label">User ID:</span>
+            <span class="user-info__value user-info__value--mono">{user.id}</span>
+          </div>
+
+          <div class="user-info__row">
+            <span class="user-info__label">Joined:</span>
+            <span class="user-info__value">{formatDate(user.createdAt)}</span>
+          </div>
+
+          {user.lastSignInAt && (
+            <div class="user-info__row">
+              <span class="user-info__label">Last Sign In:</span>
+              <span class="user-info__value">{formatDateTime(user.lastSignInAt)}</span>
+            </div>
+          )}
+
+          {user.phoneNumbers && user.phoneNumbers.length > 0 && (
+            <div class="user-info__row">
+              <span class="user-info__label">Phone:</span>
+              <span class="user-info__value">
+                {user.phoneNumbers[0].phoneNumber}
+                {user.phoneNumbers[0].verification?.status === 'verified' && (
+                  <span class="user-info__badge user-info__badge--verified">Verified</span>
+                )}
+              </span>
+            </div>
+          )}
+
+          {user.twoFactorEnabled && (
+            <div class="user-info__row">
+              <span class="user-info__label">Security:</span>
+              <span class="user-info__value">
+                <span class="user-info__badge user-info__badge--success">2FA Enabled</span>
+              </span>
+            </div>
+          )}
+
+          {user.publicMetadata && Object.keys(user.publicMetadata).length > 0 && (
+            <div class="user-info__row">
+              <span class="user-info__label">Metadata:</span>
+              <pre class="user-info__value user-info__value--code">
+                {JSON.stringify(user.publicMetadata, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
+      </>
+    ) : (
+      <div class="user-info__loading">
+        <p>Loading user information...</p>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .user-info {
+    background: var(--color-surface, #ffffff);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .user-info__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border, #e5e7eb);
+  }
+
+  .user-info__avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-primary, #3b82f6);
+  }
+
+  .user-info__details {
+    flex: 1;
+  }
+
+  .user-info__name {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary, #1f2937);
+  }
+
+  .user-info__username {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-secondary, #6b7280);
+    font-size: 0.875rem;
+  }
+
+  .user-info__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .user-info__row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .user-info__label {
+    font-weight: 500;
+    color: var(--color-text-secondary, #6b7280);
+    min-width: 100px;
+  }
+
+  .user-info__value {
+    color: var(--color-text-primary, #1f2937);
+    word-break: break-all;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .user-info__value--mono {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    background: var(--color-background, #f9fafb);
+    padding: 0.125rem 0.25rem;
+    border-radius: 4px;
+  }
+
+  .user-info__value--code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    background: var(--color-background, #f9fafb);
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin: 0;
+    overflow-x: auto;
+    display: block;
+  }
+
+  .user-info__badge {
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-block;
+  }
+
+  .user-info__badge--verified {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .user-info__badge--success {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .user-info__signed-out,
+  .user-info__error,
+  .user-info__loading {
+    text-align: center;
+    color: var(--color-text-secondary, #6b7280);
+    padding: 2rem;
+  }
+
+  .user-info__error {
+    color: #dc2626;
+  }
+
+  @media (max-width: 640px) {
+    .user-info {
+      padding: 1rem;
+    }
+
+    .user-info__header {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .user-info__row {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .user-info__label {
+      min-width: auto;
+    }
+  }
+</style>
