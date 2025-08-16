@@ -67,6 +67,11 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
             <a href="/dashboard">Dashboard</a>
           </SignedIn>
         </li>
+        <li>
+          <SignedIn isStatic={true}>
+            <a href="/profile">Profile</a>
+          </SignedIn>
+        </li>
         <li class="clerk-user-button">
           <SignedIn isStatic={true}>
             <UserButton />
