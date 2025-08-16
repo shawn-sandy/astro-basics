@@ -1,17 +1,11 @@
 import { defineConfig } from 'astro/config'
 import react from '@astrojs/react'
 import mdx from '@astrojs/mdx'
-import remarkToc from 'remark-toc'
-import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis'
 import netlify from '@astrojs/netlify'
 import vercel from '@astrojs/vercel'
 import sitemap from '@astrojs/sitemap'
 import embeds from 'astro-embed/integration'
-// import spotlightjs from "@spotlightjs/astro";
-import { astroImageTools } from 'astro-imagetools'
 import AstroPWA from '@vite-pwa/astro'
-
-import lighthouse from 'astro-lighthouse'
 
 import node from '@astrojs/node'
 import clerk from '@clerk/astro'
@@ -22,11 +16,9 @@ export default defineConfig({
   integrations: [
     react(),
     sitemap(),
-    lighthouse(),
     embeds(),
     mdx(),
     clerk(),
-    astroImageTools,
     AstroPWA({
       registerType: 'autoUpdate',
       workbox: {

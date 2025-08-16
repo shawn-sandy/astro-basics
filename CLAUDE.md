@@ -323,3 +323,90 @@ npm run npm-update-i  # Interactive dependency updates
 - E2E tests require dev server running on port 4321
 
 - always store \*.md docs in /docs organize and place in subdirectories if necessary
+
+## Release Management
+
+This project uses a comprehensive release management system with specialized Claude agents for automation and consistency.
+
+### Release Process
+
+**Standard Process:** Follow the 4-phase release workflow documented in `/docs/releases/RELEASE-PROCESS.md`
+
+1. **Planning Phase** (T-14 days): Epic creation, team assignment, security planning
+2. **Development Phase** (T-7 days): Feature freeze, security audit, testing
+3. **Preparation Phase** (T-3 days): Version bump, build verification, final testing
+4. **Execution Phase** (Release Day): Deployment, verification, communication
+
+### Release Agent
+
+Use the **astro-basics-release-manager** agent for automated release coordination:
+
+```markdown
+Create a new release for astro-basics project. Current version is X.Y.Z.
+I need you to act as the astro-basics-release-manager agent and guide me through the complete release process.
+
+Please start by analyzing the current state and recommending the appropriate release type.
+```
+
+**Agent Documentation:** `@docs/agents/astro-basics-release-manager.md`
+
+### Release Types
+
+- **Major (X.0.0):** Breaking changes, architecture overhauls
+- **Minor (0.X.0):** New features, enhancements (monthly cadence)
+- **Patch (0.0.X):** Bug fixes, security patches (as needed)
+- **Hotfix:** Critical issues requiring immediate deployment
+
+### Mandatory Requirements
+
+**Security First:** Every release MUST include:
+
+- Complete security audit using `/docs/releases/vX.Y.Z-RELEASE-security-audit-checklist.md`
+- OWASP Top 10 2021 compliance verification
+- Technology-specific security checks (Astro, Clerk, Supabase, Turso)
+- Zero critical/high vulnerabilities before production deployment
+
+**File Naming:** All release documents use version-prefixed naming:
+
+- Epic: `vX.Y.Z-RELEASE-epic.md`
+- Security Audit: `vX.Y.Z-RELEASE-security-audit-checklist.md`
+- Release Notes: `vX.Y.Z-RELEASE-notes.md`
+- Migration Guide: `vX.Y.Z-RELEASE-migration-guide.md` (if applicable)
+
+### GitHub Integration
+
+**Labels:** Use these labels for release issues:
+
+- `epic` - Release coordination issues
+- `security` - Security audit requirements
+- `priority:critical` - Release blocking issues
+- `priority:high` - Security and quality issues
+
+**Issue Creation:** Generate release issues with proper cross-references and blocking relationships
+
+### Quality Gates
+
+Before any production release:
+
+- [ ] Security audit PASS result
+- [ ] Performance benchmarks met (>90 Lighthouse)
+- [ ] Zero critical bugs in testing
+- [ ] All tests passing (unit + E2E)
+- [ ] Documentation complete and accurate
+
+### Release Documentation
+
+- **Process Guide:** `/docs/releases/RELEASE-PROCESS.md`
+- **Template Generator:** `/docs/releases/release-template-generator.md`
+- **Agent Instructions:** `@docs/agents/astro-basics-release-manager.md`
+- **Current Releases:** `/docs/releases/` (version-specific files)
+
+### Emergency Releases
+
+For critical security patches:
+
+1. **Assessment** (< 1 hour): Evaluate severity
+2. **Fast-Track Development** (< 4 hours): Minimal fix with essential testing
+3. **Emergency Deployment** (< 6 hours): Direct to production with monitoring
+
+**Rollback:** Automated triggers for authentication failures, data corruption, or performance degradation >50%
