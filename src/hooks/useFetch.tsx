@@ -35,6 +35,16 @@ export function useFetch<T = unknown>(): UseFetchReturn<T> {
   const abortControllerRef = useRef<AbortController | null>(null)
   const timeoutIdRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null)
 
+  /**
+   * Cleans up active timeout and abort controller to prevent memory leaks.
+   * Aborts any in-progress fetch request and clears timeout timers.
+   *
+   * @returns {void}
+   * @example
+   * ```tsx
+   * cleanup() // Cancels ongoing request and clears timers
+   * ```
+   */
   const cleanup = useCallback(() => {
     if (timeoutIdRef.current) {
       globalThis.clearTimeout(timeoutIdRef.current)
@@ -46,6 +56,20 @@ export function useFetch<T = unknown>(): UseFetchReturn<T> {
     }
   }, [])
 
+  /**
+   * Creates a standardized FetchError object from various error sources.
+   * Analyzes the error type and HTTP status to determine if the error is retryable.
+   *
+   * @param {unknown} error - The original error object or message
+   * @param {number} [status] - HTTP status code from the response
+   * @param {FetchError['type']} [type] - Optional explicit error type override
+   * @returns {FetchError} Standardized error object with type classification and retry information
+   * @example
+   * ```tsx
+   * const fetchError = createFetchError(new Error('Network failed'), 500)
+   * // Returns: { type: 'server', message: 'Network failed', status: 500, retryable: true, timestamp: 1642291200000 }
+   * ```
+   */
   const createFetchError = useCallback(
     (error: unknown, status?: number, type?: FetchError['type']): FetchError => {
       let errorType: FetchError['type'] = type || 'unknown'
@@ -92,6 +116,28 @@ export function useFetch<T = unknown>(): UseFetchReturn<T> {
     []
   )
 
+  /**
+   * Executes a fetch request with timeout, retry logic, and comprehensive error handling.
+   * Implements exponential backoff for retries and proper cleanup of resources.
+   *
+   * @async
+   * @param {string} url - The URL to fetch from
+   * @param {FetchOptions} [options={}] - Fetch configuration including timeout, retries, and standard fetch options
+   * @param {number} [options.timeout=10000] - Request timeout in milliseconds
+   * @param {number} [options.retries=3] - Maximum number of retry attempts
+   * @param {number} [options.retryDelay=1000] - Base delay between retries in milliseconds (uses exponential backoff)
+   * @returns {Promise<T>} Promise that resolves to the parsed JSON response data
+   * @throws {FetchError} Standardized error object with retry information and error classification
+   * @example
+   * ```tsx
+   * const data = await fetchWithTimeout('/api/users', {
+   *   timeout: 5000,
+   *   retries: 2,
+   *   method: 'POST',
+   *   body: JSON.stringify({ name: 'John' })
+   * })
+   * ```
+   */
   const fetchWithTimeout = useCallback(
     async (url: string, options: FetchOptions = {}): Promise<T> => {
       const { timeout = 10_000, retries = 3, retryDelay = 1000, ...fetchOptions } = options
@@ -173,10 +219,35 @@ export function useFetch<T = unknown>(): UseFetchReturn<T> {
     [cleanup, createFetchError]
   )
 
+  /**
+   * Aborts the current fetch request and performs cleanup.
+   * Cancels any ongoing request and clears associated timers.
+   *
+   * @returns {void}
+   * @example
+   * ```tsx
+   * const { abortRequest } = useFetch()
+   * // Later, if you need to cancel the request:
+   * abortRequest()
+   * ```
+   */
   const abortRequest = useCallback(() => {
     cleanup()
   }, [cleanup])
 
+  /**
+   * Checks if a fetch request is currently in progress.
+   * Returns true if there's an active AbortController that hasn't been aborted.
+   *
+   * @returns {boolean} True if a request is currently in progress, false otherwise
+   * @example
+   * ```tsx
+   * const { isRequestInProgress } = useFetch()
+   * if (isRequestInProgress()) {
+   *   console.log('Request is still loading...')
+   * }
+   * ```
+   */
   const isRequestInProgress = useCallback((): boolean => {
     return abortControllerRef.current !== null && !abortControllerRef.current.signal.aborted
   }, [])
@@ -202,6 +273,26 @@ export function useFetchWithState<T = unknown>(url?: string, options?: FetchOpti
     retryCount: 0,
   })
 
+  /**
+   * Executes a fetch request with automatic state management.
+   * Updates loading, data, and error states throughout the request lifecycle.
+   *
+   * @async
+   * @param {string} [requestUrl] - The URL to fetch from (defaults to hook's url parameter)
+   * @param {FetchOptions} [requestOptions] - Fetch options (defaults to hook's options parameter)
+   * @returns {Promise<T>} Promise that resolves to the response data
+   * @throws {FetchError} Re-throws the error after updating component state
+   * @example
+   * ```tsx
+   * const { execute, isLoading, data, error } = useFetchWithState()
+   * try {
+   *   const result = await execute('/api/users', { method: 'GET' })
+   *   // Component state automatically updated with result
+   * } catch (error) {
+   *   // Error state automatically updated
+   * }
+   * ```
+   */
   const execute = useCallback(
     async (requestUrl: string = url || '', requestOptions: FetchOptions = options || {}) => {
       if (!requestUrl) {
@@ -239,6 +330,20 @@ export function useFetchWithState<T = unknown>(url?: string, options?: FetchOpti
     [fetchWithTimeout, url, options]
   )
 
+  /**
+   * Retries the last fetch request using the original URL and options.
+   * Can only be used when the hook was initialized with a URL parameter.
+   *
+   * @returns {Promise<T>} Promise that resolves to the response data
+   * @throws {Error} Throws error if no URL was provided during hook initialization
+   * @example
+   * ```tsx
+   * const { retry, error } = useFetchWithState('/api/users')
+   * if (error && error.retryable) {
+   *   await retry() // Retries the original request to '/api/users'
+   * }
+   * ```
+   */
   const retry = useCallback(() => {
     if (url) {
       return execute(url, options)
