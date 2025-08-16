@@ -1,161 +1,44 @@
 import { $authStore } from '@clerk/astro/client'
 import { useStore } from '@nanostores/react'
 import React from 'react'
-import type { UserProfileApiResponse, ApiError } from '#types/clerk'
 
-interface UserProfileState {
-  data: UserProfileApiResponse | null
-  isLoading: boolean
-  error: ApiError | null
-  retryCount: number
-}
+import { useFetchWithState } from '#hooks/useFetch'
+import type { UserProfileApiResponse } from '#types/clerk'
 
 export function UserProfile() {
   const { userId } = useStore($authStore)
-  const [state, setState] = React.useState<UserProfileState>({
-    data: null,
-    isLoading: true,
-    error: null,
-    retryCount: 0
-  })
+  const { data, isLoading, error, retryCount, execute, retry } =
+    useFetchWithState<UserProfileApiResponse>()
 
-  const fetchUser = React.useCallback(async (retryAttempt = 0) => {
-    if (!userId) {
-      setState(prev => ({ 
-        ...prev, 
-        isLoading: false,
-        error: null
-      }))
-      return
-    }
-
-    setState(prev => ({ ...prev, isLoading: true, error: null }))
+  const fetchUser = React.useCallback(async () => {
+    if (!userId) return
 
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout
-
-      const response = await fetch('/api/user/profile', {
-        signal: controller.signal,
+      await execute('/api/user/profile', {
         headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'no-cache'
-        }
-      })
-
-      clearTimeout(timeoutId)
-
-      let data: UserProfileApiResponse
-      try {
-        data = await response.json()
-      } catch (parseError) {
-        throw new Error(`Invalid JSON response: ${response.status}`)
-      }
-
-      if (response.ok) {
-        setState(prev => ({
-          ...prev,
-          data,
-          isLoading: false,
-          error: null,
-          retryCount: 0
-        }))
-      } else {
-        // Handle different HTTP error codes
-        let errorType: ApiError['type'] = 'server'
-        let errorMessage = data.error || `HTTP ${response.status}`
-        let retryable = false
-
-        switch (response.status) {
-          case 401:
-            errorType = 'auth'
-            errorMessage = 'Authentication required. Please sign in again.'
-            retryable = false
-            break
-          case 403:
-            errorType = 'auth'
-            errorMessage = 'Access denied. Insufficient permissions.'
-            retryable = false
-            break
-          case 404:
-            errorType = 'server'
-            errorMessage = 'Profile service not found.'
-            retryable = true
-            break
-          case 429:
-            errorType = 'network'
-            errorMessage = 'Too many requests. Please try again later.'
-            retryable = true
-            break
-          case 500:
-          case 502:
-          case 503:
-          case 504:
-            errorType = 'server'
-            errorMessage = 'Server error. Please try again.'
-            retryable = true
-            break
-          default:
-            errorType = 'unknown'
-            retryable = response.status < 500
-        }
-
-        setState(prev => ({
-          ...prev,
-          data: null,
-          isLoading: false,
-          error: { 
-            type: errorType, 
-            message: errorMessage, 
-            retryable,
-            timestamp: Date.now()
-          },
-          retryCount: retryAttempt
-        }))
-      }
-    } catch (error) {
-      let errorType: ApiError['type'] = 'network'
-      let errorMessage = 'Network error occurred'
-      let retryable = true
-
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          errorMessage = 'Request timed out. Please check your connection.'
-        } else if (error.message.includes('Failed to fetch')) {
-          errorMessage = 'Unable to connect to server. Please check your internet connection.'
-        } else {
-          errorMessage = error.message
-          errorType = 'unknown'
-        }
-      }
-
-      setState(prev => ({
-        ...prev,
-        data: null,
-        isLoading: false,
-        error: { 
-          type: errorType, 
-          message: errorMessage, 
-          retryable,
-          timestamp: Date.now()
+          'Cache-Control': 'no-cache',
         },
-        retryCount: retryAttempt
-      }))
+        timeout: 10_000,
+        retries: 3,
+      })
+    } catch (error) {
+      // Error is already handled by the hook
+      console.error('Failed to fetch user profile:', error)
     }
-  }, [userId])
+  }, [userId, execute])
 
   const handleRetry = React.useCallback(() => {
-    if (state.retryCount < 3) { // Max 3 retries
-      fetchUser(state.retryCount + 1)
+    if (retryCount < 3) {
+      retry()
     }
-  }, [fetchUser, state.retryCount])
+  }, [retry, retryCount])
 
   React.useEffect(() => {
     fetchUser()
   }, [fetchUser])
 
   // Loading state
-  if (state.isLoading) {
+  if (isLoading) {
     return (
       <div className="user-profile user-profile--loading">
         <div className="user-profile__skeleton" role="status" aria-label="Loading profile">
@@ -177,22 +60,18 @@ export function UserProfile() {
   }
 
   // Error state
-  if (state.error) {
+  if (error) {
     return (
       <div className="user-profile user-profile--error">
         <div className="error-content">
           <h3>Unable to Load Profile</h3>
-          <p>{state.error.message}</p>
-          {state.error.retryable && state.retryCount < 3 && (
-            <button 
-              onClick={handleRetry}
-              className="retry-button"
-              type="button"
-            >
-              Try Again ({3 - state.retryCount} attempts left)
+          <p>{error.message}</p>
+          {error.retryable && retryCount < 3 && (
+            <button onClick={handleRetry} className="retry-button" type="button">
+              Try Again ({3 - retryCount} attempts left)
             </button>
           )}
-          {state.error.type === 'auth' && (
+          {error.type === 'auth' && (
             <a href="/sign-in" className="auth-link">
               Sign In Again
             </a>
@@ -202,7 +81,7 @@ export function UserProfile() {
     )
   }
 
-  const user = state.data?.user
+  const user = data?.user
 
   return (
     <div className="user-profile">
@@ -210,10 +89,10 @@ export function UserProfile() {
         {user?.avatar_url && (
           <img
             src={user.avatar_url}
-            alt={`${user.full_name || user.username || 'User'} profile picture`}
+            alt={`${user.full_name || user.username || 'User'} profile `}
             className="user-profile__avatar"
             loading="lazy"
-            onError={(e) => {
+            onError={e => {
               // Handle broken image
               e.currentTarget.style.display = 'none'
             }}
@@ -237,13 +116,6 @@ export function UserProfile() {
           <span className="user-profile__value">{user?.email || 'No email'}</span>
         </div>
 
-        <div className="user-profile__detail">
-          <span className="user-profile__label">Clerk ID:</span>
-          <span className="user-profile__value user-profile__value--mono">
-            {user?.clerk_id || userId}
-          </span>
-        </div>
-
         {user?.created_at && (
           <div className="user-profile__detail">
             <span className="user-profile__label">Profile Created:</span>
@@ -257,10 +129,10 @@ export function UserProfile() {
           </div>
         )}
 
-        {userData?.message && (
+        {data?.message && (
           <div className="user-profile__detail">
             <span className="user-profile__label">Status:</span>
-            <span className="user-profile__value">{userData.message}</span>
+            <span className="user-profile__value">{data.message}</span>
           </div>
         )}
 
