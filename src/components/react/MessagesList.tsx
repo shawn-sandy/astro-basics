@@ -20,6 +20,14 @@ export function MessagesList() {
       return
     }
 
+    // Validate userId to prevent injection attacks
+    if (typeof userId !== 'string' || !/^user_[a-zA-Z0-9_]+$/.test(userId)) {
+      console.error('Invalid user ID format')
+      setError('Invalid user authentication')
+      setLoading(false)
+      return
+    }
+
     let subscription: ReturnType<typeof client.channel> | undefined
 
     // Fetch and subscribe to messages
@@ -27,13 +35,11 @@ export function MessagesList() {
       try {
         setLoading(true)
 
-        // Initial fetch
+        // Initial fetch - use proper parameterized queries to prevent SQL injection
         const { data, error: fetchError } = await client
           .from('messages')
           .select('*')
-          .or(
-            `clerk_user_id.eq.${userId},user_id.in.(select id from users where clerk_id='${userId}')`
-          )
+          .eq('clerk_user_id', userId)
           .order('created_at', { ascending: false })
           .limit(50)
 
@@ -42,7 +48,7 @@ export function MessagesList() {
         setMessages(data || [])
         setError(null)
 
-        // Real-time subscription
+        // Real-time subscription - use safe filter without string interpolation
         subscription = client
           .channel('user-messages')
           .on(
