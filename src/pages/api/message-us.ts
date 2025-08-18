@@ -9,8 +9,8 @@ import {
   parseCsrfTokenFromCookie,
   CSRF_CONFIG,
 } from '#utils/csrf'
-import { extractClientIP } from '#utils/ip-validation'
 import { sanitizeMessageData } from '#utils/input-sanitization'
+import { extractClientIP } from '#utils/ip-validation'
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   // Check if Turso is configured
