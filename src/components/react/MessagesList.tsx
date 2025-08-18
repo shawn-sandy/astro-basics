@@ -21,7 +21,7 @@ export function MessagesList() {
     }
 
     // Validate userId to prevent injection attacks
-    if (typeof userId !== 'string' || !/^user_[a-zA-Z0-9_]+$/.test(userId)) {
+    if (typeof userId !== 'string' || !/^user_[a-zA-Z0-9_-]+$/.test(userId)) {
       console.error('Invalid user ID format')
       setError('Invalid user authentication')
       setLoading(false)
