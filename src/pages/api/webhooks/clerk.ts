@@ -92,9 +92,28 @@ export const POST: APIRoute = async ({ request }) => {
         email => email.id === evt.data.primary_email_address_id
       )
 
+      // Validate that we have at least one valid email address
+      const validEmail =
+        primaryEmail?.email_address ||
+        (email_addresses && email_addresses.length > 0 && email_addresses[0]?.email_address)
+
+      if (!validEmail) {
+        console.error('User sync failed - no valid email address found for user:', id)
+        return new Response(
+          JSON.stringify({
+            error: 'No valid email address found',
+            message: 'User sync requires at least one email address',
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        )
+      }
+
       const userData = {
         clerk_id: id,
-        email: primaryEmail?.email_address || email_addresses?.[0]?.email_address,
+        email: validEmail,
         username,
         full_name: `${first_name || ''} ${last_name || ''}`.trim() || null,
         avatar_url: image_url,
