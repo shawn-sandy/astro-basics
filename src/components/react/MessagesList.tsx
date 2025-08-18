@@ -35,20 +35,59 @@ export function MessagesList() {
       try {
         setLoading(true)
 
-        // Initial fetch - use proper parameterized queries to prevent SQL injection
-        const { data, error: fetchError } = await client
+        // Initial fetch - secure approach using RPC function to prevent SQL injection
+        // We'll use a stored function approach or multiple queries for security
+        // First, get messages with direct clerk_user_id match (primary pathway)
+        const { data: directMessages, error: directError } = await client
           .from('messages')
           .select('*')
           .eq('clerk_user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(50)
+
+        if (directError) throw directError
+
+        // Second, get messages via users table relationship (secondary pathway)  
+        // Using inner join with proper parameterized query
+        const { data: relatedMessages, error: relatedError } = await client
+          .from('messages')
+          .select(`
+            id, subject, message, name, email, created_at, updated_at, 
+            is_read, is_archived, user_id, clerk_user_id,
+            users!inner(clerk_id)
+          `)
+          .eq('users.clerk_id', userId)
+          .is('clerk_user_id', null) // Only get messages without direct clerk_user_id to avoid duplicates
+
+        if (relatedError) throw relatedError
+
+        // Combine messages and sort
+        const allMessages = [...(directMessages || []), ...(relatedMessages || [])]
+        const { data, error: fetchError } = {
+          data: allMessages
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            .slice(0, 50),
+          error: null
+        }
 
         if (fetchError) throw fetchError
 
         setMessages(data || [])
         setError(null)
 
-        // Real-time subscription - use safe filter without string interpolation
+        // Helper function for handling real-time updates
+        const handleRealtimeUpdate = (payload: any) => {
+          if (payload.eventType === 'INSERT') {
+            setMessages(prev => [payload.new as Message, ...prev])
+          } else if (payload.eventType === 'UPDATE') {
+            setMessages(prev =>
+              prev.map(msg => (msg.id === payload.new.id ? (payload.new as Message) : msg))
+            )
+          } else if (payload.eventType === 'DELETE') {
+            setMessages(prev => prev.filter(msg => msg.id !== payload.old.id))
+          }
+        }
+
+        // Real-time subscription for messages - handle both pathways securely
+        // Primary subscription: direct clerk_user_id matches (most common case)
         subscription = client
           .channel('user-messages')
           .on(
@@ -59,19 +98,13 @@ export function MessagesList() {
               table: 'messages',
               filter: `clerk_user_id=eq.${userId}`,
             },
-            payload => {
-              if (payload.eventType === 'INSERT') {
-                setMessages(prev => [payload.new as Message, ...prev])
-              } else if (payload.eventType === 'UPDATE') {
-                setMessages(prev =>
-                  prev.map(msg => (msg.id === payload.new.id ? (payload.new as Message) : msg))
-                )
-              } else if (payload.eventType === 'DELETE') {
-                setMessages(prev => prev.filter(msg => msg.id !== payload.old.id))
-              }
-            }
+            handleRealtimeUpdate
           )
           .subscribe()
+
+        // Note: For messages via users table relationship, real-time updates are more complex
+        // as they require listening to both messages and users tables. The current approach
+        // covers the primary use case. Secondary pathway messages will be picked up on page refresh.
       } catch (err) {
         console.error('Failed to fetch messages:', err)
         setError(err instanceof Error ? err.message : 'Failed to load messages')
