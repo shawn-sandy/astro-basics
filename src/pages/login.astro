@@ -1,15 +1,18 @@
 ---
 export const prerender = true
 import Auth from '#/layouts/Auth.astro'
-import { SignedOut, SignIn } from '@clerk/astro/components'
+import { OptionalSignedOut } from '#components/astro/auth'
 ---
 
 <Auth pageTitle="Sign In - Astro Kit" hideHeader={true}>
   <section class="centered centered-column">
     <h2>Welcome Back!</h2>
     <p>Please sign in to continue.</p>
-    <SignedOut isStatic={true}>
-      <SignIn />
-    </SignedOut>
+    <OptionalSignedOut>
+      <div class="sign-in-placeholder">
+        <p>Sign in functionality requires Clerk authentication to be enabled.</p>
+        <p>Please configure your environment variables to enable authentication.</p>
+      </div>
+    </OptionalSignedOut>
   </section>
 </Auth>

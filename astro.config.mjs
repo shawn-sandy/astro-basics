@@ -10,15 +10,28 @@ import AstroPWA from '@vite-pwa/astro'
 import node from '@astrojs/node'
 import clerk from '@clerk/astro'
 
-// https://astro.build/config
-export default defineConfig({
-  site: process.env.SITE_URL || 'https://example.com',
-  integrations: [
+/**
+ * Creates the integrations array with Clerk integration
+ * Note: Environment variables are not available during config evaluation,
+ * so we always include Clerk and let the runtime handle validation
+ */
+function createIntegrations() {
+  const baseIntegrations = [
     react(),
     sitemap(),
     embeds(),
     mdx(),
-    clerk(),
+    clerk(), // Always include Clerk - validation happens at runtime
+  ]
+  
+  return baseIntegrations
+}
+
+// https://astro.build/config
+export default defineConfig({
+  site: process.env.SITE_URL || 'https://example.com',
+  integrations: [
+    ...createIntegrations(),
     AstroPWA({
       registerType: 'autoUpdate',
       workbox: {

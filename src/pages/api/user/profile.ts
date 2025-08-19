@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro'
 
 import { createServerSupabaseClient, isSupabaseConfigured } from '#libs/supabase-native'
 import { logger, logApiRequest, logApiResponse, logApiError } from '#utils/logger'
+import { isClerkEnabled } from '#utils/clerk-config'
 
 export const GET: APIRoute = async ({ locals }) => {
   const enhancedLocals = locals as typeof locals & {
@@ -9,6 +10,23 @@ export const GET: APIRoute = async ({ locals }) => {
     clerkToken?: string | null
   }
   logApiRequest('/api/user/profile', 'GET', enhancedLocals.userId)
+
+  // Check if Clerk authentication is enabled
+  if (!isClerkEnabled) {
+    logger.warn('Profile API - Authentication disabled', {
+      endpoint: '/api/user/profile',
+    })
+    return new Response(
+      JSON.stringify({
+        error: 'Authentication not configured',
+        message: 'This endpoint requires Clerk authentication to be enabled',
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
+  }
 
   logger.debug('Profile API - Authentication check', {
     userId: enhancedLocals.userId,
@@ -131,6 +149,24 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     clerkToken?: string | null
   }
   logApiRequest('/api/user/profile', 'PATCH', enhancedLocals.userId)
+
+  // Check if Clerk authentication is enabled
+  if (!isClerkEnabled) {
+    logger.warn('Profile API PATCH - Authentication disabled', {
+      endpoint: '/api/user/profile',
+      method: 'PATCH',
+    })
+    return new Response(
+      JSON.stringify({
+        error: 'Authentication not configured',
+        message: 'This endpoint requires Clerk authentication to be enabled',
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
+  }
 
   if (!enhancedLocals.userId || !enhancedLocals.clerkToken) {
     logger.warn('Profile API PATCH - Unauthorized access attempt', {

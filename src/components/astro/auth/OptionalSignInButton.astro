@@ -1,0 +1,57 @@
+---
+/**
+ * OptionalSignInButton - Conditionally renders sign in functionality
+ * 
+ * Shows a sign in link when authentication is enabled,
+ * otherwise renders a fallback message or nothing at all.
+ */
+
+import { isClerkEnabled } from '#utils/clerk-config'
+
+export interface Props {
+  fallbackText?: string
+  showFallback?: boolean
+  class?: string
+}
+
+const { 
+  fallbackText = 'Sign In (Authentication Disabled)', 
+  showFallback = false,
+  class: className = ''
+} = Astro.props
+---
+
+{isClerkEnabled ? (
+  <div class={className}>
+    <a href="/login" class="sign-in-button">Sign In</a>
+  </div>
+) : showFallback ? (
+  <span class={`auth-disabled ${className}`}>
+    {fallbackText}
+  </span>
+) : null}
+
+<style>
+  .auth-disabled {
+    opacity: 0.6;
+    font-style: italic;
+    color: var(--color-text-muted, #666);
+  }
+
+  .sign-in-button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+
+  .sign-in-button:hover {
+    background: #0056b3;
+    color: white;
+  }
+</style>

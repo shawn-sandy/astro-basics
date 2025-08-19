@@ -1,7 +1,19 @@
-import { clerkClient } from '@clerk/astro/server'
 import type { APIRoute } from 'astro'
 
 import { getSupabaseServiceRole, isSupabaseConfigured } from '#libs/supabase-native'
+import { isClerkEnabled } from '#utils/clerk-config'
+
+// Conditionally import Clerk client only when enabled
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let clerkClient: any = null
+if (isClerkEnabled) {
+  try {
+    const clerkModule = await import('@clerk/astro/server')
+    clerkClient = clerkModule.clerkClient
+  } catch {
+    console.warn('Failed to load Clerk client')
+  }
+}
 
 /**
  * Manual user sync endpoint
@@ -10,6 +22,20 @@ import { getSupabaseServiceRole, isSupabaseConfigured } from '#libs/supabase-nat
  */
 export const POST: APIRoute = async ({ locals }) => {
   console.log('🔄 User sync - userId:', locals.userId)
+
+  // Check if Clerk authentication is enabled
+  if (!isClerkEnabled || !clerkClient) {
+    return new Response(
+      JSON.stringify({
+        error: 'Authentication not configured',
+        message: 'User sync requires Clerk authentication to be enabled',
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
+  }
 
   if (!locals.userId) {
     return new Response(

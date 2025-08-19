@@ -1,13 +1,9 @@
 ---
 import Auth from '#layouts/Auth.astro'
-import {
-  SignedIn,
-  SignedOut,
-  OrganizationSwitcher,
-  OrganizationProfile,
-} from '@clerk/astro/components'
+import { OptionalSignedIn, OptionalSignedOut, AuthStatusBanner } from '#components/astro/auth'
+import { isClerkEnabled } from '#utils/clerk-config'
 
-const auth = Astro.locals.auth()
+const auth = isClerkEnabled ? Astro.locals.auth?.() : null
 const { userId, orgId } = auth
 
 if (!userId) {

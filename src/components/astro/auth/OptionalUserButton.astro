@@ -1,0 +1,72 @@
+---
+/**
+ * OptionalUserButton - Conditionally renders user menu functionality
+ * 
+ * Shows a user menu when authentication is enabled,
+ * otherwise renders a fallback or nothing at all.
+ */
+
+import { isClerkEnabled } from '#utils/clerk-config'
+
+export interface Props {
+  fallbackText?: string
+  showFallback?: boolean
+  class?: string
+}
+
+const { 
+  fallbackText = 'User Menu (Auth Disabled)', 
+  showFallback = false,
+  class: className = ''
+} = Astro.props
+---
+
+{isClerkEnabled ? (
+  <div class={className}>
+    <div class="user-menu">
+      <a href="/profile" class="user-menu-item">Profile</a>
+      <a href="/dashboard" class="user-menu-item">Dashboard</a>
+      <a href="/logout" class="user-menu-item">Sign Out</a>
+    </div>
+  </div>
+) : showFallback ? (
+  <span class={`auth-disabled ${className}`}>
+    {fallbackText}
+  </span>
+) : null}
+
+<style>
+  .auth-disabled {
+    opacity: 0.6;
+    font-style: italic;
+    color: var(--color-text-muted, #666);
+  }
+
+  .user-menu {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .user-menu-item {
+    padding: 0.5rem 0.75rem;
+    text-decoration: none;
+    border-radius: 4px;
+    background: #f8f9fa;
+    color: #495057;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+  }
+
+  .user-menu-item:hover {
+    background: #e9ecef;
+    color: #343a40;
+  }
+
+  @media (max-width: 768px) {
+    .user-menu {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+  }
+</style>

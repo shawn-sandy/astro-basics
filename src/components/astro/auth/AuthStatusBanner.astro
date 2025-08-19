@@ -1,0 +1,83 @@
+---
+/**
+ * AuthStatusBanner - Shows authentication configuration status
+ * 
+ * Displays a banner when authentication is disabled to inform users
+ * that auth-related features are not available.
+ */
+
+import { isClerkEnabled } from '#utils/clerk-config'
+
+export interface Props {
+  showWhenEnabled?: boolean
+  enabledMessage?: string
+  disabledMessage?: string
+  class?: string
+}
+
+const { 
+  showWhenEnabled = false,
+  enabledMessage = 'Authentication is enabled',
+  disabledMessage = 'Authentication is disabled - some features may not be available',
+  class: className = ''
+} = Astro.props
+---
+
+{!isClerkEnabled ? (
+  <div class={`auth-banner auth-banner--disabled ${className}`} role="alert">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 1a7 7 0 100 14A7 7 0 008 1zM7 4a1 1 0 112 0v3a1 1 0 11-2 0V4zm2 7a1 1 0 11-2 0 1 1 0 012 0z"/>
+    </svg>
+    <span>{disabledMessage}</span>
+  </div>
+) : showWhenEnabled ? (
+  <div class={`auth-banner auth-banner--enabled ${className}`}>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/>
+    </svg>
+    <span>{enabledMessage}</span>
+  </div>
+) : null}
+
+<style>
+  .auth-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+  
+  .auth-banner--disabled {
+    background-color: #fef3cd;
+    border: 1px solid #fde68a;
+    color: #92400e;
+  }
+  
+  .auth-banner--enabled {
+    background-color: #d1fae5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+  }
+  
+  .auth-banner svg {
+    flex-shrink: 0;
+  }
+  
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .auth-banner--disabled {
+      background-color: #451a03;
+      border-color: #92400e;
+      color: #fde68a;
+    }
+    
+    .auth-banner--enabled {
+      background-color: #064e3b;
+      border-color: #065f46;
+      color: #a7f3d0;
+    }
+  }
+</style>

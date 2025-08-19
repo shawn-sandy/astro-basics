@@ -9,7 +9,13 @@ import Header from '#components/astro/Header.astro'
 import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config'
 import '@fpkit/acss/styles'
 import '../styles/index.css'
-import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/astro/components'
+import { 
+  OptionalSignedIn, 
+  OptionalSignedOut, 
+  OptionalUserButton, 
+  OptionalSignInButton,
+  AuthStatusBanner 
+} from '#components/astro/auth'
 const isPWAEnabled = import.meta.env.PWA_ENABLED === 'true' || false
 // types
 type routeItem = {
@@ -63,22 +69,22 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
     <Navigation>
       <ul slot="login">
         <li>
-          <SignedIn isStatic={true}>
+          <OptionalSignedIn>
             <a href="/dashboard">Dashboard</a>
-          </SignedIn>
+          </OptionalSignedIn>
         </li>
         <li>
-          <SignedIn isStatic={true}>
+          <OptionalSignedIn>
             <a href="/profile">Profile</a>
-          </SignedIn>
+          </OptionalSignedIn>
         </li>
         <li class="clerk-user-button">
-          <SignedIn isStatic={true}>
-            <UserButton />
-          </SignedIn>
-          <SignedOut isStatic={true}>
-            <SignInButton mode="modal" />
-          </SignedOut>
+          <OptionalSignedIn>
+            <OptionalUserButton />
+          </OptionalSignedIn>
+          <OptionalSignedOut>
+            <OptionalSignInButton />
+          </OptionalSignedOut>
         </li>
       </ul>
     </Navigation>
@@ -93,6 +99,10 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
         />
       )
     }
+    
+    <!-- Show auth status banner when auth is disabled -->
+    <AuthStatusBanner />
+    
     <slot />
     <Footer />
 

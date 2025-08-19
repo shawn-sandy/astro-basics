@@ -1,6 +1,5 @@
 // src/middleware.ts
 
-import { clerkMiddleware, createRouteMatcher } from '@clerk/astro/server'
 import type { MiddlewareHandler } from 'astro'
 import { sequence } from 'astro:middleware'
 
@@ -14,19 +13,39 @@ import {
 } from '#utils/csrf'
 import { logger } from '#utils/logger'
 import { messageRateLimiter, getClientIP, createRateLimitResponse } from '#utils/rate-limiter'
+import { isClerkEnabled } from '#utils/clerk-config'
 
-// Validate required environment variables - but allow dummy values in development
-const hasValidClerkKeys =
-  import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY &&
-  import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY !== 'YOUR_CLERK_PUBLISHABLE_KEY' &&
-  import.meta.env.CLERK_SECRET_KEY &&
-  import.meta.env.CLERK_SECRET_KEY !== 'YOUR_CLERK_SECRET_KEY'
+// Import Clerk conditionally based on runtime availability
+let clerkMiddleware: Function | null = null
+let createRouteMatcher: Function | null = null
 
-if (!hasValidClerkKeys) {
-  logger.warn('Using dummy Clerk keys - authentication will not work properly in development')
+// Try to load Clerk modules if enabled
+if (isClerkEnabled) {
+  try {
+    // Use synchronous require for compatibility with middleware loading
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const clerkModule = eval('require')('@clerk/astro/server')
+    clerkMiddleware = clerkModule.clerkMiddleware
+    createRouteMatcher = clerkModule.createRouteMatcher
+    logger.info('Clerk middleware loaded successfully')
+  } catch {
+    logger.warn('Clerk middleware not available - this is expected when Clerk integration is disabled')
+  }
 }
 
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)', '/organization(.*)'])
+// Define protected routes pattern
+const protectedRoutePatterns = ['/dashboard(.*)', '/forum(.*)', '/organization(.*)']
+
+// Create route matcher - either real Clerk one or fallback
+const isProtectedRoute = isClerkEnabled && createRouteMatcher 
+  ? createRouteMatcher(protectedRoutePatterns)
+  : (request: Request) => {
+      // Simple fallback route matcher when Clerk is disabled
+      const url = new URL(request.url)
+      return protectedRoutePatterns.some(pattern => 
+        new RegExp(pattern).test(url.pathname)
+      )
+    }
 
 /**
  * Sync user data from Clerk to Supabase by updating last_sign_in_at
@@ -137,50 +156,71 @@ const rateLimitMiddleware: MiddlewareHandler = async (context, next) => {
 /**
  * Enhanced Clerk authentication middleware with Supabase token support
  */
-const authMiddleware = clerkMiddleware(async (auth, context, next) => {
-  const { locals } = context
-
-  // If the current route is protected and the user is not authenticated, redirect to sign-in
-  if (isProtectedRoute(context.request) && !auth().userId) {
-    return auth().redirectToSignIn()
+const createAuthMiddleware = (): MiddlewareHandler => {
+  if (!isClerkEnabled || !clerkMiddleware) {
+    // Return a no-op middleware when Clerk is disabled
+    return async (context, next) => {
+      const { request } = context
+      
+      // Block access to protected routes when auth is disabled
+      if (isProtectedRoute(request)) {
+        logger.warn('Access denied to protected route - authentication disabled', { 
+          path: new URL(request.url).pathname 
+        })
+        return new Response('Authentication required but not configured', { status: 503 })
+      }
+      
+      return next()
+    }
   }
 
-  // Store auth data in locals for server components
-  if (auth().userId) {
-    locals.userId = auth().userId
-    locals.userRole = auth().sessionClaims?.role as string
+  // Return the real Clerk middleware
+  return clerkMiddleware(async (auth, context, next) => {
+    const { locals } = context
 
-    // Get Clerk session token for Supabase native integration
-    try {
-      const token = await auth().getToken()
-      locals.clerkToken = token
-      logger.debug('Auth middleware - User authenticated', { userId: locals.userId })
+    // If the current route is protected and the user is not authenticated, redirect to sign-in
+    if (isProtectedRoute(context.request) && !auth().userId) {
+      return auth().redirectToSignIn()
+    }
 
-      // Update last sign in timestamp (async, don't block request)
-      // Only sync on protected routes to avoid unnecessary calls
-      if (isProtectedRoute(context.request)) {
-        updateUserLastSignIn(locals.userId).catch(error => {
-          logger.warn('Background user sync failed', {
-            userId: locals.userId,
-            error: error instanceof Error ? error.message : 'Unknown error',
+    // Store auth data in locals for server components
+    if (auth().userId) {
+      locals.userId = auth().userId
+      locals.userRole = auth().sessionClaims?.role as string
+
+      // Get Clerk session token for Supabase native integration
+      try {
+        const token = await auth().getToken()
+        locals.clerkToken = token
+        logger.debug('Auth middleware - User authenticated', { userId: locals.userId })
+
+        // Update last sign in timestamp (async, don't block request)
+        // Only sync on protected routes to avoid unnecessary calls
+        if (isProtectedRoute(context.request)) {
+          updateUserLastSignIn(locals.userId).catch(error => {
+            logger.warn('Background user sync failed', {
+              userId: locals.userId,
+              error: error instanceof Error ? error.message : 'Unknown error',
+            })
           })
+        }
+      } catch (error) {
+        logger.error('Failed to get Clerk token', {
+          userId: locals.userId,
+          error: error instanceof Error ? error.message : 'Unknown error',
         })
       }
-    } catch (error) {
-      logger.error('Failed to get Clerk token', {
-        userId: locals.userId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })
+    } else {
+      logger.debug('Auth middleware - No user ID found')
     }
-  } else {
-    logger.debug('Auth middleware - No user ID found')
-  }
 
-  // Allow other requests to proceed
-  return next()
-})
+    // Allow other requests to proceed
+    return next()
+  })
+}
 
-// Export middleware - include rate limiting before auth/CSRF
-export const onRequest = hasValidClerkKeys
-  ? sequence(rateLimitMiddleware, csrfMiddleware, authMiddleware)
-  : sequence(rateLimitMiddleware, csrfMiddleware)
+// Create auth middleware instance
+const authMiddleware = createAuthMiddleware()
+
+// Export middleware - always include rate limiting and CSRF, conditionally include auth
+export const onRequest = sequence(rateLimitMiddleware, csrfMiddleware, authMiddleware)

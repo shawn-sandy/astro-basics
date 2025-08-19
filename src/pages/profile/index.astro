@@ -1,57 +1,72 @@
 ---
 import Auth from '#/layouts/Auth.astro'
-import { SignedIn, SignedOut } from '@clerk/astro/components'
+import { OptionalSignedIn, OptionalSignedOut, AuthStatusBanner } from '#components/astro/auth'
 import UserInfo from '#/components/astro/UserInfo.astro'
 import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
+import { isClerkEnabled } from '#utils/clerk-config'
 ---
 
 <Auth pageTitle="My Profile - Astro Kit" pageDescription="User profile and account settings">
-  <SignedIn>
-    <div class="profile-page">
-      <div class="profile-content">
-        <div class="profile-main">
-          <UserInfo />
-        </div>
-
-        <div class="profile-sidebar">
-          <div class="profile-actions">
-            <h3>Account Actions</h3>
-            <div class="action-links">
-              <a href="/dashboard" class="action-link">
-                <span class="action-icon">📊</span>
-                Back to Dashboard
-              </a>
-              <a href="/settings" class="action-link">
-                <span class="action-icon">⚙️</span>
-                Account Settings
-              </a>
-              <a href="/security" class="action-link">
-                <span class="action-icon">🔒</span>
-                Security Settings
-              </a>
-              <a href="/preferences" class="action-link">
-                <span class="action-icon">🎨</span>
-                Preferences
-              </a>
-            </div>
-          </div>
-
-          <div class="profile-help">
-            <h3>Need Help?</h3>
-            <p>
-              If you need to update your profile information or have questions about your account,
-              please contact support.
-            </p>
-            <a href="/support" class="help-link">Contact Support</a>
-          </div>
-        </div>
+  {!isClerkEnabled ? (
+    <div class="auth-disabled-container">
+      <AuthStatusBanner 
+        disabledMessage="Profile page requires authentication to be enabled." 
+      />
+      <div class="auth-disabled-content">
+        <h1>Profile Unavailable</h1>
+        <p>This feature requires Clerk authentication to be properly configured.</p>
       </div>
     </div>
-  </SignedIn>
+  ) : (
+    <>
+      <OptionalSignedIn>
+        <div class="profile-page">
+          <div class="profile-content">
+            <div class="profile-main">
+              <UserInfo />
+            </div>
 
-  <SignedOut>
-    <SignedOutMessage />
-  </SignedOut>
+            <div class="profile-sidebar">
+              <div class="profile-actions">
+                <h3>Account Actions</h3>
+                <div class="action-links">
+                  <a href="/dashboard" class="action-link">
+                    <span class="action-icon">📊</span>
+                    Back to Dashboard
+                  </a>
+                  <a href="/settings" class="action-link">
+                    <span class="action-icon">⚙️</span>
+                    Account Settings
+                  </a>
+                  <a href="/security" class="action-link">
+                    <span class="action-icon">🔒</span>
+                    Security Settings
+                  </a>
+                  <a href="/preferences" class="action-link">
+                    <span class="action-icon">🎨</span>
+                    Preferences
+                  </a>
+                </div>
+              </div>
+
+              <div class="profile-help">
+                <h3>Need Help?</h3>
+                <p>
+                  If you need to update your profile information or have questions about your account,
+                  please contact support.
+                </p>
+                <a href="/support" class="help-link">Contact Support</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </OptionalSignedIn>
+
+      <OptionalSignedOut>
+        <SignedOutMessage />
+      </OptionalSignedOut>
+    </>
+  )}
 </Auth>
 
 <style>
