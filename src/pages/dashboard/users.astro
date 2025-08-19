@@ -1,6 +1,6 @@
 ---
 import Auth from '#layouts/Auth.astro'
-import { OptionalSignedIn, OptionalSignedOut, AuthStatusBanner } from '#components/astro/auth'
+import { OptionalSignedIn, OptionalSignedOut } from '#components/astro/auth'
 import { isClerkEnabled } from '#utils/clerk-config'
 
 // User profile functionality is disabled when Clerk is not enabled
@@ -8,19 +8,7 @@ import { isClerkEnabled } from '#utils/clerk-config'
 
 <Auth title="User Management - Astro Basics">
   <main class="container dashboard-page">
-    {!isClerkEnabled ? (
-      <div class="auth-disabled-container">
-        <AuthStatusBanner 
-          disabledMessage="User management requires authentication to be enabled." 
-        />
-        <div class="auth-disabled-content">
-          <h1>User Management Unavailable</h1>
-          <p>This feature requires Clerk authentication to be properly configured.</p>
-        </div>
-      </div>
-    ) : (
-      <>
-        <OptionalSignedIn>
+    <OptionalSignedIn>
           <div class="dashboard-header">
             <h1>User Management</h1>
           </div>
@@ -33,32 +21,16 @@ import { isClerkEnabled } from '#utils/clerk-config'
           </section>
         </OptionalSignedIn>
 
-        <OptionalSignedOut>
-          <div class="alert alert--info">
-            <p>Please sign in to access the user management dashboard.</p>
-            <a href="/login" class="btn btn--primary">Sign In</a>
-          </div>
-        </OptionalSignedOut>
-      </>
-    )}
+    <OptionalSignedOut>
+      <div class="alert alert--info">
+        <p>Please sign in to access the user management dashboard.</p>
+        <a href="/login" class="btn btn--primary">Sign In</a>
+      </div>
+    </OptionalSignedOut>
   </main>
 </Auth>
 
 <style>
-  .auth-disabled-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
-  }
-
-  .auth-disabled-content {
-    text-align: center;
-    padding: 2rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-  }
-
   .feature-unavailable {
     padding: 1rem;
     background: #f8f9fa;

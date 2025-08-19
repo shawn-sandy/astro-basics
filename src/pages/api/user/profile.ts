@@ -13,9 +13,6 @@ export const GET: APIRoute = async ({ locals }) => {
 
   // Check if Clerk authentication is enabled
   if (!isClerkEnabled) {
-    logger.warn('Profile API - Authentication disabled', {
-      endpoint: '/api/user/profile',
-    })
     return new Response(
       JSON.stringify({
         error: 'Authentication not configured',
@@ -152,10 +149,6 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
 
   // Check if Clerk authentication is enabled
   if (!isClerkEnabled) {
-    logger.warn('Profile API PATCH - Authentication disabled', {
-      endpoint: '/api/user/profile',
-      method: 'PATCH',
-    })
     return new Response(
       JSON.stringify({
         error: 'Authentication not configured',

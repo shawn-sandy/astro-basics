@@ -1,25 +1,13 @@
 ---
 import Auth from '#/layouts/Auth.astro'
-import { OptionalSignedIn, OptionalSignedOut, AuthStatusBanner } from '#components/astro/auth'
+import { OptionalSignedIn, OptionalSignedOut } from '#components/astro/auth'
 import UserInfo from '#/components/astro/UserInfo.astro'
 import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
 import { isClerkEnabled } from '#utils/clerk-config'
 ---
 
 <Auth pageTitle="My Profile - Astro Kit" pageDescription="User profile and account settings">
-  {!isClerkEnabled ? (
-    <div class="auth-disabled-container">
-      <AuthStatusBanner 
-        disabledMessage="Profile page requires authentication to be enabled." 
-      />
-      <div class="auth-disabled-content">
-        <h1>Profile Unavailable</h1>
-        <p>This feature requires Clerk authentication to be properly configured.</p>
-      </div>
-    </div>
-  ) : (
-    <>
-      <OptionalSignedIn>
+  <OptionalSignedIn>
         <div class="profile-page">
           <div class="profile-content">
             <div class="profile-main">
@@ -62,11 +50,9 @@ import { isClerkEnabled } from '#utils/clerk-config'
         </div>
       </OptionalSignedIn>
 
-      <OptionalSignedOut>
-        <SignedOutMessage />
-      </OptionalSignedOut>
-    </>
-  )}
+  <OptionalSignedOut>
+    <SignedOutMessage />
+  </OptionalSignedOut>
 </Auth>
 
 <style>

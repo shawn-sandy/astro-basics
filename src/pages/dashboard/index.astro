@@ -1,6 +1,6 @@
 ---
 import Auth from '#/layouts/Auth.astro'
-import { OptionalSignedIn, OptionalSignedOut, AuthStatusBanner } from '#components/astro/auth'
+import { OptionalSignedIn, OptionalSignedOut } from '#components/astro/auth'
 import {
   DashboardCard,
   DashboardLayout,
@@ -80,29 +80,7 @@ const posts = [
 ---
 
 <Auth pageTitle="Dashboard - Astro Kit" pageDescription="">
-  {!isClerkEnabled ? (
-    <div class="auth-disabled-container">
-      <AuthStatusBanner 
-        disabledMessage="Dashboard requires authentication to be enabled. Please configure Clerk environment variables." 
-      />
-      <div class="auth-disabled-content">
-        <h2>Dashboard Unavailable</h2>
-        <p>
-          The dashboard requires authentication to function properly. 
-          To enable the dashboard, please configure the following environment variables:
-        </p>
-        <ul>
-          <li><code>PUBLIC_CLERK_PUBLISHABLE_KEY</code></li>
-          <li><code>CLERK_SECRET_KEY</code></li>
-        </ul>
-        <p>
-          <a href="/docs/authentication">View authentication setup documentation</a>
-        </p>
-      </div>
-    </div>
-  ) : (
-    <>
-      <OptionalSignedIn>
+  <OptionalSignedIn>
         <div class="dashboard-container">
           <DashboardLayout columns="1fr 1fr" gap="2rem" className="dashboard-grid">
             <DashboardCard title="Profile" className="profile-section">
@@ -129,11 +107,9 @@ const posts = [
         </div>
       </OptionalSignedIn>
 
-      <OptionalSignedOut>
-        <SignedOutMessage />
-      </OptionalSignedOut>
-    </>
-  )}
+  <OptionalSignedOut>
+    <SignedOutMessage />
+  </OptionalSignedOut>
 </Auth>
 
 <style>
@@ -157,61 +133,8 @@ const posts = [
     font-size: 1.25rem;
   }
 
-  .auth-disabled-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
-  }
-
-  .auth-disabled-content {
-    text-align: center;
-    padding: 2rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-  }
-
-  .auth-disabled-content h2 {
-    color: #495057;
-    margin-bottom: 1rem;
-  }
-
-  .auth-disabled-content p {
-    color: #6c757d;
-    margin-bottom: 1rem;
-    line-height: 1.6;
-  }
-
-  .auth-disabled-content ul {
-    text-align: left;
-    display: inline-block;
-    margin: 1rem 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .auth-disabled-content li {
-    margin: 0.5rem 0;
-    padding: 0.5rem 1rem;
-    background: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    font-family: monospace;
-  }
-
-  .auth-disabled-content code {
-    background: #f1f3f4;
-    padding: 0.2rem 0.4rem;
-    border-radius: 3px;
-    font-family: monospace;
-  }
-
   @media (max-width: 768px) {
     .dashboard-container {
-      padding: 1rem;
-    }
-    
-    .auth-disabled-container {
       padding: 1rem;
     }
   }

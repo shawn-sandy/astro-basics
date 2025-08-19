@@ -29,7 +29,7 @@ if (isClerkEnabled) {
     createRouteMatcher = clerkModule.createRouteMatcher
     logger.info('Clerk middleware loaded successfully')
   } catch {
-    logger.warn('Clerk middleware not available - this is expected when Clerk integration is disabled')
+    // Silently handle when Clerk middleware is not available
   }
 }
 
@@ -164,9 +164,6 @@ const createAuthMiddleware = (): MiddlewareHandler => {
       
       // Block access to protected routes when auth is disabled
       if (isProtectedRoute(request)) {
-        logger.warn('Access denied to protected route - authentication disabled', { 
-          path: new URL(request.url).pathname 
-        })
         return new Response('Authentication required but not configured', { status: 503 })
       }
       

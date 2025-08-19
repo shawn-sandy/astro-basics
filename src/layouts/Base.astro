@@ -13,8 +13,7 @@ import {
   OptionalSignedIn, 
   OptionalSignedOut, 
   OptionalUserButton, 
-  OptionalSignInButton,
-  AuthStatusBanner 
+  OptionalSignInButton
 } from '#components/astro/auth'
 const isPWAEnabled = import.meta.env.PWA_ENABLED === 'true' || false
 // types
@@ -99,9 +98,6 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
         />
       )
     }
-    
-    <!-- Show auth status banner when auth is disabled -->
-    <AuthStatusBanner />
     
     <slot />
     <Footer />
