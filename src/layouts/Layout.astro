@@ -12,7 +12,7 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader, showBreadcrumb, br
   pageDescription={pageDescription || 'Sign in to your account'}
   pageImageUrl={pageImageUrl}
 >
-  <MainSection showBreadcrumb={showBreadcrumb || true} breadcrumbRoutes={breadcrumbRoutes || []}>
+  <MainSection showBreadcrumb={showBreadcrumb ?? true} breadcrumbRoutes={breadcrumbRoutes || []}>
     <div slot="featured">
       <slot name="featured" />
     </div>
