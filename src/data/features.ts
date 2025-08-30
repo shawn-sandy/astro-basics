@@ -31,8 +31,6 @@ export const projectFeatures: FeatureCard[] = [
     title: 'Content Management System',
     description:
       'Powerful content collections with MDX support, RSS feeds, tagging system, and publication workflow. Perfect for blogs, documentation, and content-rich websites.',
-
-    link: '/docs/1',
     category: 'core',
     priority: 100,
   },
@@ -40,8 +38,6 @@ export const projectFeatures: FeatureCard[] = [
     title: 'Authentication & Security',
     description:
       'Complete Clerk integration with protected routes, user management, and security utilities. XSS protection, input validation, and trusted domain validation built-in.',
-
-    link: '/signin',
     category: 'security',
     priority: 95,
   },
@@ -49,8 +45,6 @@ export const projectFeatures: FeatureCard[] = [
     title: 'Progressive Web App',
     description:
       'Full PWA implementation with offline support, service workers, install prompts, and native app-like experience. Works seamlessly across all devices.',
-
-    link: '/',
     category: 'user-experience',
     priority: 90,
   },
@@ -59,7 +53,6 @@ export const projectFeatures: FeatureCard[] = [
     description:
       '30+ Astro components plus React components for building modern websites. Layout, content display, forms, media, and utility components included.',
     image: 'https://picsum.photos/400/250?random=4',
-    link: '/docs/1',
     category: 'development',
     priority: 85,
   },
@@ -68,7 +61,6 @@ export const projectFeatures: FeatureCard[] = [
     description:
       'Built-in screen reader support, keyboard navigation, text-to-speech integration, and comprehensive accessibility testing. WCAG compliant design patterns.',
     image: 'https://picsum.photos/400/250?random=5',
-    link: '/about',
     category: 'user-experience',
     priority: 80,
   },
@@ -77,7 +69,6 @@ export const projectFeatures: FeatureCard[] = [
     description:
       'Comprehensive testing suite with Playwright and Vitest, TypeScript support, ESLint, Prettier, and automated quality checks. Hot reloading and SCSS compilation.',
     image: 'https://picsum.photos/400/250?random=6',
-    link: '/docs/1',
     category: 'development',
     priority: 75,
   },
@@ -86,7 +77,6 @@ export const projectFeatures: FeatureCard[] = [
     description:
       'Deploy to Netlify, Vercel, or Node.js with automatic adapter selection. Server-side rendering, performance optimization, and monitoring included.',
     image: 'https://picsum.photos/400/250?random=7',
-    link: '/docs/1',
     category: 'development',
     priority: 70,
   },
@@ -95,7 +85,6 @@ export const projectFeatures: FeatureCard[] = [
     description:
       'YouTube embedding, image optimization with Sharp, responsive images, social media integration, and rich content embedding capabilities.',
     image: 'https://picsum.photos/400/250?random=8',
-    link: '/posts/1',
     category: 'core',
     priority: 65,
   },
