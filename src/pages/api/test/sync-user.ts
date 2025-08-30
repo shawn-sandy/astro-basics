@@ -2,6 +2,7 @@ import { clerkClient } from '@clerk/astro/server'
 import type { APIRoute } from 'astro'
 
 import { getSupabaseServiceRole, isSupabaseConfigured } from '#libs/supabase-native'
+import { extractPrimaryEmail, buildUserData } from '#utils/user'
 
 /**
  * Test endpoint to manually sync a specific user by their Clerk ID
@@ -65,15 +66,8 @@ export const POST: APIRoute = async ({ request }) => {
       )
     }
 
-    // Extract primary email
-    const primaryEmail = user.emailAddresses.find(email => email.id === user.primaryEmailAddressId)
-
-    // Validate that we have at least one valid email address
-    const validEmail =
-      primaryEmail?.emailAddress ||
-      (user.emailAddresses &&
-        user.emailAddresses.length > 0 &&
-        user.emailAddresses[0]?.emailAddress)
+    // Extract primary email using utility function
+    const validEmail = extractPrimaryEmail(user)
 
     if (!validEmail) {
       return new Response(
@@ -88,15 +82,8 @@ export const POST: APIRoute = async ({ request }) => {
       )
     }
 
-    const userData = {
-      clerk_id: user.id,
-      email: validEmail,
-      username: user.username,
-      full_name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || null,
-      avatar_url: user.imageUrl,
-      metadata: user.publicMetadata || {},
-      last_sign_in_at: user.lastSignInAt ? new Date(user.lastSignInAt).toISOString() : null,
-    }
+    // Build user data object using utility function
+    const userData = buildUserData(user, validEmail)
 
     // Upsert user data to Supabase
     const { data, error } = await supabase
@@ -128,7 +115,7 @@ export const POST: APIRoute = async ({ request }) => {
         user: data,
         clerkData: {
           id: user.id,
-          email: primaryEmail?.emailAddress,
+          email: validEmail,
           username: user.username,
           fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
           imageUrl: user.imageUrl,
