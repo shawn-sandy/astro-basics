@@ -83,9 +83,7 @@ export function extractPrimaryEmail(user: ClerkUser): string | null {
   )
 
   // Return primary email if found, otherwise fall back to first available email
-  return primaryEmail?.emailAddress || 
-         (user.emailAddresses.length > 0 && user.emailAddresses[0]?.emailAddress) || 
-         null
+  return primaryEmail?.emailAddress || user.emailAddresses[0]?.emailAddress || null
 }
 
 /**
