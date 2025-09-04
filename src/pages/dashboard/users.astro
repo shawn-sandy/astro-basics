@@ -1,9 +1,9 @@
 ---
-import Auth from '#layouts/Auth.astro'
+import Auth from '#/layouts/Auth.astro'
 import { SignedIn, UserProfile, SignedOut } from '@clerk/astro/components'
 ---
 
-<Auth title="User Management - Astro Basics">
+<Auth pageTitle="User Management - Astro Basics" pageDescription="Manage users and profiles">
   <main class="container dashboard-page">
     <SignedIn client:load>
       <div class="dashboard-header">

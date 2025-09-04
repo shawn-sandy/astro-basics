@@ -6,12 +6,11 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 ---
 
 <Base
-  hideHeader={false}
   showBreadcrumb={false}
   pageTitle={pageTitle || 'Authentication'}
-  pageDescription=""
+  pageDescription={pageDescription || ''}
   pageImageUrl={pageImageUrl}
-  hideHeader={hideHeader}
+  hideHeader={hideHeader ?? false}
 >
   <MainSection showBreadcrumb={false}>
     <slot />
