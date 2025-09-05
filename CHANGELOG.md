@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Comment System**: Full-featured comment system for blog posts and documentation pages
+  - Polymorphic database design supporting multiple content types (`post`, `doc`)
+  - Threaded comments with 3-level nesting support
+  - Real-time comment creation, editing, and deletion
+  - User authentication via Clerk integration
+  - Rate limiting and spam protection (5 comments per minute per user)
+  - Content sanitization with DOMPurify for XSS prevention
+  - CSRF token validation for secure form submissions
+  - Soft delete functionality (comments marked as 'archived')
+  - Responsive design with accessibility features (ARIA labels, keyboard navigation)
+  - Server-side rendering with client-side interactivity
 - Documentation improvements and updates
 
 ### Changed

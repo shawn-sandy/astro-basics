@@ -682,6 +682,250 @@ export const supabaseDebug = createClient(
 )
 ```
 
+## Comment System Integration
+
+This project includes a fully implemented comment system using Supabase as the database backend. Here's how it's structured:
+
+### Database Schema
+
+The comment system uses a polymorphic table design:
+
+```sql
+-- Comments table with polymorphic relationships
+CREATE TABLE public.comments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    content TEXT NOT NULL,
+    author_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    commentable_type TEXT NOT NULL CHECK (commentable_type IN ('post', 'doc')),
+    commentable_id TEXT NOT NULL,
+    parent_comment_id UUID REFERENCES public.comments(id) ON DELETE CASCADE,
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'hidden', 'archived', 'flagged')),
+    is_internal BOOLEAN DEFAULT false,
+    organization_id TEXT DEFAULT 'serve513-beta',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Indexes for performance
+CREATE INDEX idx_comments_commentable ON public.comments (commentable_type, commentable_id);
+CREATE INDEX idx_comments_parent ON public.comments (parent_comment_id);
+CREATE INDEX idx_comments_status ON public.comments (status);
+CREATE INDEX idx_comments_created_at ON public.comments (created_at);
+```
+
+### Row Level Security (RLS) Policies
+
+The comment system implements secure RLS policies:
+
+```sql
+-- Enable RLS
+ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
+
+-- Users can view active, public blog comments
+CREATE POLICY "Users can view blog comments" ON public.comments
+    FOR SELECT USING (
+        commentable_type IN ('post', 'doc')
+        AND status = 'active'
+        AND is_internal = false
+    );
+
+-- Authenticated users can create blog comments
+CREATE POLICY "Authenticated users can create blog comments" ON public.comments
+    FOR INSERT WITH CHECK (
+        auth.uid() IS NOT NULL
+        AND author_id IN (
+            SELECT id FROM public.users WHERE clerk_id = auth.jwt() ->> 'sub'
+        )
+        AND commentable_type IN ('post', 'doc')
+        AND is_internal = false
+    );
+
+-- Users can update their own comments
+CREATE POLICY "Users can update own comments" ON public.comments
+    FOR UPDATE USING (
+        author_id IN (
+            SELECT id FROM public.users WHERE clerk_id = auth.jwt() ->> 'sub'
+        )
+        AND commentable_type IN ('post', 'doc')
+    )
+    WITH CHECK (
+        author_id IN (
+            SELECT id FROM public.users WHERE clerk_id = auth.jwt() ->> 'sub'
+        )
+        AND commentable_type IN ('post', 'doc')
+    );
+```
+
+### API Implementation
+
+The comment system provides a comprehensive REST API:
+
+#### GET `/api/comments`
+
+Retrieve comments for a specific post or doc:
+
+```typescript
+// Query parameters:
+// - type: 'post' | 'doc' (required)
+// - id: string (required) - post/doc identifier
+// - limit: number (optional, default: 20)
+// - offset: number (optional, default: 0)
+// - parent_id: string (optional) - for loading threaded replies
+
+const response = await fetch('/api/comments?type=post&id=my-post-slug&limit=20')
+const data = await response.json()
+```
+
+#### POST `/api/comments`
+
+Create a new comment (authentication required):
+
+```typescript
+const response = await fetch('/api/comments', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    content: 'My comment text',
+    commentable_type: 'post',
+    commentable_id: 'my-post-slug',
+    parent_comment_id: null, // optional for replies
+    _csrf: csrfToken, // CSRF protection
+  }),
+})
+```
+
+#### PATCH `/api/comments`
+
+Update an existing comment:
+
+```typescript
+const response = await fetch('/api/comments', {
+  method: 'PATCH',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    id: 'comment-uuid',
+    content: 'Updated comment text',
+    _csrf: csrfToken,
+  }),
+})
+```
+
+#### DELETE `/api/comments`
+
+Soft delete a comment:
+
+```typescript
+const response = await fetch(`/api/comments?id=comment-uuid`, {
+  method: 'DELETE',
+})
+```
+
+### Security Features
+
+The comment system includes comprehensive security measures:
+
+1. **Rate Limiting**: 5 comments per minute per user with spam detection
+2. **Content Sanitization**: DOMPurify integration to prevent XSS attacks
+3. **CSRF Protection**: Token validation on all write operations
+4. **Authentication**: Clerk integration for user verification
+5. **Input Validation**: Server-side validation of all user inputs
+6. **Soft Deletes**: Comments are archived rather than permanently deleted
+
+### Integration with Clerk Authentication
+
+The comment system integrates with Clerk for user management:
+
+```typescript
+// src/libs/supabase-server.ts - Custom authentication
+export async function getAuthenticatedSupabase(context: AstroGlobal | APIContext) {
+  const auth = context.locals.auth()
+  if (!auth?.userId) return null
+
+  // Create Supabase client with custom JWT
+  const supabaseAccessToken = await auth.getToken({ template: 'supabase' })
+
+  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${supabaseAccessToken}`,
+      },
+    },
+  })
+}
+```
+
+### Component Architecture
+
+The comment system consists of:
+
+1. **Server Components**:
+
+   - `Comments.astro` - Main wrapper with server-side data loading
+   - `CommentsWrapper.astro` - Additional wrapper component
+
+2. **React Components**:
+
+   - `CommentForm.tsx` - Form for creating/editing comments
+   - `CommentsList.tsx` - List container with threading support
+   - `Comment.tsx` - Individual comment display with actions
+
+3. **Utilities**:
+   - `comments-availability.ts` - System availability checking
+   - `sanitize.ts` - Content sanitization utilities
+   - `comment-rate-limiter.ts` - Rate limiting implementation
+
+### Usage in Layouts
+
+Comments are integrated into content layouts:
+
+```astro
+---
+// src/layouts/MarkdownPostLayout.astro
+import Comments from '#components/astro/Comments.astro'
+
+// ... existing code ...
+---
+
+<Layout>
+  <!-- Post content -->
+  <article>
+    <!-- ... post markup ... -->
+  </article>
+
+  <!-- Comment system -->
+  <Comments postId={frontmatter.slug || 'default'} postType="post" />
+</Layout>
+```
+
+### Deployment Migrations
+
+Database migrations are provided for setting up the comment system:
+
+1. **Initial Migration**: `003_create_comments_table.sql` - Creates the base comments table
+2. **Blog Support**: `004_add_blog_support_to_comments.sql` - Adds support for post/doc types
+3. **Rollback Script**: `004_add_blog_support_to_comments_rollback.sql` - For rollback if needed
+
+Run migrations in your Supabase project:
+
+```sql
+-- Execute the migration files in order
+-- 1. 003_create_comments_table.sql
+-- 2. 004_add_blog_support_to_comments.sql
+```
+
+### Monitoring and Maintenance
+
+The comment system includes built-in monitoring:
+
+- Availability checks before each operation
+- Detailed error logging for debugging
+- Performance tracking for database queries
+- Rate limiting metrics for spam prevention
+
 ## Next Steps
 
 1. Set up your Supabase project and configure environment variables
@@ -690,6 +934,7 @@ export const supabaseDebug = createClient(
 4. Add authentication (choose between Clerk or Supabase Auth)
 5. Implement real-time features as needed
 6. Set up proper testing and deployment pipelines
+7. **Deploy comment system**: Run provided migrations and test comment functionality
 
 For more advanced features, consider:
 
