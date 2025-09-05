@@ -39,6 +39,7 @@ docs/                  # Project documentation
 - **Content Management**: Three content collections with MDX support
 - **Authentication**: Clerk integration with protected routes
 - **Database Support**: Turso (LibSQL) and Supabase backends
+- **Comment System**: Full-featured polymorphic comment system for posts and docs
 - **PWA Ready**: Service worker and offline support
 - **Testing**: Unit (Vitest) and E2E (Playwright) test suites
 - **Performance**: Lighthouse monitoring, image optimization
@@ -145,6 +146,11 @@ Key routes in the application:
 Available API routes:
 
 - `/api/posts` - Get posts collection data
+- `/api/comments` - Full CRUD comment system API
+  - `GET` - Retrieve comments for posts/docs (supports pagination, threading)
+  - `POST` - Create new comments (authentication required)
+  - `PATCH` - Update user's own comments (authentication required)
+  - `DELETE` - Soft delete user's own comments (authentication required)
 - Additional API routes can be added in `src/pages/api/`
 
 ### Authentication Flow
@@ -253,8 +259,24 @@ TURSO_AUTH_TOKEN=...
 - `src/constants/formErrors.ts`: Form validation messages
 - `src/libs/turso.ts`: Turso database client with retry logic and message operations
 - `src/libs/supabase.ts`: Supabase client initialization
+- `src/utils/comments-availability.ts`: Comment system availability checker
+- `src/utils/sanitize.ts`: Content sanitization utilities with DOMPurify
+- `src/utils/comment-rate-limiter.ts`: Enhanced rate limiting with spam detection
+- `src/types/comments.ts`: TypeScript interfaces for comment system
 
 ## Project-Specific Patterns
+
+### Comment System Architecture
+
+The project includes a comprehensive comment system with:
+
+- **Polymorphic Design**: Supports multiple content types (`post`, `doc`) with single table
+- **Threaded Comments**: Up to 3-level nesting with parent_comment_id references
+- **Security Features**: Rate limiting (5 comments/minute), CSRF protection, content sanitization
+- **Real-time Interactivity**: Server-side rendering with client-side React components
+- **Soft Deletes**: Comments marked as 'archived' rather than hard deleted
+- **Row-Level Security**: Supabase RLS policies for secure data access
+- **Accessibility**: ARIA labels, keyboard navigation, screen reader support
 
 ### Turso Database Operations
 
