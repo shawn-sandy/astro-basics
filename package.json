@@ -56,6 +56,7 @@
     "db:migrate:create": "node scripts/migrate.js --create",
     "db:migrate:rollback": "node scripts/migrate.js --down",
     "test:blog-comments": "node --env-file=.env scripts/test-blog-comments-schema.js",
+    "test:comments-api": "node --env-file=.env scripts/test-comments-api.js",
     "npm-update": "npx npm-check-updates -u",
     "npm-update-i": "npx npm-check-updates -i",
     "ticket:validate": "gh auth status && gh repo view && echo '✅ GitHub CLI ready for ticket creation'",
