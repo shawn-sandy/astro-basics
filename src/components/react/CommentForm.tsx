@@ -73,20 +73,26 @@ const CommentForm: React.FC<CommentFormProps> = ({
     }
 
     try {
-      const formData = new FormData()
-      formData.append('content', content.trim())
-      formData.append('commentable_type', postType)
-      formData.append('commentable_id', postId)
-      if (parentCommentId) {
-        formData.append('parent_comment_id', parentCommentId)
+      const requestBody: Record<string, string> = {
+        content: content.trim(),
+        commentable_type: postType,
+        commentable_id: postId,
       }
+
+      if (parentCommentId) {
+        requestBody.parent_comment_id = parentCommentId
+      }
+
       if (csrfToken) {
-        formData.append(CSRF_CONFIG.FIELD_NAME, csrfToken)
+        requestBody[CSRF_CONFIG.FIELD_NAME] = csrfToken
       }
 
       const response = await fetch('/api/comments', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {
