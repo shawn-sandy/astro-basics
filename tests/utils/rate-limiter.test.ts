@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import {
   InMemoryRateLimiter,
   MESSAGE_RATE_LIMIT_CONFIG,
@@ -68,7 +68,7 @@ describe('InMemoryRateLimiter', () => {
     expect(rejectedResult.allowed).toBe(false)
 
     // Wait for window to expire
-    await new Promise((resolve) => setTimeout(resolve, 1100))
+    await new Promise(resolve => setTimeout(resolve, 1100))
 
     // Should be allowed again
     const allowedResult = rateLimiter.checkLimit(key)
@@ -119,11 +119,11 @@ describe('InMemoryRateLimiter', () => {
     expect(rateLimiter.getStoreSize()).toBe(1)
 
     // Wait for expiry
-    await new Promise((resolve) => setTimeout(resolve, 1100))
+    await new Promise(resolve => setTimeout(resolve, 1100))
 
     // Trigger cleanup by making another request
     rateLimiter.checkLimit('another-ip')
-    
+
     // Original entry should be cleaned up on next cleanup cycle
     // Note: cleanup runs every minute, so we can't reliably test automatic cleanup
     // but we can test the cleanup method directly
@@ -200,7 +200,9 @@ describe('createRateLimitResponse', () => {
     expect(response.status).toBe(429)
     expect(response.headers.get('Content-Type')).toBe('application/json')
     expect(response.headers.get('Retry-After')).toBe('60')
-    expect(response.headers.get('X-RateLimit-Limit')).toBe(MESSAGE_RATE_LIMIT_CONFIG.maxRequests.toString())
+    expect(response.headers.get('X-RateLimit-Limit')).toBe(
+      MESSAGE_RATE_LIMIT_CONFIG.maxRequests.toString()
+    )
     expect(response.headers.get('X-RateLimit-Remaining')).toBe('0')
 
     const body = await response.json()

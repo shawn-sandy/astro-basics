@@ -17,32 +17,32 @@ export async function apiRequest(url, options = {}) {
         'Content-Type': 'application/json',
         ...options.headers,
       },
-    });
+    })
 
-    const data = await response.json();
+    const data = await response.json()
 
     if (response.ok) {
-      return { data, success: true };
+      return { data, success: true }
     } else if (response.status === 429) {
       // Rate limited - extract retry information
-      const retryAfter = data.retryAfter || parseInt(response.headers.get('Retry-After') || '0', 10);
-      return { 
-        error: data.error || 'Too many requests. Please wait before trying again.', 
+      const retryAfter = data.retryAfter || parseInt(response.headers.get('Retry-After') || '0', 10)
+      return {
+        error: data.error || 'Too many requests. Please wait before trying again.',
         success: false,
         rateLimited: true,
-        retryAfter
-      };
+        retryAfter,
+      }
     } else {
-      return { 
-        error: data.error || 'Request failed', 
-        success: false 
-      };
+      return {
+        error: data.error || 'Request failed',
+        success: false,
+      }
     }
   } catch (error) {
-    return { 
-      error: error instanceof Error ? error.message : 'Network error', 
-      success: false 
-    };
+    return {
+      error: error instanceof Error ? error.message : 'Network error',
+      success: false,
+    }
   }
 }
 
@@ -53,16 +53,16 @@ export async function apiRequest(url, options = {}) {
  * @returns {Promise<{data?: any, error?: string, success: boolean}>}
  */
 export async function postForm(url, formData) {
-  let body;
-  
+  let body
+
   if (formData instanceof FormData) {
-    body = JSON.stringify(Object.fromEntries(formData.entries()));
+    body = JSON.stringify(Object.fromEntries(formData.entries()))
   } else {
-    body = JSON.stringify(formData);
+    body = JSON.stringify(formData)
   }
 
   return apiRequest(url, {
     method: 'POST',
     body,
-  });
+  })
 }

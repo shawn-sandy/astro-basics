@@ -45,15 +45,17 @@ export function MessagesList() {
 
         if (directError) throw directError
 
-        // Second, get messages via users table relationship (secondary pathway)  
+        // Second, get messages via users table relationship (secondary pathway)
         // Using inner join with proper parameterized query
         const { data: relatedMessages, error: relatedError } = await client
           .from('messages')
-          .select(`
+          .select(
+            `
             id, subject, message, name, email, created_at, updated_at, 
             is_read, is_archived, user_id, clerk_user_id,
             users!inner(clerk_id)
-          `)
+          `
+          )
           .eq('users.clerk_id', userId)
           .is('clerk_user_id', null) // Only get messages without direct clerk_user_id to avoid duplicates
 
@@ -65,7 +67,7 @@ export function MessagesList() {
           data: allMessages
             .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
             .slice(0, 50),
-          error: null
+          error: null,
         }
 
         if (fetchError) throw fetchError

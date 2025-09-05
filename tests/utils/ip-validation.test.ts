@@ -25,20 +25,18 @@ describe('normalizeIPAddress', () => {
   describe('IPv6 addresses', () => {
     it('should compress IPv6 addresses', () => {
       // Basic compression
-      expect(normalizeIPAddress('2001:0db8:0000:0000:0000:ff00:0042:8329'))
-        .toBe('2001:db8::ff00:42:8329')
-      
+      expect(normalizeIPAddress('2001:0db8:0000:0000:0000:ff00:0042:8329')).toBe(
+        '2001:db8::ff00:42:8329'
+      )
+
       // Remove leading zeros
-      expect(normalizeIPAddress('2001:0db8:0001:0000:0000:0000:0000:0001'))
-        .toBe('2001:db8:1::1')
-      
+      expect(normalizeIPAddress('2001:0db8:0001:0000:0000:0000:0000:0001')).toBe('2001:db8:1::1')
+
       // Already compressed should remain the same
-      expect(normalizeIPAddress('2001:db8::1'))
-        .toBe('2001:db8::1')
-      
+      expect(normalizeIPAddress('2001:db8::1')).toBe('2001:db8::1')
+
       // Localhost IPv6
-      expect(normalizeIPAddress('0000:0000:0000:0000:0000:0000:0000:0001'))
-        .toBe('::1')
+      expect(normalizeIPAddress('0000:0000:0000:0000:0000:0000:0000:0001')).toBe('::1')
     })
 
     it('should handle IPv6 with brackets', () => {
@@ -49,20 +47,20 @@ describe('normalizeIPAddress', () => {
     it('should remove port numbers from IPv6', () => {
       expect(normalizeIPAddress('[2001:db8::1]:8080')).toBe('2001:db8::1')
       expect(normalizeIPAddress('[::1]:3000')).toBe('::1')
-      
+
       // Without brackets (less common but possible)
       expect(normalizeIPAddress('2001:db8::1:8080')).toBe('2001:db8::1')
     })
 
     it('should handle various IPv6 formats', () => {
       // Full IPv6
-      expect(normalizeIPAddress('2001:0db8:85a3:0000:0000:8a2e:0370:7334'))
-        .toBe('2001:db8:85a3::8a2e:370:7334')
-      
+      expect(normalizeIPAddress('2001:0db8:85a3:0000:0000:8a2e:0370:7334')).toBe(
+        '2001:db8:85a3::8a2e:370:7334'
+      )
+
       // IPv4-mapped IPv6
-      expect(normalizeIPAddress('::ffff:192.0.2.1'))
-        .toBe('::ffff:192.0.2.1')
-      
+      expect(normalizeIPAddress('::ffff:192.0.2.1')).toBe('::ffff:192.0.2.1')
+
       // Link-local
       expect(normalizeIPAddress('fe80::1%eth0')).toBe('unknown') // Invalid due to %
     })
@@ -71,7 +69,9 @@ describe('normalizeIPAddress', () => {
       // Create a very long IPv6 (this is artificial but tests the edge case)
       const longIPv6 = '2001:0db8:85a3:0000:0000:8a2e:0370:7334:extra:data'
       expect(normalizeIPAddress(longIPv6)).toBe('unknown')
-      expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Invalid IP address format'))
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Invalid IP address format')
+      )
     })
   })
 
@@ -118,9 +118,10 @@ describe('normalizeIPAddress', () => {
 })
 
 describe('extractClientIP', () => {
-  const createMockRequest = (headers: Record<string, string>) => ({
-    headers: new Map(Object.entries(headers)),
-  }) as Request
+  const createMockRequest = (headers: Record<string, string>) =>
+    ({
+      headers: new Map(Object.entries(headers)),
+    }) as Request
 
   it('should extract IP from x-forwarded-for header', () => {
     const request = createMockRequest({

@@ -11,12 +11,12 @@ const mockElement = {
   dataset: {},
   disabled: false,
   querySelector: vi.fn(),
-  querySelectorAll: vi.fn()
+  querySelectorAll: vi.fn(),
 }
 
 const mockDocument = {
   querySelector: vi.fn(),
-  querySelectorAll: vi.fn()
+  querySelectorAll: vi.fn(),
 }
 
 global.document = mockDocument as any
@@ -35,12 +35,12 @@ describe('UI Module', () => {
   describe('showMessage', () => {
     it('should set message content and class', () => {
       const element = { ...mockElement }
-      
+
       // Simulate showMessage logic
       element.textContent = 'Success message'
       element.className = 'form-message success'
       element.style.display = 'block'
-      
+
       expect(element.textContent).toBe('Success message')
       expect(element.className).toBe('form-message success')
       expect(element.style.display).toBe('block')
@@ -48,13 +48,13 @@ describe('UI Module', () => {
 
     it('should handle different message types', () => {
       const element = { ...mockElement }
-      
+
       // Test error message
       element.textContent = 'Error message'
       element.className = 'form-message error'
-      
+
       expect(element.className).toBe('form-message error')
-      
+
       // Test info message
       element.className = 'form-message info'
       expect(element.className).toBe('form-message info')
@@ -67,12 +67,12 @@ describe('UI Module', () => {
       element.textContent = 'Some message'
       element.className = 'form-message error'
       element.style.display = 'block'
-      
+
       // Simulate clearMessage logic
       element.textContent = ''
       element.className = 'form-message'
       element.style.display = 'none'
-      
+
       expect(element.textContent).toBe('')
       expect(element.className).toBe('form-message')
       expect(element.style.display).toBe('none')
@@ -82,12 +82,12 @@ describe('UI Module', () => {
   describe('toggleButtonLoading', () => {
     it('should set loading state correctly', () => {
       const button = { ...mockElement, dataset: {} }
-      
+
       // Simulate loading state
       button.disabled = true
       button.dataset.originalText = 'Submit'
       button.textContent = 'Loading...'
-      
+
       expect(button.disabled).toBe(true)
       expect(button.textContent).toBe('Loading...')
       expect(button.dataset.originalText).toBe('Submit')
@@ -95,12 +95,12 @@ describe('UI Module', () => {
 
     it('should restore button state correctly', () => {
       const button = { ...mockElement, dataset: { originalText: 'Submit' } }
-      
+
       // Simulate restore state
       button.disabled = false
       button.textContent = button.dataset.originalText
       delete button.dataset.originalText
-      
+
       expect(button.disabled).toBe(false)
       expect(button.textContent).toBe('Submit')
       expect(button.dataset.originalText).toBeUndefined()
@@ -113,16 +113,16 @@ describe('UI Module', () => {
         dataset: {
           formType: 'contact',
           apiEndpoint: '/api/contact',
-          testValue: '123'
-        }
+          testValue: '123',
+        },
       }
-      
+
       // Simulate getDataAttributes logic
       const data: Record<string, any> = {}
       for (const [key, value] of Object.entries(element.dataset)) {
         data[key] = value
       }
-      
+
       expect(data.formType).toBe('contact')
       expect(data.apiEndpoint).toBe('/api/contact')
       expect(data.testValue).toBe('123')
@@ -133,21 +133,21 @@ describe('UI Module', () => {
         dataset: {
           formType: 'contact',
           formEndpoint: '/api/contact',
-          otherValue: 'ignore'
-        }
+          otherValue: 'ignore',
+        },
       }
-      
+
       // Simulate prefix filtering
       const data: Record<string, any> = {}
       const prefix = 'form'
-      
+
       for (const [key, value] of Object.entries(element.dataset)) {
         if (key.startsWith(prefix)) {
-          const cleanKey = key.slice(prefix.length).replace(/^([A-Z])/, (m) => m.toLowerCase())
+          const cleanKey = key.slice(prefix.length).replace(/^([A-Z])/, m => m.toLowerCase())
           data[cleanKey] = value
         }
       }
-      
+
       expect(data.type).toBe('contact')
       expect(data.endpoint).toBe('/api/contact')
       expect(data.otherValue).toBeUndefined()
@@ -158,7 +158,7 @@ describe('UI Module', () => {
     it('should return element when selector is valid', () => {
       const mockElement = { id: 'test' }
       mockDocument.querySelector.mockReturnValue(mockElement)
-      
+
       const result = mockDocument.querySelector('#test')
       expect(result).toBe(mockElement)
     })
@@ -167,7 +167,7 @@ describe('UI Module', () => {
       mockDocument.querySelector.mockImplementation(() => {
         throw new Error('Invalid selector')
       })
-      
+
       // In the real implementation, this would be caught and return null
       try {
         mockDocument.querySelector('invalid[[[selector')

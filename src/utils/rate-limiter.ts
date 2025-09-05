@@ -195,10 +195,7 @@ export function getClientIP(request: Request): string {
 /**
  * Create a rate limit response
  */
-export function createRateLimitResponse(
-  result: RateLimitResult,
-  message?: string
-): Response {
+export function createRateLimitResponse(result: RateLimitResult, message?: string): Response {
   const body = {
     success: false,
     error: message || MESSAGE_RATE_LIMIT_CONFIG.message,

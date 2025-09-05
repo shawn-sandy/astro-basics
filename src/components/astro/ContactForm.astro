@@ -15,7 +15,7 @@ const csrfToken = Astro.locals.csrfToken
   data-netlify-honeypot="bot-field"
 >
   {csrfToken && <input type="hidden" name={CSRF_CONFIG.FIELD_NAME} value={csrfToken} />}
-  
+
   {
     CONTACT_INFO.isNetlify && (
       <p class="hidden">

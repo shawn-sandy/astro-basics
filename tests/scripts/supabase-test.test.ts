@@ -9,7 +9,7 @@ const mockConnectionButton = {
   disabled: false,
   textContent: 'Test Connection',
   addEventListener: vi.fn(),
-  dataset: {}
+  dataset: {},
 }
 
 const mockQueryButton = {
@@ -17,19 +17,19 @@ const mockQueryButton = {
   disabled: false,
   textContent: 'Test Query',
   addEventListener: vi.fn(),
-  dataset: {}
+  dataset: {},
 }
 
 const mockConnectionResult = {
   id: 'connectionResult',
   className: '',
-  textContent: ''
+  textContent: '',
 }
 
 const mockQueryResult = {
   id: 'queryResult',
   className: '',
-  textContent: ''
+  textContent: '',
 }
 
 // Mock fetch
@@ -38,7 +38,7 @@ global.fetch = mockFetch
 
 const mockDocument = {
   querySelector: vi.fn(),
-  getElementById: vi.fn()
+  getElementById: vi.fn(),
 }
 
 global.document = mockDocument as any
@@ -60,7 +60,7 @@ describe('Supabase Test Feature', () => {
 
   describe('Test Initialization', () => {
     it('should find required test elements', () => {
-      mockDocument.querySelector.mockImplementation((selector) => {
+      mockDocument.querySelector.mockImplementation(selector => {
         if (selector === '#testConnection') return mockConnectionButton
         if (selector === '#testQuery') return mockQueryButton
         if (selector === '#connectionResult') return mockConnectionResult
@@ -91,11 +91,12 @@ describe('Supabase Test Feature', () => {
     it('should handle successful connection test', async () => {
       const mockResponse = {
         ok: true,
-        json: () => Promise.resolve({
-          success: true,
-          message: 'Supabase connected successfully',
-          timestamp: new Date().toISOString()
-        })
+        json: () =>
+          Promise.resolve({
+            success: true,
+            message: 'Supabase connected successfully',
+            timestamp: new Date().toISOString(),
+          }),
       }
       mockFetch.mockResolvedValue(mockResponse)
 
@@ -123,10 +124,11 @@ describe('Supabase Test Feature', () => {
     it('should handle connection test failure', async () => {
       const mockResponse = {
         ok: false,
-        json: () => Promise.resolve({
-          success: false,
-          error: 'Failed to connect to Supabase'
-        })
+        json: () =>
+          Promise.resolve({
+            success: false,
+            error: 'Failed to connect to Supabase',
+          }),
       }
       mockFetch.mockResolvedValue(mockResponse)
 
@@ -167,11 +169,12 @@ describe('Supabase Test Feature', () => {
     it('should handle successful query test', async () => {
       const mockResponse = {
         ok: true,
-        json: () => Promise.resolve({
-          success: true,
-          message: 'Query executed successfully',
-          data: { tables: ['messages', 'users'] }
-        })
+        json: () =>
+          Promise.resolve({
+            success: true,
+            message: 'Query executed successfully',
+            data: { tables: ['messages', 'users'] },
+          }),
       }
       mockFetch.mockResolvedValue(mockResponse)
 
@@ -184,7 +187,7 @@ describe('Supabase Test Feature', () => {
       const response = await fetch('/api/supabase-test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'test-query' })
+        body: JSON.stringify({ action: 'test-query' }),
       })
       const data = await response.json()
 
@@ -201,17 +204,18 @@ describe('Supabase Test Feature', () => {
     it('should handle query test failure', async () => {
       const mockResponse = {
         ok: false,
-        json: () => Promise.resolve({
-          success: false,
-          error: 'Query execution failed'
-        })
+        json: () =>
+          Promise.resolve({
+            success: false,
+            error: 'Query execution failed',
+          }),
       }
       mockFetch.mockResolvedValue(mockResponse)
 
       const response = await fetch('/api/supabase-test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'test-query' })
+        body: JSON.stringify({ action: 'test-query' }),
       })
       const data = await response.json()
 
@@ -223,17 +227,17 @@ describe('Supabase Test Feature', () => {
 
     it('should send correct POST data for query test', () => {
       const expectedBody = JSON.stringify({ action: 'test-query' })
-      
+
       fetch('/api/supabase-test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: expectedBody
+        body: expectedBody,
       })
 
       expect(mockFetch).toHaveBeenCalledWith('/api/supabase-test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: expectedBody
+        body: expectedBody,
       })
     })
   })

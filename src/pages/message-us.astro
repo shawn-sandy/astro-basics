@@ -16,7 +16,11 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
     <h1>Contact Us</h1>
     <p>If you have any questions or feedback, please feel free to reach out to us!</p>
     <form id="contact-form">
-      {Astro.locals.csrfToken && <input type="hidden" name="_csrf" value={Astro.locals.csrfToken} />}
+      {
+        Astro.locals.csrfToken && (
+          <input type="hidden" name="_csrf" value={Astro.locals.csrfToken} />
+        )
+      }
       <div id="form-message" class="form-message"></div>
       <label for="name">Name:</label>
       <input type="text" id="name" name="name" required maxlength="255" />

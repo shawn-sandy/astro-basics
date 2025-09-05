@@ -9,13 +9,13 @@
 export function initConnectionStatus() {
   // Auto-reload when connection is restored
   window.addEventListener('online', () => {
-    window.location.reload();
-  });
+    window.location.reload()
+  })
 
   // Update visual connection indicator
-  updateConnectionIndicator();
-  window.addEventListener('online', updateConnectionIndicator);
-  window.addEventListener('offline', updateConnectionIndicator);
+  updateConnectionIndicator()
+  window.addEventListener('online', updateConnectionIndicator)
+  window.addEventListener('offline', updateConnectionIndicator)
 }
 
 /**
@@ -23,9 +23,9 @@ export function initConnectionStatus() {
  */
 function updateConnectionIndicator() {
   if (navigator.onLine) {
-    document.body.style.borderTop = '3px solid #10b981';
+    document.body.style.borderTop = '3px solid #10b981'
   } else {
-    document.body.style.borderTop = '3px solid #ef4444';
+    document.body.style.borderTop = '3px solid #ef4444'
   }
 }
 
@@ -33,5 +33,5 @@ function updateConnectionIndicator() {
  * Handles manual page refresh
  */
 export function handleRefresh() {
-  window.location.reload();
+  window.location.reload()
 }

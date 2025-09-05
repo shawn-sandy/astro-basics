@@ -54,11 +54,11 @@ export default defineConfig({
   vite: {
     server: {
       host: true,
-      allowedHosts: ['476cd5383d8f.ngrok-free.app']
+      allowedHosts: ['476cd5383d8f.ngrok-free.app'],
     },
     ssr: {
-      noExternal: ['astro-imagetools']
-    }
+      noExternal: ['astro-imagetools'],
+    },
   },
   // Choose adapter based on deployment target
   adapter: (() => {

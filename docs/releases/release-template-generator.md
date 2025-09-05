@@ -152,9 +152,9 @@ docs/releases/
 
 ## Audit Approval
 
-- **Security Lead:** ********\_******** Date: ****\_****
-- **Technical Lead:** ********\_******** Date: ****\_****
-- **Release Manager:** ********\_******** Date: ****\_****
+- **Security Lead:** **\*\*\*\***\_**\*\*\*\*** Date: \***\*\_\*\***
+- **Technical Lead:** **\*\*\*\***\_**\*\*\*\*** Date: \***\*\_\*\***
+- **Release Manager:** **\*\*\*\***\_**\*\*\*\*** Date: \***\*\_\*\***
 ```
 
 ### 3. Release Notes Template

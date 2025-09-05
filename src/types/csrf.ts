@@ -5,7 +5,9 @@
 /**
  * Result type for CSRF operations
  */
-export type CsrfResult<T, E extends Error = Error> = { ok: true; value: T } | { ok: false; error: E }
+export type CsrfResult<T, E extends Error = Error> =
+  | { ok: true; value: T }
+  | { ok: false; error: E }
 
 /**
  * CSRF token data structure

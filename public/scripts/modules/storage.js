@@ -11,11 +11,11 @@
  */
 export function getStorageItem(key, defaultValue = null) {
   try {
-    const item = localStorage.getItem(key);
-    return item !== null ? JSON.parse(item) : defaultValue;
+    const item = localStorage.getItem(key)
+    return item !== null ? JSON.parse(item) : defaultValue
   } catch (e) {
-    console.warn(`Error reading from localStorage for key "${key}":`, e);
-    return defaultValue;
+    console.warn(`Error reading from localStorage for key "${key}":`, e)
+    return defaultValue
   }
 }
 
@@ -27,11 +27,11 @@ export function getStorageItem(key, defaultValue = null) {
  */
 export function setStorageItem(key, value) {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
+    localStorage.setItem(key, JSON.stringify(value))
+    return true
   } catch (e) {
-    console.warn(`Error writing to localStorage for key "${key}":`, e);
-    return false;
+    console.warn(`Error writing to localStorage for key "${key}":`, e)
+    return false
   }
 }
 
@@ -42,11 +42,11 @@ export function setStorageItem(key, value) {
  */
 export function removeStorageItem(key) {
   try {
-    localStorage.removeItem(key);
-    return true;
+    localStorage.removeItem(key)
+    return true
   } catch (e) {
-    console.warn(`Error removing from localStorage for key "${key}":`, e);
-    return false;
+    console.warn(`Error removing from localStorage for key "${key}":`, e)
+    return false
   }
 }
 
@@ -56,11 +56,11 @@ export function removeStorageItem(key) {
  */
 export function isStorageAvailable() {
   try {
-    const test = '__storage_test__';
-    localStorage.setItem(test, 'test');
-    localStorage.removeItem(test);
-    return true;
-  } catch (e) {
-    return false;
+    const test = '__storage_test__'
+    localStorage.setItem(test, 'test')
+    localStorage.removeItem(test)
+    return true
+  } catch {
+    return false
   }
 }

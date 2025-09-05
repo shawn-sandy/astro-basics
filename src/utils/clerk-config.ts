@@ -65,7 +65,11 @@ export function getClerkConfigStatus(): ClerkConfigStatus {
     publishableKey: {
       exists: publishableKeyExists,
       isValid: publishableKeyValid,
-      value: publishableKeyExists ? (publishableKeyValid ? publicClerkKey : 'PLACEHOLDER') : undefined,
+      value: publishableKeyExists
+        ? publishableKeyValid
+          ? publicClerkKey
+          : 'PLACEHOLDER'
+        : undefined,
     },
     secretKey: {
       exists: secretKeyExists,
@@ -75,7 +79,11 @@ export function getClerkConfigStatus(): ClerkConfigStatus {
     webhookSecret: {
       exists: webhookSecretExists,
       isValid: webhookSecretValid,
-      value: webhookSecretExists ? (webhookSecretValid ? '***REDACTED***' : 'PLACEHOLDER') : undefined,
+      value: webhookSecretExists
+        ? webhookSecretValid
+          ? '***REDACTED***'
+          : 'PLACEHOLDER'
+        : undefined,
     },
     hasBasicConfig: publishableKeyValid && secretKeyValid,
     isFullyConfigured: publishableKeyValid && secretKeyValid && webhookSecretValid,

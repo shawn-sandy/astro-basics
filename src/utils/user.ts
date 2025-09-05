@@ -68,7 +68,7 @@ export function getDisplayName(user: User): string {
 /**
  * Extracts the primary email address from a Clerk user object
  * Falls back to first available email if primary is not found
- * 
+ *
  * @param user - Clerk user object
  * @returns Primary email address string or null if no valid email found
  */
@@ -78,9 +78,7 @@ export function extractPrimaryEmail(user: ClerkUser): string | null {
   }
 
   // Find primary email by matching the primary email address ID
-  const primaryEmail = user.emailAddresses.find(
-    email => email.id === user.primaryEmailAddressId
-  )
+  const primaryEmail = user.emailAddresses.find(email => email.id === user.primaryEmailAddressId)
 
   // Return primary email if found, otherwise fall back to first available email
   return primaryEmail?.emailAddress || user.emailAddresses[0]?.emailAddress || null
@@ -88,7 +86,7 @@ export function extractPrimaryEmail(user: ClerkUser): string | null {
 
 /**
  * Builds user data object for database storage from Clerk user
- * 
+ *
  * @param user - Clerk user object
  * @param email - Primary email address (from extractPrimaryEmail)
  * @returns User data object ready for database insertion
