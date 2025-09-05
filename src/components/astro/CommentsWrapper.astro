@@ -1,0 +1,318 @@
+---
+/**
+ * Comments Wrapper Component
+ * Conditionally displays comments based on system availability
+ * Provides fallback UI when comments are disabled
+ */
+
+import { checkCommentSystemAvailability } from '#utils/comments-availability'
+
+export interface Props {
+  postId: string
+  postType: 'post' | 'doc'
+  title?: string
+  showFallback?: boolean
+}
+
+const { 
+  postId, 
+  postType, 
+  title = 'Comments',
+  showFallback = true 
+} = Astro.props
+
+// Check if comment system is available
+const availability = await checkCommentSystemAvailability(Astro)
+const isEnabled = availability.enabled
+
+// Get authentication status
+const auth = Astro.locals.auth?.()
+const isAuthenticated = !!auth?.userId
+const csrfToken = Astro.locals.csrfToken
+---
+
+<section class="comments-wrapper" data-comment-system-enabled={isEnabled}>
+  <header class="comments-header">
+    <h2>{title}</h2>
+    {!isEnabled && (
+      <div class="comments-status" role="status" aria-live="polite">
+        <span class="status-indicator disabled" aria-label="Comments disabled"></span>
+        <span class="status-text">Comments temporarily unavailable</span>
+      </div>
+    )}
+  </header>
+
+  {isEnabled ? (
+    <div class="comments-content">
+      <!-- Authentication status -->
+      {!isAuthenticated && (
+        <div class="auth-prompt" role="banner">
+          <p>
+            <a href="/sign-in" class="auth-link">Sign in</a> to join the conversation.
+          </p>
+        </div>
+      )}
+
+      <!-- Comment form for authenticated users -->
+      {isAuthenticated && (
+        <div class="comment-form-container">
+          <!-- This will be replaced with the actual CommentForm component in Phase 3 -->
+          <div class="comment-form-placeholder" data-post-id={postId} data-post-type={postType} data-csrf-token={csrfToken}>
+            <p class="placeholder-text">Comment form will be loaded here...</p>
+          </div>
+        </div>
+      )}
+
+      <!-- Comments list -->
+      <div class="comments-list-container">
+        <!-- This will be replaced with the actual CommentsList component in Phase 3 -->
+        <div class="comments-list-placeholder" data-post-id={postId} data-post-type={postType}>
+          <p class="placeholder-text">Comments will be loaded here...</p>
+        </div>
+      </div>
+    </div>
+  ) : showFallback && (
+    <div class="comments-disabled" role="alert">
+      <div class="disabled-content">
+        <h3>Comments Not Available</h3>
+        <p class="disabled-reason">
+          {availability.reason || 'The comment system is currently unavailable.'}
+        </p>
+        
+        {availability.details?.hasEnvironment === false && (
+          <details class="troubleshooting">
+            <summary>For Developers</summary>
+            <div class="troubleshoot-content">
+              <p>To enable comments, configure the following environment variables:</p>
+              <ul>
+                <li><code>SUPABASE_URL</code> - Your Supabase project URL</li>
+                <li><code>SUPABASE_ANON_KEY</code> - Your Supabase anonymous key</li>
+              </ul>
+              <p>Then run the database migration:</p>
+              <pre><code>npm run db:migrate</code></pre>
+            </div>
+          </details>
+        )}
+        
+        {availability.details?.hasCommentsTable === false && availability.details?.hasEnvironment && (
+          <details class="troubleshooting">
+            <summary>For Developers</summary>
+            <div class="troubleshoot-content">
+              <p>The comments table is not available. Run the database migration:</p>
+              <pre><code>npm run db:migrate</code></pre>
+              <p>Or apply the specific migration:</p>
+              <pre><code>scripts/supabase-migrations/004_add_blog_support_to_comments.sql</code></pre>
+            </div>
+          </details>
+        )}
+      </div>
+    </div>
+  )}
+</section>
+
+<style>
+  .comments-wrapper {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+  }
+
+  .comments-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .comments-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+  }
+
+  .comments-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+  }
+
+  .status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .status-indicator.disabled {
+    background-color: var(--color-warning, #f59e0b);
+  }
+
+  .auth-prompt {
+    background-color: var(--background-subtle, #f9fafb);
+    border: 1px solid var(--border-light, #e5e7eb);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .auth-prompt p {
+    margin: 0;
+    color: var(--text-secondary, #6b7280);
+  }
+
+  .auth-link {
+    color: var(--link-color, #3b82f6);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .auth-link:hover {
+    text-decoration: underline;
+  }
+
+  .comment-form-container,
+  .comments-list-container {
+    margin-bottom: 2rem;
+  }
+
+  .comment-form-placeholder,
+  .comments-list-placeholder {
+    background-color: var(--background-subtle, #f9fafb);
+    border: 2px dashed var(--border-light, #e5e7eb);
+    border-radius: 0.5rem;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .placeholder-text {
+    margin: 0;
+    color: var(--text-muted, #9ca3af);
+    font-style: italic;
+  }
+
+  .comments-disabled {
+    background-color: var(--background-warning, #fffbeb);
+    border: 1px solid var(--border-warning, #fed7aa);
+    border-radius: 0.5rem;
+    padding: 2rem;
+  }
+
+  .disabled-content h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-warning, #92400e);
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .disabled-reason {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-secondary, #6b7280);
+    line-height: 1.6;
+  }
+
+  .troubleshooting {
+    background-color: var(--background-code, #f3f4f6);
+    border-radius: 0.375rem;
+    padding: 1rem;
+  }
+
+  .troubleshooting summary {
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-primary, #111827);
+    margin-bottom: 0.5rem;
+  }
+
+  .troubleshooting summary:hover {
+    color: var(--link-color, #3b82f6);
+  }
+
+  .troubleshoot-content {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .troubleshoot-content ul {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+  }
+
+  .troubleshoot-content li {
+    margin: 0.25rem 0;
+  }
+
+  .troubleshoot-content code {
+    background-color: var(--background-accent, #e5e7eb);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.8125rem;
+  }
+
+  .troubleshoot-content pre {
+    background-color: var(--background-dark, #374151);
+    color: var(--text-inverse, #f9fafb);
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+  }
+
+  .troubleshoot-content pre code {
+    background-color: transparent;
+    padding: 0;
+    color: inherit;
+  }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .comments-wrapper {
+      border-top-color: var(--border-color-dark, #374151);
+    }
+
+    .comments-header h2 {
+      color: var(--text-primary-dark, #f9fafb);
+    }
+
+    .auth-prompt {
+      background-color: var(--background-subtle-dark, #1f2937);
+      border-color: var(--border-light-dark, #374151);
+    }
+
+    .comments-disabled {
+      background-color: var(--background-warning-dark, #451a03);
+      border-color: var(--border-warning-dark, #92400e);
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .troubleshooting[open] summary {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  // Progressive enhancement for comment system
+  document.addEventListener('DOMContentLoaded', function() {
+    const wrapper = document.querySelector('[data-comment-system-enabled="true"]')
+    if (wrapper) {
+      // Mark as ready for React component hydration
+      wrapper.setAttribute('data-comments-ready', 'true')
+      
+      // Dispatch custom event for React components to listen
+      wrapper.dispatchEvent(new CustomEvent('comments-ready', {
+        bubbles: true,
+        detail: {
+          postId: wrapper.querySelector('[data-post-id]')?.getAttribute('data-post-id'),
+          postType: wrapper.querySelector('[data-post-type]')?.getAttribute('data-post-type')
+        }
+      }))
+    }
+  })
+</script>
