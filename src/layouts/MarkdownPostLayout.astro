@@ -5,6 +5,7 @@ import Img from '#components/astro/Img.astro'
 import Toc from '#components/astro/Toc.astro'
 import Comments from '#components/astro/Comments.astro'
 import { sanitizeImageUrl } from '#/utils/security'
+import { isCommentSystemLikelyAvailable } from '#utils/comments-availability'
 const frontmatter = Astro.props.frontmatter
 const headings = Astro.props.headings
 const { slug } = Astro.params
@@ -20,6 +21,9 @@ const postType = urlPath.startsWith('/posts/')
     ? 'doc'
     : 'post'
 const postId = slug?.toString() || frontmatter.title
+
+// Check if comments should be rendered
+const shouldShowComments = isCommentSystemLikelyAvailable()
 
 type ContentRoute = {
   name: string
@@ -80,5 +84,5 @@ const contentRoute: ContentRoute[] = [
   }
 
   <!-- Comments Section -->
-  <Comments postId={postId} postType={postType} />
+  {shouldShowComments && <Comments postId={postId} postType={postType} />}
 </Layout>
