@@ -1,10 +1,14 @@
 import type { APIRoute } from 'astro'
 
 import { getAuthenticatedSupabase } from '#libs/supabase-server'
-import { sanitizeComment } from '#utils/sanitize'
-import { enhancedCommentRateLimiter, getClientIP, createRateLimitResponse } from '#utils/comment-rate-limiter'
-import { CSRF_CONFIG, validateCsrfToken } from '#utils/csrf'
+import {
+  enhancedCommentRateLimiter,
+  getClientIP,
+  createRateLimitResponse,
+} from '#utils/comment-rate-limiter'
 import { checkCommentSystemAvailability } from '#utils/comments-availability'
+import { CSRF_CONFIG, validateCsrfToken } from '#utils/csrf'
+import { sanitizeComment } from '#utils/sanitize'
 
 interface _CommentData {
   content: string
@@ -40,13 +44,13 @@ interface CommentRow {
 export const GET: APIRoute = async context => {
   // Check if comment system is available
   const availability = await checkCommentSystemAvailability(context)
-  
+
   if (!availability.enabled) {
     return new Response(
       JSON.stringify({
         error: 'Comment system unavailable',
         reason: availability.reason,
-        code: 'COMMENTS_DISABLED'
+        code: 'COMMENTS_DISABLED',
       }),
       {
         status: 503,
@@ -95,18 +99,16 @@ export const GET: APIRoute = async context => {
     const supabase = await getAuthenticatedSupabase(context)
 
     if (!supabase) {
-      return new Response(
-        JSON.stringify({ error: 'Database not configured' }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Database not configured' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     let query = supabase
       .from('comments')
-      .select(`
+      .select(
+        `
         id,
         content,
         author_id,
@@ -124,7 +126,8 @@ export const GET: APIRoute = async context => {
           avatar_url,
           clerk_id
         )
-      `)
+      `
+      )
       .eq('commentable_type', commentable_type)
       .eq('commentable_id', commentable_id)
       .eq('status', 'active')
@@ -184,13 +187,13 @@ export const GET: APIRoute = async context => {
 export const POST: APIRoute = async context => {
   // Check if comment system is available
   const availability = await checkCommentSystemAvailability(context)
-  
+
   if (!availability.enabled) {
     return new Response(
       JSON.stringify({
         error: 'Comment system unavailable',
         reason: availability.reason,
-        code: 'COMMENTS_DISABLED'
+        code: 'COMMENTS_DISABLED',
       }),
       {
         status: 503,
@@ -202,13 +205,10 @@ export const POST: APIRoute = async context => {
   const auth = context.locals.auth()
 
   if (!auth?.userId) {
-    return new Response(
-      JSON.stringify({ error: 'Authentication required' }),
-      {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    )
+    return new Response(JSON.stringify({ error: 'Authentication required' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 
   try {
@@ -231,13 +231,10 @@ export const POST: APIRoute = async context => {
     const csrfValid = await validateCsrfToken(csrfToken, context)
 
     if (!csrfValid) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid or expired CSRF token' }),
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Invalid or expired CSRF token' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // Validate required fields
@@ -283,13 +280,10 @@ export const POST: APIRoute = async context => {
     const supabase = await getAuthenticatedSupabase(context)
 
     if (!supabase) {
-      return new Response(
-        JSON.stringify({ error: 'Database not configured' }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Database not configured' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // Get user from database
@@ -300,13 +294,10 @@ export const POST: APIRoute = async context => {
       .single()
 
     if (!user) {
-      return new Response(
-        JSON.stringify({ error: 'User not found in database' }),
-        {
-          status: 404,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'User not found in database' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // Create the comment
@@ -324,7 +315,8 @@ export const POST: APIRoute = async context => {
     const { data, error } = await supabase
       .from('comments')
       .insert(commentData)
-      .select(`
+      .select(
+        `
         id,
         content,
         author_id,
@@ -342,7 +334,8 @@ export const POST: APIRoute = async context => {
           avatar_url,
           clerk_id
         )
-      `)
+      `
+      )
       .single()
 
     if (error) {
@@ -382,13 +375,13 @@ export const POST: APIRoute = async context => {
 export const PATCH: APIRoute = async context => {
   // Check if comment system is available
   const availability = await checkCommentSystemAvailability(context)
-  
+
   if (!availability.enabled) {
     return new Response(
       JSON.stringify({
         error: 'Comment system unavailable',
         reason: availability.reason,
-        code: 'COMMENTS_DISABLED'
+        code: 'COMMENTS_DISABLED',
       }),
       {
         status: 503,
@@ -400,13 +393,10 @@ export const PATCH: APIRoute = async context => {
   const auth = context.locals.auth()
 
   if (!auth?.userId) {
-    return new Response(
-      JSON.stringify({ error: 'Authentication required' }),
-      {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    )
+    return new Response(JSON.stringify({ error: 'Authentication required' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 
   try {
@@ -414,13 +404,10 @@ export const PATCH: APIRoute = async context => {
     const commentId = body.id
 
     if (!commentId) {
-      return new Response(
-        JSON.stringify({ error: 'Comment ID required' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Comment ID required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // CSRF token validation
@@ -428,25 +415,19 @@ export const PATCH: APIRoute = async context => {
     const csrfValid = await validateCsrfToken(csrfToken, context)
 
     if (!csrfValid) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid or expired CSRF token' }),
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Invalid or expired CSRF token' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     const supabase = await getAuthenticatedSupabase(context)
 
     if (!supabase) {
-      return new Response(
-        JSON.stringify({ error: 'Database not configured' }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Database not configured' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // Get user from database
@@ -457,13 +438,10 @@ export const PATCH: APIRoute = async context => {
       .single()
 
     if (!user) {
-      return new Response(
-        JSON.stringify({ error: 'User not found in database' }),
-        {
-          status: 404,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'User not found in database' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // Prepare update data
@@ -488,13 +466,10 @@ export const PATCH: APIRoute = async context => {
     }
 
     if (Object.keys(updateData).length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'No valid fields to update' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'No valid fields to update' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // Update the comment (RLS will ensure user owns it)
@@ -504,7 +479,8 @@ export const PATCH: APIRoute = async context => {
       .eq('id', commentId)
       .eq('author_id', user.id)
       .in('commentable_type', ['post', 'doc'])
-      .select(`
+      .select(
+        `
         id,
         content,
         author_id,
@@ -522,18 +498,16 @@ export const PATCH: APIRoute = async context => {
           avatar_url,
           clerk_id
         )
-      `)
+      `
+      )
       .single()
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return new Response(
-          JSON.stringify({ error: 'Comment not found or unauthorized' }),
-          {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        )
+        return new Response(JSON.stringify({ error: 'Comment not found or unauthorized' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        })
       }
       throw error
     }
@@ -570,13 +544,13 @@ export const PATCH: APIRoute = async context => {
 export const DELETE: APIRoute = async context => {
   // Check if comment system is available
   const availability = await checkCommentSystemAvailability(context)
-  
+
   if (!availability.enabled) {
     return new Response(
       JSON.stringify({
         error: 'Comment system unavailable',
         reason: availability.reason,
-        code: 'COMMENTS_DISABLED'
+        code: 'COMMENTS_DISABLED',
       }),
       {
         status: 503,
@@ -588,13 +562,10 @@ export const DELETE: APIRoute = async context => {
   const auth = context.locals.auth()
 
   if (!auth?.userId) {
-    return new Response(
-      JSON.stringify({ error: 'Authentication required' }),
-      {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    )
+    return new Response(JSON.stringify({ error: 'Authentication required' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 
   try {
@@ -602,25 +573,19 @@ export const DELETE: APIRoute = async context => {
     const commentId = url.searchParams.get('id')
 
     if (!commentId) {
-      return new Response(
-        JSON.stringify({ error: 'Comment ID required' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Comment ID required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     const supabase = await getAuthenticatedSupabase(context)
 
     if (!supabase) {
-      return new Response(
-        JSON.stringify({ error: 'Database not configured' }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Database not configured' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // Get user from database
@@ -631,13 +596,10 @@ export const DELETE: APIRoute = async context => {
       .single()
 
     if (!user) {
-      return new Response(
-        JSON.stringify({ error: 'User not found in database' }),
-        {
-          status: 404,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'User not found in database' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // Soft delete the comment (set status to archived)
