@@ -1,0 +1,467 @@
+---
+/**
+ * Comments Component - Phase 4.1 Implementation
+ * Server-side comment loading with React component hydration
+ * Following the astro-basics project patterns and comment system implementation plan
+ */
+
+import CommentsList from '#components/react/CommentsList'
+import CommentForm from '#components/react/CommentForm'
+import { getAuthenticatedSupabase } from '#libs/supabase-server'
+import { checkCommentSystemAvailability } from '#utils/comments-availability'
+
+export interface Props {
+  postId: string
+  postType: 'post' | 'doc'
+  title?: string
+}
+
+const { postId, postType, title = 'Comments' } = Astro.props
+
+// Check if comment system is available
+const availability = await checkCommentSystemAvailability(Astro)
+const isEnabled = availability.enabled
+
+// Get authentication status
+const auth = Astro.locals.auth?.()
+const isAuthenticated = !!auth?.userId
+const csrfToken = Astro.locals.csrfToken
+
+// Server-side comment loading
+let initialComments: any[] = []
+let commentLoadError: string | null = null
+
+if (isEnabled && postId) {
+  try {
+    const supabase = await getAuthenticatedSupabase(Astro)
+
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('comments')
+        .select(
+          `
+          *,
+          author:users!author_id(
+            id,
+            full_name,
+            avatar_url,
+            clerk_id
+          )
+        `
+        )
+        .eq('commentable_type', postType)
+        .eq('commentable_id', postId)
+        .eq('status', 'active')
+        .eq('is_internal', false)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (error) {
+        console.error('Failed to load comments:', error)
+        commentLoadError = 'Failed to load comments from database'
+      } else {
+        initialComments = data || []
+      }
+    }
+  } catch (error) {
+    console.error('Comments loading error:', error)
+    commentLoadError = 'Unable to connect to comment system'
+  }
+}
+---
+
+<section class="comments-section" data-comment-system={isEnabled ? 'enabled' : 'disabled'}>
+  <header class="comments-header">
+    <h2>{title}</h2>
+    {
+      !isEnabled && (
+        <div class="comments-status" role="status" aria-live="polite">
+          <span class="status-indicator disabled" aria-label="Comments disabled" />
+          <span class="status-text">Comments unavailable</span>
+        </div>
+      )
+    }
+  </header>
+
+  {
+    isEnabled ? (
+      <div class="comments-content">
+        {/* Show comment loading error if any */}
+        {commentLoadError && (
+          <div class="comments-error" role="alert">
+            <p>⚠️ {commentLoadError}</p>
+            <details class="error-details">
+              <summary>Troubleshooting</summary>
+              <p>
+                This might be a temporary issue. Try refreshing the page, or contact support if the
+                problem persists.
+              </p>
+            </details>
+          </div>
+        )}
+
+        {/* Authentication prompt for non-authenticated users */}
+        {!isAuthenticated && (
+          <div class="auth-prompt" role="banner">
+            <p>
+              <a href="/sign-in" class="auth-link">
+                Sign in
+              </a>{' '}
+              to join the conversation.
+            </p>
+          </div>
+        )}
+
+        {/* Comment form for authenticated users */}
+        {isAuthenticated && !commentLoadError && (
+          <div class="comment-form-container">
+            <CommentForm postId={postId} postType={postType} csrfToken={csrfToken} client:load />
+          </div>
+        )}
+
+        {/* Comments list */}
+        {!commentLoadError && (
+          <div class="comments-list-container">
+            <CommentsList
+              postId={postId}
+              postType={postType}
+              initialComments={initialComments}
+              currentUserId={auth?.userId}
+              csrfToken={csrfToken}
+              client:load
+            />
+          </div>
+        )}
+      </div>
+    ) : (
+      <div class="comments-disabled" role="alert">
+        <div class="disabled-content">
+          <h3>Comments Not Available</h3>
+          <p class="disabled-reason">
+            {availability.reason || 'The comment system is currently unavailable.'}
+          </p>
+
+          {availability.details?.hasEnvironment === false && (
+            <details class="troubleshooting">
+              <summary>For Developers</summary>
+              <div class="troubleshoot-content">
+                <p>To enable comments, configure the following environment variables:</p>
+                <ul>
+                  <li>
+                    <code>SUPABASE_URL</code> - Your Supabase project URL
+                  </li>
+                  <li>
+                    <code>SUPABASE_ANON_KEY</code> - Your Supabase anonymous key
+                  </li>
+                </ul>
+                <p>Then run the database migration:</p>
+                <pre>
+                  <code>npm run db:migrate</code>
+                </pre>
+              </div>
+            </details>
+          )}
+
+          {availability.details?.hasCommentsTable === false &&
+            availability.details?.hasEnvironment && (
+              <details class="troubleshooting">
+                <summary>For Developers</summary>
+                <div class="troubleshoot-content">
+                  <p>The comments table is not available. Run the database migration:</p>
+                  <pre>
+                    <code>npm run db:migrate</code>
+                  </pre>
+                  <p>Or apply the specific migration:</p>
+                  <pre>
+                    <code>scripts/supabase-migrations/004_add_blog_support_to_comments.sql</code>
+                  </pre>
+                </div>
+              </details>
+            )}
+        </div>
+      </div>
+    )
+  }
+</section>
+
+<style>
+  /* Comments Section Base Styling */
+  .comments-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+  }
+
+  .comments-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .comments-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+  }
+
+  .comments-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+  }
+
+  .status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .status-indicator.disabled {
+    background-color: var(--color-warning, #f59e0b);
+  }
+
+  /* Authentication Prompt */
+  .auth-prompt {
+    background-color: var(--background-subtle, #f9fafb);
+    border: 1px solid var(--border-light, #e5e7eb);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .auth-prompt p {
+    margin: 0;
+    color: var(--text-secondary, #6b7280);
+  }
+
+  .auth-link {
+    color: var(--link-color, #3b82f6);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .auth-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Comment containers */
+  .comment-form-container,
+  .comments-list-container {
+    margin-bottom: 2rem;
+  }
+
+  /* Error handling */
+  .comments-error {
+    background-color: var(--background-error, #fef2f2);
+    border: 1px solid var(--border-error, #fecaca);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    color: var(--text-error, #dc2626);
+  }
+
+  .comments-error p {
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+  }
+
+  .error-details {
+    margin-top: 0.5rem;
+  }
+
+  .error-details summary {
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+  }
+
+  .error-details summary:hover {
+    color: var(--text-primary, #111827);
+  }
+
+  .error-details p {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.875rem;
+    font-weight: normal;
+    color: var(--text-secondary, #6b7280);
+  }
+
+  /* Disabled state styling */
+  .comments-disabled {
+    background-color: var(--background-warning, #fffbeb);
+    border: 1px solid var(--border-warning, #fed7aa);
+    border-radius: 0.5rem;
+    padding: 2rem;
+  }
+
+  .disabled-content h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-warning, #92400e);
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .disabled-reason {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-secondary, #6b7280);
+    line-height: 1.6;
+  }
+
+  /* Troubleshooting section */
+  .troubleshooting {
+    background-color: var(--background-code, #f3f4f6);
+    border-radius: 0.375rem;
+    padding: 1rem;
+  }
+
+  .troubleshooting summary {
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-primary, #111827);
+    margin-bottom: 0.5rem;
+  }
+
+  .troubleshooting summary:hover {
+    color: var(--link-color, #3b82f6);
+  }
+
+  .troubleshoot-content {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .troubleshoot-content ul {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+  }
+
+  .troubleshoot-content li {
+    margin: 0.25rem 0;
+  }
+
+  .troubleshoot-content code {
+    background-color: var(--background-accent, #e5e7eb);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, Consolas, 'Liberation Mono',
+      'Courier New', monospace;
+    font-size: 0.8125rem;
+  }
+
+  .troubleshoot-content pre {
+    background-color: var(--background-dark, #374151);
+    color: var(--text-inverse, #f9fafb);
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+  }
+
+  .troubleshoot-content pre code {
+    background-color: transparent;
+    padding: 0;
+    color: inherit;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .comments-section {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+    }
+
+    .comments-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+  }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .comments-section {
+      border-top-color: var(--border-color-dark, #374151);
+    }
+
+    .comments-header h2 {
+      color: var(--text-primary-dark, #f9fafb);
+    }
+
+    .auth-prompt {
+      background-color: var(--background-subtle-dark, #1f2937);
+      border-color: var(--border-light-dark, #374151);
+    }
+
+    .comments-error {
+      background-color: var(--background-error-dark, #2d1b1b);
+      border-color: var(--border-error-dark, #ef4444);
+    }
+
+    .comments-disabled {
+      background-color: var(--background-warning-dark, #451a03);
+      border-color: var(--border-warning-dark, #92400e);
+    }
+
+    .troubleshooting {
+      background-color: var(--background-code-dark, #1f2937);
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .troubleshooting[open] summary {
+      transition: none;
+    }
+  }
+
+  /* Focus management */
+  .auth-link:focus,
+  .troubleshooting summary:focus {
+    outline: 2px solid var(--focus-color, #3b82f6);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  // Progressive enhancement for comment system
+  document.addEventListener('DOMContentLoaded', function () {
+    const section = document.querySelector('[data-comment-system="enabled"]')
+    if (section) {
+      // Mark as ready for React component hydration
+      section.setAttribute('data-comments-ready', 'true')
+
+      // Dispatch custom event for React components to listen
+      section.dispatchEvent(
+        new CustomEvent('comments-ready', {
+          bubbles: true,
+          detail: {
+            postId: section.dataset.postId,
+            postType: section.dataset.postType,
+            timestamp: Date.now(),
+          },
+        })
+      )
+
+      console.debug('Comments system initialized', {
+        postId: section.dataset.postId,
+        postType: section.dataset.postType,
+      })
+    }
+  })
+
+  // Handle comment system errors gracefully
+  window.addEventListener('unhandledrejection', function (event) {
+    if (event.reason && event.reason.message && event.reason.message.includes('comment')) {
+      console.warn('Comment system error handled:', event.reason.message)
+      // Prevent error from bubbling up if it's comment-related
+      event.preventDefault()
+    }
+  })
+</script>

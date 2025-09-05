@@ -23,6 +23,8 @@ export { default as Breadcrumb } from './astro/Breadcrumb.astro'
 export { default as TextToSpeech } from './astro/TextToSpeech.astro'
 export { default as SignedOutMessage } from './astro/SignedOutMessage.astro'
 export { default as UserInfo } from './astro/UserInfo.astro'
+export { default as Comments } from './astro/Comments.astro'
+export { default as CommentsWrapper } from './astro/CommentsWrapper.astro'
 
 // Dashboard components
 export { default as DashboardCard } from './dashboard/DashboardCard.astro'
