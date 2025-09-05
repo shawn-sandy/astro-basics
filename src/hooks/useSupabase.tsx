@@ -32,8 +32,23 @@ export function useSupabase() {
         try {
           token = await getToken({ template: 'supabase' })
           tokenRef.current = token
-        } catch (err) {
-          console.warn('Failed to get Supabase token from Clerk:', err)
+        } catch (err: any) {
+          // Handle missing JWT template gracefully - check both error message and Clerk API error structure
+          const isJwtTemplateError =
+            (err instanceof Error && err.message.includes('No JWT template exists with name')) ||
+            (err?.clerkError &&
+              err?.errors?.[0]?.code === 'resource_not_found' &&
+              err?.errors?.[0]?.longMessage?.includes('No JWT template exists with name'))
+
+          if (isJwtTemplateError) {
+            console.warn(
+              'Clerk JWT template "supabase" not configured. Using anonymous access.',
+              'To enable authenticated operations, create a JWT template named "supabase" in your Clerk Dashboard.',
+              'See docs/jwt-implementation-guide.md for setup instructions.'
+            )
+          } else {
+            console.warn('Failed to get Supabase token from Clerk:', err)
+          }
           // Continue without token - will use anon key
         }
       }
@@ -83,8 +98,17 @@ export function useSupabase() {
             tokenRef.current = newToken
             await initClient()
           }
-        } catch (err) {
-          console.error('Failed to refresh Supabase token:', err)
+        } catch (err: any) {
+          // Silently handle JWT template errors to avoid spamming logs
+          const isJwtTemplateError =
+            (err instanceof Error && err.message.includes('No JWT template exists with name')) ||
+            (err?.clerkError &&
+              err?.errors?.[0]?.code === 'resource_not_found' &&
+              err?.errors?.[0]?.longMessage?.includes('No JWT template exists with name'))
+
+          if (!isJwtTemplateError) {
+            console.error('Failed to refresh Supabase token:', err)
+          }
         }
       },
       5 * 60 * 1000

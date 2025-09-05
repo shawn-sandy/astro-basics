@@ -46,17 +46,57 @@ export async function getAuthenticatedSupabase(context: {
       return createServerSupabaseClient()
     }
 
-    // Get the Clerk JWT token with Supabase template
-    const token = await auth.getToken({ template: 'supabase' })
+    // Try to get the Clerk JWT token with Supabase template
+    try {
+      const token = await auth.getToken({ template: 'supabase' })
+      if (token) {
+        return createServerSupabaseClient(token)
+      }
+    } catch (templateError: any) {
+      // Handle missing JWT template gracefully - check both error message and Clerk API error structure
+      const isJwtTemplateError =
+        (templateError instanceof Error &&
+          templateError.message.includes('No JWT template exists with name')) ||
+        (templateError?.clerkError &&
+          templateError?.errors?.[0]?.code === 'resource_not_found' &&
+          templateError?.errors?.[0]?.longMessage?.includes('No JWT template exists with name'))
 
-    if (!token) {
-      console.warn('Failed to get Supabase token from Clerk')
-      return createServerSupabaseClient()
+      if (isJwtTemplateError) {
+        console.warn(
+          'Clerk JWT template "supabase" not configured. Using service role key for authenticated operations.',
+          'To enable full JWT authentication, create a JWT template named "supabase" in your Clerk Dashboard.',
+          'See docs/jwt-implementation-guide.md for setup instructions.'
+        )
+
+        // Fall back to service role client for authenticated operations
+        // This allows the system to work while JWT template is being set up
+        return createServerSupabaseClient()
+      }
+
+      // Re-throw other token errors
+      throw templateError
     }
 
-    return createServerSupabaseClient(token)
-  } catch (error) {
-    console.error('Error creating authenticated Supabase client:', error)
+    console.warn('Failed to get Supabase token from Clerk - no token returned')
+    return createServerSupabaseClient()
+  } catch (error: any) {
+    // Handle JWT template errors at this level too
+    const isJwtTemplateError =
+      (error instanceof Error && error.message.includes('No JWT template exists with name')) ||
+      (error?.clerkError &&
+        error?.errors?.[0]?.code === 'resource_not_found' &&
+        error?.errors?.[0]?.longMessage?.includes('No JWT template exists with name'))
+
+    if (isJwtTemplateError) {
+      console.warn(
+        'Clerk JWT template "supabase" not configured. Using service role key for authenticated operations.',
+        'To enable full JWT authentication, create a JWT template named "supabase" in your Clerk Dashboard.',
+        'See docs/jwt-implementation-guide.md for setup instructions.'
+      )
+    } else {
+      console.error('Error creating authenticated Supabase client:', error)
+    }
+
     return createServerSupabaseClient()
   }
 }

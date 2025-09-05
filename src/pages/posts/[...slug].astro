@@ -1,7 +1,11 @@
 ---
-export const prerender = true
 import { getCollection, type CollectionEntry } from 'astro:content'
+import { isCommentSystemLikelyAvailable } from '#utils/comments-availability'
 import MarkdownPostLayout from '#layouts/MarkdownPostLayout.astro'
+
+// Conditionally disable prerendering if comments are enabled
+// This allows access to authentication context for authenticated features
+export const prerender = !isCommentSystemLikelyAvailable()
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts')
@@ -12,10 +16,24 @@ export async function getStaticPaths() {
 }
 
 export type Props = {
-  entry: CollectionEntry<'posts'>
+  entry?: CollectionEntry<'posts'>
 }
 
-const { entry } = Astro.props
+// Handle both static and dynamic rendering
+let entry: CollectionEntry<'posts'>
+if (Astro.props.entry) {
+  // Static/prerendered context
+  entry = Astro.props.entry
+} else {
+  // Server-rendered context - get entry from params
+  const posts = await getCollection('posts')
+  const foundEntry = posts.find(post => post.slug === Astro.params.slug)
+  if (!foundEntry) {
+    return Astro.redirect('/404')
+  }
+  entry = foundEntry
+}
+
 const { Content, headings } = await entry.render()
 ---
 
