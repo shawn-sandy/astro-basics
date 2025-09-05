@@ -23,8 +23,8 @@ const availability = await checkCommentSystemAvailability(Astro)
 const isEnabled = availability.enabled
 
 // Get authentication status
-const auth = Astro.locals.auth?.()
-const isAuthenticated = !!auth?.userId
+const userId = Astro.locals.userId
+const isAuthenticated = !!userId
 const csrfToken = Astro.locals.csrfToken
 
 // Server-side comment loading
@@ -126,7 +126,7 @@ if (isEnabled && postId) {
               postId={postId}
               postType={postType}
               initialComments={initialComments}
-              currentUserId={auth?.userId}
+              currentUserId={userId || undefined}
               csrfToken={csrfToken}
               client:load
             />

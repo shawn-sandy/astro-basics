@@ -14,100 +14,118 @@ export interface Props {
   showFallback?: boolean
 }
 
-const { 
-  postId, 
-  postType, 
-  title = 'Comments',
-  showFallback = true 
-} = Astro.props
+const { postId, postType, title = 'Comments', showFallback = true } = Astro.props
 
 // Check if comment system is available
 const availability = await checkCommentSystemAvailability(Astro)
 const isEnabled = availability.enabled
 
 // Get authentication status
-const auth = Astro.locals.auth?.()
-const isAuthenticated = !!auth?.userId
+const userId = Astro.locals.userId
+const isAuthenticated = !!userId
 const csrfToken = Astro.locals.csrfToken
 ---
 
 <section class="comments-wrapper" data-comment-system-enabled={isEnabled}>
   <header class="comments-header">
     <h2>{title}</h2>
-    {!isEnabled && (
-      <div class="comments-status" role="status" aria-live="polite">
-        <span class="status-indicator disabled" aria-label="Comments disabled"></span>
-        <span class="status-text">Comments temporarily unavailable</span>
-      </div>
-    )}
+    {
+      !isEnabled && (
+        <div class="comments-status" role="status" aria-live="polite">
+          <span class="status-indicator disabled" aria-label="Comments disabled" />
+          <span class="status-text">Comments temporarily unavailable</span>
+        </div>
+      )
+    }
   </header>
 
-  {isEnabled ? (
-    <div class="comments-content">
-      <!-- Authentication status -->
-      {!isAuthenticated && (
-        <div class="auth-prompt" role="banner">
-          <p>
-            <a href="/sign-in" class="auth-link">Sign in</a> to join the conversation.
-          </p>
-        </div>
-      )}
+  {
+    isEnabled ? (
+      <div class="comments-content">
+        {/* Authentication status */}
+        {!isAuthenticated && (
+          <div class="auth-prompt" role="banner">
+            <p>
+              <a href="/sign-in" class="auth-link">
+                Sign in
+              </a>{' '}
+              to join the conversation.
+            </p>
+          </div>
+        )}
 
-      <!-- Comment form for authenticated users -->
-      {isAuthenticated && (
-        <div class="comment-form-container">
-          <!-- This will be replaced with the actual CommentForm component in Phase 3 -->
-          <div class="comment-form-placeholder" data-post-id={postId} data-post-type={postType} data-csrf-token={csrfToken}>
-            <p class="placeholder-text">Comment form will be loaded here...</p>
+        {/* Comment form for authenticated users */}
+        {isAuthenticated && (
+          <div class="comment-form-container">
+            <div
+              class="comment-form-placeholder"
+              data-post-id={postId}
+              data-post-type={postType}
+              data-csrf-token={csrfToken}
+            >
+              <p class="placeholder-text">Comment form will be loaded here...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Comments list */}
+        <div class="comments-list-container">
+          <div class="comments-list-placeholder" data-post-id={postId} data-post-type={postType}>
+            <p class="placeholder-text">Comments will be loaded here...</p>
           </div>
         </div>
-      )}
+      </div>
+    ) : (
+      showFallback && (
+        <div class="comments-disabled" role="alert">
+          <div class="disabled-content">
+            <h3>Comments Not Available</h3>
+            <p class="disabled-reason">
+              {availability.reason || 'The comment system is currently unavailable.'}
+            </p>
 
-      <!-- Comments list -->
-      <div class="comments-list-container">
-        <!-- This will be replaced with the actual CommentsList component in Phase 3 -->
-        <div class="comments-list-placeholder" data-post-id={postId} data-post-type={postType}>
-          <p class="placeholder-text">Comments will be loaded here...</p>
+            {availability.details?.hasEnvironment === false && (
+              <details class="troubleshooting">
+                <summary>For Developers</summary>
+                <div class="troubleshoot-content">
+                  <p>To enable comments, configure the following environment variables:</p>
+                  <ul>
+                    <li>
+                      <code>SUPABASE_URL</code> - Your Supabase project URL
+                    </li>
+                    <li>
+                      <code>SUPABASE_ANON_KEY</code> - Your Supabase anonymous key
+                    </li>
+                  </ul>
+                  <p>Then run the database migration:</p>
+                  <pre>
+                    <code>npm run db:migrate</code>
+                  </pre>
+                </div>
+              </details>
+            )}
+
+            {availability.details?.hasCommentsTable === false &&
+              availability.details?.hasEnvironment && (
+                <details class="troubleshooting">
+                  <summary>For Developers</summary>
+                  <div class="troubleshoot-content">
+                    <p>The comments table is not available. Run the database migration:</p>
+                    <pre>
+                      <code>npm run db:migrate</code>
+                    </pre>
+                    <p>Or apply the specific migration:</p>
+                    <pre>
+                      <code>scripts/supabase-migrations/004_add_blog_support_to_comments.sql</code>
+                    </pre>
+                  </div>
+                </details>
+              )}
+          </div>
         </div>
-      </div>
-    </div>
-  ) : showFallback && (
-    <div class="comments-disabled" role="alert">
-      <div class="disabled-content">
-        <h3>Comments Not Available</h3>
-        <p class="disabled-reason">
-          {availability.reason || 'The comment system is currently unavailable.'}
-        </p>
-        
-        {availability.details?.hasEnvironment === false && (
-          <details class="troubleshooting">
-            <summary>For Developers</summary>
-            <div class="troubleshoot-content">
-              <p>To enable comments, configure the following environment variables:</p>
-              <ul>
-                <li><code>SUPABASE_URL</code> - Your Supabase project URL</li>
-                <li><code>SUPABASE_ANON_KEY</code> - Your Supabase anonymous key</li>
-              </ul>
-              <p>Then run the database migration:</p>
-              <pre><code>npm run db:migrate</code></pre>
-            </div>
-          </details>
-        )}
-        
-        {availability.details?.hasCommentsTable === false && availability.details?.hasEnvironment && (
-          <details class="troubleshooting">
-            <summary>For Developers</summary>
-            <div class="troubleshoot-content">
-              <p>The comments table is not available. Run the database migration:</p>
-              <pre><code>npm run db:migrate</code></pre>
-              <p>Or apply the specific migration:</p>
-              <pre><code>scripts/supabase-migrations/004_add_blog_support_to_comments.sql</code></pre>
-            </div>
-          </details>
-        )}
-      </div>
-    </div>
-  )}
+      )
+    )
+  }
 </section>
 
 <style>
@@ -249,7 +267,8 @@ const csrfToken = Astro.locals.csrfToken
     background-color: var(--background-accent, #e5e7eb);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
-    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, Consolas, 'Liberation Mono',
+      'Courier New', monospace;
     font-size: 0.8125rem;
   }
 
@@ -299,20 +318,22 @@ const csrfToken = Astro.locals.csrfToken
 
 <script>
   // Progressive enhancement for comment system
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const wrapper = document.querySelector('[data-comment-system-enabled="true"]')
     if (wrapper) {
       // Mark as ready for React component hydration
       wrapper.setAttribute('data-comments-ready', 'true')
-      
+
       // Dispatch custom event for React components to listen
-      wrapper.dispatchEvent(new CustomEvent('comments-ready', {
-        bubbles: true,
-        detail: {
-          postId: wrapper.querySelector('[data-post-id]')?.getAttribute('data-post-id'),
-          postType: wrapper.querySelector('[data-post-type]')?.getAttribute('data-post-type')
-        }
-      }))
+      wrapper.dispatchEvent(
+        new CustomEvent('comments-ready', {
+          bubbles: true,
+          detail: {
+            postId: wrapper.querySelector('[data-post-id]')?.getAttribute('data-post-id'),
+            postType: wrapper.querySelector('[data-post-type]')?.getAttribute('data-post-type'),
+          },
+        })
+      )
     }
   })
 </script>

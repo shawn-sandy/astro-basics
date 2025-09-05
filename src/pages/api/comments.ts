@@ -202,9 +202,9 @@ export const POST: APIRoute = async context => {
     )
   }
 
-  const auth = context.locals.auth()
+  const userId = context.locals.userId
 
-  if (!auth?.userId) {
+  if (!userId) {
     return new Response(JSON.stringify({ error: 'Authentication required' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
@@ -218,7 +218,7 @@ export const POST: APIRoute = async context => {
     const clientIP = getClientIP(context.request)
     const rateLimitResult = enhancedCommentRateLimiter.checkCommentLimit(
       clientIP,
-      auth.userId,
+      userId,
       body.content
     )
 
@@ -287,11 +287,7 @@ export const POST: APIRoute = async context => {
     }
 
     // Get user from database
-    const { data: user } = await supabase
-      .from('users')
-      .select('id')
-      .eq('clerk_id', auth.userId)
-      .single()
+    const { data: user } = await supabase.from('users').select('id').eq('clerk_id', userId).single()
 
     if (!user) {
       return new Response(JSON.stringify({ error: 'User not found in database' }), {
@@ -390,9 +386,9 @@ export const PATCH: APIRoute = async context => {
     )
   }
 
-  const auth = context.locals.auth()
+  const userId = context.locals.userId
 
-  if (!auth?.userId) {
+  if (!userId) {
     return new Response(JSON.stringify({ error: 'Authentication required' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
@@ -431,11 +427,7 @@ export const PATCH: APIRoute = async context => {
     }
 
     // Get user from database
-    const { data: user } = await supabase
-      .from('users')
-      .select('id')
-      .eq('clerk_id', auth.userId)
-      .single()
+    const { data: user } = await supabase.from('users').select('id').eq('clerk_id', userId).single()
 
     if (!user) {
       return new Response(JSON.stringify({ error: 'User not found in database' }), {
@@ -559,9 +551,9 @@ export const DELETE: APIRoute = async context => {
     )
   }
 
-  const auth = context.locals.auth()
+  const userId = context.locals.userId
 
-  if (!auth?.userId) {
+  if (!userId) {
     return new Response(JSON.stringify({ error: 'Authentication required' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
@@ -589,11 +581,7 @@ export const DELETE: APIRoute = async context => {
     }
 
     // Get user from database
-    const { data: user } = await supabase
-      .from('users')
-      .select('id')
-      .eq('clerk_id', auth.userId)
-      .single()
+    const { data: user } = await supabase.from('users').select('id').eq('clerk_id', userId).single()
 
     if (!user) {
       return new Response(JSON.stringify({ error: 'User not found in database' }), {
