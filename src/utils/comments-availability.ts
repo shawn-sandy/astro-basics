@@ -26,7 +26,7 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 function hasRequiredEnvironment(): boolean {
   const supabaseUrl = import.meta.env.SUPABASE_URL
   const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY
-  
+
   return !!(supabaseUrl && supabaseAnonKey && supabaseUrl !== '' && supabaseAnonKey !== '')
 }
 
@@ -35,8 +35,8 @@ function hasRequiredEnvironment(): boolean {
  */
 function isCommentsFeatureEnabled(): boolean {
   const enableComments = import.meta.env.ENABLE_COMMENTS
-  // Default to true if not specified
-  return enableComments !== 'false' && enableComments !== '0'
+  // Return false if not specified or explicitly disabled
+  return enableComments === 'true' || enableComments === '1'
 }
 
 /**
@@ -44,12 +44,12 @@ function isCommentsFeatureEnabled(): boolean {
  */
 async function hasCommentsTable(context?: unknown): Promise<boolean> {
   try {
-    const supabase = context 
+    const supabase = context
       ? await getAuthenticatedSupabase(context)
       : await getAuthenticatedSupabase({
           locals: {
-            auth: () => ({ userId: null, getToken: () => Promise.resolve(null) })
-          }
+            auth: () => ({ userId: null, getToken: () => Promise.resolve(null) }),
+          },
         })
 
     if (!supabase) {
@@ -57,15 +57,15 @@ async function hasCommentsTable(context?: unknown): Promise<boolean> {
     }
 
     // Try to query the comments table structure
-    const { error } = await supabase
-      .from('comments')
-      .select('id')
-      .limit(1)
+    const { error } = await supabase.from('comments').select('id').limit(1)
 
     // If no error, table exists and is accessible
     return !error || error.code !== 'PGRST116' // PGRST116 = relation not found
   } catch (error) {
-    console.warn('Comments table check failed:', error instanceof Error ? error.message : 'Unknown error')
+    console.warn(
+      'Comments table check failed:',
+      error instanceof Error ? error.message : 'Unknown error'
+    )
     return false
   }
 }
@@ -73,10 +73,12 @@ async function hasCommentsTable(context?: unknown): Promise<boolean> {
 /**
  * Comprehensive check for comment system availability
  */
-export async function checkCommentSystemAvailability(context?: unknown): Promise<CommentSystemStatus> {
+export async function checkCommentSystemAvailability(
+  context?: unknown
+): Promise<CommentSystemStatus> {
   // Return cached result if still valid
   const now = Date.now()
-  if (cachedStatus && (now - cacheTimestamp) < CACHE_DURATION) {
+  if (cachedStatus && now - cacheTimestamp < CACHE_DURATION) {
     return cachedStatus
   }
 
@@ -91,10 +93,10 @@ export async function checkCommentSystemAvailability(context?: unknown): Promise
       details: {
         hasEnvironment,
         hasDatabase: false,
-        hasCommentsTable: false
-      }
+        hasCommentsTable: false,
+      },
     }
-    
+
     cachedStatus = status
     cacheTimestamp = now
     return status
@@ -107,10 +109,10 @@ export async function checkCommentSystemAvailability(context?: unknown): Promise
       details: {
         hasEnvironment: false,
         hasDatabase: false,
-        hasCommentsTable: false
-      }
+        hasCommentsTable: false,
+      },
     }
-    
+
     cachedStatus = status
     cacheTimestamp = now
     return status
@@ -127,14 +129,14 @@ export async function checkCommentSystemAvailability(context?: unknown): Promise
     details: {
       hasEnvironment,
       hasDatabase,
-      hasCommentsTable: hasTable
-    }
+      hasCommentsTable: hasTable,
+    },
   }
 
   // Cache the result
   cachedStatus = status
   cacheTimestamp = now
-  
+
   return status
 }
 
@@ -159,7 +161,7 @@ function getDisabledReason(hasEnv: boolean, hasDb: boolean, hasTable: boolean): 
  */
 export function isCommentSystemLikelyAvailable(): boolean {
   // If we have a cached result, use it
-  if (cachedStatus && (Date.now() - cacheTimestamp) < CACHE_DURATION) {
+  if (cachedStatus && Date.now() - cacheTimestamp < CACHE_DURATION) {
     return cachedStatus.enabled
   }
 
@@ -186,6 +188,6 @@ export function getCommentSystemCacheStatus(): {
   return {
     cached: cachedStatus !== null,
     timestamp: cacheTimestamp,
-    status: cachedStatus
+    status: cachedStatus,
   }
 }
