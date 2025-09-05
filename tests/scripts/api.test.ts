@@ -9,7 +9,7 @@ global.fetch = mockFetch
 
 // Import modules to test
 // Note: We need to dynamically import since these are ES modules in /public/scripts/
-let apiModule: any
+let _apiModule: any
 
 describe('API Module', () => {
   beforeEach(async () => {
@@ -23,14 +23,14 @@ describe('API Module', () => {
     it('should handle successful API responses', async () => {
       const mockResponse = {
         ok: true,
-        json: () => Promise.resolve({ success: true, data: 'test' })
+        json: () => Promise.resolve({ success: true, data: 'test' }),
       }
       mockFetch.mockResolvedValue(mockResponse)
 
       // Test the logic pattern that would be in apiRequest
       const response = await fetch('/test')
       const data = await response.json()
-      
+
       expect(response.ok).toBe(true)
       expect(data.success).toBe(true)
       expect(data.data).toBe('test')
@@ -39,13 +39,13 @@ describe('API Module', () => {
     it('should handle API error responses', async () => {
       const mockResponse = {
         ok: false,
-        json: () => Promise.resolve({ error: 'API Error' })
+        json: () => Promise.resolve({ error: 'API Error' }),
       }
       mockFetch.mockResolvedValue(mockResponse)
 
       const response = await fetch('/test')
       const data = await response.json()
-      
+
       expect(response.ok).toBe(false)
       expect(data.error).toBe('API Error')
     })
@@ -70,7 +70,7 @@ describe('API Module', () => {
 
       const jsonData = JSON.stringify(Object.fromEntries(formData.entries()))
       const parsedData = JSON.parse(jsonData)
-      
+
       expect(parsedData.name).toBe('John')
       expect(parsedData.email).toBe('john@example.com')
     })
@@ -79,7 +79,7 @@ describe('API Module', () => {
       const data = { name: 'John', email: 'john@example.com' }
       const jsonData = JSON.stringify(data)
       const parsedData = JSON.parse(jsonData)
-      
+
       expect(parsedData.name).toBe('John')
       expect(parsedData.email).toBe('john@example.com')
     })

@@ -159,11 +159,13 @@ export function sanitizeMessageData(data: {
   }
 
   // Detect suspicious content
-  Object.values(sanitized).filter(Boolean).forEach(value => {
-    if (detectSuspiciousContent(value)) {
-      throw new Error('Suspicious content detected')
-    }
-  })
+  Object.values(sanitized)
+    .filter(Boolean)
+    .forEach(value => {
+      if (detectSuspiciousContent(value)) {
+        throw new Error('Suspicious content detected')
+      }
+    })
 
   // Final validation
   if (!sanitized.name || !sanitized.email || !sanitized.message) {

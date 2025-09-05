@@ -10,18 +10,18 @@ const mockInstallPrompt = {
   classList: {
     add: vi.fn(),
     remove: vi.fn(),
-    contains: vi.fn()
-  }
+    contains: vi.fn(),
+  },
 }
 
 const mockInstallBtn = {
   id: 'pwa-install-btn',
-  addEventListener: vi.fn()
+  addEventListener: vi.fn(),
 }
 
 const mockDismissBtn = {
   id: 'pwa-dismiss-btn',
-  addEventListener: vi.fn()
+  addEventListener: vi.fn(),
 }
 
 const mockOfflineIndicator = {
@@ -30,32 +30,32 @@ const mockOfflineIndicator = {
   classList: {
     add: vi.fn(),
     remove: vi.fn(),
-    contains: vi.fn()
-  }
+    contains: vi.fn(),
+  },
 }
 
 const mockOfflineText = {
   className: 'offline-text',
-  textContent: ''
+  textContent: '',
 }
 
 // Mock localStorage
 const mockLocalStorage = {
   getItem: vi.fn(),
   setItem: vi.fn(),
-  removeItem: vi.fn()
+  removeItem: vi.fn(),
 }
 
 // Mock window and document
 const mockDocument = {
   querySelector: vi.fn(),
-  getElementById: vi.fn()
+  getElementById: vi.fn(),
 }
 
 const mockWindow = {
   addEventListener: vi.fn(),
   matchMedia: vi.fn(),
-  navigator: { onLine: true }
+  navigator: { onLine: true },
 }
 
 global.document = mockDocument as any
@@ -74,7 +74,7 @@ describe('PWA Manager Feature', () => {
 
   describe('PWA Install Prompt', () => {
     it('should initialize install prompt elements', () => {
-      mockDocument.querySelector.mockImplementation((selector) => {
+      mockDocument.querySelector.mockImplementation(selector => {
         if (selector === '#pwa-install-prompt') return mockInstallPrompt
         if (selector === '#pwa-install-btn') return mockInstallBtn
         if (selector === '#pwa-dismiss-btn') return mockDismissBtn
@@ -91,10 +91,10 @@ describe('PWA Manager Feature', () => {
     })
 
     it('should handle beforeinstallprompt event', () => {
-      const mockEvent = {
+      const _mockEvent = {
         preventDefault: vi.fn(),
         prompt: vi.fn().mockResolvedValue({}),
-        userChoice: Promise.resolve({ outcome: 'accepted' })
+        userChoice: Promise.resolve({ outcome: 'accepted' }),
       }
 
       // Simulate event listener setup
@@ -109,7 +109,7 @@ describe('PWA Manager Feature', () => {
 
       // Simulate show prompt logic
       const dismissed = mockLocalStorage.getItem('pwa-install-dismissed')
-      
+
       if (!dismissed) {
         mockInstallPrompt.style.display = 'block'
         setTimeout(() => {
@@ -131,7 +131,7 @@ describe('PWA Manager Feature', () => {
     it('should handle install button click', async () => {
       const mockDeferredPrompt = {
         prompt: vi.fn().mockResolvedValue({}),
-        userChoice: Promise.resolve({ outcome: 'accepted' })
+        userChoice: Promise.resolve({ outcome: 'accepted' }),
       }
 
       // Simulate install flow
@@ -144,7 +144,7 @@ describe('PWA Manager Feature', () => {
 
     it('should handle dismiss button click', () => {
       const mockTimestamp = Date.now()
-      
+
       // Simulate dismiss logic
       mockLocalStorage.setItem('pwa-install-dismissed', mockTimestamp.toString())
 
@@ -156,7 +156,7 @@ describe('PWA Manager Feature', () => {
 
     it('should detect standalone mode', () => {
       const mockMediaQuery = {
-        matches: true
+        matches: true,
       }
       mockWindow.matchMedia.mockReturnValue(mockMediaQuery)
 
@@ -167,7 +167,7 @@ describe('PWA Manager Feature', () => {
 
   describe('Offline Indicator', () => {
     it('should initialize offline indicator elements', () => {
-      mockDocument.querySelector.mockImplementation((selector) => {
+      mockDocument.querySelector.mockImplementation(selector => {
         if (selector === '#offline-indicator') return mockOfflineIndicator
         if (selector === '.offline-text') return mockOfflineText
         return null
@@ -207,7 +207,7 @@ describe('PWA Manager Feature', () => {
       expect(mockOfflineText.textContent).toBe('Back online!')
     })
 
-    it('should hide indicator after timeout when online', (done) => {
+    it('should hide indicator after timeout when online', done => {
       mockWindow.navigator.onLine = true
 
       // Simulate online with timeout

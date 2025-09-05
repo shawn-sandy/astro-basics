@@ -8,21 +8,21 @@ const mockForm = {
   id: 'contact-form',
   addEventListener: vi.fn(),
   reset: vi.fn(),
-  querySelector: vi.fn()
+  querySelector: vi.fn(),
 }
 
 const mockFormMessage = {
   id: 'form-message',
   textContent: '',
   className: '',
-  style: { display: '' }
+  style: { display: '' },
 }
 
 const mockSubmitButton = {
   type: 'submit',
   disabled: false,
   textContent: '',
-  dataset: {}
+  dataset: {},
 }
 
 const mockFormData = {
@@ -30,8 +30,8 @@ const mockFormData = {
     ['name', 'John Doe'],
     ['email', 'john@example.com'],
     ['subject', 'Test'],
-    ['message', 'Test message']
-  ])
+    ['message', 'Test message'],
+  ]),
 }
 
 // Mock fetch
@@ -41,7 +41,7 @@ global.FormData = vi.fn().mockImplementation(() => mockFormData) as any
 
 const mockDocument = {
   querySelector: vi.fn(),
-  getElementById: vi.fn()
+  getElementById: vi.fn(),
 }
 
 global.document = mockDocument as any
@@ -59,7 +59,7 @@ describe('Contact Form Feature', () => {
 
   describe('Form Initialization', () => {
     it('should find required form elements', () => {
-      mockDocument.querySelector.mockImplementation((selector) => {
+      mockDocument.querySelector.mockImplementation(selector => {
         if (selector === '#contact-form') return mockForm
         if (selector === '#form-message') return mockFormMessage
         if (selector === 'button[type="submit"]') return mockSubmitButton
@@ -87,23 +87,24 @@ describe('Contact Form Feature', () => {
     it('should handle successful form submission', async () => {
       const mockResponse = {
         ok: true,
-        json: () => Promise.resolve({ 
-          success: true, 
-          message: 'Message sent successfully!' 
-        })
+        json: () =>
+          Promise.resolve({
+            success: true,
+            message: 'Message sent successfully!',
+          }),
       }
       mockFetch.mockResolvedValue(mockResponse)
 
       // Simulate form submission logic
       const formData = new FormData()
       const data = Object.fromEntries(formData.entries())
-      
+
       const response = await fetch('/api/message-us', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       })
-      
+
       const result = await response.json()
 
       expect(response.ok).toBe(true)
@@ -114,19 +115,20 @@ describe('Contact Form Feature', () => {
     it('should handle form submission errors', async () => {
       const mockResponse = {
         ok: false,
-        json: () => Promise.resolve({ 
-          success: false, 
-          error: 'Validation failed' 
-        })
+        json: () =>
+          Promise.resolve({
+            success: false,
+            error: 'Validation failed',
+          }),
       }
       mockFetch.mockResolvedValue(mockResponse)
 
       const response = await fetch('/api/message-us', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        body: JSON.stringify({}),
       })
-      
+
       const result = await response.json()
 
       expect(response.ok).toBe(false)
@@ -141,7 +143,7 @@ describe('Contact Form Feature', () => {
         await fetch('/api/message-us', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
+          body: JSON.stringify({}),
         })
       } catch (error) {
         expect(error).toBeInstanceOf(Error)

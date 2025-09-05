@@ -18,7 +18,7 @@ export function normalizeIPAddress(rawIP: string): string {
 
   // Clean up common proxy header artifacts
   let cleanIP = rawIP.trim()
-  
+
   // Remove port numbers and brackets from IPv6 addresses
   // Examples: [2001:db8::1]:8080 -> 2001:db8::1
   if (cleanIP.startsWith('[') && cleanIP.includes(']:')) {
@@ -32,7 +32,7 @@ export function normalizeIPAddress(rawIP: string): string {
       cleanIP = cleanIP.substring(0, lastColonIndex)
     }
   }
-  
+
   // Validate the cleaned IP
   const ipVersion = isIP(cleanIP)
   if (ipVersion === 0) {
@@ -40,19 +40,21 @@ export function normalizeIPAddress(rawIP: string): string {
     console.warn(`Invalid IP address format: "${rawIP}" -> "${cleanIP}"`)
     return 'unknown'
   }
-  
+
   // For IPv6 (version 6), ensure it's in compressed form
   if (ipVersion === 6) {
     try {
       // Node.js automatically normalizes IPv6 when we validate it
       // But we can ensure compression by parsing and reconstructing
       const normalizedIPv6 = compressIPv6(cleanIP)
-      
+
       // Final length check - IPv6 should fit in 45 chars when properly compressed
       if (normalizedIPv6.length <= 45) {
         return normalizedIPv6
       } else {
-        console.warn(`IPv6 address too long after normalization: "${rawIP}" (${normalizedIPv6.length} chars)`)
+        console.warn(
+          `IPv6 address too long after normalization: "${rawIP}" (${normalizedIPv6.length} chars)`
+        )
         return 'unknown'
       }
     } catch (error) {
@@ -60,7 +62,7 @@ export function normalizeIPAddress(rawIP: string): string {
       return 'unknown'
     }
   }
-  
+
   // For IPv4 (version 4), return as-is if it passes validation
   // IPv4 addresses are never longer than 15 characters (xxx.xxx.xxx.xxx)
   return cleanIP
@@ -78,16 +80,16 @@ function compressIPv6(ipv6: string): string {
     // Remove leading zeros but keep at least one digit
     return segment.replace(/^0+/, '') || '0'
   })
-  
+
   // Join back to create the uncompressed but zero-trimmed version
   let result = segments.join(':')
-  
+
   // Find the longest sequence of consecutive zero segments
   let bestStart = -1
   let bestLength = 0
   let currentStart = -1
   let currentLength = 0
-  
+
   for (let i = 0; i < segments.length; i++) {
     if (segments[i] === '0') {
       if (currentStart === -1) {
@@ -105,18 +107,18 @@ function compressIPv6(ipv6: string): string {
       currentLength = 0
     }
   }
-  
+
   // Check the final sequence
   if (currentLength > bestLength) {
     bestStart = currentStart
     bestLength = currentLength
   }
-  
+
   // Only compress if we have at least 2 consecutive zeros
   if (bestLength >= 2) {
     const beforeZeros = segments.slice(0, bestStart)
     const afterZeros = segments.slice(bestStart + bestLength)
-    
+
     if (beforeZeros.length === 0) {
       result = '::' + afterZeros.join(':')
     } else if (afterZeros.length === 0) {
@@ -125,7 +127,7 @@ function compressIPv6(ipv6: string): string {
       result = beforeZeros.join(':') + '::' + afterZeros.join(':')
     }
   }
-  
+
   return result
 }
 

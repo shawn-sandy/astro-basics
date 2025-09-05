@@ -7,8 +7,16 @@ export interface SanitizedMetadata {
 }
 
 const DANGEROUS_FIELDS = [
-  'password', 'token', 'secret', 'key', 'private',
-  'internal', 'admin', 'auth', 'session', 'csrf'
+  'password',
+  'token',
+  'secret',
+  'key',
+  'private',
+  'internal',
+  'admin',
+  'auth',
+  'session',
+  'csrf',
 ]
 
 const HTML_ENTITIES: Record<string, string> = {
@@ -17,14 +25,14 @@ const HTML_ENTITIES: Record<string, string> = {
   '>': '&gt;',
   '"': '&quot;',
   "'": '&#x27;',
-  '/': '&#x2F;'
+  '/': '&#x2F;',
 }
 
 /**
  * Escapes HTML entities in string values
  */
 function escapeHtml(text: string): string {
-  return text.replace(/[&<>"'/]/g, (char) => HTML_ENTITIES[char] || char)
+  return text.replace(/[&<>"'/]/g, char => HTML_ENTITIES[char] || char)
 }
 
 /**
@@ -58,8 +66,8 @@ export function sanitizeMetadata(metadata: unknown): SanitizedMetadata {
     } else if (typeof value === 'string') {
       // Escape HTML and limit length
       const sanitizedValue = escapeHtml(value)
-      sanitized[key] = sanitizedValue.length > 500 ? 
-        sanitizedValue.substring(0, 500) + '...' : sanitizedValue
+      sanitized[key] =
+        sanitizedValue.length > 500 ? sanitizedValue.substring(0, 500) + '...' : sanitizedValue
     } else if (typeof value === 'number' || typeof value === 'boolean') {
       sanitized[key] = value
     } else if (typeof value === 'object' && !Array.isArray(value)) {
@@ -80,7 +88,7 @@ export function sanitizeMetadata(metadata: unknown): SanitizedMetadata {
  */
 export function formatMetadataForDisplay(metadata: unknown): string {
   const sanitized = sanitizeMetadata(metadata)
-  
+
   if (Object.keys(sanitized).length === 0) {
     return 'No displayable metadata'
   }

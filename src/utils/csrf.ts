@@ -24,13 +24,13 @@ export async function generateCsrfToken(options?: CsrfOptions): Promise<CsrfResu
   try {
     // Dynamic import to ensure this only runs server-side
     const { randomBytes } = await import('node:crypto')
-    
+
     const tokenLength = options?.tokenLength ?? CSRF_CONFIG.TOKEN_LENGTH
     const expirationHours = options?.expirationHours ?? CSRF_CONFIG.EXPIRATION_HOURS
 
     // Generate cryptographically secure random token
     const token = randomBytes(tokenLength).toString('hex')
-    
+
     // Set expiration time
     const expiresAt = new Date()
     expiresAt.setHours(expiresAt.getHours() + expirationHours)
@@ -119,7 +119,7 @@ export function validateCsrfToken(
  * Constant-time string comparison to prevent timing attacks
  *
  * @param a - First string to compare
- * @param b - Second string to compare  
+ * @param b - Second string to compare
  * @returns True if strings are equal
  */
 function constantTimeCompare(a: string, b: string): boolean {

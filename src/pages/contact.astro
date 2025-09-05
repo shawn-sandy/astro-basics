@@ -49,8 +49,12 @@ if (Astro.request.method === 'POST') {
     novalidate
     aria-label="Contact us"
   >
-    {Astro.locals.csrfToken && <input type="hidden" name={CSRF_CONFIG.FIELD_NAME} value={Astro.locals.csrfToken} />}
-    
+    {
+      Astro.locals.csrfToken && (
+        <input type="hidden" name={CSRF_CONFIG.FIELD_NAME} value={Astro.locals.csrfToken} />
+      )
+    }
+
     {
       CONTACT_INFO?.isNetlify && (
         <p class="hidden">

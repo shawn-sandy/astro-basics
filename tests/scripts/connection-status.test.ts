@@ -7,20 +7,20 @@ import { beforeEach, describe, it, expect, vi } from 'vitest'
 const mockWindow = {
   addEventListener: vi.fn(),
   location: {
-    reload: vi.fn()
+    reload: vi.fn(),
   },
   navigator: {
-    onLine: true
-  }
+    onLine: true,
+  },
 }
 
 const mockDocument = {
   body: {
     style: {
-      borderTop: ''
-    }
+      borderTop: '',
+    },
   },
-  getElementById: vi.fn()
+  getElementById: vi.fn(),
 }
 
 global.window = mockWindow as any
@@ -99,7 +99,7 @@ describe('Connection Status Feature', () => {
 
     it('should attach refresh handler to button', () => {
       const mockButton = {
-        addEventListener: vi.fn()
+        addEventListener: vi.fn(),
       }
       mockDocument.getElementById.mockReturnValue(mockButton)
 
@@ -127,18 +127,18 @@ describe('Connection Status Feature', () => {
   describe('Offline Page Detection', () => {
     it('should identify offline page content', () => {
       const mockSection = {
-        textContent: "You're Offline It looks like you're not connected..."
+        textContent: "You're Offline It looks like you're not connected...",
       }
-      
+
       const isOfflinePage = mockSection.textContent?.includes("You're Offline")
       expect(isOfflinePage).toBe(true)
     })
 
     it('should not trigger on non-offline pages', () => {
       const mockSection = {
-        textContent: "Welcome to our website..."
+        textContent: 'Welcome to our website...',
       }
-      
+
       const isOfflinePage = mockSection.textContent?.includes("You're Offline")
       expect(isOfflinePage).toBe(false)
     })

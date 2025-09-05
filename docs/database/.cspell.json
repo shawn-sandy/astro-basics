@@ -1,0 +1,25 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "commentable",
+    "timestamptz",
+    "fkey",
+    "commenters",
+    "supabase",
+    "uuid",
+    "postgres",
+    "postgresql",
+    "jsonb",
+    "boolean",
+    "varchar",
+    "bigint",
+    "smallint",
+    "cascaded",
+    "upsert",
+    "enum",
+    "astro"
+  ],
+  "flagWords": [],
+  "ignorePaths": []
+}
