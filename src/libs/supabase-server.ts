@@ -10,7 +10,7 @@ export function createServerSupabaseClient(clerkToken?: string): SupabaseClient<
   const supabaseUrl = import.meta.env.SUPABASE_URL
   const supabaseKey = clerkToken
     ? import.meta.env.SUPABASE_ANON_KEY
-    : import.meta.env.SUPABASE_SERVICE_KEY
+    : import.meta.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl || !supabaseKey) {
     console.warn('Supabase environment variables not configured')
