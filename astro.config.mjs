@@ -53,7 +53,7 @@ export default defineConfig({
   output: 'server',
   vite: {
     server: {
-      host: true,
+      host: process.env.EXPOSE_DEV_SERVER === 'true' ? true : 'localhost',
       allowedHosts: ['476cd5383d8f.ngrok-free.app'],
     },
     ssr: {
