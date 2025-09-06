@@ -305,7 +305,7 @@ export const POST: APIRoute = async context => {
       parent_comment_id: body.parent_comment_id || null,
       status: 'active',
       is_internal: false,
-      organization_id: 'serve513-beta', // Default organization
+      organization_id: import.meta.env.ORGANIZATION_ID || 'serve513-beta', // Default organization from env
     }
 
     const { data, error } = await supabase
