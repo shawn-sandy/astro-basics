@@ -31,15 +31,6 @@ function hasRequiredEnvironment(): boolean {
 }
 
 /**
- * Check if feature flag allows comments
- */
-function isCommentsFeatureEnabled(): boolean {
-  const enableComments = import.meta.env.ENABLE_COMMENTS
-  // Return false if not specified or explicitly disabled
-  return enableComments === 'true' || enableComments === '1'
-}
-
-/**
  * Check if the comments table exists and is accessible
  */
 async function hasCommentsTable(context?: unknown): Promise<boolean> {
@@ -48,7 +39,8 @@ async function hasCommentsTable(context?: unknown): Promise<boolean> {
       ? await getAuthenticatedSupabase(context)
       : await getAuthenticatedSupabase({
           locals: {
-            auth: () => ({ userId: null, getToken: () => Promise.resolve(null) }),
+            userId: undefined,
+            clerkToken: undefined,
           },
         })
 
@@ -83,25 +75,8 @@ export async function checkCommentSystemAvailability(
   }
 
   const hasEnvironment = hasRequiredEnvironment()
-  const featureEnabled = isCommentsFeatureEnabled()
 
-  // If feature is disabled or environment is missing, don't check database
-  if (!featureEnabled) {
-    const status: CommentSystemStatus = {
-      enabled: false,
-      reason: 'Comments feature is disabled',
-      details: {
-        hasEnvironment,
-        hasDatabase: false,
-        hasCommentsTable: false,
-      },
-    }
-
-    cachedStatus = status
-    cacheTimestamp = now
-    return status
-  }
-
+  // If environment is missing, don't check database
   if (!hasEnvironment) {
     const status: CommentSystemStatus = {
       enabled: false,
@@ -166,7 +141,7 @@ export function isCommentSystemLikelyAvailable(): boolean {
   }
 
   // Otherwise, do basic checks without database query
-  return isCommentsFeatureEnabled() && hasRequiredEnvironment()
+  return hasRequiredEnvironment()
 }
 
 /**

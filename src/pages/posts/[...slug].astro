@@ -3,7 +3,7 @@ import { getCollection, type CollectionEntry } from 'astro:content'
 import { isCommentSystemLikelyAvailable } from '#utils/comments-availability'
 import MarkdownPostLayout from '#layouts/MarkdownPostLayout.astro'
 
-// Conditionally disable prerendering if comments are enabled
+// Disable prerendering if comment system (database) is available
 // This allows access to authentication context for authenticated features
 export const prerender = !isCommentSystemLikelyAvailable()
 

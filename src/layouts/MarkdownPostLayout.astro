@@ -22,8 +22,8 @@ const postType = urlPath.startsWith('/posts/')
     : 'post'
 const postId = slug?.toString() || frontmatter.title
 
-// Check if comments should be rendered
-const shouldShowComments = isCommentSystemLikelyAvailable()
+// Comments are always rendered when database is available
+// The Comments component handles availability checking internally
 
 type ContentRoute = {
   name: string
@@ -86,5 +86,5 @@ const contentRoute: ContentRoute[] = [
   }
 
   <!-- Comments Section -->
-  {shouldShowComments && <Comments postId={postId} postType={postType} />}
+  <Comments postId={postId} postType={postType} />
 </Layout>
