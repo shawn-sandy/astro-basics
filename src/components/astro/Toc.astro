@@ -10,7 +10,7 @@ const { headings, title } = Astro.props
 {
   headings && headings.length > 1 && (
     <>
-      {title ? <h3>{title}</h3> : <h3>On this page</h3>}
+      <h3>{title || 'On this page'}</h3>
       <ul data-list="unstyled">
         {headings.map(heading => (
           <li>
