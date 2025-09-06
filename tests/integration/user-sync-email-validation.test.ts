@@ -5,6 +5,25 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
  * Tests that the actual endpoint handlers correctly validate email addresses
  */
 
+/**
+ * Creates a mock Clerk user object with configurable email addresses
+ * @param emailAddresses - Array of email addresses (empty array for no emails)
+ * @returns Mock user object matching Clerk's user interface
+ */
+function createMockClerkUser(emailAddresses: { id: string; emailAddress: string }[] = []) {
+  return {
+    id: 'user_123',
+    emailAddresses,
+    primaryEmailAddressId: emailAddresses.length > 0 ? emailAddresses[0].id : null,
+    username: 'testuser',
+    firstName: 'Test',
+    lastName: 'User',
+    imageUrl: 'https://example.com/avatar.jpg',
+    publicMetadata: {},
+    lastSignInAt: Date.now(),
+  } as any
+}
+
 // Mock the Clerk client and Supabase dependencies
 vi.mock('@clerk/astro/server', () => ({
   clerkClient: {
@@ -37,17 +56,9 @@ describe('User Sync Endpoints Email Validation Integration', () => {
       const { clerkClient } = await import('@clerk/astro/server')
 
       // Mock user with empty email addresses
-      vi.mocked(clerkClient.users.getUser).mockResolvedValue({
-        id: 'user_123',
-        emailAddresses: [],
-        primaryEmailAddressId: null,
-        username: 'testuser',
-        firstName: 'Test',
-        lastName: 'User',
-        imageUrl: 'https://example.com/avatar.jpg',
-        publicMetadata: {},
-        lastSignInAt: Date.now(),
-      } as any)
+      vi.mocked(clerkClient.users.getUser).mockResolvedValue(
+        createMockClerkUser([]) // No email addresses
+      )
 
       const { POST } = await import('#pages/api/user/sync')
 
@@ -67,17 +78,9 @@ describe('User Sync Endpoints Email Validation Integration', () => {
       const { clerkClient } = await import('@clerk/astro/server')
 
       // Mock user with valid email addresses
-      vi.mocked(clerkClient.users.getUser).mockResolvedValue({
-        id: 'user_123',
-        emailAddresses: [{ id: 'email_1', emailAddress: 'test@example.com' }],
-        primaryEmailAddressId: 'email_1',
-        username: 'testuser',
-        firstName: 'Test',
-        lastName: 'User',
-        imageUrl: 'https://example.com/avatar.jpg',
-        publicMetadata: {},
-        lastSignInAt: Date.now(),
-      } as any)
+      vi.mocked(clerkClient.users.getUser).mockResolvedValue(
+        createMockClerkUser([{ id: 'email_1', emailAddress: 'test@example.com' }])
+      )
 
       const { POST } = await import('#pages/api/user/sync')
 
@@ -97,17 +100,9 @@ describe('User Sync Endpoints Email Validation Integration', () => {
       const { clerkClient } = await import('@clerk/astro/server')
 
       // Mock user with empty email addresses
-      vi.mocked(clerkClient.users.getUser).mockResolvedValue({
-        id: 'user_123',
-        emailAddresses: [],
-        primaryEmailAddressId: null,
-        username: 'testuser',
-        firstName: 'Test',
-        lastName: 'User',
-        imageUrl: 'https://example.com/avatar.jpg',
-        publicMetadata: {},
-        lastSignInAt: Date.now(),
-      } as any)
+      vi.mocked(clerkClient.users.getUser).mockResolvedValue(
+        createMockClerkUser([]) // No email addresses
+      )
 
       const { POST } = await import('#pages/api/test/sync-user')
 
@@ -129,17 +124,9 @@ describe('User Sync Endpoints Email Validation Integration', () => {
       const { clerkClient } = await import('@clerk/astro/server')
 
       // Mock user with valid email addresses
-      vi.mocked(clerkClient.users.getUser).mockResolvedValue({
-        id: 'user_123',
-        emailAddresses: [{ id: 'email_1', emailAddress: 'test@example.com' }],
-        primaryEmailAddressId: 'email_1',
-        username: 'testuser',
-        firstName: 'Test',
-        lastName: 'User',
-        imageUrl: 'https://example.com/avatar.jpg',
-        publicMetadata: {},
-        lastSignInAt: Date.now(),
-      } as any)
+      vi.mocked(clerkClient.users.getUser).mockResolvedValue(
+        createMockClerkUser([{ id: 'email_1', emailAddress: 'test@example.com' }])
+      )
 
       const { POST } = await import('#pages/api/test/sync-user')
 
