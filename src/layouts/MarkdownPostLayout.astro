@@ -9,7 +9,7 @@ import { isCommentSystemLikelyAvailable } from '#utils/comments-availability'
 const frontmatter = Astro.props.frontmatter
 const headings = Astro.props.headings
 const { slug } = Astro.params
-const enableComments = import.meta.env.ENABLE_COMMENTS
+const enableComments = import.meta.env.ENABLE_COMMENTS === 'true'
 
 // Sanitize image URL to prevent XSS attacks
 const safeImageUrl = frontmatter.image?.url ? sanitizeImageUrl(frontmatter.image.url) : null
