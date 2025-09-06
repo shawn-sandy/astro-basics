@@ -40,6 +40,13 @@ function isCommentsFeatureEnabled(): boolean {
 }
 
 /**
+ * Build-time constant for comment system availability
+ * Eliminates runtime environment variable reads for better SSR performance
+ * Evaluated once at build time
+ */
+export const COMMENTS_AVAILABLE = isCommentsFeatureEnabled() && hasRequiredEnvironment()
+
+/**
  * Check if the comments table exists and is accessible
  */
 async function hasCommentsTable(context?: unknown): Promise<boolean> {

@@ -1,11 +1,11 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content'
-import { isCommentSystemLikelyAvailable } from '#utils/comments-availability'
+import { COMMENTS_AVAILABLE } from '#utils/comments-availability'
 import MarkdownPostLayout from '#layouts/MarkdownPostLayout.astro'
 
 // Conditionally disable prerendering if comments are enabled
 // This allows access to authentication context for authenticated features
-export const prerender = !isCommentSystemLikelyAvailable()
+export const prerender = !COMMENTS_AVAILABLE
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts')

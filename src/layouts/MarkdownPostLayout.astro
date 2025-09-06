@@ -5,7 +5,7 @@ import Img from '#components/astro/Img.astro'
 import Toc from '#components/astro/Toc.astro'
 import Comments from '#components/astro/Comments.astro'
 import { sanitizeImageUrl } from '#utils/security'
-import { isCommentSystemLikelyAvailable } from '#utils/comments-availability'
+import { COMMENTS_AVAILABLE } from '#utils/comments-availability'
 const frontmatter = Astro.props.frontmatter
 const headings = Astro.props.headings
 const { slug } = Astro.params
@@ -22,8 +22,8 @@ const postType = urlPath.startsWith('/posts/')
     : 'post'
 const postId = slug?.toString() || frontmatter.title
 
-// Check if comments should be rendered
-const shouldShowComments = isCommentSystemLikelyAvailable()
+// Check if comments should be rendered (build-time constant for better SSR performance)
+const shouldShowComments = COMMENTS_AVAILABLE
 
 type ContentRoute = {
   name: string
