@@ -64,7 +64,9 @@ const contentRoute: ContentRoute[] = [
     )
   }
   <!-- <h2>{frontmatter.title}</h2> -->
-  <Toc headings={headings} />
+  <div slot="sidebar">
+    <Toc headings={headings} />
+  </div>
 
   <slot />
   {

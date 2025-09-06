@@ -1,24 +1,20 @@
 ---
-import type { TODO } from '#utils/types.js'
-
 export type Props = {
-  headings?: TODO
+  headings?: { depth: number; slug: string; text: string }[]
   hash?: string
+  title?: string
 }
-const { headings } = Astro.props
+const { headings, title } = Astro.props
 ---
 
 {
-  headings?.length > 1 && (
+  headings && headings.length > 1 && (
     <>
-      {' '}
+      {title ? <h3>{title}</h3> : <h3>On this page</h3>}
       <ul data-list="unstyled">
-        {headings.map((heading: TODO) => (
+        {headings.map(heading => (
           <li>
-            <a href={`#${heading.slug}`}>
-              &#8595;
-              {heading.text}
-            </a>
+            <a href={`#${heading.slug}`}>{heading.text}</a>
           </li>
         ))}
       </ul>
@@ -26,9 +22,3 @@ const { headings } = Astro.props
     </>
   )
 }
-<style>
-  a {
-    font-weight: 600;
-    font-size: var(--fs-5);
-  }
-</style>
