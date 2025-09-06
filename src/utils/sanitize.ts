@@ -195,7 +195,7 @@ function removeUrls(text: string): string {
   const urlPatterns = [
     /https?:\/\/[^\s]+/gi,
     /www\.[^\s]+/gi,
-    /\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\b/gi // Improved domain pattern
+    /\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}\b/gi // Improved domain pattern
   ]
 
   let sanitized = text
