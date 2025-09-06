@@ -9,7 +9,7 @@ import { isCommentSystemLikelyAvailable } from '#utils/comments-availability'
 const frontmatter = Astro.props.frontmatter
 const headings = Astro.props.headings
 const { slug } = Astro.params
-const enableComments = import.meta.env.ENABLE_COMMENTS === true
+const enableComments = import.meta.env.ENABLE_COMMENTS
 
 // Sanitize image URL to prevent XSS attacks
 const safeImageUrl = frontmatter.image?.url ? sanitizeImageUrl(frontmatter.image.url) : null
@@ -64,7 +64,7 @@ const contentRoute: ContentRoute[] = [
       </p>
     )
   }
-  <!-- <h2>{frontmatter.title}</h2> -->
+
   <div slot="sidebar">
     <Toc headings={headings} />
   </div>
@@ -87,5 +87,5 @@ const contentRoute: ContentRoute[] = [
   }
 
   <!-- Comments Section -->
-  {enableComments && <Comments postId={postId} postType={postType} />}
+  {enableComments === 'true' && <Comments postId={postId} postType={postType} />}
 </Layout>
