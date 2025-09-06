@@ -100,18 +100,17 @@ const CommentsList: React.FC<CommentsListProps> = ({
 
     try {
       const response = await fetch(
-        `/api/comments?type=${postType}&id=${postId}&page=${page + 1}&limit=${COMMENTS_PER_PAGE}`
+        `/api/comments?type=${postType}&id=${postId}&offset=${page * COMMENTS_PER_PAGE}&limit=${COMMENTS_PER_PAGE}`
       )
 
       if (!response.ok) {
         throw new Error('Failed to load comments')
       }
 
-      const newComments: CommentData[] = await response.json()
+      const responseData = await response.json()
+      const newComments: CommentData[] = responseData.comments || []
 
-      if (newComments.length < COMMENTS_PER_PAGE) {
-        setHasMore(false)
-      }
+      setHasMore(responseData.has_more || false)
 
       setComments(prev => [...prev, ...newComments])
       setPage(prev => prev + 1)
