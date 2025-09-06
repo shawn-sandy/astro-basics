@@ -14,4 +14,5 @@ declare namespace App {
 
 interface ImportMetaEnv {
   readonly PWA_ENABLED: string
+  readonly ORGANIZATION_ID: string
 }
