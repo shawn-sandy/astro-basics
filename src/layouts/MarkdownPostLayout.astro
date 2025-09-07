@@ -5,8 +5,8 @@ import Img from '#components/astro/Img.astro'
 import Toc from '#components/astro/Toc.astro'
 import Comments from '#components/astro/Comments.astro'
 import { sanitizeImageUrl } from '#utils/security'
-const frontmatter = Astro.props.frontmatter
 import { ENABLE_COMMENTS } from '#utils/site-config'
+const frontmatter = Astro.props.frontmatter
 
 const headings = Astro.props.headings
 const { slug } = Astro.params
