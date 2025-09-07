@@ -9,7 +9,7 @@ import { isCommentSystemLikelyAvailable } from '#utils/comments-availability'
 const frontmatter = Astro.props.frontmatter
 const headings = Astro.props.headings
 const { slug } = Astro.params
-const enableComments = import.meta.env.ENABLE_COMMENTS
+const enableComments = import.meta.env.ENABLE_COMMENTS === 'true' ? true : false
 
 // Sanitize image URL to prevent XSS attacks
 const safeImageUrl = frontmatter.image?.url ? sanitizeImageUrl(frontmatter.image.url) : null
@@ -87,5 +87,13 @@ const contentRoute: ContentRoute[] = [
   }
 
   <!-- Comments Section -->
-  <Comments postId={postId} postType={postType} />
+  {enableComments && <Comments postId={postId} postType={postType} />}
+  {
+    /*
+    Rationale for always rendering Comments component:
+    - The Comments component internally checks if the comment system is available.
+    - This avoids issues with hydration mismatches in Astro.
+    - It ensures that comments are displayed when the database is available, regardless of the environment variable.
+  */
+  }
 </Layout>
