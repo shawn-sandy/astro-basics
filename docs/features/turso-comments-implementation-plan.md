@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document outlines the plan to add Turso database support to the existing comments system, which currently uses Supabase. The implementation will create a database abstraction layer allowing the application to use either Supabase or Turso based on configuration.
+This document outlines the plan to add Turso database support to the existing comments system, which currently uses
+Supabase. The implementation will create a database abstraction layer allowing the application to use either
+Supabase or Turso based on configuration.
 
 ## Current State Analysis
 

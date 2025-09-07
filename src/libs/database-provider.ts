@@ -13,7 +13,7 @@
  * - Error handling and response formatting
  */
 
-import type { CommentData, CommentAuthor } from '../types/comments'
+import type { CommentData } from '../types/comments'
 
 // Core parameter interfaces for database operations
 export interface GetCommentsParams {
