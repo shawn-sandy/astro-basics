@@ -87,13 +87,5 @@ const contentRoute: ContentRoute[] = [
   }
 
   <!-- Comments Section -->
-  {enableComments && <Comments postId={postId} postType={postType} />}
-  {
-    /*
-    Rationale for always rendering Comments component:
-    - The Comments component internally checks if the comment system is available.
-    - This avoids issues with hydration mismatches in Astro.
-    - It ensures that comments are displayed when the database is available, regardless of the environment variable.
-  */
-  }
+  <Comments postId={postId} postType={postType} />
 </Layout>
