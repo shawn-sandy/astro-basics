@@ -25,9 +25,14 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
  */
 function hasRequiredEnvironment(): boolean {
   const supabaseUrl = import.meta.env.SUPABASE_URL
-  const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY
+  const supabaseServiceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY
 
-  return !!(supabaseUrl && supabaseAnonKey && supabaseUrl !== '' && supabaseAnonKey !== '')
+  return !!(
+    supabaseUrl &&
+    supabaseServiceRoleKey &&
+    supabaseUrl !== '' &&
+    supabaseServiceRoleKey !== ''
+  )
 }
 
 /**
@@ -120,7 +125,7 @@ export async function checkCommentSystemAvailability(
  */
 function getDisabledReason(hasEnv: boolean, hasDb: boolean, hasTable: boolean): string {
   if (!hasEnv) {
-    return 'Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables'
+    return 'Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables'
   }
   if (!hasDb) {
     return 'Cannot connect to Supabase database'
