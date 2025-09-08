@@ -1,10 +1,10 @@
 /**
  * Supabase Database Provider for Comments System
- * 
+ *
  * Implements the CommentDatabaseProvider interface using Supabase as the backend.
  * This provider maintains all existing functionality while providing a clean
  * abstraction layer for the comment system.
- * 
+ *
  * Key features:
  * - Row-Level Security (RLS) policy enforcement
  * - PostgreSQL-specific query optimizations
@@ -25,13 +25,7 @@ import type {
   CommentsResult,
   User,
 } from '../database-provider'
-import {
-  UserNotFoundError,
-  CommentNotFoundError,
-  UnauthorizedError,
-  ConnectionError,
-  DatabaseProviderError,
-} from '../database-provider'
+import { CommentNotFoundError, ConnectionError, DatabaseProviderError } from '../database-provider'
 import type { Database } from '../database.types'
 import { createServerSupabaseClient, validateSupabaseConfig } from '../supabase-server'
 
@@ -51,12 +45,20 @@ interface SupabaseCommentRow {
   organization_id: string
   created_at: string
   updated_at: string
-  author: {
-    id: string
-    full_name: string | null
-    avatar_url: string | null
-    clerk_id: string
-  }[]  // Supabase returns arrays for joined relations
+  author:
+    | {
+        id: string
+        full_name: string | null
+        avatar_url: string | null
+        clerk_id: string
+      }[]
+    | {
+        // Supabase can return either arrays or objects for joined relations
+        id: string
+        full_name: string | null
+        avatar_url: string | null
+        clerk_id: string
+      }
 }
 
 interface SupabaseUserRow {
@@ -97,10 +99,7 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
 
     try {
       // Test connection by checking if comments table exists
-      const { error } = await this.client
-        .from('comments')
-        .select('id')
-        .limit(1)
+      const { error } = await this.client.from('comments').select('id').limit(1)
 
       return !error
     } catch {
@@ -110,7 +109,7 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
 
   /**
    * Retrieve comments for a specific post or document
-   * 
+   *
    * Maintains all existing functionality including:
    * - Pagination support
    * - Parent comment filtering for threaded loading
@@ -139,7 +138,7 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
           organization_id,
           created_at,
           updated_at,
-          author:users!author_id(
+          author:users(
             id,
             full_name,
             avatar_url,
@@ -201,7 +200,7 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
 
   /**
    * Create a new comment in the database
-   * 
+   *
    * Handles:
    * - Foreign key relationships (author_id)
    * - Default values for status and organization_id
@@ -221,7 +220,8 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
         parent_comment_id: params.parent_comment_id || null,
         status: params.status || 'active',
         is_internal: params.is_internal || false,
-        organization_id: params.organization_id || import.meta.env.ORGANIZATION_ID || 'serve513-beta',
+        organization_id:
+          params.organization_id || import.meta.env.ORGANIZATION_ID || 'serve513-beta',
       }
 
       const { data, error } = await this.client
@@ -240,7 +240,7 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
           organization_id,
           created_at,
           updated_at,
-          author:users!author_id(
+          author:users(
             id,
             full_name,
             avatar_url,
@@ -283,7 +283,7 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
 
   /**
    * Update an existing comment
-   * 
+   *
    * Enforces ownership via author_id matching and RLS policies.
    * Supports partial updates for content and status changes.
    */
@@ -295,11 +295,11 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
     try {
       // Prepare update data - only include fields that were provided
       const updateData: Partial<SupabaseCommentRow> = {}
-      
+
       if (params.content !== undefined) {
         updateData.content = params.content
       }
-      
+
       if (params.status !== undefined) {
         updateData.status = params.status
       }
@@ -331,7 +331,7 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
           organization_id,
           created_at,
           updated_at,
-          author:users!author_id(
+          author:users(
             id,
             full_name,
             avatar_url,
@@ -373,7 +373,7 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
 
   /**
    * Soft delete a comment by setting status to 'archived'
-   * 
+   *
    * Preserves data for audit purposes while hiding from public display.
    * Enforces ownership via author_id matching.
    */
@@ -416,7 +416,7 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
 
   /**
    * Retrieve user information by Clerk ID
-   * 
+   *
    * Essential for user validation and authorization checks.
    * Returns null if user is not found in database.
    */
@@ -461,7 +461,7 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
 
   /**
    * Create a new user record in the database
-   * 
+   *
    * Used for synchronizing user data from Clerk.
    * Typically called when a user creates their first comment.
    */
@@ -515,22 +515,39 @@ export class SupabaseCommentProvider implements CommentDatabaseProvider {
 
   /**
    * Transform Supabase comment row to CommentData format
-   * 
+   *
    * Handles type conversion and ensures consistent data structure
    * across the application regardless of database backend.
    */
   private transformCommentRow(row: SupabaseCommentRow): CommentData {
-    // Supabase returns author as array due to join, take first element
-    const author = row.author?.[0]
-    
+    // Handle both array and object formats for author data
+    // Supabase can return either depending on the query structure
+    let author
+    if (Array.isArray(row.author)) {
+      // Array format: take first element
+      author = row.author?.[0]
+    } else if (row.author && typeof row.author === 'object') {
+      // Object format: use directly
+      author = row.author
+    }
+
     if (!author) {
+      console.error('Comment transform error:', {
+        commentId: row.id,
+        authorId: row.author_id,
+        authorData: row.author,
+        hasAuthor: !!row.author,
+        isArray: Array.isArray(row.author),
+        authorType: typeof row.author,
+        authorLength: row.author?.length || 0,
+      })
       throw new DatabaseProviderError(
-        'Comment missing author information',
+        `Comment missing author information for comment ${row.id} with author_id ${row.author_id}`,
         'INVALID_DATA',
         'supabase'
       )
     }
-    
+
     return {
       id: row.id,
       content: row.content,
