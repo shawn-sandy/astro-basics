@@ -1,66 +1,64 @@
 /**
  * Comment system availability checker
  * Determines if the comment system can be enabled based on environment and database configuration
+ *
+ * Supports multiple database providers (Supabase and Turso) through
+ * the database configuration system. Provides detailed status information
+ * for debugging and monitoring.
  */
 
-import { getAuthenticatedSupabase } from '#libs/supabase-server'
+import {
+  getDatabaseConfigStatus,
+  getCommentProvider,
+  getDatabaseProvider,
+  getResolvedProvider,
+  type DatabaseProvider,
+} from './database-config'
 
 interface CommentSystemStatus {
   enabled: boolean
-  reason?: string
+  provider?: DatabaseProvider | null
+  reason?: string | undefined
   details?: {
-    hasEnvironment: boolean
-    hasDatabase: boolean
-    hasCommentsTable: boolean
+    hasAnyProvider: boolean
+    hasWorkingProvider: boolean
+    providerStatus: {
+      supabase: { configured: boolean; available: boolean }
+      turso: { configured: boolean; available: boolean }
+    }
+    selectedProvider: DatabaseProvider
+    resolvedProvider: DatabaseProvider | null
   }
 }
 
-// Cache for availability check (to avoid repeated database queries)
+// Cache for availability check (to avoid repeated database queries and provider instantiation)
 let cachedStatus: CommentSystemStatus | null = null
 let cacheTimestamp: number = 0
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 /**
- * Check if required environment variables are configured
+ * Test if a comment provider can be instantiated and is working
  */
-function hasRequiredEnvironment(): boolean {
-  const supabaseUrl = import.meta.env.SUPABASE_URL
-  const supabaseServiceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY
+async function testProviderAvailability(provider: unknown): Promise<boolean> {
+  if (!provider || typeof provider !== 'object') {
+    return false
+  }
 
-  return !!(
-    supabaseUrl &&
-    supabaseServiceRoleKey &&
-    supabaseUrl !== '' &&
-    supabaseServiceRoleKey !== ''
-  )
-}
+  const providerObj = provider as {
+    checkAvailability?: () => Promise<boolean>
+    getProviderName?: () => string
+  }
 
-/**
- * Check if the comments table exists and is accessible
- */
-async function hasCommentsTable(context?: unknown): Promise<boolean> {
   try {
-    const supabase = context
-      ? await getAuthenticatedSupabase(context)
-      : await getAuthenticatedSupabase({
-          locals: {
-            userId: undefined,
-            clerkToken: undefined,
-          },
-        })
-
-    if (!supabase) {
-      return false
+    // Test the provider's availability check method
+    if (typeof providerObj.checkAvailability === 'function') {
+      const available = await providerObj.checkAvailability()
+      return available
     }
-
-    // Try to query the comments table structure
-    const { error } = await supabase.from('comments').select('id').limit(1)
-
-    // If no error, table exists and is accessible
-    return !error || error.code !== 'PGRST116' // PGRST116 = relation not found
+    return false
   } catch (error) {
     console.warn(
-      'Comments table check failed:',
+      `Provider availability check failed for ${providerObj.getProviderName?.() || 'unknown'}:`,
       error instanceof Error ? error.message : 'Unknown error'
     )
     return false
@@ -71,7 +69,7 @@ async function hasCommentsTable(context?: unknown): Promise<boolean> {
  * Comprehensive check for comment system availability
  */
 export async function checkCommentSystemAvailability(
-  context?: unknown
+  _context?: unknown
 ): Promise<CommentSystemStatus> {
   // Return cached result if still valid
   const now = Date.now()
@@ -79,37 +77,33 @@ export async function checkCommentSystemAvailability(
     return cachedStatus
   }
 
-  const hasEnvironment = hasRequiredEnvironment()
+  // Get database configuration status
+  const configStatus = getDatabaseConfigStatus()
+  const provider = getCommentProvider()
+  const selectedProvider = getDatabaseProvider()
+  const resolvedProvider = getResolvedProvider()
 
-  // If environment is missing, don't check database
-  if (!hasEnvironment) {
-    const status: CommentSystemStatus = {
-      enabled: false,
-      reason: 'Supabase environment variables not configured',
-      details: {
-        hasEnvironment: false,
-        hasDatabase: false,
-        hasCommentsTable: false,
-      },
-    }
-
-    cachedStatus = status
-    cacheTimestamp = now
-    return status
+  // Test provider availability if one exists
+  let providerAvailable = false
+  if (provider) {
+    providerAvailable = await testProviderAvailability(provider)
   }
 
-  // Check database and table availability
-  const hasDatabase = true // If env vars exist, assume database exists
-  const hasTable = await hasCommentsTable(context)
+  const enabled = configStatus.hasAnyProvider && configStatus.isReady && providerAvailable
 
-  const enabled = hasEnvironment && hasDatabase && hasTable
   const status: CommentSystemStatus = {
     enabled,
-    reason: enabled ? undefined : getDisabledReason(hasEnvironment, hasDatabase, hasTable),
+    provider: resolvedProvider,
+    reason: enabled ? undefined : getDisabledReason(configStatus, providerAvailable),
     details: {
-      hasEnvironment,
-      hasDatabase,
-      hasCommentsTable: hasTable,
+      hasAnyProvider: configStatus.hasAnyProvider,
+      hasWorkingProvider: providerAvailable,
+      providerStatus: {
+        supabase: configStatus.supabase,
+        turso: configStatus.turso,
+      },
+      selectedProvider,
+      resolvedProvider,
     },
   }
 
@@ -123,16 +117,41 @@ export async function checkCommentSystemAvailability(
 /**
  * Get human-readable reason for disabled comments
  */
-function getDisabledReason(hasEnv: boolean, hasDb: boolean, hasTable: boolean): string {
-  if (!hasEnv) {
-    return 'Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables'
+function getDisabledReason(
+  configStatus: {
+    hasAnyProvider: boolean
+    isReady: boolean
+    selectedProvider: string
+    resolvedProvider: string | null
+  },
+  providerAvailable: boolean
+): string {
+  if (!configStatus.hasAnyProvider) {
+    return 'No database providers configured. Set up either Supabase or Turso environment variables.'
   }
-  if (!hasDb) {
-    return 'Cannot connect to Supabase database'
+
+  if (!configStatus.isReady) {
+    const selectedProvider = configStatus.selectedProvider
+    if (selectedProvider === 'supabase') {
+      return 'Supabase configuration incomplete. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.'
+    } else if (selectedProvider === 'turso') {
+      return 'Turso configuration incomplete. Check TURSO_DATABASE_URL and TURSO_AUTH_TOKEN environment variables.'
+    } else {
+      return `Database provider '${selectedProvider}' is not properly configured.`
+    }
   }
-  if (!hasTable) {
-    return 'Comments table not found in database. Run the migration: npm run db:migrate'
+
+  if (!providerAvailable) {
+    const resolvedProvider = configStatus.resolvedProvider
+    if (resolvedProvider === 'supabase') {
+      return 'Cannot connect to Supabase database. Check your credentials and network connection.'
+    } else if (resolvedProvider === 'turso') {
+      return 'Cannot connect to Turso database. Check your credentials and network connection.'
+    } else {
+      return 'Database provider is not available. Check your database connection.'
+    }
   }
+
   return 'Comment system is not available'
 }
 
@@ -146,7 +165,8 @@ export function isCommentSystemLikelyAvailable(): boolean {
   }
 
   // Otherwise, do basic checks without database query
-  return hasRequiredEnvironment()
+  const configStatus = getDatabaseConfigStatus()
+  return configStatus.hasAnyProvider && configStatus.isReady
 }
 
 /**
