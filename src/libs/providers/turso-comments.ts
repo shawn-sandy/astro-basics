@@ -14,12 +14,7 @@
  */
 
 import type { ResultSet, InValue } from '@libsql/client'
-import { 
-  executeQuery, 
-  executeTransaction, 
-  isTursoConfigured, 
-  validateTursoConfig 
-} from '../turso'
+
 import type { CommentData } from '../../types/comments'
 import type {
   CommentDatabaseProvider,
@@ -31,7 +26,6 @@ import type {
   CommentsResult,
   User,
 } from '../database-provider'
-
 import {
   UserNotFoundError,
   CommentNotFoundError,
@@ -39,6 +33,12 @@ import {
   ConnectionError,
   DatabaseProviderError,
 } from '../database-provider'
+import { 
+  executeQuery, 
+  executeTransaction, 
+  isTursoConfigured, 
+  validateTursoConfig 
+} from '../turso'
 
 /**
  * Database row types for Turso/SQLite queries
