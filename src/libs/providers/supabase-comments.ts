@@ -13,8 +13,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { createServerSupabaseClient, validateSupabaseConfig } from '../supabase-server'
-import type { Database } from '../database.types'
+
 import type { CommentData } from '../../types/comments'
 import type {
   CommentDatabaseProvider,
@@ -26,7 +25,6 @@ import type {
   CommentsResult,
   User,
 } from '../database-provider'
-
 import {
   UserNotFoundError,
   CommentNotFoundError,
@@ -34,6 +32,8 @@ import {
   ConnectionError,
   DatabaseProviderError,
 } from '../database-provider'
+import type { Database } from '../database.types'
+import { createServerSupabaseClient, validateSupabaseConfig } from '../supabase-server'
 
 /**
  * Database row types for Supabase queries
