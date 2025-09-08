@@ -5,7 +5,7 @@ import MarkdownPostLayout from '#layouts/MarkdownPostLayout.astro'
 
 // Disable prerendering if comment system (database) is available
 // This allows access to authentication context for authenticated features
-export const prerender = !isCommentSystemLikelyAvailable()
+// export const prerender = !isCommentSystemLikelyAvailable()
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts')
