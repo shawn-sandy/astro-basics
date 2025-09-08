@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro'
 
-import { getAuthenticatedSupabase } from '#libs/supabase-server'
 import {
   enhancedCommentRateLimiter,
   getClientIP,
@@ -8,6 +7,7 @@ import {
 } from '#utils/comment-rate-limiter'
 import { checkCommentSystemAvailability } from '#utils/comments-availability'
 import { CSRF_CONFIG, validateCsrfToken } from '#utils/csrf'
+import { getCommentProvider } from '#utils/database-config'
 import { sanitizeComment } from '#utils/sanitize'
 
 interface _CommentData {
@@ -15,26 +15,6 @@ interface _CommentData {
   commentable_type: 'post' | 'doc'
   commentable_id: string
   parent_comment_id?: string
-}
-
-interface CommentRow {
-  id: string
-  content: string
-  author_id: string
-  commentable_type: string
-  commentable_id: string
-  parent_comment_id: string | null
-  status: string
-  is_internal: boolean
-  organization_id: string
-  created_at: string
-  updated_at: string
-  author: {
-    id: string
-    full_name: string | null
-    avatar_url: string | null
-    clerk_id: string
-  }
 }
 
 /**
@@ -96,70 +76,29 @@ export const GET: APIRoute = async context => {
   }
 
   try {
-    const supabase = await getAuthenticatedSupabase(context)
+    const provider = getCommentProvider()
 
-    if (!supabase) {
-      return new Response(JSON.stringify({ error: 'Database not configured' }), {
+    if (!provider) {
+      return new Response(JSON.stringify({ error: 'Database provider not configured' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       })
     }
 
-    let query = supabase
-      .from('comments')
-      .select(
-        `
-        id,
-        content,
-        author_id,
-        commentable_type,
-        commentable_id,
-        parent_comment_id,
-        status,
-        is_internal,
-        organization_id,
-        created_at,
-        updated_at,
-        author:users!author_id(
-          id,
-          full_name,
-          avatar_url,
-          clerk_id
-        )
-      `
-      )
-      .eq('commentable_type', commentable_type)
-      .eq('commentable_id', commentable_id)
-      .eq('status', 'active')
-      .eq('is_internal', false)
-
-    // Filter by parent comment if specified (for threaded loading)
-    if (parent_id) {
-      query = query.eq('parent_comment_id', parent_id)
-    } else {
-      // Get root comments only for initial load
-      query = query.is('parent_comment_id', null)
-    }
-
-    const { data, error, count } = await query
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
-
-    if (error) {
-      console.error('Failed to fetch comments:', error)
-      throw error
-    }
+    const result = await provider.getComments({
+      type: commentable_type,
+      id: commentable_id,
+      limit,
+      offset,
+      parent_id: parent_id || undefined,
+    })
 
     return new Response(
       JSON.stringify({
-        comments: data || [],
-        count: count || 0,
-        has_more: (data?.length || 0) === limit,
-        pagination: {
-          limit,
-          offset,
-          next_offset: offset + limit,
-        },
+        comments: result.comments,
+        count: result.count,
+        has_more: result.has_more,
+        pagination: result.pagination,
       }),
       {
         status: 200,
@@ -277,27 +216,31 @@ export const POST: APIRoute = async context => {
       )
     }
 
-    const supabase = await getAuthenticatedSupabase(context)
+    const provider = getCommentProvider()
 
-    if (!supabase) {
-      return new Response(JSON.stringify({ error: 'Database not configured' }), {
+    if (!provider) {
+      return new Response(JSON.stringify({ error: 'Database provider not configured' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       })
     }
 
-    // Get user from database
-    const { data: user } = await supabase.from('users').select('id').eq('clerk_id', userId).single()
+    // Get user from database, create if doesn't exist
+    let user = await provider.getUserByClerkId(userId)
 
     if (!user) {
-      return new Response(JSON.stringify({ error: 'User not found in database' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
+      // Auto-create user with minimal data from Clerk context
+      // In a real application, you might get this data from Clerk's user object
+      user = await provider.createUser({
+        clerk_id: userId,
+        full_name: null, // Could be populated from Clerk user data if available
+        email: null, // Could be populated from Clerk user data if available
+        avatar_url: null, // Could be populated from Clerk user data if available
       })
     }
 
     // Create the comment
-    const commentData = {
+    const data = await provider.createComment({
       content: sanitizedContent,
       author_id: user.id,
       commentable_type: body.commentable_type,
@@ -305,39 +248,8 @@ export const POST: APIRoute = async context => {
       parent_comment_id: body.parent_comment_id || null,
       status: 'active',
       is_internal: false,
-      organization_id: import.meta.env.ORGANIZATION_ID || 'serve513-beta', // Default organization from env
-    }
-
-    const { data, error } = await supabase
-      .from('comments')
-      .insert(commentData)
-      .select(
-        `
-        id,
-        content,
-        author_id,
-        commentable_type,
-        commentable_id,
-        parent_comment_id,
-        status,
-        is_internal,
-        organization_id,
-        created_at,
-        updated_at,
-        author:users!author_id(
-          id,
-          full_name,
-          avatar_url,
-          clerk_id
-        )
-      `
-      )
-      .single()
-
-    if (error) {
-      console.error('Failed to create comment:', error)
-      throw error
-    }
+      organization_id: import.meta.env.ORGANIZATION_ID || 'serve513-beta',
+    })
 
     return new Response(
       JSON.stringify({
@@ -417,27 +329,30 @@ export const PATCH: APIRoute = async context => {
       })
     }
 
-    const supabase = await getAuthenticatedSupabase(context)
+    const provider = getCommentProvider()
 
-    if (!supabase) {
-      return new Response(JSON.stringify({ error: 'Database not configured' }), {
+    if (!provider) {
+      return new Response(JSON.stringify({ error: 'Database provider not configured' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       })
     }
 
-    // Get user from database
-    const { data: user } = await supabase.from('users').select('id').eq('clerk_id', userId).single()
+    // Get user from database, create if doesn't exist
+    let user = await provider.getUserByClerkId(userId)
 
     if (!user) {
-      return new Response(JSON.stringify({ error: 'User not found in database' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
+      // Auto-create user with minimal data from Clerk context
+      user = await provider.createUser({
+        clerk_id: userId,
+        full_name: null,
+        email: null,
+        avatar_url: null,
       })
     }
 
     // Prepare update data
-    const updateData: Partial<CommentRow> = {}
+    const updateData: { content?: string; status?: string } = {}
 
     if (body.content) {
       const sanitizedContent = sanitizeComment(body.content)
@@ -464,38 +379,28 @@ export const PATCH: APIRoute = async context => {
       })
     }
 
-    // Update the comment (RLS will ensure user owns it)
-    const { data, error } = await supabase
-      .from('comments')
-      .update(updateData)
-      .eq('id', commentId)
-      .eq('author_id', user.id)
-      .in('commentable_type', ['post', 'doc'])
-      .select(
-        `
-        id,
-        content,
-        author_id,
-        commentable_type,
-        commentable_id,
-        parent_comment_id,
-        status,
-        is_internal,
-        organization_id,
-        created_at,
-        updated_at,
-        author:users!author_id(
-          id,
-          full_name,
-          avatar_url,
-          clerk_id
-        )
-      `
-      )
-      .single()
+    // Update the comment using provider
+    try {
+      const data = await provider.updateComment({
+        id: commentId,
+        author_id: user.id,
+        ...updateData,
+      })
 
-    if (error) {
-      if (error.code === 'PGRST116') {
+      return new Response(
+        JSON.stringify({
+          comment: data,
+          success: true,
+          message: 'Comment updated successfully',
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    } catch (error) {
+      // Handle provider-specific errors
+      if (error instanceof Error && error.message.includes('not found')) {
         return new Response(JSON.stringify({ error: 'Comment not found or unauthorized' }), {
           status: 404,
           headers: { 'Content-Type': 'application/json' },
@@ -503,18 +408,6 @@ export const PATCH: APIRoute = async context => {
       }
       throw error
     }
-
-    return new Response(
-      JSON.stringify({
-        comment: data,
-        success: true,
-        message: 'Comment updated successfully',
-      }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    )
   } catch (error) {
     console.error('Failed to update comment:', error)
     return new Response(
@@ -571,37 +464,33 @@ export const DELETE: APIRoute = async context => {
       })
     }
 
-    const supabase = await getAuthenticatedSupabase(context)
+    const provider = getCommentProvider()
 
-    if (!supabase) {
-      return new Response(JSON.stringify({ error: 'Database not configured' }), {
+    if (!provider) {
+      return new Response(JSON.stringify({ error: 'Database provider not configured' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       })
     }
 
-    // Get user from database
-    const { data: user } = await supabase.from('users').select('id').eq('clerk_id', userId).single()
+    // Get user from database, create if doesn't exist
+    let user = await provider.getUserByClerkId(userId)
 
     if (!user) {
-      return new Response(JSON.stringify({ error: 'User not found in database' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
+      // Auto-create user with minimal data from Clerk context
+      user = await provider.createUser({
+        clerk_id: userId,
+        full_name: null,
+        email: null,
+        avatar_url: null,
       })
     }
 
-    // Soft delete the comment (set status to archived)
-    const { error } = await supabase
-      .from('comments')
-      .update({ status: 'archived' })
-      .eq('id', commentId)
-      .eq('author_id', user.id)
-      .in('commentable_type', ['post', 'doc'])
-
-    if (error) {
-      console.error('Failed to delete comment:', error)
-      throw error
-    }
+    // Soft delete the comment using provider
+    await provider.deleteComment({
+      id: commentId,
+      author_id: user.id,
+    })
 
     return new Response(
       JSON.stringify({
