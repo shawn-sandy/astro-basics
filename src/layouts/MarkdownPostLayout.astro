@@ -3,9 +3,7 @@ import Layout from './Layout.astro'
 import Youtube from '#components/astro/Youtube.astro'
 import Img from '#components/astro/Img.astro'
 import Toc from '#components/astro/Toc.astro'
-import Comments from '#components/astro/Comments.astro'
 import { sanitizeImageUrl } from '#utils/security'
-import { ENABLE_COMMENTS } from '#utils/site-config'
 const frontmatter = Astro.props.frontmatter
 
 const headings = Astro.props.headings
@@ -13,18 +11,6 @@ const { slug } = Astro.params
 
 // Sanitize image URL to prevent XSS attacks
 const safeImageUrl = frontmatter.image?.url ? sanitizeImageUrl(frontmatter.image.url) : null
-
-// Determine post type based on URL path for comments
-const urlPath = Astro.url.pathname
-const postType = urlPath.startsWith('/posts/')
-  ? 'post'
-  : urlPath.startsWith('/docs/')
-    ? 'doc'
-    : 'post'
-const postId = slug?.toString() || frontmatter.title
-
-// Comments are always rendered when database is available
-// The Comments component handles availability checking internally
 
 type ContentRoute = {
   name: string
@@ -85,7 +71,4 @@ const contentRoute: ContentRoute[] = [
       </div>
     )
   }
-
-  <!-- Comments Section -->
-  {ENABLE_COMMENTS && <Comments postId={postId} postType={postType} />}
 </Layout>

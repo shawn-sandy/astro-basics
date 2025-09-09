@@ -25,7 +25,6 @@ export const SITE_TITLE = 'Astro Kit'
 export const SITE_DESCRIPTION = 'A simple, easy to use multipurpose starter theme for Astro.'
 export const SITE_LOGO = '/logo.png'
 export const PAGINATION_COUNT: number = 2
-export const ENABLE_COMMENTS = false
 export const CONTACT_INFO = {
   name: 'Email',
   url: '/success',
