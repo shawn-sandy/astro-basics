@@ -40,80 +40,78 @@ Complete replacement of existing docs system with Starlight.
 
 ## Detailed Implementation Plan
 
-### Step 1: Install Dependencies
+### Step 1: Install Dependencies ✅ COMPLETED
 
 ```bash
 npm install @astrojs/starlight
 ```
 
-### Step 2: Configure Starlight Integration
+**Status**: ✅ **COMPLETED** - @astrojs/starlight v0.35.2 installed and imported in astro.config.mjs
+
+### Step 2: Configure Starlight Integration 🔄 IN PROGRESS
+
+**Current State**: Basic `starlight()` integration added but needs proper configuration for `/docs/guide/` structure.
 
 #### Update `astro.config.mjs`:
 
-```javascript
-import { defineConfig } from 'astro/config'
-import starlight from '@astrojs/starlight'
-// ... existing imports
+**Required Configuration** (to replace current minimal `starlight()` call):
 
-export default defineConfig({
-  site: process.env.SITE_URL || 'https://example.com',
-  integrations: [
-    react(),
-    sitemap(),
-    embeds(),
-    mdx(),
-    clerk(),
-    // Add Starlight with custom configuration
-    starlight({
-      title: 'Astro-Basics Documentation',
-      logo: {
-        src: './src/assets/logo.svg',
-      },
-      social: {
-        github: 'https://github.com/yourusername/astro-basics',
-      },
-      sidebar: [
-        {
-          label: 'Getting Started',
-          items: [
-            { label: 'Welcome', link: '/guide/' },
-            { label: 'Installation', link: '/guide/installation/' },
-            { label: 'Configuration', link: '/guide/configuration/' },
-          ],
-        },
-        {
-          label: 'Components',
-          autogenerate: { directory: 'components' },
-        },
-        {
-          label: 'API Reference',
-          autogenerate: { directory: 'api' },
-        },
-      ],
-      customCss: ['./src/styles/starlight-custom.scss'],
-      components: {
-        // Override components for custom functionality
-        PageFrame: './src/components/starlight/PageFrame.astro',
-      },
-      // Enable features
-      editLink: {
-        baseUrl: 'https://github.com/yourusername/astro-basics/edit/main/',
-      },
-      lastUpdated: true,
-      pagination: true,
-      tableOfContents: {
-        minHeadingLevel: 2,
-        maxHeadingLevel: 3,
-      },
-    }),
-    // ... existing integrations
-    AstroPWA({
-      /* ... */
-    }),
+```javascript
+starlight({
+  title: 'Astro-Basics Guide',
+
+  // Configure content to read from docs/guide directory
+  base: '/guide',
+
+  // Logo configuration
+  logo: {
+    src: './src/assets/logo.svg', // Add if logo exists
+  },
+
+  // Social links
+  social: {
+    github: 'https://github.com/shawn-sandy/astro-basics',
+  },
+
+  // Sidebar configuration for docs/guide structure
+  sidebar: [
+    {
+      label: 'Getting Started',
+      autogenerate: { directory: 'getting-started' },
+    },
+    {
+      label: 'Components',
+      autogenerate: { directory: 'components' },
+    },
+    {
+      label: 'API Reference',
+      autogenerate: { directory: 'api' },
+    },
   ],
-  // ... rest of config
-})
+
+  // Custom styling
+  customCss: ['./src/styles/starlight-custom.scss'],
+
+  // Enable features
+  editLink: {
+    baseUrl: 'https://github.com/shawn-sandy/astro-basics/edit/main/',
+  },
+  lastUpdated: true,
+  pagination: true,
+  tableOfContents: {
+    minHeadingLevel: 2,
+    maxHeadingLevel: 3,
+  },
+}),
 ```
+
+**Next Steps for Configuration**:
+
+1. Replace the current `starlight()` call in astro.config.mjs with the configuration above
+2. Create the `/docs/guide/` directory structure
+3. Add initial content files
+
+**Note**: The current configuration uses `/guide` as the base path, meaning Starlight docs will be accessible at `/guide/*` URLs while the content files live in `/docs/guide/` directory.
 
 ### Step 3: Configure Content Collections
 

@@ -1,0 +1,121 @@
+---
+title: Getting Started
+description: Learn how to install and configure astro-basics in your project.
+---
+
+# Getting Started with Astro-Basics
+
+Welcome to astro-basics! This guide will help you get up and running with our component library and development framework.
+
+## What is Astro-Basics?
+
+Astro-basics is a comprehensive web development framework built on Astro that provides:
+
+- **Component Library**: Reusable Astro and React components
+- **Authentication**: Pre-configured Clerk integration
+- **Database Support**: Supabase and Turso backends
+- **Styling System**: SCSS-based design tokens and utilities
+- **Testing Suite**: Unit and E2E testing with Vitest and Playwright
+- **PWA Ready**: Progressive Web App capabilities
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- **Node.js** 18 or higher
+- **npm** or your preferred package manager
+- Basic knowledge of **Astro** and **React**
+
+## Installation Methods
+
+### Option 1: Clone the Repository
+
+For a complete setup with all features:
+
+```bash
+git clone https://github.com/shawn-sandy/astro-basics.git
+cd astro-basics
+npm install
+```
+
+### Option 2: Use as Package (Component Library)
+
+To use just the components in your existing project:
+
+```bash
+npm install astro-basics-website
+```
+
+Then import components:
+
+```astro
+---
+import { Header } from 'astro-basics-website'
+---
+
+<Header title="My Site" />
+```
+
+## Environment Setup
+
+1. **Copy environment template**:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Configure required variables**:
+   ```env
+   # Required for authentication
+   PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+   CLERK_SECRET_KEY=sk_test_...
+   
+   # Optional: Database configuration
+   SUPABASE_URL=https://...
+   SUPABASE_ANON_KEY=eyJ...
+   
+   # Optional: Turso configuration
+   TURSO_DATABASE_URL=libsql://...
+   TURSO_AUTH_TOKEN=...
+   ```
+
+## Development Commands
+
+Start the development server:
+
+```bash
+# Recommended: Start dev server with SCSS watching
+npm run start
+
+# Or just the Astro dev server
+npm run dev
+```
+
+Build for production:
+
+```bash
+npm run build
+```
+
+Run tests:
+
+```bash
+# Unit tests
+npm test
+
+# E2E tests (requires: npx playwright install)
+npm run test:e2e
+```
+
+## Next Steps
+
+Now that you have astro-basics installed and running:
+
+1. **[Configuration](/guide/getting-started/configuration/)** - Configure your project settings
+2. **[Components](/guide/components/)** - Explore available components
+3. **[API Reference](/guide/api/)** - Detailed API documentation
+
+## Getting Help
+
+- **GitHub Issues**: [Report bugs or request features](https://github.com/shawn-sandy/astro-basics/issues)
+- **Documentation**: Browse this guide for detailed information
+- **Examples**: Check the `/src/pages/` directory for usage examples
