@@ -127,8 +127,8 @@
     text-align: center;
 
     .error-content {
-      max-width: 400px;
       margin: 0 auto;
+      max-width: 400px;
 
       h3 {
         color: #dc2626;
@@ -139,8 +139,8 @@
 
       p {
         color: var(--color-text-secondary, #6b7280);
-        margin: 0 0 1rem;
         line-height: 1.5;
+        margin: 0 0 1rem;
       }
 
       .retry-button {
@@ -200,7 +200,7 @@
 }
 
 // Responsive design
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .user-profile {
     padding: 1rem;
 
