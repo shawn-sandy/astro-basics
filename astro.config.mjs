@@ -10,6 +10,8 @@ import AstroPWA from '@vite-pwa/astro'
 import node from '@astrojs/node'
 import clerk from '@clerk/astro'
 
+import starlight from '@astrojs/starlight';
+
 // https://astro.build/config
 export default defineConfig({
   site: process.env.SITE_URL || 'https://example.com',
@@ -17,6 +19,54 @@ export default defineConfig({
     react(),
     sitemap(),
     embeds(),
+    starlight({
+      title: 'Astro-Basics Guide',
+      
+      // Social links (array format for v0.35.2)
+      social: [
+        {
+          icon: 'github',
+          label: 'GitHub',
+          href: 'https://github.com/shawn-sandy/astro-basics',
+        },
+      ],
+      
+      // Sidebar configuration for src/content/docs/guide structure
+      sidebar: [
+        {
+          label: 'Guide',
+          items: [
+            { label: 'Welcome', link: '/guide/' },
+          ],
+        },
+        {
+          label: 'Getting Started',
+          autogenerate: { directory: 'guide/getting-started' },
+        },
+        {
+          label: 'Components',
+          autogenerate: { directory: 'guide/components' },
+        },
+        {
+          label: 'API Reference',
+          autogenerate: { directory: 'guide/api' },
+        },
+      ],
+      
+      // Custom styling
+      customCss: ['./src/styles/starlight-custom.scss'],
+      
+      // Enable features
+      editLink: {
+        baseUrl: 'https://github.com/shawn-sandy/astro-basics/edit/main/',
+      },
+      lastUpdated: true,
+      pagination: true,
+      tableOfContents: {
+        minHeadingLevel: 2,
+        maxHeadingLevel: 3,
+      },
+    }),
     mdx(),
     clerk(),
     AstroPWA({

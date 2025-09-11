@@ -1,0 +1,303 @@
+---
+title: Components
+description: Explore the astro-basics component library with examples and usage guides.
+---
+
+# Component Library
+
+The astro-basics component library provides a collection of reusable, well-tested components for building modern web applications. All components are designed with accessibility, performance, and developer experience in mind.
+
+## Component Types
+
+### Astro Components
+Server-rendered components optimized for static content and SEO.
+
+- **Location**: `src/components/astro/`
+- **Extension**: `.astro`
+- **Use Case**: Layout, content display, server-side logic
+
+### React Components
+Interactive components for client-side functionality.
+
+- **Location**: `src/components/react/`
+- **Extension**: `.tsx`
+- **Use Case**: Forms, interactive UI, state management
+
+### Dashboard Components
+Specialized components for authenticated areas.
+
+- **Location**: `src/components/dashboard/`
+- **Extension**: `.astro` and `.tsx`
+- **Use Case**: Protected routes, user interfaces
+
+## Available Components
+
+### Layout Components
+
+#### Header
+Main site navigation and branding.
+
+```astro
+---
+import { Header } from '#components/astro/Header.astro'
+---
+
+<Header 
+  title="My Site"
+  showAuth={true}
+  theme="light"
+/>
+```
+
+#### Footer
+Site footer with links and copyright information.
+
+```astro
+---
+import { Footer } from '#components/astro/Footer.astro'
+---
+
+<Footer 
+  showSocial={true}
+  copyright="© 2025 My Company"
+/>
+```
+
+### Content Components
+
+#### PostCard
+Display blog posts and articles in card format.
+
+```astro
+---
+import { PostCard } from '#components/astro/PostCard.astro'
+---
+
+<PostCard 
+  title="Article Title"
+  description="Article description"
+  pubDate={new Date()}
+  author="Author Name"
+  href="/posts/article-slug"
+  featured={false}
+/>
+```
+
+#### Breadcrumbs
+Navigation breadcrumbs for page hierarchy.
+
+```astro
+---
+import { Breadcrumbs } from '#components/astro/Breadcrumbs.astro'
+---
+
+<Breadcrumbs 
+  links={[
+    { text: 'Home', href: '/' },
+    { text: 'Blog', href: '/posts' },
+    { text: 'Current Page' }
+  ]}
+/>
+```
+
+### Interactive Components
+
+#### SearchBox (React)
+Client-side search functionality.
+
+```tsx
+import { SearchBox } from '#components/react/SearchBox'
+
+<SearchBox 
+  placeholder="Search..."
+  onSearch={(query) => console.log(query)}
+  variant="default"
+/>
+```
+
+### Utility Components
+
+#### BaseLayout
+Main layout wrapper for pages.
+
+```astro
+---
+import BaseLayout from '#layouts/BaseLayout.astro'
+---
+
+<BaseLayout 
+  title="Page Title"
+  description="Page description"
+  image="/og-image.jpg"
+>
+  <!-- Page content -->
+</BaseLayout>
+```
+
+## Component Props
+
+### Common Props Pattern
+
+All components follow consistent prop patterns:
+
+```typescript
+export type Props = {
+  title: string
+  description?: string // Prefer explicit over optional
+  className?: string
+  variant?: 'default' | 'primary' | 'secondary'
+}
+```
+
+### Type Safety
+
+Components include full TypeScript support:
+
+```astro
+---
+import type { Props } from './Component.astro'
+const { title, description } = Astro.props as Props
+---
+```
+
+## Styling System
+
+### SCSS Architecture
+
+Components use the project's SCSS system:
+
+```scss
+// Component styles in src/styles/components/
+@use '../tokens/colors' as *;
+@use '../tokens/typography' as *;
+
+.component {
+  color: var(--text-primary);
+  font-family: var(--font-family-base);
+}
+```
+
+### CSS Custom Properties
+
+Design tokens are available as CSS variables:
+
+```css
+.my-component {
+  --component-bg: var(--color-surface);
+  --component-text: var(--color-text-primary);
+  --component-border: var(--color-border);
+}
+```
+
+## Usage Examples
+
+### Page Layout
+
+```astro
+---
+import BaseLayout from '#layouts/BaseLayout.astro'
+import Header from '#components/astro/Header.astro'
+import Footer from '#components/astro/Footer.astro'
+---
+
+<BaseLayout title="My Page">
+  <Header title="Site Name" />
+  
+  <main>
+    <!-- Page content -->
+  </main>
+  
+  <Footer />
+</BaseLayout>
+```
+
+### Blog Post List
+
+```astro
+---
+import { getCollection } from 'astro:content'
+import PostCard from '#components/astro/PostCard.astro'
+
+const posts = await getCollection('posts')
+const publishedPosts = posts.filter(post => post.data.publish)
+---
+
+<div class="posts-grid">
+  {publishedPosts.map(post => (
+    <PostCard 
+      title={post.data.title}
+      description={post.data.description}
+      pubDate={post.data.pubDate}
+      author={post.data.author}
+      href={`/posts/${post.slug}`}
+      featured={post.data.featured}
+    />
+  ))}
+</div>
+```
+
+## Best Practices
+
+### 1. Import Patterns
+
+```astro
+// Use # alias for internal imports
+import Component from '#components/astro/Component.astro'
+
+// Use import type for types
+import type { Props } from './types'
+```
+
+### 2. Props Destructuring
+
+```astro
+---
+export type Props = {
+  title: string
+  description: string | undefined
+}
+
+const { title, description } = Astro.props
+---
+```
+
+### 3. Client-Side Hydration
+
+```astro
+---
+import InteractiveComponent from '#components/react/Interactive.tsx'
+---
+
+<!-- Only hydrate when needed -->
+<InteractiveComponent client:load />
+<InteractiveComponent client:visible />
+<InteractiveComponent client:idle />
+```
+
+## Component Development
+
+### Creating New Components
+
+1. **Choose the right type**: Astro for static, React for interactive
+2. **Define clear props**: Use TypeScript interfaces
+3. **Follow naming conventions**: PascalCase for component names
+4. **Add to exports**: Update `src/components/index.ts`
+
+### Testing Components
+
+```typescript
+// Unit tests in /tests
+import { describe, it, expect } from 'vitest'
+
+describe('Component', () => {
+  it('should render correctly', () => {
+    // Test component behavior
+  })
+})
+```
+
+## Related Documentation
+
+- **[API Reference](/guide/api/)** - Detailed component APIs
+- **[Styling](/guide/styling/)** - Design system and theming
+- **[Testing](/guide/testing/)** - Component testing strategies

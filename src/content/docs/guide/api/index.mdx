@@ -1,0 +1,419 @@
+---
+title: API Reference
+description: Comprehensive API documentation for astro-basics components, utilities, and configuration.
+---
+
+# API Reference
+
+This section provides detailed API documentation for all components, utilities, and configuration options available in astro-basics.
+
+## Component APIs
+
+### Layout Components
+
+#### BaseLayout
+
+Main layout component for all pages.
+
+**Props:**
+```typescript
+interface Props {
+  title: string
+  description?: string
+  image?: string
+  noindex?: boolean
+  type?: 'website' | 'article'
+}
+```
+
+**Usage:**
+```astro
+<BaseLayout 
+  title="Page Title"
+  description="Page description for SEO"
+  image="/og-image.jpg"
+  type="article"
+/>
+```
+
+#### Header
+
+Site navigation header component.
+
+**Props:**
+```typescript
+interface Props {
+  title?: string
+  showAuth?: boolean
+  theme?: 'light' | 'dark' | 'auto'
+  sticky?: boolean
+}
+```
+
+### Content Components
+
+#### PostCard
+
+Card component for displaying blog posts and articles.
+
+**Props:**
+```typescript
+interface Props {
+  title: string
+  description: string
+  pubDate: Date
+  author: string
+  href: string
+  featured?: boolean
+  image?: {
+    url: string
+    alt: string
+  }
+  tags?: string[]
+}
+```
+
+**Example:**
+```astro
+<PostCard 
+  title="Getting Started with Astro"
+  description="Learn the basics of Astro development"
+  pubDate={new Date('2025-01-15')}
+  author="John Doe"
+  href="/posts/getting-started"
+  featured={true}
+  tags={['astro', 'tutorial']}
+/>
+```
+
+## Utility APIs
+
+### Content Utilities
+
+#### getCollection Helper
+
+Enhanced content collection utilities.
+
+```typescript
+import { getCollection } from 'astro:content'
+
+// Get published posts only
+const publishedPosts = await getCollection('posts', ({ data }) => data.publish)
+
+// Get featured content
+const featuredPosts = await getCollection('posts', ({ data }) => 
+  data.publish && data.featured
+)
+```
+
+#### Slugify Function
+
+URL-safe slug generation.
+
+```typescript
+import { slugify } from '#libs/content'
+
+const slug = slugify("My Blog Post Title") // "my-blog-post-title"
+```
+
+#### Truncate Function
+
+Text truncation with word boundaries.
+
+```typescript
+import { truncate } from '#libs/content'
+
+const shortText = truncate("Long text content...", 100) // Truncated to 100 chars
+```
+
+### Authentication APIs
+
+#### Clerk Integration
+
+Pre-configured authentication with Clerk.
+
+```typescript
+// In API routes
+import { getAuth } from '@clerk/astro/server'
+
+export async function GET({ request }) {
+  const { userId } = getAuth(request)
+  
+  if (!userId) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+  
+  // Authenticated route logic
+}
+```
+
+#### Protected Routes
+
+Middleware for route protection.
+
+```typescript
+// src/middleware.ts
+import { clerkMiddleware } from '@clerk/astro/server'
+
+export const onRequest = clerkMiddleware()
+```
+
+## Configuration APIs
+
+### Site Configuration
+
+**File:** `src/utils/site-config.ts`
+
+```typescript
+export const SITE_TITLE = 'Astro Basics'
+export const SITE_DESCRIPTION = 'Modern web development with Astro'
+export const SITE_URL = 'https://astro-basics.netlify.app'
+export const PAGINATION_COUNT = 2
+```
+
+### Content Schema
+
+**File:** `src/content/config.ts`
+
+```typescript
+const postsCollection = defineCollection({
+  schema: z.object({
+    title: z.string(),
+    pubDate: z.date(),
+    description: z.string(),
+    author: z.string(),
+    breadcrumbSlug: z.string().optional(),
+    image: z.object({
+      url: z.string(),
+      alt: z.string(),
+      caption: z.string().optional(),
+    }).optional(),
+    tags: z.array(z.string()).optional(),
+    publish: z.boolean().default(false),
+    featured: z.boolean().default(false),
+    youtube: z.object({
+      id: z.string(),
+      title: z.string().optional(),
+      start: z.string().optional(),
+      end: z.string().optional(),
+    }).optional(),
+  }),
+})
+```
+
+## Database APIs
+
+### Supabase Client
+
+**File:** `src/libs/supabase.ts`
+
+```typescript
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_ANON_KEY!
+)
+
+export default supabase
+```
+
+### Turso Client
+
+**File:** `src/libs/turso.ts`
+
+```typescript
+import { createClient } from '@libsql/client'
+
+const turso = createClient({
+  url: process.env.TURSO_DATABASE_URL!,
+  authToken: process.env.TURSO_AUTH_TOKEN
+})
+
+export default turso
+```
+
+## Build Configuration
+
+### Astro Config
+
+**File:** `astro.config.mjs`
+
+```javascript
+export default defineConfig({
+  site: process.env.SITE_URL || 'https://example.com',
+  output: 'server',
+  integrations: [
+    react(),
+    sitemap(),
+    embeds(),
+    mdx(),
+    clerk(),
+    starlight({
+      title: 'Astro-Basics Guide',
+      base: '/guide',
+      // ... configuration
+    }),
+    AstroPWA({
+      registerType: 'autoUpdate',
+      // ... PWA config
+    }),
+  ],
+  adapter: netlify(), // or node(), vercel()
+})
+```
+
+### TypeScript Configuration
+
+**File:** `tsconfig.json`
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "paths": {
+      "#*": ["./src/*"]
+    }
+  }
+}
+```
+
+## Environment Variables
+
+### Required Variables
+
+```env
+# Authentication
+PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# Site Configuration
+SITE_URL=https://your-site.com
+```
+
+### Optional Variables
+
+```env
+# Database
+SUPABASE_URL=https://project.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiI...
+
+# Turso
+TURSO_DATABASE_URL=libsql://database.turso.io
+TURSO_AUTH_TOKEN=your_token
+
+# Deployment
+ASTRO_ADAPTER=netlify # or 'node', 'vercel'
+```
+
+## Error Handling
+
+### API Route Patterns
+
+```typescript
+export async function GET({ request }) {
+  try {
+    // Route logic
+    return new Response(JSON.stringify({ success: true, data }), {
+      headers: { 'Content-Type': 'application/json' }
+    })
+  } catch (error) {
+    console.error('API Error:', error)
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: error.message 
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+}
+```
+
+### Component Error Boundaries
+
+```astro
+---
+let errorMessage: string | null = null
+
+try {
+  // Component logic that might throw
+} catch (error) {
+  errorMessage = error.message
+}
+---
+
+{errorMessage ? (
+  <div class="error-message">
+    <p>Error: {errorMessage}</p>
+  </div>
+) : (
+  <!-- Normal component content -->
+)}
+```
+
+## Performance Optimization
+
+### Image Optimization
+
+```astro
+---
+import { Image } from 'astro:assets'
+---
+
+<Image 
+  src="/path/to/image.jpg"
+  alt="Description"
+  width={800}
+  height={600}
+  loading="lazy"
+  decoding="async"
+/>
+```
+
+### Bundle Optimization
+
+```typescript
+// Dynamic imports for code splitting
+const Component = await import('#components/react/HeavyComponent')
+
+// Conditional loading
+if (someCondition) {
+  const { heavyFunction } = await import('#utils/heavy-utils')
+  heavyFunction()
+}
+```
+
+## Testing APIs
+
+### Unit Testing
+
+```typescript
+import { describe, it, expect } from 'vitest'
+
+describe('Utility Function', () => {
+  it('should process input correctly', () => {
+    const result = myFunction('input')
+    expect(result).toBe('expected output')
+  })
+})
+```
+
+### E2E Testing
+
+```typescript
+import { test, expect } from '@playwright/test'
+
+test('page loads correctly', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('h1')).toBeVisible()
+})
+```
+
+## Related Documentation
+
+- **[Components](/guide/components/)** - Component usage examples
+- **[Getting Started](/guide/getting-started/)** - Setup and installation
+- **[Configuration](/guide/configuration/)** - Project configuration

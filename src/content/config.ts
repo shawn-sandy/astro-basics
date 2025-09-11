@@ -1,3 +1,4 @@
+import { docsSchema } from '@astrojs/starlight/schema'
 import { defineCollection, z } from 'astro:content'
 
 const postsCollection = defineCollection({
@@ -28,15 +29,24 @@ const postsCollection = defineCollection({
   }),
 })
 
-const astroKitDocs = defineCollection({
-  ...postsCollection,
+// Use Starlight schema for docs collection
+const docs = defineCollection({
+  schema: docsSchema({
+    extend: z.object({
+      // Add custom fields if needed
+      author: z.string().optional(),
+      tags: z.array(z.string()).optional(),
+      featured: z.boolean().default(false),
+    }),
+  }),
 })
+
 const content = defineCollection({
   ...postsCollection,
 })
 
 export const collections = {
   posts: postsCollection,
-  docs: astroKitDocs,
+  docs: docs, // Use Starlight docs schema
   content: content,
 }

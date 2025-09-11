@@ -1,0 +1,311 @@
+/**
+ * Starlight Custom Styles
+ * 
+ * Custom CSS for Starlight documentation theme to match the astro-basics design system.
+ * This file maps existing design tokens to Starlight CSS variables for consistent theming.
+ */
+
+// Import existing design system components if available
+// @use './components/colors' as *;
+// @use './components/typography' as *;
+
+:root {
+  // Brand Colors - Map to Starlight color variables
+  --sl-color-accent: #3b82f6; // Primary blue
+  --sl-color-accent-high: #2563eb; // Darker blue for high contrast
+  --sl-color-accent-low: #dbeafe; // Light blue for backgrounds
+
+  // Text Colors
+  --sl-color-text: #1e293b; // Primary text color
+  --sl-color-text-accent: #3b82f6; // Accent text color (links, etc.)
+  --sl-color-text-invert: #f8fafc; // Inverted text for dark backgrounds
+
+  // Background Colors
+  --sl-color-bg: #fff; // Main background
+  --sl-color-bg-nav: #f8fafc; // Navigation background
+  --sl-color-bg-sidebar: #f1f5f9; // Sidebar background
+  --sl-color-bg-inline-code: #f1f5f9; // Inline code background
+
+  // Border Colors
+  --sl-color-border: #e2e8f0; // Default border color
+  --sl-color-border-low: #f1f5f9; // Low contrast border
+  --sl-color-border-high: #cbd5e1; // High contrast border
+
+  // Typography
+  --sl-font: system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Helvetica Neue",
+    arial, sans-serif;
+  --sl-font-mono: "SF Mono", monaco, "Cascadia Code", "Roboto Mono", consolas, "Courier New",
+    monospace;
+
+  // Layout
+  --sl-content-width: 72rem; // Maximum content width
+  --sl-sidebar-width: 18rem; // Sidebar width
+  --sl-nav-height: 4rem; // Navigation height
+
+  // Spacing
+  --sl-content-pad-x: 1rem;
+  --sl-content-pad-y: 1rem;
+  --sl-sidebar-pad-x: 1rem;
+
+  // Shadows
+  --sl-shadow-sm: 0 1px 2px 0 rgb(0, 0, 0, 0.05);
+  --sl-shadow-md: 0 4px 6px -1px rgb(0, 0, 0, 0.1), 0 2px 4px -2px rgb(0, 0, 0, 0.1);
+  --sl-shadow-lg: 0 10px 15px -3px rgb(0, 0, 0, 0.1), 0 4px 6px -4px rgb(0, 0, 0, 0.1);
+}
+
+// Dark mode color scheme
+:root[data-theme="dark"] {
+  --sl-color-accent: #60a5fa; // Lighter blue for dark mode
+  --sl-color-accent-high: #3b82f6;
+  --sl-color-accent-low: #1e3a8a;
+  --sl-color-text: #f1f5f9;
+  --sl-color-text-accent: #60a5fa;
+  --sl-color-text-invert: #1e293b;
+  --sl-color-bg: #0f172a;
+  --sl-color-bg-nav: #1e293b;
+  --sl-color-bg-sidebar: #334155;
+  --sl-color-bg-inline-code: #1e293b;
+  --sl-color-border: #475569;
+  --sl-color-border-low: #334155;
+  --sl-color-border-high: #64748b;
+}
+
+// Custom component styles
+.sl-markdown-content {
+  // Enhanced prose styling for documentation content
+  line-height: 1.75;
+
+  // Headings
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    margin-bottom: 1rem;
+    margin-top: 2rem;
+  }
+
+  h1 {
+    font-size: 2.25rem;
+    line-height: 1.2;
+  }
+
+  h2 {
+    border-bottom: 1px solid var(--sl-color-border);
+    font-size: 1.875rem;
+    line-height: 1.3;
+    padding-bottom: 0.5rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    line-height: 1.4;
+  }
+
+  // Code blocks
+  pre {
+    border-radius: 0.5rem;
+    box-shadow: var(--sl-shadow-sm);
+    margin: 1.5rem 0;
+  }
+
+  // Inline code
+  code:not(pre code) {
+    background: var(--sl-color-bg-inline-code);
+    border: 1px solid var(--sl-color-border);
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    padding: 0.125rem 0.375rem;
+  }
+
+  // Links
+  a {
+    border-bottom: 1px solid transparent;
+    color: var(--sl-color-text-accent);
+    text-decoration: none;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-bottom-color: var(--sl-color-text-accent);
+    }
+  }
+
+  // Lists
+  ul,
+  ol {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+  }
+
+  li {
+    margin: 0.5rem 0;
+  }
+
+  // Tables
+  table {
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin: 1.5rem 0;
+    width: 100%;
+  }
+
+  th,
+  td {
+    border: 1px solid var(--sl-color-border);
+    padding: 0.75rem;
+    text-align: left;
+  }
+
+  th {
+    background: var(--sl-color-bg-sidebar);
+    font-weight: 600;
+  }
+
+  // Blockquotes
+  blockquote {
+    border-left: 4px solid var(--sl-color-accent);
+    color: var(--sl-color-text);
+    font-style: italic;
+    margin: 1.5rem 0;
+    opacity: 0.8;
+    padding-left: 1rem;
+  }
+}
+
+// Navigation customizations
+.sl-nav {
+  backdrop-filter: blur(8px);
+  background: rgb(248, 250, 252, 0.95);
+  border-bottom: 1px solid var(--sl-color-border);
+
+  &[data-theme="dark"] {
+    background: rgb(15, 23, 42, 0.95);
+  }
+}
+
+// Sidebar customizations
+.sl-sidebar {
+  border-right: 1px solid var(--sl-color-border);
+
+  // Custom scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--sl-color-border);
+    border-radius: 3px;
+
+    &:hover {
+      background: var(--sl-color-border-high);
+    }
+  }
+}
+
+// Search box customizations
+.sl-search {
+  input {
+    border: 1px solid var(--sl-color-border);
+    border-radius: 0.5rem;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+
+    &:focus {
+      border-color: var(--sl-color-accent);
+      box-shadow: 0 0 0 3px var(--sl-color-accent-low);
+      outline: none;
+    }
+  }
+}
+
+// Page content improvements
+.sl-container {
+  max-width: var(--sl-content-width);
+
+  // Better responsive behavior
+  @media (width <= 768px) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+// Table of contents styling
+.sl-toc {
+  max-height: calc(100vh - var(--sl-nav-height) - 4rem);
+  overflow-y: auto;
+
+  // Sticky positioning for better UX
+  position: sticky;
+  top: calc(var(--sl-nav-height) + 2rem);
+
+  a {
+    transition: color 0.2s ease;
+
+    &.current {
+      color: var(--sl-color-accent);
+      font-weight: 500;
+    }
+  }
+}
+
+// Custom card grid for components showcase
+.starlight-card-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  margin: 2rem 0;
+}
+
+.starlight-card {
+  background: var(--sl-color-bg);
+  border: 1px solid var(--sl-color-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+
+  &:hover {
+    border-color: var(--sl-color-accent);
+    box-shadow: var(--sl-shadow-lg);
+  }
+
+  h3 {
+    color: var(--sl-color-text-accent);
+    margin-top: 0;
+  }
+
+  p {
+    color: var(--sl-color-text);
+    margin-bottom: 0;
+    opacity: 0.9;
+  }
+}
+
+// Print styles
+@media print {
+  .sl-nav,
+  .sl-sidebar,
+  .sl-toc {
+    display: none;
+  }
+
+  .sl-container {
+    margin: 0;
+    max-width: none;
+    padding: 0;
+  }
+
+  .sl-markdown-content {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+}
