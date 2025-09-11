@@ -30,3 +30,4 @@ pnpm-debug.log*
 /playwright/.cache/
 .vercel/
 .mcp.json
+backup-docs/
