@@ -89,6 +89,7 @@ src/content/docs/guide/
 │   ├── performance.mdx            # Performance optimization
 │   ├── security.mdx               # Security best practices
 │   ├── accessibility.mdx          # A11y implementation
+│   ├── figma-mcp-server.mdx       # ✅ Figma MCP server integration
 │   └── deployment.mdx             # Production deployment
 ├── reference/                      # 🔄 Technical reference
 │   ├── configuration.mdx          # Config options
@@ -124,6 +125,7 @@ async function migrateDocumentation() {
     '2-customizing.mdx': 'guides/theming.mdx',
     '3-custom-navigation.mdx': 'components/astro/navigation.mdx',
     '4-development.mdx': 'getting-started/development.mdx',
+    'figma-mcp-server.md': 'guides/figma-mcp-server.mdx',
   }
 
   for (const [sourceFile, targetPath] of Object.entries(contentMap)) {
@@ -2281,6 +2283,7 @@ const { pageId, pageTitle, category } = Astro.props
 - [ ] Create automated migration scripts for existing documentation
 - [ ] Set up content validation and link checking tools
 - [ ] Migrate core getting-started and configuration docs
+- [x] ✅ **COMPLETED**: Figma MCP Server guide created and integrated
 
 **Day 3-4: Component Documentation Templates**
 
@@ -2397,6 +2400,30 @@ const { pageId, pageTitle, category } = Astro.props
 | Outdated examples       | Medium | Automated testing, version tracking                |
 | Inconsistent formatting | Low    | Style guides, automated linting, templates         |
 
+### Completed Integrations
+
+#### ✅ Figma MCP Server Integration
+
+The **Figma MCP Server Integration Guide** (`/docs/guides/figma-mcp-server.md`) has been successfully created and provides:
+
+**Core Features Documented:**
+
+- **Code Generation**: Converting Figma designs to production-ready Astro/React components
+- **Design Token Extraction**: Pulling variables and design tokens for SCSS integration
+- **Code Connect Mapping**: Linking Figma components to existing codebase files
+- **Asset Export**: High-quality image generation from Figma nodes
+- **Design System Automation**: Creating comprehensive design rules and documentation
+
+**Integration Highlights:**
+
+- **Project-Specific Workflows**: Tailored for astro-basics component structure
+- **SCSS Integration**: Design tokens mapped to existing style architecture
+- **Component Organization**: Follows `src/components/astro/` and `src/components/react/` patterns
+- **Testing Integration**: Commands for validating generated components
+- **Troubleshooting Guide**: Common issues and best practices
+
+This integration enables seamless design-to-code workflows and maintains consistency between Figma designs and the implemented component library.
+
 ## Future Enhancements (Post-Phase 2)
 
 ### Phase 3 Considerations
@@ -2407,6 +2434,7 @@ const { pageId, pageTitle, category } = Astro.props
 - **Community Features**: User-contributed examples and improvements
 - **Integration Ecosystem**: Third-party plugin documentation
 - **Video Content**: Embedded video tutorials and walkthroughs
+- **Enhanced Figma Integration**: Automated component sync workflows
 
 ### Continuous Improvement
 
