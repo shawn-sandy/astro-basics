@@ -84,6 +84,10 @@ starlight({
       autogenerate: { directory: 'components' },
     },
     {
+      label: 'Guides',
+      autogenerate: { directory: 'guides' },
+    },
+    {
       label: 'API Reference',
       autogenerate: { directory: 'api' },
     },

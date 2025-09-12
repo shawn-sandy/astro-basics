@@ -37,7 +37,7 @@ MCP (Model Context Protocol) is a standardized protocol that allows Claude to in
   </Card>
   
   <Card title="🎨 Figma" icon="paintbrush">
-    Design-to-code generation, variable extraction, and asset management from Figma files.
+    **NEW!** Complete design-to-code generation, variable extraction, and asset management from Figma files. [Learn more →](/guide/mcp/servers/figma/)
   </Card>
   
   <Card title="🔐 Clerk" icon="lock">
@@ -89,7 +89,9 @@ Perform complex multi-step operations like deploying to Netlify while updating S
     - Run Jupyter notebook cells for data analysis
     - Get VS Code diagnostics and error information
     - Test browser functionality with Playwright
-    - Generate code from Figma designs
+    - **NEW!** Generate production-ready code from Figma designs
+    - **NEW!** Extract design tokens and sync with SCSS architecture
+    - **NEW!** Export assets and create icon libraries from Figma
   </TabItem>
   
   <TabItem label="Database">
@@ -138,32 +140,39 @@ Perform complex multi-step operations like deploying to Netlify while updating S
 
 ## Quick Example
 
-Here's how you might use multiple MCP servers together:
+Here's how you might use multiple MCP servers together in a complete design-to-deployment workflow:
 
 ```typescript
-// 1. Search Astro docs for authentication patterns
+// 1. Generate component from Figma design
+await generateFigmaComponent("user-profile-card", {
+  framework: "react", 
+  styling: "scss"
+})
+
+// 2. Search Astro docs for authentication patterns
 await searchAstroDocs("authentication middleware")
 
-// 2. Get Clerk user management examples  
+// 3. Get Clerk user management examples  
 await getClerkDocumentation("user management")
 
-// 3. Create Supabase table for user data
+// 4. Create Supabase table for user data
 await createSupabaseTable("user_profiles", schema)
 
-// 4. Deploy to Netlify with environment variables
+// 5. Deploy to Netlify with environment variables
 await deployToNetlify({ 
   envVars: { CLERK_SECRET_KEY: "...", SUPABASE_URL: "..." } 
 })
 
-// 5. Test the deployed authentication flow
+// 6. Test the complete user flow with generated component
 await testWithPlaywright("/dashboard/profile")
 ```
 
-This workflow demonstrates the power of integrated MCP servers - from research to implementation to testing and deployment, all within a single conversation context.
+This workflow demonstrates the power of integrated MCP servers - from design extraction to research, implementation, testing, and deployment, all within a single conversation context.
 
 ## Next Steps
 
 - **New to MCP?** Start with the [Setup Guide](/guide/mcp/setup)
+- **Want design-to-code workflows?** **NEW!** [Figma Integration Guide](/guide/mcp/servers/figma/)
 - **Need specific functionality?** Browse the [Server Documentation](/guide/mcp/servers/)  
 - **Want to see examples?** Check out [Usage Examples](/guide/mcp/examples)
 - **Having issues?** Visit [Troubleshooting](/guide/mcp/troubleshooting)
