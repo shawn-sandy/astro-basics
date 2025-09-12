@@ -1,0 +1,199 @@
+---
+title: Astro Docs MCP Server
+description: Search and access official Astro framework documentation
+sidebar:
+  order: 1
+---
+
+import { Badge, Code, Tabs, TabItem, Aside } from '@astrojs/starlight/components'
+
+# Astro Docs MCP Server
+
+<Badge text="Documentation" variant="success" /> <Badge text="No Auth Required" variant="tip" />
+
+The Astro Docs MCP server provides direct access to the official Astro framework documentation, allowing you to search for features, examples, and API references without leaving your development context.
+
+## Overview
+
+This server enables real-time searches through Astro's comprehensive documentation, including:
+- Component APIs and usage patterns
+- Framework features and configuration
+- Integration guides and examples  
+- Troubleshooting and best practices
+- Latest release notes and migration guides
+
+## Available Functions
+
+### `search_astro_docs`
+
+Search the Astro documentation for specific topics or features.
+
+**Parameters:**
+- `query` (string, required): Search terms for Astro documentation
+
+**Returns:**
+- Array of relevant documentation entries with titles, URLs, and content summaries
+
+<Code
+  code={`// Example usage
+const results = await searchAstroDocs({
+  query: "dynamic routing"
+})
+
+// Results structure
+{
+  "results": [
+    {
+      "title": "Dynamic Routes",
+      "url": "https://docs.astro.build/en/core-concepts/routing/#dynamic-routes",
+      "summary": "Learn how to create dynamic routes using file-based routing...",
+      "content": "Full content excerpt...",
+      "category": "Core Concepts"
+    }
+  ]
+}`}
+  lang="javascript"
+  title="Search Astro Documentation"
+/>
+
+## Usage Examples
+
+<Tabs>
+  <TabItem label="Component Development">
+    Search for component-related documentation:
+    
+    <Code
+      code={`// Find information about Astro components
+await searchAstroDocs({ query: "astro components props" })
+
+// Search for specific component features
+await searchAstroDocs({ query: "component slots" })
+
+// Learn about component styling
+await searchAstroDocs({ query: "component css modules" })`}
+      lang="javascript"
+      title="Component Documentation"
+    />
+  </TabItem>
+  
+  <TabItem label="Configuration">
+    Find configuration and setup information:
+    
+    <Code
+      code={`// Search for configuration options
+await searchAstroDocs({ query: "astro.config.mjs" })
+
+// Find integration setup guides
+await searchAstroDocs({ query: "react integration" })
+
+// Look up build configuration
+await searchAstroDocs({ query: "build output" })`}
+      lang="javascript"
+      title="Configuration Help"
+    />
+  </TabItem>
+  
+  <TabItem label="Troubleshooting">
+    Get help with common issues:
+    
+    <Code
+      code={`// Find solutions to common problems
+await searchAstroDocs({ query: "hydration client:load" })
+
+// Search for error solutions
+await searchAstroDocs({ query: "typescript errors" })
+
+// Get deployment help
+await searchAstroDocs({ query: "netlify deployment" })`}
+      lang="javascript"
+      title="Problem Solving"
+    />
+  </TabItem>
+</Tabs>
+
+## Best Practices
+
+### Effective Search Queries
+
+- **Be specific**: Use exact feature names when possible
+- **Include context**: Add related terms for better results
+- **Try variations**: Rephrase if initial results aren't helpful
+
+<Code
+  code={`// Good: Specific and contextual
+await searchAstroDocs({ query: "server-side rendering SSR" })
+
+// Better: Even more specific
+await searchAstroDocs({ query: "getServerSideProps SSR data fetching" })
+
+// Best: Include use case context
+await searchAstroDocs({ query: "SSR authentication protected routes" })`}
+  lang="javascript"
+  title="Search Query Examples"
+/>
+
+### Integration with Development
+
+Use Astro docs searches during development workflows:
+
+<Code
+  code={`// When implementing a feature
+const authDocs = await searchAstroDocs({ 
+  query: "middleware authentication" 
+})
+
+// When troubleshooting
+const errorDocs = await searchAstroDocs({ 
+  query: "build errors typescript" 
+})
+
+// When learning new concepts
+const conceptDocs = await searchAstroDocs({ 
+  query: "islands architecture hydration" 
+})`}
+  lang="javascript"
+  title="Development Workflow Integration"
+/>
+
+## Common Use Cases
+
+1. **Feature Implementation**: Research how to implement specific Astro features
+2. **Configuration Help**: Find correct configuration syntax and options
+3. **Integration Guides**: Learn how to integrate third-party libraries
+4. **Performance Optimization**: Discover performance best practices
+5. **Migration Assistance**: Get help upgrading between Astro versions
+6. **Troubleshooting**: Find solutions to build or runtime errors
+
+## Tips for Better Results
+
+<Aside type="tip" title="Pro Tips">
+- Search for exact error messages when troubleshooting
+- Use official Astro terminology (e.g., "islands" instead of "components")
+- Include version numbers if you're working with specific Astro versions
+- Search for integration names when working with add-ons (e.g., "@astrojs/react")
+</Aside>
+
+## Limitations
+
+- **Real-time Updates**: Documentation reflects the latest Astro release
+- **Search Scope**: Limited to official Astro documentation only
+- **Rate Limiting**: Reasonable use expected, avoid rapid successive searches
+- **Language**: Currently supports English documentation only
+
+## Related Resources
+
+- **[Context7 Server](/guide/mcp/servers/context7)** - For third-party library documentation
+- **[Web Tools Server](/guide/mcp/servers/web-tools)** - For broader web searches  
+- **[MCP Examples](/guide/mcp/examples)** - See real-world usage scenarios
+
+## Troubleshooting
+
+**No results found:**
+- Check spelling and try alternative terms
+- Use broader search terms initially, then narrow down
+- Search for concept names rather than specific code snippets
+
+**Results not relevant:**
+- Include more context in your search query
+- Try searching for the parent concept or feature category
+- Use official Astro terminology from the documentation

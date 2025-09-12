@@ -1,0 +1,415 @@
+---
+title: Supabase MCP Server
+description: Database operations, project management, and real-time functionality
+sidebar:
+  order: 2
+---
+
+import { Badge, Code, Tabs, TabItem, Aside } from '@astrojs/starlight/components'
+
+# Supabase MCP Server
+
+<Badge text="Database" variant="note" /> <Badge text="Auth Required" variant="caution" />
+
+The Supabase MCP server provides comprehensive database operations, project management, and real-time functionality for your Supabase projects directly through Claude.
+
+## Overview
+
+This server enables full Supabase project management including:
+- Database schema creation and management
+- SQL query execution and migrations
+- User authentication and management
+- Project configuration and monitoring
+- Real-time subscriptions and Edge Functions
+- TypeScript type generation
+
+## Authentication Setup
+
+<Code
+  code={`# Add to your environment file
+SUPABASE_ACCESS_TOKEN=sb_your_access_token_here
+SUPABASE_URL=https://your-project.supabase.co  
+SUPABASE_ANON_KEY=your_anon_key_here`}
+  lang="bash"
+  title="Required Environment Variables"
+/>
+
+Get your tokens from:
+1. **Access Token**: [Supabase Account Settings](https://supabase.com/dashboard/account/tokens)
+2. **Project URL & Keys**: Your project's **Settings** > **API** page
+
+## Available Functions
+
+### Project Management
+
+<Tabs>
+  <TabItem label="Projects">
+    <Code
+      code={`// List all projects
+await listProjects()
+
+// Get specific project details  
+await getProject({ id: "project-id" })
+
+// Pause/restore projects
+await pauseProject({ project_id: "project-id" })
+await restoreProject({ project_id: "project-id" })`}
+      lang="javascript"
+      title="Project Operations"
+    />
+  </TabItem>
+  
+  <TabItem label="Database">
+    <Code
+      code={`// List tables and schemas
+await listTables({ 
+  project_id: "project-id",
+  schemas: ["public", "auth"] 
+})
+
+// Execute SQL queries
+await executeSql({ 
+  project_id: "project-id",
+  query: "SELECT * FROM users LIMIT 10" 
+})
+
+// Apply database migrations
+await applyMigration({
+  project_id: "project-id", 
+  name: "add_user_profiles",
+  query: "CREATE TABLE user_profiles (id UUID PRIMARY KEY, name TEXT);"
+})`}
+      lang="javascript"
+      title="Database Operations"
+    />
+  </TabItem>
+  
+  <TabItem label="Authentication">
+    <Code
+      code={`// Generate TypeScript types
+await generateTypescriptTypes({ project_id: "project-id" })
+
+// Get project API configuration
+await getProjectUrl({ project_id: "project-id" })
+await getAnonKey({ project_id: "project-id" })`}
+      lang="javascript"
+      title="Configuration & Types"
+    />
+  </TabItem>
+</Tabs>
+
+### Edge Functions
+
+<Code
+  code={`// List all Edge Functions
+await listEdgeFunctions({ project_id: "project-id" })
+
+// Get function details
+await getEdgeFunction({ 
+  project_id: "project-id",
+  function_slug: "hello-world" 
+})
+
+// Deploy new Edge Function
+await deployEdgeFunction({
+  project_id: "project-id",
+  name: "user-profile-handler",
+  files: [
+    {
+      name: "index.ts",
+      content: \`
+        import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
+
+        serve(async (req: Request) => {
+          const { name } = await req.json()
+          
+          return new Response(
+            JSON.stringify({ message: \`Hello, \${name}!\` }),
+            { headers: { 'Content-Type': 'application/json' } }
+          )
+        })
+      \`
+    }
+  ]
+})`}
+  lang="javascript"
+  title="Edge Functions Management"
+/>
+
+### Development Branches
+
+<Code
+  code={`// Create development branch
+await createBranch({
+  project_id: "project-id",
+  name: "feature-branch",
+  confirm_cost_id: "cost-confirmation-id"
+})
+
+// List all branches
+await listBranches({ project_id: "project-id" })
+
+// Merge branch to production
+await mergeBranch({ branch_id: "branch-id" })
+
+// Reset branch to specific migration
+await resetBranch({ 
+  branch_id: "branch-id",
+  migration_version: "20240101000000" 
+})`}
+  lang="javascript"
+  title="Branch Management"
+/>
+
+## Usage Examples
+
+<Tabs>
+  <TabItem label="Schema Management">
+    Create and manage database schemas:
+    
+    <Code
+      code={`// Create a new table with RLS
+await applyMigration({
+  project_id: "your-project-id",
+  name: "create_posts_table", 
+  query: \`
+    CREATE TABLE posts (
+      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+      title TEXT NOT NULL,
+      content TEXT,
+      author_id UUID REFERENCES auth.users(id),
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      published BOOLEAN DEFAULT false
+    );
+
+    -- Enable Row Level Security
+    ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+
+    -- Create policies
+    CREATE POLICY "Users can view published posts" ON posts
+      FOR SELECT USING (published = true);
+      
+    CREATE POLICY "Users can manage their own posts" ON posts
+      FOR ALL USING (auth.uid() = author_id);
+  \`
+})
+
+// Verify table creation
+const tables = await listTables({ 
+  project_id: "your-project-id",
+  schemas: ["public"] 
+})`}
+      lang="javascript"
+      title="Database Schema Creation"
+    />
+  </TabItem>
+  
+  <TabItem label="Data Operations">
+    Query and manipulate data:
+    
+    <Code
+      code={`// Insert sample data
+await executeSql({
+  project_id: "your-project-id",
+  query: \`
+    INSERT INTO posts (title, content, author_id, published) VALUES
+    ('Getting Started with Astro', 'Content here...', auth.uid(), true),
+    ('Advanced Astro Patterns', 'More content...', auth.uid(), false);
+  \`
+})
+
+// Query with filters
+await executeSql({
+  project_id: "your-project-id",
+  query: \`
+    SELECT p.*, u.email as author_email
+    FROM posts p
+    JOIN auth.users u ON p.author_id = u.id  
+    WHERE p.published = true
+    ORDER BY p.created_at DESC
+    LIMIT 10;
+  \`
+})
+
+// Update data
+await executeSql({
+  project_id: "your-project-id", 
+  query: \`
+    UPDATE posts 
+    SET published = true 
+    WHERE id = 'post-uuid-here';
+  \`
+})`}
+      lang="javascript"
+      title="Data Manipulation"
+    />
+  </TabItem>
+  
+  <TabItem label="Type Generation">
+    Generate TypeScript types for your database:
+    
+    <Code
+      code={`// Generate types for the entire database
+const types = await generateTypescriptTypes({ 
+  project_id: "your-project-id" 
+})
+
+// Save types to file (typically done in your build process)
+// The generated types will include:
+export interface Database {
+  public: {
+    Tables: {
+      posts: {
+        Row: {
+          id: string
+          title: string
+          content: string | null
+          author_id: string | null
+          created_at: string | null
+          published: boolean | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          content?: string | null
+          author_id?: string | null
+          created_at?: string | null
+          published?: boolean | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          content?: string | null
+          author_id?: string | null
+          created_at?: string | null
+          published?: boolean | null
+        }
+      }
+    }
+  }
+}`}
+      lang="typescript"
+      title="TypeScript Type Generation"
+    />
+  </TabItem>
+</Tabs>
+
+## Security & Best Practices
+
+<Aside type="caution" title="Security Considerations">
+- Always use Row Level Security (RLS) for data protection
+- Never execute user-provided SQL directly without validation
+- Use prepared statements and parameterized queries when possible
+- Regularly audit database permissions and policies
+</Aside>
+
+### RLS Policy Examples
+
+<Code
+  code={`-- User can only read their own profile
+CREATE POLICY "Users can view own profile" ON profiles
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Admin users can read all data  
+CREATE POLICY "Admins can view all" ON profiles
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM user_roles 
+      WHERE user_id = auth.uid() 
+      AND role = 'admin'
+    )
+  );
+
+-- Public read, authenticated write
+CREATE POLICY "Public read access" ON posts
+  FOR SELECT USING (published = true);
+  
+CREATE POLICY "Authenticated write access" ON posts 
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);`}
+  lang="sql"
+  title="Row Level Security Policies"
+/>
+
+## Error Handling
+
+<Code
+  code={`try {
+  await executeSql({
+    project_id: "your-project-id",
+    query: "SELECT * FROM non_existent_table"
+  })
+} catch (error) {
+  // Handle different error types
+  if (error.message.includes('relation "non_existent_table" does not exist')) {
+    console.log('Table not found - creating it first')
+  } else if (error.message.includes('permission denied')) {
+    console.log('Check RLS policies and user permissions')
+  } else {
+    console.log('Unexpected database error:', error.message)
+  }
+}`}
+  lang="javascript"
+  title="Error Handling Patterns"
+/>
+
+## Integration with astro-basics
+
+<Code
+  code={`// Common workflow for astro-basics project
+// 1. Get current project info
+const project = await getProject({ id: process.env.SUPABASE_PROJECT_ID })
+
+// 2. Check existing tables
+const tables = await listTables({ 
+  project_id: project.id,
+  schemas: ["public"] 
+})
+
+// 3. Apply new migrations if needed
+await applyMigration({
+  project_id: project.id,
+  name: "add_comments_table",
+  query: commentTableSchema
+})
+
+// 4. Generate updated TypeScript types
+const updatedTypes = await generateTypescriptTypes({ 
+  project_id: project.id 
+})
+
+// 5. Update environment configuration
+const apiUrl = await getProjectUrl({ project_id: project.id })
+const anonKey = await getAnonKey({ project_id: project.id })`}
+  lang="javascript"
+  title="astro-basics Integration Pattern"
+/>
+
+## Limitations
+
+- **Rate Limits**: Subject to Supabase API rate limits (typically 1000 requests/hour for free tier)
+- **SQL Execution**: Some operations require database owner permissions
+- **Branch Operations**: Development branches are a paid feature
+- **Migration History**: Cannot rollback migrations - use branches for testing
+
+## Related Resources
+
+- **[Clerk Server](/guide/mcp/servers/clerk)** - For user authentication integration
+- **[Netlify Server](/guide/mcp/servers/netlify)** - For deployment with environment variables
+- **[MCP Examples](/guide/mcp/examples)** - See database integration examples
+
+## Troubleshooting
+
+**Authentication errors:**
+- Verify your access token has the required permissions
+- Check project ID is correct
+- Ensure project is not paused
+
+**SQL execution errors:**
+- Verify table and column names are correct
+- Check RLS policies if getting permission denied
+- Use qualified names (schema.table) when necessary
+
+**Type generation issues:**
+- Ensure you have read permissions on all tables
+- Check for circular dependencies in foreign keys
+- Verify schema names are correct

@@ -1,0 +1,169 @@
+---
+title: MCP Server Integration
+description: Complete guide to Model Context Protocol (MCP) servers in astro-basics
+sidebar:
+  order: 50
+---
+
+import { Badge, Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components'
+
+# MCP Server Integration
+
+<Badge text="10 Servers" variant="tip" /> <Badge text="Production Ready" variant="success" />
+
+Model Context Protocol (MCP) servers extend Claude's capabilities by providing specialized tools and resources for development tasks. The astro-basics project includes 10 configured MCP servers that enhance the development experience across multiple domains.
+
+## What is MCP?
+
+MCP (Model Context Protocol) is a standardized protocol that allows Claude to interact with external services and tools through specialized server implementations. Each server provides a set of functions that Claude can call to perform specific tasks.
+
+## Available MCP Servers
+
+<CardGrid>
+  <Card title="🚀 Astro Docs" icon="rocket">
+    Search the official Astro framework documentation for up-to-date information and examples.
+  </Card>
+  
+  <Card title="🎭 Playwright" icon="laptop">
+    Browser automation and testing with screenshot, navigation, and interaction capabilities.
+  </Card>
+  
+  <Card title="🗃️ Supabase" icon="database">
+    Complete database operations, project management, and real-time functionality.
+  </Card>
+  
+  <Card title="📚 Context7" icon="document">
+    Library documentation retrieval for any package or framework with up-to-date information.
+  </Card>
+  
+  <Card title="🎨 Figma" icon="paintbrush">
+    Design-to-code generation, variable extraction, and asset management from Figma files.
+  </Card>
+  
+  <Card title="🔐 Clerk" icon="lock">
+    User authentication, organization management, and secure access control.
+  </Card>
+  
+  <Card title="💻 IDE Integration" icon="code">
+    VS Code diagnostics, Jupyter notebook execution, and development environment integration.
+  </Card>
+  
+  <Card title="🌐 Netlify" icon="globe">
+    Deployment automation, form handling, and serverless function management.
+  </Card>
+  
+  <Card title="🔍 Web Tools" icon="magnifier">
+    Web search, content fetching, and online resource discovery.
+  </Card>
+  
+  <Card title="🔧 Generic MCP" icon="gear">
+    Resource listing, reading, and generic MCP server operations.
+  </Card>
+</CardGrid>
+
+## Key Benefits
+
+### Enhanced Development Workflow
+MCP servers eliminate the need to manually search documentation, configure services, or switch between tools. Claude can directly interact with your development stack.
+
+### Real-time Information
+Access up-to-date documentation, API references, and service statuses without leaving your conversation with Claude.
+
+### Integrated Toolchain
+Seamlessly work across design (Figma), development (VS Code), database (Supabase), hosting (Netlify), and authentication (Clerk) without context switching.
+
+### Automated Operations
+Perform complex multi-step operations like deploying to Netlify while updating Supabase database schemas and generating TypeScript types.
+
+## Common Use Cases
+
+<Tabs>
+  <TabItem label="Documentation">
+    - Search Astro documentation for specific features
+    - Find examples in library documentation via Context7
+    - Get real-time API references and guides
+    - Access troubleshooting information
+  </TabItem>
+  
+  <TabItem label="Development">
+    - Run Jupyter notebook cells for data analysis
+    - Get VS Code diagnostics and error information
+    - Test browser functionality with Playwright
+    - Generate code from Figma designs
+  </TabItem>
+  
+  <TabItem label="Database">
+    - Create and manage Supabase tables
+    - Execute SQL queries and migrations
+    - Manage user authentication with Clerk
+    - Handle real-time subscriptions
+  </TabItem>
+  
+  <TabItem label="Deployment">
+    - Deploy sites to Netlify
+    - Manage environment variables
+    - Configure serverless functions
+    - Monitor deployment status
+  </TabItem>
+</Tabs>
+
+## Server Categories
+
+### Documentation & Learning
+- **Astro Docs**: Official framework documentation
+- **Context7**: Any library or package documentation  
+- **Web Tools**: General web search and content fetching
+
+### Development & Testing  
+- **Playwright**: Browser automation and testing
+- **IDE Integration**: Development environment tools
+- **Generic MCP**: Resource management
+
+### Backend & Database
+- **Supabase**: Database operations and real-time features
+- **Clerk**: Authentication and user management
+
+### Design & Assets
+- **Figma**: Design system integration and code generation
+
+### Deployment & Hosting
+- **Netlify**: Site deployment and serverless functions
+
+## Getting Started
+
+1. **[Setup & Configuration](/guide/mcp/setup)** - Install and configure MCP servers
+2. **[Server Documentation](/guide/mcp/servers/)** - Detailed guides for each server
+3. **[Usage Examples](/guide/mcp/examples)** - Real-world scenarios and code samples
+4. **[Troubleshooting](/guide/mcp/troubleshooting)** - Common issues and solutions
+
+## Quick Example
+
+Here's how you might use multiple MCP servers together:
+
+```typescript
+// 1. Search Astro docs for authentication patterns
+await searchAstroDocs("authentication middleware")
+
+// 2. Get Clerk user management examples  
+await getClerkDocumentation("user management")
+
+// 3. Create Supabase table for user data
+await createSupabaseTable("user_profiles", schema)
+
+// 4. Deploy to Netlify with environment variables
+await deployToNetlify({ 
+  envVars: { CLERK_SECRET_KEY: "...", SUPABASE_URL: "..." } 
+})
+
+// 5. Test the deployed authentication flow
+await testWithPlaywright("/dashboard/profile")
+```
+
+This workflow demonstrates the power of integrated MCP servers - from research to implementation to testing and deployment, all within a single conversation context.
+
+## Next Steps
+
+- **New to MCP?** Start with the [Setup Guide](/guide/mcp/setup)
+- **Need specific functionality?** Browse the [Server Documentation](/guide/mcp/servers/)  
+- **Want to see examples?** Check out [Usage Examples](/guide/mcp/examples)
+- **Having issues?** Visit [Troubleshooting](/guide/mcp/troubleshooting)
