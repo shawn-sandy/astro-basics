@@ -1,0 +1,851 @@
+---
+title: MCP Troubleshooting Guide
+description: Solutions to common MCP server issues and debugging techniques
+sidebar:
+  order: 56
+---
+
+import { Badge, Code, Tabs, TabItem, Aside } from '@astrojs/starlight/components'
+
+# MCP Troubleshooting Guide
+
+<Badge text="Problem Solving" variant="caution" />
+
+This guide provides solutions to common MCP server issues, debugging techniques, and best practices for maintaining a healthy MCP server environment.
+
+## Quick Diagnostics
+
+### Check Server Status
+
+<Code
+  code={`# List all configured MCP servers
+claude-code mcp list
+
+# Test specific server
+claude-code mcp test astro-docs --function search_astro_docs --args '{"query": "test"}'
+
+# Check server logs
+claude-code mcp logs supabase
+
+# Verify environment variables
+env | grep -E "(SUPABASE|CLERK|FIGMA|NETLIFY)"`}
+  lang="bash"
+  title="Basic Diagnostics"
+/>
+
+### Health Check Script
+
+<Code
+  code={`// Comprehensive health check for all MCP servers
+async function healthCheck() {
+  const servers = [
+    { name: "Astro Docs", test: () => searchAstroDocs({ query: "components" }) },
+    { name: "Supabase", test: () => listProjects() },
+    { name: "Clerk", test: () => getUserCount() },
+    { name: "Playwright", test: () => browserNavigate({ url: "https://example.com" }) },
+    { name: "Context7", test: () => resolveLibraryId({ libraryName: "react" }) },
+    { name: "Web Tools", test: () => webSearch({ query: "test" }) }
+  ]
+  
+  const results = []
+  
+  for (const server of servers) {
+    try {
+      await server.test()
+      results.push({ server: server.name, status: "✅ Healthy" })
+    } catch (error) {
+      results.push({ 
+        server: server.name, 
+        status: "❌ Error", 
+        error: error.message 
+      })
+    }
+  }
+  
+  console.log("MCP Server Health Check Results:")
+  results.forEach(result => {
+    console.log(\`\${result.server}: \${result.status}\`)
+    if (result.error) console.log(\`  Error: \${result.error}\`)
+  })
+  
+  return results
+}`}
+  lang="javascript"
+  title="Health Check Function"
+/>
+
+## Common Issues & Solutions
+
+### Authentication Problems
+
+<Tabs>
+  <TabItem label="Invalid API Keys">
+    **Problem**: "Unauthorized" or "Invalid API key" errors
+    
+    **Symptoms**:
+    - 401 Unauthorized responses
+    - "API key not found" messages
+    - Authentication failures
+    
+    **Solutions**:
+    
+    ```bash
+    # 1. Verify environment variables are set
+    echo "SUPABASE_ACCESS_TOKEN: ${SUPABASE_ACCESS_TOKEN:0:20}..."
+    echo "CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:0:20}..."
+    echo "FIGMA_ACCESS_TOKEN: ${FIGMA_ACCESS_TOKEN:0:20}..."
+
+    # 2. Check environment file permissions
+    ls -la ~/.claude-code/mcp/.env
+    # Should show: -rw------- (600 permissions)
+
+    # 3. Test API keys manually
+    curl -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+         https://api.supabase.com/v1/projects
+
+    curl -H "Authorization: Bearer $CLERK_SECRET_KEY" \
+         https://api.clerk.com/v1/users/count
+
+    # 4. Regenerate keys if needed
+    # Go to respective service dashboards and create new API keys
+    ```
+  </TabItem>
+  
+  <TabItem label="Permission Errors">
+    **Problem**: "Permission denied" or insufficient privileges
+    
+    **Symptoms**:
+    - 403 Forbidden responses  
+    - "Insufficient permissions" messages
+    - Operation not allowed errors
+    
+    **Solutions**:
+    
+    <Code
+      code={`// Check user permissions in Clerk
+const user = await getUser({ userId: "current-user-id" })
+console.log("User role:", user.publicMetadata?.role)
+
+// Verify organization membership
+const org = await getOrganization({ 
+  organizationId: "org-id",
+  includeMembersCount: true 
+})
+
+// Check Supabase RLS policies
+await executeSql({
+  project_id: "your-project-id", 
+  query: \`
+    SELECT policyname, roles, cmd, qual 
+    FROM pg_policies 
+    WHERE tablename = 'your_table';
+  \`
+})
+
+// Test with admin user or service role
+await executeSql({
+  project_id: "your-project-id",
+  query: "SET ROLE postgres; SELECT * FROM your_table;"
+})`}
+      lang="javascript"
+      title="Permission Debugging"
+    />
+  </TabItem>
+  
+  <TabItem label="Token Expiration">
+    **Problem**: Tokens have expired or been revoked
+    
+    **Symptoms**:
+    - Previously working authentication now fails
+    - "Token expired" messages
+    - Intermittent authentication issues
+    
+    **Solutions**:
+    
+    <Code
+      code={`// Check token expiration (if available in token)
+function checkTokenExpiry(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    const expiry = new Date(payload.exp * 1000)
+    const now = new Date()
+    
+    console.log(\`Token expires: \${expiry}\`)
+    console.log(\`Current time: \${now}\`)
+    console.log(\`Expired: \${expiry < now}\`)
+    
+    return expiry > now
+  } catch (error) {
+    console.log("Unable to parse token expiration")
+    return false
+  }
+}
+
+// Refresh authentication
+async function refreshAuth() {
+  // For services that support token refresh
+  // This is service-specific implementation
+  console.log("Refreshing authentication tokens...")
+  
+  // Check if new tokens work
+  try {
+    const test = await getUserCount()
+    console.log("✅ Token refresh successful")
+  } catch (error) {
+    console.log("❌ Token refresh failed:", error.message)
+  }
+}`}
+      lang="javascript"
+      title="Token Management"
+    />
+  </TabItem>
+</Tabs>
+
+### Network & Connectivity Issues
+
+<Tabs>
+  <TabItem label="Connection Timeouts">
+    **Problem**: Requests timeout or fail to connect
+    
+    **Symptoms**:
+    - "ECONNRESET" or "ETIMEDOUT" errors
+    - Long response times
+    - Intermittent failures
+    
+    **Solutions**:
+    
+    <Code
+      code={`// Add timeout and retry logic
+async function resilientRequest(requestFn, maxRetries = 3, timeout = 30000) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      // Set timeout for the request
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), timeout)
+      )
+      
+      const result = await Promise.race([requestFn(), timeoutPromise])
+      return result
+    } catch (error) {
+      console.log(\`Attempt \${attempt} failed: \${error.message}\`)
+      
+      if (attempt === maxRetries) throw error
+      
+      // Exponential backoff
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+}
+
+// Usage example
+const result = await resilientRequest(() => 
+  executeSql({
+    project_id: "your-project-id",
+    query: "SELECT * FROM large_table LIMIT 10"
+  })
+)
+
+// Check network connectivity
+async function checkConnectivity() {
+  const endpoints = [
+    "https://api.supabase.com/health",
+    "https://api.clerk.com/health", 
+    "https://api.figma.com/health"
+  ]
+  
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, { 
+        method: 'HEAD',
+        timeout: 5000 
+      })
+      console.log(\`✅ \${endpoint}: \${response.status}\`)
+    } catch (error) {
+      console.log(\`❌ \${endpoint}: \${error.message}\`)
+    }
+  }
+}`}
+      lang="javascript"
+      title="Network Resilience"
+    />
+  </TabItem>
+  
+  <TabItem label="DNS Resolution">
+    **Problem**: Cannot resolve service hostnames
+    
+    **Solutions**:
+    
+    <Code
+      code={`# Test DNS resolution
+nslookup api.supabase.com
+nslookup api.clerk.com  
+nslookup api.figma.com
+
+# Check if using custom DNS
+cat /etc/resolv.conf
+
+# Test with different DNS servers
+dig @8.8.8.8 api.supabase.com
+dig @1.1.1.1 api.clerk.com
+
+# Clear DNS cache (macOS)
+sudo dscacheutil -flushcache
+
+# Clear DNS cache (Linux)
+sudo systemd-resolve --flush-caches`}
+      lang="bash"
+      title="DNS Troubleshooting"
+    />
+  </TabItem>
+  
+  <TabItem label="Firewall Issues">
+    **Problem**: Firewall blocking outbound connections
+    
+    **Solutions**:
+    
+    <Code
+      code={`# Check firewall status (macOS)
+sudo pfctl -sr | grep block
+
+# Check firewall status (Linux)
+sudo ufw status
+sudo iptables -L
+
+# Test specific ports
+telnet api.supabase.com 443
+telnet api.clerk.com 443
+
+# Allow outbound HTTPS traffic (Linux)
+sudo ufw allow out 443
+sudo ufw allow out 80
+
+# Check proxy settings
+echo $HTTP_PROXY
+echo $HTTPS_PROXY
+echo $NO_PROXY`}
+      lang="bash"
+      title="Firewall Configuration"
+    />
+  </TabItem>
+</Tabs>
+
+### Server-Specific Issues
+
+<Tabs>
+  <TabItem label="Supabase Errors">
+    <Code
+      code={`// Common Supabase troubleshooting
+async function troubleshootSupabase() {
+  try {
+    // Test basic connectivity
+    const projects = await listProjects()
+    console.log(\`✅ Connected to Supabase - \${projects.length} projects found\`)
+  } catch (error) {
+    if (error.message.includes('Invalid API key')) {
+      console.log("❌ Check your SUPABASE_ACCESS_TOKEN")
+      return
+    }
+    if (error.message.includes('Project not found')) {
+      console.log("❌ Check your project ID")
+      return
+    }
+    throw error
+  }
+  
+  // Test database connection
+  try {
+    await executeSql({
+      project_id: "your-project-id",
+      query: "SELECT version();"
+    })
+    console.log("✅ Database connection working")
+  } catch (error) {
+    if (error.message.includes('permission denied')) {
+      console.log("❌ Database permissions issue - check RLS policies")
+    } else if (error.message.includes('relation') && error.message.includes('does not exist')) {
+      console.log("❌ Table doesn't exist - check your schema")
+    } else {
+      console.log(\`❌ Database error: \${error.message}\`)
+    }
+  }
+  
+  // Check for common issues
+  try {
+    const tables = await listTables({ 
+      project_id: "your-project-id",
+      schemas: ["public"] 
+    })
+    
+    if (tables.length === 0) {
+      console.log("⚠️  No tables found in public schema")
+    } else {
+      console.log(\`✅ Found \${tables.length} tables\`)
+    }
+  } catch (error) {
+    console.log(\`❌ Cannot list tables: \${error.message}\`)
+  }
+}`}
+      lang="javascript"
+      title="Supabase Diagnostics"
+    />
+  </TabItem>
+  
+  <TabItem label="Playwright Errors">
+    <Code
+      code={`// Playwright troubleshooting
+async function troubleshootPlaywright() {
+  try {
+    // Test browser installation
+    await browserNavigate({ url: "https://example.com" })
+    console.log("✅ Playwright browser working")
+    
+    // Clean up
+    await browserClose()
+  } catch (error) {
+    if (error.message.includes('Executable doesn\\'t exist')) {
+      console.log("❌ Browsers not installed")
+      console.log("Run: npx playwright install")
+      return
+    }
+    
+    if (error.message.includes('Protocol error')) {
+      console.log("❌ Browser crashed or failed to start")
+      console.log("Try running in headless mode or check system resources")
+      return
+    }
+    
+    if (error.message.includes('Navigation timeout')) {
+      console.log("❌ Page failed to load within timeout")
+      console.log("Check network connectivity or increase timeout")
+      return
+    }
+    
+    console.log(\`❌ Playwright error: \${error.message}\`)
+  }
+}
+
+// Install browsers if missing
+async function installPlaywrightBrowsers() {
+  try {
+    const { execSync } = require('child_process')
+    
+    console.log("Installing Playwright browsers...")
+    execSync('npx playwright install', { stdio: 'inherit' })
+    
+    console.log("✅ Playwright browsers installed successfully")
+  } catch (error) {
+    console.log(\`❌ Browser installation failed: \${error.message}\`)
+  }
+}`}
+      lang="javascript"
+      title="Playwright Diagnostics"
+    />
+  </TabItem>
+  
+  <TabItem label="Clerk Errors">
+    <Code
+      code={`// Clerk troubleshooting
+async function troubleshootClerk() {
+  try {
+    // Test basic API access
+    const userCount = await getUserCount()
+    console.log(\`✅ Clerk API working - \${userCount} users\`)
+  } catch (error) {
+    if (error.message.includes('Unauthenticated')) {
+      console.log("❌ Invalid secret key - check CLERK_SECRET_KEY")
+      return
+    }
+    
+    if (error.message.includes('Instance not found')) {
+      console.log("❌ Clerk instance not found - check your keys match your instance")
+      return
+    }
+    
+    throw error
+  }
+  
+  // Test user operations
+  try {
+    const currentUserId = await getUserId()
+    
+    if (currentUserId) {
+      const user = await getUser({ userId: currentUserId })
+      console.log(\`✅ Current user: \${user.firstName} \${user.lastName}\`)
+    } else {
+      console.log("ℹ️  No current user session")
+    }
+  } catch (error) {
+    console.log(\`❌ User operations failed: \${error.message}\`)
+  }
+  
+  // Test organization operations
+  try {
+    // This would fail if user isn't in any organizations
+    const org = await getOrganization({ organizationId: "test-id" })
+    console.log("✅ Organization API working")
+  } catch (error) {
+    if (error.message.includes('not found')) {
+      console.log("ℹ️  Test organization not found (expected)")
+    } else {
+      console.log(\`❌ Organization API error: \${error.message}\`)
+    }
+  }
+}`}
+      lang="javascript"
+      title="Clerk Diagnostics"
+    />
+  </TabItem>
+</Tabs>
+
+## Performance Issues
+
+### Slow Response Times
+
+<Code
+  code={`// Performance monitoring and optimization
+async function monitorPerformance() {
+  const operations = [
+    {
+      name: "Astro Docs Search",
+      operation: () => searchAstroDocs({ query: "components" })
+    },
+    {
+      name: "Supabase Query", 
+      operation: () => executeSql({
+        project_id: "your-project-id",
+        query: "SELECT COUNT(*) FROM posts"
+      })
+    },
+    {
+      name: "Clerk User Count",
+      operation: () => getUserCount()
+    },
+    {
+      name: "Playwright Navigation",
+      operation: async () => {
+        await browserNavigate({ url: "https://example.com" })
+        await browserClose()
+      }
+    }
+  ]
+  
+  console.log("Performance Monitoring Results:")
+  
+  for (const { name, operation } of operations) {
+    const start = Date.now()
+    
+    try {
+      await operation()
+      const duration = Date.now() - start
+      
+      let status = "✅"
+      if (duration > 5000) status = "🐌"
+      else if (duration > 2000) status = "⚠️"
+      
+      console.log(\`\${status} \${name}: \${duration}ms\`)
+      
+      // Investigate slow operations
+      if (duration > 5000) {
+        console.log(\`  ⚠️  \${name} is very slow - investigate:\`)
+        console.log(\`     - Network connectivity\`)
+        console.log(\`     - API rate limiting\`)
+        console.log(\`     - Server load\`)
+      }
+    } catch (error) {
+      console.log(\`❌ \${name}: FAILED - \${error.message}\`)
+    }
+  }
+}
+
+// Cache frequently accessed data
+const cache = new Map()
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+
+async function cachedOperation(key, operation) {
+  const cached = cache.get(key)
+  
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log(\`Using cached result for \${key}\`)
+    return cached.data
+  }
+  
+  console.log(\`Fetching fresh data for \${key}\`)
+  const data = await operation()
+  
+  cache.set(key, {
+    data,
+    timestamp: Date.now()
+  })
+  
+  return data
+}`}
+  lang="javascript"
+  title="Performance Monitoring"
+/>
+
+### Rate Limiting
+
+<Code
+  code={`// Handle rate limiting gracefully
+class RateLimitHandler {
+  constructor(requestsPerMinute = 60) {
+    this.requests = []
+    this.maxRequests = requestsPerMinute
+  }
+  
+  async throttle() {
+    const now = Date.now()
+    const oneMinuteAgo = now - 60000
+    
+    // Remove requests older than 1 minute
+    this.requests = this.requests.filter(time => time > oneMinuteAgo)
+    
+    if (this.requests.length >= this.maxRequests) {
+      const oldestRequest = Math.min(...this.requests)
+      const waitTime = oldestRequest + 60000 - now
+      
+      console.log(\`Rate limit reached. Waiting \${waitTime}ms\`)
+      await new Promise(resolve => setTimeout(resolve, waitTime))
+      
+      return this.throttle() // Recursive check
+    }
+    
+    this.requests.push(now)
+  }
+}
+
+// Usage with different services
+const supabaseRL = new RateLimitHandler(100) // 100 requests/minute
+const clerkRL = new RateLimitHandler(60)     // 60 requests/minute
+const figmaRL = new RateLimitHandler(30)     // 30 requests/minute
+
+async function rateLimitedRequest(service, operation) {
+  let handler
+  
+  switch (service) {
+    case 'supabase': handler = supabaseRL; break
+    case 'clerk': handler = clerkRL; break  
+    case 'figma': handler = figmaRL; break
+    default: handler = new RateLimitHandler(60)
+  }
+  
+  await handler.throttle()
+  return operation()
+}`}
+  lang="javascript"
+  title="Rate Limit Management"
+/>
+
+## Debugging Techniques
+
+### Comprehensive Logging
+
+<Code
+  code={`// Enhanced logging system
+class MCPLogger {
+  constructor(level = 'info') {
+    this.level = level
+    this.levels = { debug: 0, info: 1, warn: 2, error: 3 }
+  }
+  
+  log(level, message, data = null) {
+    if (this.levels[level] < this.levels[this.level]) return
+    
+    const timestamp = new Date().toISOString()
+    const prefix = \`[\${timestamp}] [\${level.toUpperCase()}]\`
+    
+    console.log(\`\${prefix} \${message}\`)
+    
+    if (data) {
+      console.log(\`\${prefix} Data:\`, JSON.stringify(data, null, 2))
+    }
+  }
+  
+  debug(message, data) { this.log('debug', message, data) }
+  info(message, data) { this.log('info', message, data) }
+  warn(message, data) { this.log('warn', message, data) }
+  error(message, data) { this.log('error', message, data) }
+}
+
+const logger = new MCPLogger('debug')
+
+// Wrap MCP operations with logging
+async function loggedMCPCall(serverName, operation, operationName, params) {
+  logger.info(\`\${serverName}: Starting \${operationName}\`, params)
+  
+  const start = Date.now()
+  
+  try {
+    const result = await operation()
+    const duration = Date.now() - start
+    
+    logger.info(\`\${serverName}: \${operationName} completed in \${duration}ms\`)
+    logger.debug(\`\${serverName}: \${operationName} result\`, result)
+    
+    return result
+  } catch (error) {
+    const duration = Date.now() - start
+    
+    logger.error(\`\${serverName}: \${operationName} failed after \${duration}ms\`, {
+      error: error.message,
+      stack: error.stack,
+      params
+    })
+    
+    throw error
+  }
+}`}
+  lang="javascript"
+  title="Comprehensive Logging"
+/>
+
+### Environment Validation
+
+<Code
+  code={`// Validate all required environment variables
+function validateEnvironment() {
+  const requiredVars = {
+    'SUPABASE_ACCESS_TOKEN': 'Supabase operations',
+    'SUPABASE_URL': 'Supabase database connection',
+    'CLERK_SECRET_KEY': 'Clerk authentication',
+    'FIGMA_ACCESS_TOKEN': 'Figma design operations',
+    'NETLIFY_ACCESS_TOKEN': 'Netlify deployments'
+  }
+  
+  const missing = []
+  const warnings = []
+  
+  for (const [varName, description] of Object.entries(requiredVars)) {
+    const value = process.env[varName]
+    
+    if (!value) {
+      missing.push({ variable: varName, description })
+    } else if (value.length < 10) {
+      warnings.push({ variable: varName, issue: 'Token seems too short' })
+    } else if (value === 'your_token_here' || value === 'placeholder') {
+      warnings.push({ variable: varName, issue: 'Using placeholder value' })
+    }
+  }
+  
+  if (missing.length > 0) {
+    console.log("❌ Missing required environment variables:")
+    missing.forEach(({ variable, description }) => {
+      console.log(\`   \${variable} - Required for: \${description}\`)
+    })
+  }
+  
+  if (warnings.length > 0) {
+    console.log("⚠️  Environment variable warnings:")
+    warnings.forEach(({ variable, issue }) => {
+      console.log(\`   \${variable} - \${issue}\`)
+    })
+  }
+  
+  if (missing.length === 0 && warnings.length === 0) {
+    console.log("✅ All environment variables properly configured")
+  }
+  
+  return { valid: missing.length === 0, missing, warnings }
+}`}
+  lang="javascript"
+  title="Environment Validation"
+/>
+
+## Getting Help
+
+### Creating Effective Bug Reports
+
+When reporting MCP server issues, include:
+
+1. **Server Information**: Which MCP server(s) are affected
+2. **Environment Details**: OS, Node.js version, configuration
+3. **Error Messages**: Complete error messages and stack traces  
+4. **Reproduction Steps**: Exact steps to reproduce the issue
+5. **Expected vs Actual**: What should happen vs what actually happens
+6. **Workarounds**: Any temporary solutions you've found
+
+<Code
+  code={`// Bug report information gathering
+function generateBugReport() {
+  const report = {
+    timestamp: new Date().toISOString(),
+    environment: {
+      os: process.platform,
+      nodeVersion: process.version,
+      claudeCodeVersion: "check with: claude-code --version"
+    },
+    mcpServers: {
+      configured: "run: claude-code mcp list",
+      status: "run health check function above"
+    },
+    environmentVars: {
+      present: Object.keys(process.env).filter(key => 
+        ['SUPABASE', 'CLERK', 'FIGMA', 'NETLIFY'].some(prefix => 
+          key.startsWith(prefix)
+        )
+      )
+    }
+  }
+  
+  console.log("Bug Report Information:")
+  console.log(JSON.stringify(report, null, 2))
+  
+  return report
+}`}
+  lang="javascript"
+  title="Bug Report Generator"
+/>
+
+### Support Resources
+
+- **Official Documentation**: Each MCP server's official documentation
+- **Claude Code GitHub**: Issues and discussions for Claude Code itself
+- **Service Support**: Direct support from Supabase, Clerk, Figma, Netlify
+- **Community Forums**: Stack Overflow, Reddit, Discord servers
+
+<Aside type="tip" title="Pro Debugging Tips">
+1. **Start Simple**: Test with minimal configurations first
+2. **Isolate Issues**: Test each MCP server individually
+3. **Check Logs**: Always examine server and application logs
+4. **Verify Credentials**: Double-check all API keys and tokens
+5. **Test Network**: Ensure connectivity to all external services
+6. **Use Staging**: Test changes in non-production environments first
+</Aside>
+
+## Prevention Strategies
+
+### Monitoring & Alerting
+
+<Code
+  code={`// Automated health monitoring
+async function scheduleHealthChecks() {
+  const checkInterval = 5 * 60 * 1000 // 5 minutes
+  
+  setInterval(async () => {
+    try {
+      const health = await healthCheck()
+      const failures = health.filter(result => result.status.includes("❌"))
+      
+      if (failures.length > 0) {
+        console.log(\`⚠️  \${failures.length} MCP servers are experiencing issues\`)
+        
+        // In production, send notifications
+        // await sendSlackAlert(\`MCP Health Check Failed: \${failures.map(f => f.server).join(', ')}\`)
+        // await sendEmailAlert(failures)
+      }
+    } catch (error) {
+      console.error("Health check failed:", error)
+    }
+  }, checkInterval)
+  
+  console.log("Health monitoring started - checking every 5 minutes")
+}
+
+// Start monitoring
+scheduleHealthChecks()`}
+  lang="javascript"
+  title="Automated Monitoring"
+/>
+
+By following this troubleshooting guide and implementing proper monitoring, you can maintain a robust MCP server environment and quickly resolve issues when they arise.

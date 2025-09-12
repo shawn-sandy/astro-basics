@@ -51,6 +51,25 @@ export default defineConfig({
           label: 'API Reference',
           autogenerate: { directory: 'guide/api' },
         },
+        {
+          label: 'MCP Servers',
+          items: [
+            { label: 'Overview', link: '/guide/mcp/' },
+            { label: 'Setup & Configuration', link: '/guide/mcp/setup' },
+            {
+              label: 'Servers',
+              collapsed: false,
+              items: [
+                { label: 'Astro Docs', link: '/guide/mcp/servers/astro-docs' },
+                { label: 'Supabase', link: '/guide/mcp/servers/supabase' },
+                { label: 'Playwright', link: '/guide/mcp/servers/playwright' },
+                { label: 'Clerk', link: '/guide/mcp/servers/clerk' },
+              ],
+            },
+            { label: 'Usage Examples', link: '/guide/mcp/examples' },
+            { label: 'Troubleshooting', link: '/guide/mcp/troubleshooting' },
+          ],
+        },
       ],
       
       // Custom styling

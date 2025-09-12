@@ -1,0 +1,401 @@
+---
+title: MCP Setup & Configuration
+description: Complete guide to installing and configuring MCP servers for astro-basics
+sidebar:
+  order: 51
+---
+
+import { Badge, Code, Steps, Tabs, TabItem, Aside } from '@astrojs/starlight/components'
+
+# MCP Setup & Configuration
+
+<Badge text="Configuration Guide" variant="note" />
+
+This guide walks you through setting up and configuring MCP (Model Context Protocol) servers for use with Claude Code in the astro-basics project.
+
+## Prerequisites
+
+Before setting up MCP servers, ensure you have:
+
+- **Claude Code CLI** installed and configured
+- **Node.js** 18+ (for JavaScript-based servers)
+- **Python** 3.8+ (for Python-based servers)
+- **Git** for cloning server repositories
+- **API Keys** for external services (detailed below)
+
+## Installation Methods
+
+<Tabs>
+  <TabItem label="NPM Packages">
+    Install MCP servers as npm packages:
+    
+    <Code
+      code={`# Core MCP servers
+npm install -g @anthropic/mcp-server-filesystem
+npm install -g @anthropic/mcp-server-github  
+npm install -g @anthropic/mcp-server-postgres
+
+# Specialized servers
+npm install -g @astrojs/mcp-server-docs
+npm install -g @supabase/mcp-server
+npm install -g @clerk/mcp-server`}
+      lang="bash"
+      title="Install via NPM"
+    />
+  </TabItem>
+  
+  <TabItem label="Source Installation">
+    Clone and install from source:
+    
+    <Code
+      code={`# Create MCP servers directory
+mkdir ~/.mcp-servers
+cd ~/.mcp-servers
+
+# Clone specific servers
+git clone https://github.com/microsoft/playwright-mcp-server.git
+git clone https://github.com/figma/figma-mcp-server.git
+git clone https://github.com/netlify/netlify-mcp-server.git
+
+# Install dependencies
+cd playwright-mcp-server && npm install
+cd ../figma-mcp-server && npm install  
+cd ../netlify-mcp-server && npm install`}
+      lang="bash"
+      title="Install from Source"
+    />
+  </TabItem>
+  
+  <TabItem label="Docker">
+    Run MCP servers in containers:
+    
+    <Code
+      code={`# Create docker-compose.yml
+version: '3.8'
+services:
+  mcp-playwright:
+    image: mcpservers/playwright:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - BROWSER_HEADLESS=true
+      
+  mcp-supabase:
+    image: mcpservers/supabase:latest
+    ports:
+      - "3002:3000"
+    environment:
+      - SUPABASE_URL=\${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=\${SUPABASE_ANON_KEY}
+
+# Start containers
+docker-compose up -d`}
+      lang="yaml"
+      title="Docker Compose Setup"
+    />
+  </TabItem>
+</Tabs>
+
+## Configuration File
+
+Create a configuration file to register your MCP servers:
+
+<Steps>
+1. **Create configuration directory**:
+   ```bash
+   mkdir -p ~/.claude-code/mcp
+   ```
+
+2. **Create server configuration** (`~/.claude-code/mcp/servers.json`):
+
+   ```json
+   {
+     "servers": {
+       "astro-docs": {
+         "command": "npx",
+         "args": ["@astrojs/mcp-server"],
+         "description": "Astro framework documentation search"
+       },
+       "playwright": {
+         "command": "node",
+         "args": ["~/.mcp-servers/playwright-mcp-server/dist/index.js"],
+         "description": "Browser automation and testing",
+         "env": {
+           "PLAYWRIGHT_BROWSERS_PATH": "/usr/bin"
+         }
+       },
+       "supabase": {
+         "command": "npx",
+         "args": ["@supabase/mcp-server"],
+         "description": "Database operations and project management",
+         "env": {
+           "SUPABASE_ACCESS_TOKEN": "${SUPABASE_ACCESS_TOKEN}"
+         }
+       },
+       "context7": {
+         "command": "npx",  
+         "args": ["@context7/mcp-server"],
+         "description": "Library documentation retrieval"
+       },
+       "figma": {
+         "command": "node",
+         "args": ["~/.mcp-servers/figma-mcp-server/dist/index.js"],
+         "description": "Design-to-code generation",
+         "env": {
+           "FIGMA_ACCESS_TOKEN": "${FIGMA_ACCESS_TOKEN}"
+         }
+       },
+       "clerk": {
+         "command": "npx",
+         "args": ["@clerk/mcp-server"],
+         "description": "Authentication and user management",
+         "env": {
+           "CLERK_SECRET_KEY": "${CLERK_SECRET_KEY}"
+         }
+       },
+       "ide": {
+         "command": "npx",
+         "args": ["@vscode/mcp-server"],
+         "description": "IDE integration and diagnostics"
+       },
+       "netlify": {
+         "command": "node",
+         "args": ["~/.mcp-servers/netlify-mcp-server/dist/index.js"],
+         "description": "Deployment and hosting management",
+         "env": {
+           "NETLIFY_ACCESS_TOKEN": "${NETLIFY_ACCESS_TOKEN}"
+         }
+       },
+       "web-tools": {
+         "command": "npx",
+         "args": ["@anthropic/mcp-server-web"],
+         "description": "Web search and content fetching"
+       },
+       "mcp-generic": {
+         "command": "npx",
+         "args": ["@anthropic/mcp-server-filesystem", "--root", "./"],
+         "description": "Generic MCP resource operations"
+       }
+     }
+   }
+   ```
+
+3. **Set file permissions**:
+
+   ```bash
+   chmod 600 ~/.claude-code/mcp/servers.json
+   ```
+</Steps>
+
+## Environment Variables
+
+Set up the required environment variables for authenticated services:
+
+<Code
+  code={`# Create environment file
+cat > ~/.claude-code/mcp/.env << 'EOF'
+# Supabase Configuration
+SUPABASE_ACCESS_TOKEN=sb_your_access_token_here
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your_anon_key_here
+
+# Clerk Configuration  
+CLERK_SECRET_KEY=sk_test_your_secret_key_here
+CLERK_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+
+# Figma Configuration
+FIGMA_ACCESS_TOKEN=figd_your_access_token_here
+
+# Netlify Configuration
+NETLIFY_ACCESS_TOKEN=netlify_your_access_token_here
+
+# GitHub Configuration (if using)
+GITHUB_TOKEN=ghp_your_personal_access_token_here
+EOF
+
+# Secure the environment file
+chmod 600 ~/.claude-code/mcp/.env`}
+  lang="bash"
+  title="Environment Setup"
+/>
+
+## API Keys & Authentication
+
+<Tabs>
+  <TabItem label="Supabase">
+    **Required for database operations**
+    
+    1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
+    2. Select your project
+    3. Go to **Settings** > **API**  
+    4. Copy the **URL** and **anon/public** key
+    5. For management operations, create an access token:
+       - Go to **Account** > **Access Tokens**
+       - Click **Generate new token**
+       - Copy the token
+       
+    <Aside type="tip">
+      The anon key is safe for client-side use, but the access token should be kept secure.
+    </Aside>
+  </TabItem>
+  
+  <TabItem label="Clerk">
+    **Required for authentication management**
+    
+    1. Go to [Clerk Dashboard](https://dashboard.clerk.com)
+    2. Select your application
+    3. Go to **Developers** > **API Keys**
+    4. Copy the **Secret Key** (starts with `sk_`)
+    5. Optionally copy the **Publishable Key** (starts with `pk_`)
+    
+    <Aside type="caution">
+      Never expose your secret key in client-side code or public repositories.
+    </Aside>
+  </TabItem>
+  
+  <TabItem label="Figma">
+    **Required for design-to-code features**
+    
+    1. Go to [Figma Account Settings](https://www.figma.com/settings)
+    2. Scroll to **Personal access tokens**
+    3. Click **Generate new token**
+    4. Give it a descriptive name (e.g., "MCP Server Access")
+    5. Copy the token (starts with `figd_`)
+    
+    <Aside type="note">
+      Figma tokens provide access to all files you can view. Use team tokens for organization-wide access.
+    </Aside>
+  </TabItem>
+  
+  <TabItem label="Netlify">
+    **Required for deployment operations**
+    
+    1. Go to [Netlify User Settings](https://app.netlify.com/user/applications/personal)
+    2. Scroll to **Personal access tokens**
+    3. Click **New access token**
+    4. Give it a descriptive name
+    5. Copy the generated token
+    
+    <Aside type="tip">
+      Netlify tokens inherit your account permissions. Ensure your account has access to the sites you want to manage.
+    </Aside>
+  </TabItem>
+</Tabs>
+
+## Verification & Testing
+
+Test your MCP server configuration:
+
+<Steps>
+1. **Check server status**:
+   ```bash
+   claude-code mcp list
+   ```
+
+2. **Test individual servers**:
+
+   ```bash
+   # Test Astro docs search
+   claude-code mcp test astro-docs --function search_astro_docs --args '{"query": "components"}'
+
+   # Test Supabase connection  
+   claude-code mcp test supabase --function list_projects
+
+   # Test Playwright browser
+   claude-code mcp test playwright --function browser_navigate --args '{"url": "https://example.com"}'
+   ```
+
+3. **Verify authentication**:
+   ```bash
+   # This should return your projects/resources
+   claude-code mcp test supabase --function list_projects
+   claude-code mcp test clerk --function get_user_count
+   claude-code mcp test netlify --function get_sites
+   ```
+</Steps>
+
+## Common Configuration Issues
+
+<Tabs>
+  <TabItem label="Path Issues">
+    **Problem**: Server command not found
+    
+    **Solution**: Use full paths or ensure executables are in PATH
+    
+    ```json
+    {
+      "command": "/usr/local/bin/node",
+      "args": ["/full/path/to/server/dist/index.js"]
+    }
+    ```
+  </TabItem>
+  
+  <TabItem label="Environment Variables">
+    **Problem**: Environment variables not loading
+    
+    **Solution**: Check file permissions and syntax
+    
+    ```bash
+    # Check permissions (should be 600)
+    ls -la ~/.claude-code/mcp/.env
+    
+    # Test variable loading
+    source ~/.claude-code/mcp/.env && echo $SUPABASE_ACCESS_TOKEN
+    ```
+  </TabItem>
+  
+  <TabItem label="Port Conflicts">
+    **Problem**: Server port already in use
+    
+    **Solution**: Change server port or stop conflicting service
+    
+    ```bash
+    # Find what's using the port
+    lsof -i :3000
+    
+    # Use different port
+    "env": {
+      "PORT": "3001"
+    }
+    ```
+  </TabItem>
+  
+  <TabItem label="Network Issues">
+    **Problem**: Cannot connect to external APIs
+    
+    **Solution**: Check firewall and network settings
+    
+    ```bash
+    # Test API connectivity
+    curl -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+         https://api.supabase.com/v1/projects
+         
+    # Check DNS resolution
+    nslookup api.supabase.com
+    ```
+  </TabItem>
+</Tabs>
+
+## Security Best Practices
+
+- **Environment Files**: Keep `.env` files out of version control
+- **File Permissions**: Set restrictive permissions (600) on config files  
+- **Token Rotation**: Regularly rotate API tokens and access keys
+- **Least Privilege**: Use tokens with minimal required permissions
+- **Monitoring**: Monitor server logs for unauthorized access attempts
+
+## Next Steps
+
+With MCP servers configured, explore:
+
+- **[Server Documentation](/guide/mcp/servers/)** - Detailed guides for each server
+- **[Usage Examples](/guide/mcp/examples)** - Real-world implementation scenarios  
+- **[Troubleshooting](/guide/mcp/troubleshooting)** - Solutions to common problems
+
+## Advanced Configuration
+
+For advanced scenarios, see:
+- Custom server development
+- Load balancing multiple server instances
+- Server monitoring and logging
+- Integration with CI/CD pipelines

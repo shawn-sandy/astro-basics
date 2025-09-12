@@ -1,0 +1,605 @@
+---
+title: Clerk MCP Server
+description: User authentication, organization management, and access control
+sidebar:
+  order: 4
+---
+
+import { Badge, Code, Tabs, TabItem, Aside } from '@astrojs/starlight/components'
+
+# Clerk MCP Server
+
+<Badge text="Authentication" variant="note" /> <Badge text="Auth Required" variant="caution" />
+
+The Clerk MCP server provides comprehensive user authentication and organization management capabilities, enabling you to manage users, organizations, and access control directly through Claude.
+
+## Overview
+
+This server enables complete authentication management including:
+- User creation, updates, and profile management
+- Organization creation and membership management
+- Invitation system for users and organizations
+- Role-based access control
+- Metadata management (public, private, unsafe)
+- Session and authentication state management
+
+## Authentication Setup
+
+<Code
+  code={`# Add to your environment file
+CLERK_SECRET_KEY=sk_test_your_secret_key_here
+CLERK_PUBLISHABLE_KEY=pk_test_your_publishable_key_here`}
+  lang="bash"
+  title="Required Environment Variables"
+/>
+
+Get your keys from the [Clerk Dashboard](https://dashboard.clerk.com):
+1. Select your application
+2. Go to **Developers** > **API Keys**
+3. Copy the **Secret Key** and **Publishable Key**
+
+## Available Functions
+
+### User Management
+
+<Tabs>
+  <TabItem label="User Operations">
+    <Code
+      code={`// Get current authenticated user ID
+const userId = await getUserId()
+
+// Get detailed user information
+const user = await getUser({ userId: "user_123" })
+
+// Get total user count
+const count = await getUserCount()
+
+// Update user profile
+await updateUser({
+  userId: "user_123",
+  firstName: "John",
+  lastName: "Doe", 
+  username: "johndoe",
+  profileImageUrl: "https://example.com/avatar.jpg"
+})`}
+      lang="javascript"
+      title="Basic User Operations"
+    />
+  </TabItem>
+  
+  <TabItem label="User Metadata">
+    <Code
+      code={`// Update public metadata (visible to frontend)
+await updateUserPublicMetadata({
+  userId: "user_123",
+  metadata: {
+    preferences: {
+      theme: "dark",
+      language: "en",
+      notifications: true
+    },
+    subscription: {
+      plan: "pro",
+      expires: "2024-12-31"
+    }
+  }
+})
+
+// Update unsafe metadata (accessible from frontend & backend) 
+await updateUserUnsafeMetadata({
+  userId: "user_123",
+  metadata: {
+    onboardingCompleted: true,
+    lastLoginIP: "192.168.1.1",
+    featureFlags: {
+      betaFeatures: true
+    }
+  }
+})
+
+// Remove metadata keys by setting to null
+await updateUserPublicMetadata({
+  userId: "user_123", 
+  metadata: {
+    oldProperty: null // This removes the property
+  }
+})`}
+      lang="javascript"
+      title="Metadata Management"
+    />
+  </TabItem>
+</Tabs>
+
+### Organization Management
+
+<Tabs>
+  <TabItem label="Organizations">
+    <Code
+      code={`// Get organization by ID or slug
+const org = await getOrganization({ 
+  organizationId: "org_123",
+  includeMembersCount: true 
+})
+
+// Or get by slug
+const orgBySlug = await getOrganization({ 
+  slug: "my-company" 
+})
+
+// Create new organization
+const newOrg = await createOrganization({
+  name: "Acme Corporation",
+  slug: "acme-corp",
+  createdBy: "user_123",
+  maxAllowedMemberships: 50,
+  publicMetadata: {
+    industry: "Technology",
+    website: "https://acme.com"
+  }
+})
+
+// Update organization
+await updateOrganization({
+  organizationId: "org_123",
+  name: "Acme Corp (Updated)",
+  maxAllowedMemberships: 100
+})
+
+// Delete organization (permanent)
+await deleteOrganization({ 
+  organizationId: "org_123" 
+})`}
+      lang="javascript"
+      title="Organization CRUD"
+    />
+  </TabItem>
+  
+  <TabItem label="Memberships">
+    <Code
+      code={`// Add user to organization
+await createOrganizationMembership({
+  organizationId: "org_123", 
+  userId: "user_456",
+  role: "admin"
+})
+
+// Update user's role in organization
+await updateOrganizationMembership({
+  organizationId: "org_123",
+  userId: "user_456", 
+  role: "member"
+})
+
+// Update membership metadata
+await updateOrganizationMembershipMetadata({
+  organizationId: "org_123",
+  userId: "user_456",
+  publicMetadata: {
+    department: "Engineering", 
+    startDate: "2024-01-15",
+    permissions: ["read", "write"]
+  }
+})
+
+// Remove user from organization
+await deleteOrganizationMembership({
+  organizationId: "org_123",
+  userId: "user_456"
+})`}
+      lang="javascript"
+      title="Membership Management"
+    />
+  </TabItem>
+</Tabs>
+
+### Invitation System
+
+<Code
+  code={`// Create organization invitation
+await createOrganizationInvitation({
+  organizationId: "org_123",
+  emailAddress: "newuser@example.com",
+  role: "member",
+  inviterUserId: "user_123", 
+  redirectUrl: "https://yourapp.com/accept-invitation",
+  publicMetadata: {
+    department: "Marketing",
+    welcomeMessage: "Welcome to the team!"
+  }
+})
+
+// Revoke organization invitation
+await revokeOrganizationInvitation({
+  organizationId: "org_123",
+  invitationId: "inv_123"
+})
+
+// Create general application invitation
+await createInvitation({
+  emailAddress: "prospect@example.com",
+  redirectUrl: "https://yourapp.com/signup",
+  publicMetadata: {
+    source: "referral",
+    referredBy: "user_123"
+  },
+  notify: true,
+  ignoreExisting: false
+})
+
+// Revoke application invitation
+await revokeInvitation({ invitationId: "inv_456" })`}
+  lang="javascript"
+  title="Invitation Management"
+/>
+
+## Usage Examples
+
+<Tabs>
+  <TabItem label="User Onboarding">
+    Complete user onboarding workflow:
+    
+    <Code
+      code={`// 1. Get current user
+const currentUserId = await getUserId()
+
+if (!currentUserId) {
+  console.log("User not authenticated")
+  return
+}
+
+// 2. Get user details to check onboarding status
+const user = await getUser({ userId: currentUserId })
+
+// 3. Check if onboarding is complete
+const onboardingComplete = user.unsafeMetadata?.onboardingCompleted
+
+if (!onboardingComplete) {
+  // 4. Update user profile with onboarding data
+  await updateUser({
+    userId: currentUserId,
+    firstName: "John",
+    lastName: "Doe"
+  })
+  
+  // 5. Set user preferences
+  await updateUserPublicMetadata({
+    userId: currentUserId,
+    metadata: {
+      preferences: {
+        theme: "dark",
+        emailNotifications: true,
+        weeklyDigest: true
+      },
+      onboardingStep: "profile-complete"
+    }
+  })
+  
+  // 6. Mark onboarding as complete
+  await updateUserUnsafeMetadata({
+    userId: currentUserId,
+    metadata: {
+      onboardingCompleted: true,
+      onboardingCompletedAt: new Date().toISOString()
+    }
+  })
+  
+  console.log("User onboarding completed successfully")
+}`}
+      lang="javascript"
+      title="User Onboarding Flow"
+    />
+  </TabItem>
+  
+  <TabItem label="Organization Setup">
+    Create and configure a new organization:
+    
+    <Code
+      code={`// 1. Create organization
+const organization = await createOrganization({
+  name: "Development Team",
+  slug: "dev-team", 
+  maxAllowedMemberships: 20,
+  publicMetadata: {
+    department: "Engineering",
+    budget: "50000",
+    projectCount: 0
+  },
+  privateMetadata: {
+    internalNotes: "New development team for Q2 projects",
+    budgetCode: "ENG-2024-Q2"
+  }
+})
+
+// 2. Add initial team members
+const teamMembers = [
+  { email: "alice@company.com", role: "admin" },
+  { email: "bob@company.com", role: "member" },  
+  { email: "charlie@company.com", role: "member" }
+]
+
+for (const member of teamMembers) {
+  // Create invitation for each member
+  await createOrganizationInvitation({
+    organizationId: organization.id,
+    emailAddress: member.email,
+    role: member.role,
+    redirectUrl: "https://yourapp.com/join-organization",
+    publicMetadata: {
+      welcomeMessage: "Welcome to the Development Team!",
+      department: "Engineering"
+    }
+  })
+}
+
+// 3. Set up organization metadata
+await updateOrganizationMetadata({
+  organizationId: organization.id,
+  publicMetadata: {
+    setupComplete: true,
+    setupCompletedAt: new Date().toISOString(),
+    initialMemberCount: teamMembers.length
+  }
+})
+
+console.log(\`Organization "\${organization.name}" created with \${teamMembers.length} invitations sent\`)`}
+      lang="javascript"
+      title="Organization Setup"
+    />
+  </TabItem>
+  
+  <TabItem label="Role Management">
+    Implement role-based access control:
+    
+    <Code
+      code={`// Define role hierarchy and permissions
+const rolePermissions = {
+  admin: [
+    'user.create', 'user.read', 'user.update', 'user.delete',
+    'org.create', 'org.read', 'org.update', 'org.delete',
+    'invite.create', 'invite.revoke'
+  ],
+  manager: [
+    'user.read', 'user.update',
+    'org.read', 'org.update', 
+    'invite.create'
+  ],
+  member: [
+    'user.read', 'org.read'
+  ]
+}
+
+// Function to check user permissions
+async function hasPermission(userId, organizationId, permission) {
+  // Get user's organization membership
+  const org = await getOrganization({ 
+    organizationId,
+    includeMembersCount: true 
+  })
+  
+  // In a real implementation, you'd get the membership details
+  // This is a simplified example
+  const userRole = 'member' // This would come from membership data
+  
+  return rolePermissions[userRole]?.includes(permission) || false
+}
+
+// Update user role with proper permissions
+async function updateUserRole(organizationId, userId, newRole) {
+  // Verify current user has permission to change roles
+  const currentUserId = await getUserId()
+  const canManageRoles = await hasPermission(
+    currentUserId, 
+    organizationId, 
+    'user.update'
+  )
+  
+  if (!canManageRoles) {
+    throw new Error('Insufficient permissions to update user roles')
+  }
+  
+  // Update the user's role
+  await updateOrganizationMembership({
+    organizationId,
+    userId,
+    role: newRole
+  })
+  
+  // Log the change in metadata
+  await updateOrganizationMembershipMetadata({
+    organizationId,
+    userId,
+    privateMetadata: {
+      roleHistory: {
+        changedAt: new Date().toISOString(),
+        changedBy: currentUserId,
+        previousRole: 'member', // In real implementation, get from current data
+        newRole: newRole
+      }
+    }
+  })
+}`}
+      lang="javascript"
+      title="Role-Based Access Control"
+    />
+  </TabItem>
+</Tabs>
+
+## Integration with astro-basics
+
+<Code
+  code={`// Common patterns for astro-basics project
+
+// 1. User profile management for dashboard
+async function updateUserProfile(profileData) {
+  const userId = await getUserId()
+  
+  if (!userId) {
+    throw new Error('User not authenticated')
+  }
+  
+  // Update basic profile
+  await updateUser({
+    userId,
+    firstName: profileData.firstName,
+    lastName: profileData.lastName,
+    username: profileData.username
+  })
+  
+  // Update preferences in public metadata
+  await updateUserPublicMetadata({
+    userId,
+    metadata: {
+      preferences: {
+        theme: profileData.theme || 'light',
+        emailNotifications: profileData.emailNotifications || false,
+        language: profileData.language || 'en'
+      },
+      profile: {
+        bio: profileData.bio,
+        website: profileData.website,
+        location: profileData.location
+      }
+    }
+  })
+}
+
+// 2. Comment system integration
+async function getUserForComment() {
+  const userId = await getUserId()
+  
+  if (!userId) {
+    return null
+  }
+  
+  const user = await getUser({ userId })
+  
+  return {
+    id: user.id,
+    name: \`\${user.firstName} \${user.lastName}\`.trim(),
+    username: user.username,
+    avatar: user.profileImageUrl,
+    role: user.publicMetadata?.role || 'user'
+  }
+}
+
+// 3. Organization-based content access
+async function checkContentAccess(organizationId, contentType) {
+  const userId = await getUserId()
+  
+  if (!userId) {
+    return false
+  }
+  
+  try {
+    const org = await getOrganization({ organizationId })
+    
+    // Check if user is member of organization
+    // In real implementation, you'd check membership
+    return true // Simplified for example
+  } catch (error) {
+    return false
+  }
+}`}
+  lang="javascript"
+  title="astro-basics Integration Patterns"
+/>
+
+## Security Best Practices
+
+<Aside type="caution" title="Security Considerations">
+- Never expose secret keys in client-side code
+- Use public metadata only for non-sensitive information
+- Regularly rotate API keys and access tokens
+- Implement proper role-based access controls
+- Validate user permissions before sensitive operations
+</Aside>
+
+### Metadata Security Guidelines
+
+<Code
+  code={`// ✅ Good: Safe public metadata
+await updateUserPublicMetadata({
+  userId,
+  metadata: {
+    preferences: { theme: "dark" },
+    displayName: "John D.",
+    publicProfile: { bio: "Developer" }
+  }
+})
+
+// ❌ Bad: Sensitive data in public metadata  
+await updateUserPublicMetadata({
+  userId,
+  metadata: {
+    creditCard: "4111-1111-1111-1111", // Never do this!
+    socialSecurity: "123-45-6789",      // Never do this!
+    password: "secret123"               // Never do this!
+  }
+})
+
+// ✅ Good: Internal data in unsafe/private metadata
+await updateUserUnsafeMetadata({
+  userId,
+  metadata: {
+    lastLoginIP: "192.168.1.1",
+    loginCount: 42,
+    internalNotes: "VIP customer"
+  }
+})`}
+  lang="javascript"
+  title="Metadata Security Examples"
+/>
+
+## Limitations
+
+- **Rate Limits**: API calls are subject to Clerk's rate limiting
+- **Metadata Size**: Limited metadata storage per user/organization
+- **Role Flexibility**: Built-in roles, custom RBAC requires additional logic
+- **Bulk Operations**: No native bulk user operations
+
+## Error Handling
+
+<Code
+  code={`// Handle common Clerk errors
+try {
+  await updateUser({
+    userId: "invalid-user-id",
+    firstName: "John"
+  })
+} catch (error) {
+  if (error.message.includes('User not found')) {
+    console.log('User does not exist')
+  } else if (error.message.includes('Invalid user ID')) {
+    console.log('Malformed user ID provided')
+  } else if (error.message.includes('Rate limit exceeded')) {
+    console.log('Too many requests, please retry later')
+  } else {
+    console.log('Unexpected error:', error.message)
+  }
+}`}
+  lang="javascript"
+  title="Error Handling Patterns"
+/>
+
+## Related Resources
+
+- **[Supabase Server](/guide/mcp/servers/supabase)** - For user data storage integration
+- **[Netlify Server](/guide/mcp/servers/netlify)** - For deployment with authentication
+- **[MCP Examples](/guide/mcp/examples)** - See complete authentication workflows
+
+## Troubleshooting
+
+**Authentication failures:**
+- Verify your secret key is correct and not expired
+- Check if the user ID exists in your Clerk instance
+- Ensure proper environment variable configuration
+
+**Permission errors:**
+- Verify the API key has necessary permissions
+- Check organization membership and roles
+- Ensure proper role hierarchy implementation
+
+**Metadata updates not working:**
+- Check for metadata size limits (typically 10KB per user)
+- Verify JSON structure is valid
+- Use null values to remove metadata keys

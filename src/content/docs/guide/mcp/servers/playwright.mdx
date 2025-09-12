@@ -1,0 +1,480 @@
+---
+title: Playwright MCP Server
+description: Browser automation, testing, and web interaction capabilities
+sidebar:
+  order: 3
+---
+
+import { Badge, Code, Tabs, TabItem, Aside } from '@astrojs/starlight/components'
+
+# Playwright MCP Server
+
+<Badge text="Browser Testing" variant="success" /> <Badge text="No Auth Required" variant="tip" />
+
+The Playwright MCP server provides powerful browser automation capabilities, enabling you to test web applications, take screenshots, interact with web pages, and perform comprehensive end-to-end testing.
+
+## Overview
+
+This server enables comprehensive browser automation including:
+- Multi-browser testing (Chromium, Firefox, Safari)
+- Page navigation and interaction
+- Screenshot and video capture
+- Network request monitoring
+- Mobile device emulation
+- Accessibility testing
+
+## Available Functions
+
+### Browser Management
+
+<Code
+  code={`// Navigate to a URL
+await browserNavigate({ url: "https://example.com" })
+
+// Go back to previous page
+await browserNavigateBack()
+
+// Resize browser window
+await browserResize({ width: 1920, height: 1080 })
+
+// Close browser session
+await browserClose()`}
+  lang="javascript"
+  title="Browser Navigation"
+/>
+
+### Page Interaction
+
+<Tabs>
+  <TabItem label="Clicking & Typing">
+    <Code
+      code={`// Click on elements
+await browserClick({ 
+  element: "Login button",
+  ref: "button[type='submit']" 
+})
+
+// Type text into inputs
+await browserType({
+  element: "Email input",
+  ref: "input[name='email']",
+  text: "user@example.com",
+  submit: false
+})
+
+// Press keyboard keys
+await browserPressKey({ key: "Enter" })`}
+      lang="javascript"
+      title="User Interactions"
+    />
+  </TabItem>
+  
+  <TabItem label="Forms & Selections">
+    <Code
+      code={`// Fill multiple form fields
+await browserFillForm({
+  fields: [
+    {
+      name: "Email",
+      type: "textbox",
+      ref: "input[name='email']",
+      value: "test@example.com"
+    },
+    {
+      name: "Subscribe to newsletter",
+      type: "checkbox", 
+      ref: "input[name='newsletter']",
+      value: "true"
+    },
+    {
+      name: "Country",
+      type: "combobox",
+      ref: "select[name='country']",
+      value: "United States"
+    }
+  ]
+})
+
+// Select dropdown options
+await browserSelectOption({
+  element: "Country selector",
+  ref: "select[name='country']", 
+  values: ["US"]
+})`}
+      lang="javascript"
+      title="Form Handling"
+    />
+  </TabItem>
+  
+  <TabItem label="Advanced Actions">
+    <Code
+      code={`// Drag and drop
+await browserDrag({
+  startElement: "Draggable item",
+  startRef: ".draggable-item",
+  endElement: "Drop zone", 
+  endRef: ".drop-zone"
+})
+
+// Hover over elements
+await browserHover({
+  element: "Menu item",
+  ref: ".menu-item"
+})
+
+// Handle file uploads
+await browserFileUpload({
+  paths: ["/path/to/file.pdf", "/path/to/image.jpg"]
+})`}
+      lang="javascript"
+      title="Advanced Interactions"
+    />
+  </TabItem>
+</Tabs>
+
+### Screenshots & Capture
+
+<Code
+  code={`// Take full page screenshot
+await browserTakeScreenshot({
+  fullPage: true,
+  filename: "homepage-full.png",
+  type: "png"
+})
+
+// Screenshot specific element
+await browserTakeScreenshot({
+  element: "Main content area",
+  ref: ".main-content",
+  filename: "content-area.jpg",
+  type: "jpeg"
+})
+
+// Get page accessibility snapshot
+await browserSnapshot()`}
+  lang="javascript"
+  title="Screenshots and Snapshots"
+/>
+
+### Monitoring & Debugging
+
+<Code
+  code={`// Get console messages
+await browserConsoleMessages()
+
+// Monitor network requests
+await browserNetworkRequests()
+
+// Handle dialogs (alerts, confirms, prompts)
+await browserHandleDialog({
+  accept: true,
+  promptText: "User input text"
+})
+
+// Wait for conditions
+await browserWaitFor({
+  text: "Loading complete",
+  time: 5
+})`}
+  lang="javascript"
+  title="Monitoring and Debugging"
+/>
+
+## Usage Examples
+
+<Tabs>
+  <TabItem label="E2E Testing">
+    Complete end-to-end test workflow:
+    
+    <Code
+      code={`// Test user authentication flow
+await browserNavigate({ url: "http://localhost:4321/login" })
+
+// Fill login form
+await browserFillForm({
+  fields: [
+    {
+      name: "Email",
+      type: "textbox", 
+      ref: "input[name='email']",
+      value: "test@example.com"
+    },
+    {
+      name: "Password",
+      type: "textbox",
+      ref: "input[name='password']", 
+      value: "password123"
+    }
+  ]
+})
+
+// Submit form
+await browserClick({
+  element: "Login button",
+  ref: "button[type='submit']"
+})
+
+// Wait for redirect
+await browserWaitFor({ text: "Dashboard", time: 10 })
+
+// Take screenshot of successful login
+await browserTakeScreenshot({
+  filename: "dashboard-after-login.png",
+  fullPage: true
+})
+
+// Verify user is logged in
+const snapshot = await browserSnapshot()
+// Check if user navigation is visible in snapshot`}
+      lang="javascript"
+      title="Authentication Flow Test"
+    />
+  </TabItem>
+  
+  <TabItem label="Visual Testing">
+    Compare visual changes across deployments:
+    
+    <Code
+      code={`// Navigate to page
+await browserNavigate({ url: "https://your-site.netlify.app" })
+
+// Set consistent viewport
+await browserResize({ width: 1920, height: 1080 })
+
+// Take baseline screenshot
+await browserTakeScreenshot({
+  filename: "homepage-baseline.png",
+  fullPage: true
+})
+
+// Test different screen sizes
+const viewports = [
+  { width: 375, height: 667 },  // iPhone SE
+  { width: 768, height: 1024 }, // iPad
+  { width: 1440, height: 900 }  // Desktop
+]
+
+for (const viewport of viewports) {
+  await browserResize(viewport)
+  await browserTakeScreenshot({
+    filename: \`homepage-\${viewport.width}x\${viewport.height}.png\`,
+    fullPage: true
+  })
+}`}
+      lang="javascript"
+      title="Visual Regression Testing"
+    />
+  </TabItem>
+  
+  <TabItem label="Performance Monitoring">
+    Monitor performance and network activity:
+    
+    <Code
+      code={`// Navigate and monitor network
+await browserNavigate({ url: "https://your-site.com" })
+
+// Get network requests after page load
+const networkRequests = await browserNetworkRequests()
+
+// Analyze performance
+const largeImages = networkRequests.filter(req => 
+  req.resourceType === 'image' && req.responseSize > 100000
+)
+
+const slowRequests = networkRequests.filter(req => 
+  req.duration > 2000
+)
+
+console.log(\`Found \${largeImages.length} large images\`)
+console.log(\`Found \${slowRequests.length} slow requests\`)
+
+// Check console for errors
+const consoleMessages = await browserConsoleMessages()
+const errors = consoleMessages.filter(msg => msg.type === 'error')
+
+if (errors.length > 0) {
+  console.log('Console errors detected:', errors)
+  
+  // Take screenshot for debugging
+  await browserTakeScreenshot({
+    filename: "error-state.png",
+    fullPage: true
+  })
+}`}
+      lang="javascript"
+      title="Performance Monitoring"
+    />
+  </TabItem>
+</Tabs>
+
+## Integration with astro-basics
+
+<Code
+  code={`// Test astro-basics specific features
+// 1. Test comment system
+await browserNavigate({ url: "http://localhost:4321/posts/example-post" })
+
+// Scroll to comments section
+await browserEvaluate({
+  function: "() => document.querySelector('.comments-section').scrollIntoView()"
+})
+
+// Test comment submission (requires authentication)
+await browserClick({
+  element: "Comment textarea",
+  ref: "textarea[name='comment']"
+})
+
+await browserType({
+  element: "Comment textarea", 
+  ref: "textarea[name='comment']",
+  text: "This is a test comment"
+})
+
+await browserClick({
+  element: "Submit comment button",
+  ref: "button[type='submit']"
+})
+
+// 2. Test dashboard authentication
+await browserNavigate({ url: "http://localhost:4321/dashboard" })
+
+// Should redirect to sign-in if not authenticated
+await browserWaitFor({ text: "Sign In", time: 5 })
+
+// 3. Test component interactivity  
+await browserNavigate({ url: "http://localhost:4321" })
+
+// Test navigation menu
+await browserClick({
+  element: "Navigation menu toggle",
+  ref: ".menu-toggle"
+})
+
+await browserTakeScreenshot({
+  filename: "mobile-menu-open.png"
+})`}
+  lang="javascript"
+  title="astro-basics Testing"
+/>
+
+## Best Practices
+
+### Test Reliability
+
+<Aside type="tip" title="Reliable Testing">
+- Use explicit waits instead of fixed delays
+- Select elements by stable attributes (data-testid, role, etc.)
+- Handle async operations with proper waiting strategies
+- Clean up browser state between tests
+</Aside>
+
+<Code
+  code={`// Good: Wait for specific conditions
+await browserWaitFor({ text: "Data loaded", time: 10 })
+
+// Good: Use stable selectors
+await browserClick({
+  element: "Submit button",
+  ref: "[data-testid='submit-btn']"
+})
+
+// Avoid: Fixed delays
+// await new Promise(resolve => setTimeout(resolve, 3000))
+
+// Avoid: Fragile selectors  
+// ref: ".btn.btn-primary.large"`}
+  lang="javascript"
+  title="Reliable Test Patterns"
+/>
+
+### Performance Optimization
+
+<Code
+  code={`// Optimize for faster tests
+// 1. Reuse browser sessions when possible
+// 2. Use headless mode for CI/CD
+// 3. Disable unnecessary features for speed
+
+// Example: Minimal browser setup for CI
+const browserOptions = {
+  headless: true,
+  args: [
+    '--no-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--disable-extensions'
+  ]
+}`}
+  lang="javascript"
+  title="Performance Optimization"
+/>
+
+## Debugging Failed Tests
+
+<Code
+  code={`// Capture debugging information on failure
+try {
+  await browserClick({
+    element: "Submit button",
+    ref: "button[type='submit']" 
+  })
+} catch (error) {
+  // Take screenshot of current state
+  await browserTakeScreenshot({
+    filename: "test-failure-screenshot.png",
+    fullPage: true
+  })
+  
+  // Get console errors
+  const console = await browserConsoleMessages()
+  console.log('Console messages:', console)
+  
+  // Get page snapshot for analysis
+  const snapshot = await browserSnapshot()
+  console.log('Page snapshot:', snapshot)
+  
+  throw error // Re-throw to fail the test
+}`}
+  lang="javascript"
+  title="Debugging Test Failures"
+/>
+
+## Limitations
+
+- **Browser Installation**: Requires Playwright browsers to be installed
+- **Resource Usage**: Browser automation is memory and CPU intensive
+- **Network Dependency**: Tests require stable network connectivity  
+- **Platform Differences**: Some behaviors may vary across operating systems
+
+## Security Considerations
+
+<Aside type="caution" title="Security Notes">
+- Never test with real user credentials in automated tests
+- Use test accounts and test databases only
+- Be careful with file uploads and downloads in tests
+- Sanitize any user input before using in test scripts
+</Aside>
+
+## Related Resources
+
+- **[IDE Server](/guide/mcp/servers/ide)** - For development environment integration
+- **[Web Tools Server](/guide/mcp/servers/web-tools)** - For web content fetching
+- **[MCP Examples](/guide/mcp/examples)** - See complete testing workflows
+
+## Troubleshooting
+
+**Browser fails to start:**
+- Run `npx playwright install` to install browser binaries
+- Check system requirements for your operating system
+- Try running in headless mode if display issues occur
+
+**Element not found errors:**
+- Use `await browserSnapshot()` to see current page state
+- Verify element selectors with browser developer tools
+- Add waits for dynamic content to load
+
+**Tests are flaky:**
+- Add explicit waits for asynchronous operations
+- Use more specific element selectors
+- Handle network delays and loading states properly

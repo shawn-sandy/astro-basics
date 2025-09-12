@@ -1,0 +1,790 @@
+---
+title: MCP Usage Examples
+description: Real-world scenarios and practical implementation examples for MCP servers
+sidebar:
+  order: 55
+---
+
+import { Badge, Code, Tabs, TabItem, Aside } from '@astrojs/starlight/components'
+
+# MCP Usage Examples
+
+<Badge text="Practical Examples" variant="success" />
+
+This guide provides real-world scenarios and practical examples of using MCP servers together to accomplish common development tasks in the astro-basics project.
+
+## Complete Development Workflows
+
+### 1. Feature Development Workflow
+
+Build a new authentication feature from research to deployment:
+
+<Code
+  code={`// 1. Research authentication patterns in Astro
+const authDocs = await searchAstroDocs({ 
+  query: "middleware authentication protected routes" 
+})
+
+// 2. Check current Clerk setup and users
+const userCount = await getUserCount()
+const currentUser = await getUserId()
+
+console.log(\`Current setup: \${userCount} users, current user: \${currentUser}\`)
+
+// 3. Create Supabase table for user profiles  
+await applyMigration({
+  project_id: "your-project-id",
+  name: "add_user_profiles_table",
+  query: \`
+    CREATE TABLE user_profiles (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id TEXT NOT NULL UNIQUE,
+      display_name TEXT,
+      bio TEXT,
+      avatar_url TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    -- Enable RLS
+    ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+    
+    -- Users can read all profiles
+    CREATE POLICY "Public profiles are viewable by everyone" 
+      ON user_profiles FOR SELECT USING (true);
+      
+    -- Users can update their own profile
+    CREATE POLICY "Users can update own profile" 
+      ON user_profiles FOR ALL 
+      USING (auth.jwt() ->> 'sub' = user_id);
+  \`
+})
+
+// 4. Generate updated TypeScript types
+const updatedTypes = await generateTypescriptTypes({ 
+  project_id: "your-project-id" 
+})
+
+console.log("Updated database types generated")
+
+// 5. Test the implementation with Playwright
+await browserNavigate({ url: "http://localhost:4321/profile" })
+
+// Should redirect to sign-in for unauthenticated users
+await browserWaitFor({ text: "Sign In", time: 5 })
+
+// Take screenshot of sign-in page
+await browserTakeScreenshot({
+  filename: "profile-redirect-signin.png",
+  fullPage: true
+})
+
+// 6. Deploy to Netlify with updated environment variables
+await deployToNetlify({
+  siteId: "your-site-id",
+  envVars: {
+    SUPABASE_URL: "https://your-project.supabase.co",
+    SUPABASE_ANON_KEY: "your-anon-key",
+    CLERK_SECRET_KEY: "your-clerk-secret"
+  }
+})
+
+console.log("Feature deployed successfully!")`}
+  lang="javascript"
+  title="Complete Feature Development"
+/>
+
+### 2. Content Management Workflow
+
+Create and manage blog content with full workflow:
+
+<Tabs>
+  <TabItem label="Content Creation">
+    <Code
+      code={`// 1. Research content patterns in Astro docs
+const contentDocs = await searchAstroDocs({ 
+  query: "content collections MDX frontmatter" 
+})
+
+// 2. Create content database table
+await applyMigration({
+  project_id: "your-project-id",
+  name: "create_posts_metadata", 
+  query: \`
+    CREATE TABLE posts_metadata (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      slug TEXT NOT NULL UNIQUE,
+      title TEXT NOT NULL,
+      author_id TEXT NOT NULL,
+      published BOOLEAN DEFAULT false,
+      featured BOOLEAN DEFAULT false,
+      view_count INTEGER DEFAULT 0,
+      like_count INTEGER DEFAULT 0,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      published_at TIMESTAMP WITH TIME ZONE,
+      
+      CONSTRAINT posts_metadata_author_fkey 
+        FOREIGN KEY (author_id) REFERENCES auth.users(id)
+    );
+    
+    -- Enable RLS  
+    ALTER TABLE posts_metadata ENABLE ROW LEVEL SECURITY;
+    
+    -- Public can read published posts
+    CREATE POLICY "Published posts are public" 
+      ON posts_metadata FOR SELECT 
+      USING (published = true);
+      
+    -- Authors can manage their posts
+    CREATE POLICY "Authors can manage own posts"
+      ON posts_metadata FOR ALL
+      USING (auth.uid()::text = author_id);
+  \`
+})
+
+// 3. Get current user for authoring
+const currentUserId = await getUserId()
+const author = await getUser({ userId: currentUserId })
+
+// 4. Insert post metadata
+await executeSql({
+  project_id: "your-project-id",
+  query: \`
+    INSERT INTO posts_metadata (slug, title, author_id, published)
+    VALUES ('new-astro-features', 'New Astro Features Guide', '\${currentUserId}', true)
+    RETURNING *;
+  \`
+})
+
+console.log(\`Post created by \${author.firstName} \${author.lastName}\`)`}
+      lang="javascript"
+      title="Content Database Setup"
+    />
+  </TabItem>
+  
+  <TabItem label="SEO & Analytics">
+    <Code
+      code={`// 5. Generate social media assets with Figma
+const figmaAssets = await getFigmaAssets({
+  nodeId: "blog-post-template",
+  format: "png",
+  scale: 2
+})
+
+// 6. Test content rendering
+await browserNavigate({ url: "http://localhost:4321/posts/new-astro-features" })
+
+// Check for proper meta tags
+const pageSnapshot = await browserSnapshot()
+const hasMetaTags = pageSnapshot.includes('og:title') && 
+                   pageSnapshot.includes('og:description')
+
+if (!hasMetaTags) {
+  console.log("Warning: Missing social media meta tags")
+}
+
+// Take screenshot for social sharing
+await browserTakeScreenshot({
+  filename: "post-social-preview.png",
+  element: "Main content",
+  ref: "main"
+})
+
+// 7. Verify search functionality
+await browserClick({
+  element: "Search input",
+  ref: "input[type='search']"
+})
+
+await browserType({
+  element: "Search input", 
+  ref: "input[type='search']",
+  text: "astro features"
+})
+
+await browserWaitFor({ text: "New Astro Features", time: 5 })
+
+console.log("Search functionality verified")`}
+      lang="javascript"  
+      title="Content Testing & SEO"
+    />
+  </TabItem>
+  
+  <TabItem label="Publication">
+    <Code
+      code={`// 8. Update post analytics
+await executeSql({
+  project_id: "your-project-id",
+  query: \`
+    UPDATE posts_metadata 
+    SET published_at = NOW(),
+        view_count = 0,
+        like_count = 0
+    WHERE slug = 'new-astro-features'
+    RETURNING *;
+  \`
+})
+
+// 9. Create organization announcement
+await createOrganizationInvitation({
+  organizationId: "content-team-org-id",
+  emailAddress: "team@example.com", 
+  role: "member",
+  publicMetadata: {
+    type: "content-notification",
+    postTitle: "New Astro Features Guide",
+    postUrl: "/posts/new-astro-features"
+  }
+})
+
+// 10. Deploy with cache invalidation
+await deployToNetlify({
+  siteId: "your-site-id",
+  invalidateCache: true,
+  environment: "production"
+})
+
+// 11. Verify deployment
+await browserNavigate({ 
+  url: "https://your-site.netlify.app/posts/new-astro-features" 
+})
+
+await browserTakeScreenshot({
+  filename: "post-live-production.png",
+  fullPage: true
+})
+
+console.log("Content published and live on production!")`}
+      lang="javascript"
+      title="Content Publication"
+    />
+  </TabItem>
+</Tabs>
+
+### 3. Database Migration & Testing Workflow
+
+<Code
+  code={`// Complete database migration with testing
+// 1. Create development branch for testing
+const branch = await createBranch({
+  project_id: "your-project-id", 
+  name: "comments-migration",
+  confirm_cost_id: "cost-confirmation-123"
+})
+
+console.log(\`Created branch: \${branch.id}\`)
+
+// 2. Apply migration on branch
+await applyMigration({
+  project_id: branch.project_ref, // Use branch project ID
+  name: "add_comments_system",
+  query: \`
+    CREATE TABLE comments (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      content_type TEXT NOT NULL CHECK (content_type IN ('post', 'doc')),
+      content_id TEXT NOT NULL,
+      parent_comment_id UUID REFERENCES comments(id),
+      author_id TEXT NOT NULL,
+      content TEXT NOT NULL,
+      status TEXT DEFAULT 'active' CHECK (status IN ('active', 'archived', 'flagged')),
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    -- Indexes for performance
+    CREATE INDEX idx_comments_content ON comments(content_type, content_id);
+    CREATE INDEX idx_comments_parent ON comments(parent_comment_id);
+    CREATE INDEX idx_comments_author ON comments(author_id);
+    
+    -- Enable RLS
+    ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+    
+    -- RLS Policies
+    CREATE POLICY "Comments are viewable by everyone" 
+      ON comments FOR SELECT 
+      USING (status = 'active');
+      
+    CREATE POLICY "Authenticated users can create comments"
+      ON comments FOR INSERT
+      WITH CHECK (auth.uid() IS NOT NULL);
+      
+    CREATE POLICY "Users can update own comments"
+      ON comments FOR UPDATE
+      USING (auth.uid()::text = author_id);
+  \`
+})
+
+// 3. Test migration with sample data
+await executeSql({
+  project_id: branch.project_ref,
+  query: \`
+    INSERT INTO comments (content_type, content_id, author_id, content)
+    VALUES 
+      ('post', 'test-post-1', 'user_123', 'Great article!'),
+      ('post', 'test-post-1', 'user_456', 'Thanks for sharing this.'),
+      ('doc', 'api-reference', 'user_789', 'Very helpful documentation.');
+  \`
+})
+
+// 4. Generate types for branch
+const branchTypes = await generateTypescriptTypes({ 
+  project_id: branch.project_ref 
+})
+
+// 5. Test comment functionality with Playwright
+await browserNavigate({ url: "http://localhost:4321/posts/test-post" })
+
+// Test comment form (assuming authentication is set up)
+await browserClick({
+  element: "Comment textarea",
+  ref: "textarea[name='comment-content']"
+})
+
+await browserType({
+  element: "Comment textarea",
+  ref: "textarea[name='comment-content']", 
+  text: "This is a test comment from automation"
+})
+
+await browserClick({
+  element: "Submit comment",
+  ref: "button[type='submit']"
+})
+
+// Wait for comment to appear
+await browserWaitFor({ text: "test comment from automation", time: 10 })
+
+// 6. Verify data in database
+const comments = await executeSql({
+  project_id: branch.project_ref,
+  query: "SELECT * FROM comments ORDER BY created_at DESC LIMIT 5;"
+})
+
+console.log(\`Found \${comments.length} comments in test database\`)
+
+// 7. If tests pass, merge to production
+if (comments.length > 0) {
+  await mergeBranch({ branch_id: branch.id })
+  console.log("Migration merged to production successfully")
+  
+  // 8. Deploy updated application
+  await deployToNetlify({
+    siteId: "your-site-id",
+    environment: "production"
+  })
+} else {
+  console.log("Tests failed - migration not merged")
+}`}
+  lang="javascript"
+  title="Database Migration Workflow"
+/>
+
+## Debugging & Troubleshooting Scenarios
+
+### Debug Production Issues
+
+<Code
+  code={`// Comprehensive production debugging workflow
+// 1. Check application logs
+const logs = await getNetlifyLogs({
+  siteId: "your-site-id",
+  level: "error",
+  limit: 50
+})
+
+console.log(\`Found \${logs.length} error entries\`)
+
+// 2. Check database connectivity
+try {
+  await executeSql({
+    project_id: "your-project-id",
+    query: "SELECT 1 as health_check;"
+  })
+  console.log("✅ Database connection healthy")
+} catch (error) {
+  console.log("❌ Database connection failed:", error.message)
+}
+
+// 3. Verify authentication service
+try {
+  const userCount = await getUserCount()
+  console.log(\`✅ Clerk service healthy - \${userCount} total users\`)
+} catch (error) {
+  console.log("❌ Clerk service error:", error.message)
+}
+
+// 4. Test critical user flows
+const testResults = []
+
+// Test homepage
+try {
+  await browserNavigate({ url: "https://your-site.netlify.app" })
+  await browserWaitFor({ text: "Welcome", time: 5 })
+  testResults.push({ test: "Homepage", status: "✅ Pass" })
+} catch (error) {
+  testResults.push({ test: "Homepage", status: "❌ Fail", error: error.message })
+}
+
+// Test authentication flow
+try {
+  await browserNavigate({ url: "https://your-site.netlify.app/dashboard" })
+  await browserWaitFor({ text: "Sign In", time: 5 })
+  testResults.push({ test: "Auth Redirect", status: "✅ Pass" })
+} catch (error) {
+  testResults.push({ test: "Auth Redirect", status: "❌ Fail", error: error.message })
+}
+
+// Test database-driven content
+try {
+  await browserNavigate({ url: "https://your-site.netlify.app/posts" })
+  await browserWaitFor({ text: "Recent Posts", time: 10 })
+  testResults.push({ test: "Database Content", status: "✅ Pass" })
+} catch (error) {
+  testResults.push({ test: "Database Content", status: "❌ Fail", error: error.message })
+}
+
+console.log("Production Health Check Results:")
+testResults.forEach(result => {
+  console.log(\`\${result.test}: \${result.status}\`)
+  if (result.error) console.log(\`  Error: \${result.error}\`)
+})
+
+// 5. Take screenshots of failing pages for investigation
+if (testResults.some(r => r.status.includes("❌"))) {
+  await browserTakeScreenshot({
+    filename: "production-error-state.png",
+    fullPage: true
+  })
+}`}
+  lang="javascript"
+  title="Production Debugging"
+/>
+
+## Performance Optimization Workflow
+
+<Code
+  code={`// Comprehensive performance analysis and optimization
+// 1. Research performance best practices
+const perfDocs = await searchAstroDocs({ 
+  query: "performance optimization build static" 
+})
+
+// 2. Analyze current database performance
+const slowQueries = await executeSql({
+  project_id: "your-project-id",
+  query: \`
+    SELECT query, calls, mean_exec_time, total_exec_time
+    FROM pg_stat_statements 
+    WHERE mean_exec_time > 100
+    ORDER BY mean_exec_time DESC
+    LIMIT 10;
+  \`
+})
+
+console.log(\`Found \${slowQueries.length} slow queries\`)
+
+// 3. Check for missing database indexes
+const missingIndexes = await executeSql({
+  project_id: "your-project-id", 
+  query: \`
+    SELECT schemaname, tablename, attname, n_distinct, correlation
+    FROM pg_stats
+    WHERE schemaname = 'public'
+    AND n_distinct > 100
+    AND correlation < 0.1;
+  \`
+})
+
+// 4. Optimize database with new indexes if needed
+if (missingIndexes.length > 0) {
+  await applyMigration({
+    project_id: "your-project-id",
+    name: "add_performance_indexes",
+    query: \`
+      -- Add indexes for frequently queried columns
+      CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_posts_published_date 
+        ON posts (published_at DESC) WHERE published = true;
+      
+      CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_comments_content_created 
+        ON comments (content_type, content_id, created_at DESC);
+        
+      CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_user_profiles_updated
+        ON user_profiles (updated_at DESC);
+    \`
+  })
+  
+  console.log("Performance indexes added")
+}
+
+// 5. Test page load performance with Playwright
+const performanceTests = [
+  "https://your-site.netlify.app",
+  "https://your-site.netlify.app/posts",
+  "https://your-site.netlify.app/docs"
+]
+
+for (const url of performanceTests) {
+  await browserNavigate({ url })
+  
+  // Measure performance metrics
+  const metrics = await browserEvaluate({
+    function: \`() => {
+      const navigation = performance.getEntriesByType('navigation')[0];
+      return {
+        domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
+        loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
+        firstPaint: performance.getEntriesByType('paint')[0]?.startTime || 0,
+        largestContentfulPaint: performance.getEntriesByType('largest-contentful-paint')[0]?.startTime || 0
+      };
+    }\`
+  })
+  
+  console.log(\`Performance for \${url}:\`, metrics)
+  
+  // Take screenshot if performance is poor
+  if (metrics.domContentLoaded > 2000) {
+    await browserTakeScreenshot({
+      filename: \`slow-page-\${url.split('/').pop() || 'home'}.png\`,
+      fullPage: true
+    })
+  }
+}
+
+// 6. Check Netlify deployment performance
+const deploymentInfo = await getNetlifyDeployment({
+  siteId: "your-site-id"
+})
+
+console.log(\`Build time: \${deploymentInfo.buildTime}ms\`)
+console.log(\`Bundle size: \${deploymentInfo.bundleSize}MB\`)
+
+// 7. Generate optimization recommendations
+const recommendations = []
+
+if (slowQueries.length > 0) {
+  recommendations.push("Consider optimizing database queries or adding indexes")
+}
+
+if (deploymentInfo.buildTime > 120000) { // 2 minutes
+  recommendations.push("Build time is high - consider code splitting or build optimization")
+}
+
+if (deploymentInfo.bundleSize > 5) { // 5MB
+  recommendations.push("Bundle size is large - consider lazy loading or image optimization")
+}
+
+console.log("Optimization Recommendations:")
+recommendations.forEach(rec => console.log(\`- \${rec}\`))`}
+  lang="javascript"
+  title="Performance Optimization"
+/>
+
+## Multi-Server Integration Patterns
+
+<Tabs>
+  <TabItem label="Design to Code">
+    Convert Figma designs to working components:
+    
+    <Code
+      code={`// 1. Get design specifications from Figma
+const designSpecs = await getFigmaVariables({
+  nodeId: "component-design-node"
+})
+
+// 2. Generate component code 
+const componentCode = await getFigmaCode({
+  nodeId: "component-design-node",
+  framework: "react"
+})
+
+// 3. Research similar components in Astro docs
+const componentDocs = await searchAstroDocs({
+  query: "component props TypeScript interface"
+})
+
+// 4. Create component in development
+// (This would typically involve file creation, but shown conceptually)
+const componentPath = "/src/components/react/NewComponent.tsx"
+
+// 5. Test component with Playwright
+await browserNavigate({ url: "http://localhost:4321/component-preview" })
+
+// Check if component renders correctly
+const snapshot = await browserSnapshot()
+if (snapshot.includes("NewComponent")) {
+  console.log("✅ Component renders successfully")
+  
+  // Take screenshot for design comparison
+  await browserTakeScreenshot({
+    element: "Component preview",
+    ref: "[data-component='NewComponent']",
+    filename: "component-implementation.png"
+  })
+} else {
+  console.log("❌ Component rendering failed")
+}
+
+// 6. Deploy to preview environment
+await deployToNetlify({
+  siteId: "preview-site-id",
+  branch: "feature-new-component"
+})`}
+      lang="javascript"
+      title="Design-to-Code Workflow"
+    />
+  </TabItem>
+  
+  <TabItem label="Content Pipeline">
+    Automated content creation and management:
+    
+    <Code
+      code={`// 1. Get content ideas from web research
+const contentIdeas = await webSearch({
+  query: "astro framework tutorial ideas 2024"
+})
+
+// 2. Research existing content gaps
+const existingContent = await executeSql({
+  project_id: "your-project-id",
+  query: "SELECT title, slug FROM posts_metadata WHERE published = true"
+})
+
+// 3. Create content outline using AI assistance
+const outline = await webFetch({
+  url: "https://api.openai.com/v1/chat/completions",
+  method: "POST", 
+  headers: {
+    "Authorization": "Bearer your-openai-key",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    model: "gpt-4",
+    messages: [{
+      role: "user", 
+      content: "Create a detailed outline for an Astro tutorial about SSR and API routes"
+    }]
+  })
+})
+
+// 4. Set up content in database
+await executeSql({
+  project_id: "your-project-id",
+  query: \`
+    INSERT INTO posts_metadata (
+      slug, title, author_id, published, outline
+    ) VALUES (
+      'astro-ssr-api-routes',
+      'Building SSR Apps with Astro API Routes', 
+      '\${await getUserId()}',
+      false,
+      '\${JSON.stringify(outline)}'
+    )
+  \`
+})
+
+// 5. Create content branch for development  
+const contentBranch = await createBranch({
+  project_id: "your-project-id",
+  name: "content-ssr-tutorial"
+})
+
+// 6. Track progress in organization
+await updateOrganizationMetadata({
+  organizationId: "content-team-id",
+  publicMetadata: {
+    activeProjects: {
+      "astro-ssr-tutorial": {
+        status: "in-progress",
+        author: await getUserId(),
+        deadline: "2024-02-15",
+        outline: outline
+      }
+    }
+  }
+})`}
+      lang="javascript"
+      title="Content Creation Pipeline"
+    />
+  </TabItem>
+</Tabs>
+
+## Best Practices Summary
+
+<Aside type="tip" title="Integration Best Practices">
+1. **Plan workflows in advance** - Map out which servers you'll need before starting
+2. **Handle errors gracefully** - Each server can fail independently
+3. **Use development branches** - Test database changes safely
+4. **Cache expensive operations** - Don't repeat slow queries or API calls
+5. **Monitor rate limits** - Respect API quotas across all services
+6. **Document your workflows** - Complex integrations should be well-documented
+</Aside>
+
+### Error Handling Pattern
+
+<Code
+  code={`// Robust error handling across multiple services
+async function robustWorkflow() {
+  const results = {
+    astroSearch: null,
+    clerkAuth: null, 
+    supabaseQuery: null,
+    playwrightTest: null,
+    netlifyDeploy: null
+  }
+  
+  const errors = []
+  
+  // Astro docs search
+  try {
+    results.astroSearch = await searchAstroDocs({ query: "authentication" })
+  } catch (error) {
+    errors.push({ service: "Astro Docs", error: error.message })
+  }
+  
+  // Clerk authentication check
+  try {
+    results.clerkAuth = await getUserId()
+  } catch (error) {
+    errors.push({ service: "Clerk", error: error.message })
+  }
+  
+  // Supabase query (only if auth successful)
+  if (results.clerkAuth) {
+    try {
+      results.supabaseQuery = await executeSql({
+        project_id: "your-project-id",
+        query: "SELECT COUNT(*) FROM users"
+      })
+    } catch (error) {
+      errors.push({ service: "Supabase", error: error.message })
+    }
+  }
+  
+  // Playwright test (only if other services working)
+  if (results.clerkAuth && results.supabaseQuery) {
+    try {
+      await browserNavigate({ url: "http://localhost:4321" })
+      results.playwrightTest = "success"
+    } catch (error) {
+      errors.push({ service: "Playwright", error: error.message })
+    }
+  }
+  
+  // Netlify deployment (only if tests pass)
+  if (results.playwrightTest === "success") {
+    try {
+      results.netlifyDeploy = await deployToNetlify({
+        siteId: "your-site-id"
+      })
+    } catch (error) {
+      errors.push({ service: "Netlify", error: error.message })
+    }
+  }
+  
+  return { results, errors }
+}`}
+  lang="javascript"
+  title="Multi-Service Error Handling"
+/>
+
+These examples demonstrate how to effectively combine multiple MCP servers to create powerful, automated workflows that span the entire development lifecycle from research and design to testing and deployment.
