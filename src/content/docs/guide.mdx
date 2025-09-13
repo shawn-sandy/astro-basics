@@ -15,22 +15,33 @@ hero:
       icon: external
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 ## Welcome to the Astro-Basics Guide
 
 This documentation provides comprehensive guidance for using the **astro-basics** component library and development framework. Whether you're building a new project or integrating with existing applications, this guide will help you get the most out of our tools.
 
 <CardGrid>
-  <Card title="Getting Started" icon="rocket">
-    Learn how to install and configure astro-basics in your project. Get up and running in minutes with our quick start guide.
-  </Card>
-  <Card title="Components" icon="puzzle">
-    Explore our collection of reusable Astro and React components. Each component is designed for flexibility and ease of use.
-  </Card>
-  <Card title="API Reference" icon="information">
-    Detailed API documentation for all components, utilities, and configuration options available in the library.
-  </Card>
+  <LinkCard 
+    title="Getting Started" 
+    href="/guide/getting-started/"
+    description="Learn how to install and configure astro-basics in your project. Get up and running in minutes with our quick start guide."
+  />
+  <LinkCard 
+    title="Components" 
+    href="/guide/components/"
+    description="Explore our collection of reusable Astro and React components. Each component is designed for flexibility and ease of use."
+  />
+  <LinkCard 
+    title="MCP Servers" 
+    href="/guide/mcp/"
+    description="Discover 10 integrated Model Context Protocol servers that extend Claude's capabilities for development, design, and deployment workflows."
+  />
+  <LinkCard 
+    title="API Reference" 
+    href="/guide/api/"
+    description="Detailed API documentation for all components, utilities, and configuration options available in the library."
+  />
 </CardGrid>
 
 ## Key Features
@@ -47,6 +58,7 @@ This documentation provides comprehensive guidance for using the **astro-basics*
 
 - [Installation Guide](/guide/getting-started/installation/)
 - [Component Library](/guide/components/)
+- [MCP Servers](/guide/mcp/)
 - [API Documentation](/guide/api/)
 - [GitHub Repository](https://github.com/shawn-sandy/astro-basics)
 

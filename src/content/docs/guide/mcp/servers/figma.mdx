@@ -7,7 +7,6 @@ sidebar:
 
 import { Badge, Card, CardGrid, Code, Tabs, TabItem } from '@astrojs/starlight/components'
 
-# Figma MCP Server
 
 <Badge text="Design Integration" variant="tip" /> <Badge text="Code Generation" variant="success" />
 
@@ -23,19 +22,19 @@ This MCP server allows Claude to interact directly with Figma designs, extractin
   <Card title="🎨 Code Generation" icon="rocket">
     Generate production-ready UI code from Figma components for React, Astro, and other frameworks.
   </Card>
-  
+
   <Card title="🎯 Design Tokens" icon="setting">
     Extract design variables (colors, typography, spacing) and convert to CSS custom properties.
   </Card>
-  
+
   <Card title="🔗 Code Connect" icon="link">
     Link Figma components to existing codebase components for bidirectional synchronization.
   </Card>
-  
+
   <Card title="📸 Asset Export" icon="document">
     Export high-quality images from Figma nodes in multiple formats optimized for web.
   </Card>
-  
+
   <Card title="📋 Design System" icon="list-format">
     Generate design system rules and comprehensive documentation automatically.
   </Card>
@@ -44,36 +43,44 @@ This MCP server allows Claude to interact directly with Figma designs, extractin
 ## Available Functions
 
 ### `mcp__figma-dev-mode-mcp-server__get_code`
+
 Generate UI code for a given Figma node or the currently selected node.
 
 **Parameters:**
+
 - `nodeId` (optional): The ID of the node (e.g., "123:456"). If not provided, uses currently selected node.
 - `clientFrameworks`: Comma-separated list of frameworks (e.g., "react,astro,typescript")
 - `clientLanguages`: Programming languages used (e.g., "javascript,typescript,scss")
 
-### `mcp__figma-dev-mode-mcp-server__get_variable_defs`  
+### `mcp__figma-dev-mode-mcp-server__get_variable_defs`
+
 Get variable definitions for design tokens from Figma components.
 
 **Returns:** Object with variable mappings like `{'icon/default/secondary': '#949494'}`
 
 ### `mcp__figma-dev-mode-mcp-server__get_code_connect_map`
+
 Get mapping between Figma components and codebase components.
 
 **Returns:** Object mapping node IDs to code locations and component names.
 
 ### `mcp__figma-dev-mode-mcp-server__get_image`
+
 Generate high-quality images from Figma nodes.
 
 **Features:**
+
 - Multiple format support (PNG, JPG, SVG)
 - High-resolution exports
 - Web-optimized output
 
 ### `mcp__figma-dev-mode-mcp-server__create_design_system_rules`
+
 Generate comprehensive design system documentation and rules.
 
 **Output:**
-- Design token documentation  
+
+- Design token documentation
 - Component usage guidelines
 - Framework-specific implementations
 
@@ -132,12 +139,15 @@ Generate comprehensive design system documentation and rules.
 Most Figma MCP operations require a `nodeId` parameter:
 
 ### From Figma URLs
-```
+
+```url
 https://figma.com/design/fileKey/fileName?node-id=1-2
 ```
+
 The `nodeId` would be `1:2` (replace hyphens with colons)
 
-### From Selected Components  
+### From Selected Components
+
 If you don't provide a `nodeId`, the server uses the currently selected node in Figma Desktop.
 
 ## Integration with Astro-Basics
@@ -149,25 +159,25 @@ If you don't provide a `nodeId`, the server uses the currently selected node in 
     ```markdown
     Generate an Astro component for this design, using our existing SCSS architecture
     ```
-    
+
     **Output Location:** `src/components/astro/`
     **Styling:** Integrates with `src/styles/` architecture
   </TabItem>
-  
+
   <TabItem label="React Components">
     ```markdown
     Create a React component for client-side interactivity, following our src/components/react/ patterns
     ```
-    
-    **Output Location:** `src/components/react/`  
+
+    **Output Location:** `src/components/react/`
     **Features:** Interactive elements with proper TypeScript
   </TabItem>
-  
+
   <TabItem label="SCSS Variables">
     ```markdown
     Extract design tokens and create SCSS variables that integrate with our src/styles/index.scss
     ```
-    
+
     **Integration:** Maps to existing variable system
     **Output:** Compatible with current SCSS architecture
   </TabItem>
@@ -178,39 +188,46 @@ If you don't provide a `nodeId`, the server uses the currently selected node in 
 ### Design-to-Code Pipeline
 
 1. **Select Component in Figma**
+
    - Open design file in Figma Desktop
    - Select the component to implement
 
 2. **Generate Code**
+
    ```markdown
    I need to implement the pricing card component from our design system
    ```
 
 3. **Extract Variables**
+
    ```markdown
    Also extract the design variables used in this component
    ```
 
 4. **Test Integration**
+
    ```bash
    npm run build          # Test build process
-   npm test               # Run unit tests  
+   npm test               # Run unit tests
    npm run lint:all       # Code quality checks
    ```
 
 ### Design System Maintenance
 
 1. **Audit Tokens**
+
    ```markdown
    Extract all design variables from our main design system file
    ```
 
 2. **Update Code Variables**
+
    - Compare with existing CSS/SCSS variables
    - Update inconsistencies
    - Add new tokens as needed
 
-3. **Generate Documentation**  
+3. **Generate Documentation**
+
    ```markdown
    Create design system rules for the updated tokens
    ```
@@ -218,18 +235,21 @@ If you don't provide a `nodeId`, the server uses the currently selected node in 
 ## Best Practices
 
 ### Figma Organization
+
 - Use consistent, descriptive component names
-- Leverage Auto Layout for responsive behavior  
+- Leverage Auto Layout for responsive behavior
 - Set up proper design variables
 - Maintain clean component hierarchy
 
 ### Code Generation
+
 - Specify framework context explicitly
 - Mention existing styling systems (SCSS, Tailwind, etc.)
 - Reference component patterns in your codebase
 - Always review and adapt generated code
 
 ### Design Token Management
+
 - Establish semantic token naming
 - Create consistent scales
 - Sync regularly when designs change
@@ -240,18 +260,22 @@ If you don't provide a `nodeId`, the server uses the currently selected node in 
 ### Common Issues
 
 **Node ID Not Found**
+
 - Verify the node exists and you have access permissions
 - Ensure Figma file is open in desktop app
 
-**No Component Selected**  
+**No Component Selected**
+
 - Select a component in Figma Desktop before running commands
 - Alternatively, provide explicit node ID
 
 **Permission Errors**
+
 - Ensure proper Figma file permissions
 - Verify you can edit or view the file in Figma
 
 **Code Generation Issues**
+
 - Provide specific framework and context information
 - Mention existing patterns in your codebase
 
@@ -260,16 +284,16 @@ If you don't provide a `nodeId`, the server uses the currently selected node in 
 ### Multi-Component Generation
 
 ```markdown
-Generate React components for all button variants in our design system. 
+Generate React components for all button variants in our design system.
 Include TypeScript interfaces and integrate with our existing SCSS architecture.
-Use the component patterns from src/components/react/ and create corresponding 
+Use the component patterns from src/components/react/ and create corresponding
 SCSS files in src/styles/components/.
 ```
 
 ### Design Token Sync
 
 ```markdown
-Extract design tokens from our main design system file and update our 
+Extract design tokens from our main design system file and update our
 SCSS variables in src/styles/index.scss. Show me what tokens are new,
 changed, or removed compared to the current implementation.
 ```
@@ -277,20 +301,20 @@ changed, or removed compared to the current implementation.
 ### Asset Pipeline
 
 ```markdown
-Export all icon components as SVG assets and create an icon library 
+Export all icon components as SVG assets and create an icon library
 component that follows our existing component patterns. Include proper
 TypeScript types and documentation.
 ```
 
 ## Resources
 
-- **[Complete Figma MCP Guide](/docs/guides/figma-mcp-server)** - Comprehensive integration guide
 - **[Figma API Documentation](https://www.figma.com/developers/api)** - Official API reference
 - **[Design Tokens Community](https://designtokens.org/)** - Token standards and best practices
+- **[MCP Protocol Specification](https://github.com/modelcontextprotocol/specification)** - MCP technical documentation
 
 ## Next Steps
 
-1. **[Setup Instructions](/docs/guides/figma-mcp-server#setup-instructions)** - Installation and configuration
-2. **[Workflow Examples](/docs/guides/figma-mcp-server#workflow-examples)** - Real-world usage patterns  
-3. **[Best Practices](/docs/guides/figma-mcp-server#best-practices)** - Optimization and organization tips
-4. **[Troubleshooting Guide](/docs/guides/figma-mcp-server#troubleshooting)** - Common issues and solutions
+1. **[MCP Setup Guide](/guide/mcp/setup)** - Install and configure MCP servers
+2. **[MCP Overview](/guide/mcp/)** - Explore all available MCP servers
+3. **[Usage Examples](/guide/mcp/examples)** - Real-world scenarios and code samples
+4. **[Troubleshooting](/guide/mcp/troubleshooting)** - Common issues and solutions
