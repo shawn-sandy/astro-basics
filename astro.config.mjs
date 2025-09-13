@@ -64,6 +64,7 @@ export default defineConfig({
                 { label: 'Supabase', link: '/guide/mcp/servers/supabase' },
                 { label: 'Playwright', link: '/guide/mcp/servers/playwright' },
                 { label: 'Clerk', link: '/guide/mcp/servers/clerk' },
+                { label: 'Figma', link: '/guide/mcp/servers/figma' },
               ],
             },
             { label: 'Usage Examples', link: '/guide/mcp/examples' },

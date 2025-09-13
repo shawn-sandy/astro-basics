@@ -464,7 +464,7 @@ npm run lint:all       # Code quality checks
 
 ### Community Resources
 
-- [Figma Community](https://www.figma.com/community)
+- [Figma Community](https://www.figma.com/community/) (Note: May require authentication to access)
 - [Design Tokens Community](https://designtokens.org/)
 - [Web Component Patterns](https://component.gallery/)
 
@@ -472,7 +472,7 @@ npm run lint:all       # Code quality checks
 
 - [Figma Dev Mode](https://help.figma.com/hc/en-us/articles/15023124644247-Guide-to-Dev-Mode)
 - [Design Token Tools](https://github.com/lukasoppermann/design-tokens)
-- [Storybook Integration](https://storybook.js.org/docs/react/workflows/design-tokens)
+- [Storybook Styling Documentation](https://storybook.js.org/docs/configure/styling-and-css)
 
 ## Support and Community
 

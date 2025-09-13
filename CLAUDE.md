@@ -432,3 +432,5 @@ For critical security patches:
 3. **Emergency Deployment** (< 6 hours): Direct to production with monitoring
 
 **Rollback:** Automated triggers for authentication failures, data corruption, or performance degradation >50%
+
+- always create guides in docs/guide using the project starlight integration
