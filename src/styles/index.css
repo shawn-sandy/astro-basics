@@ -370,7 +370,7 @@ form select:user-valid:not(:focus) + p {
     background-position: -200% 0;
   }
 }
-@media (width <= 640px) {
+@media (max-width: 640px) {
   .user-profile {
     padding: 1rem;
   }
