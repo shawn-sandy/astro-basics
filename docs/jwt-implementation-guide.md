@@ -15,6 +15,7 @@ Complete step-by-step implementation for secure PII handling with JWT authentica
 
 1. **Login to Clerk Dashboard** → Your Project → JWT Templates
 2. **Create New Template**:
+
    ```json
    {
      "name": "supabase",
@@ -29,6 +30,7 @@ Complete step-by-step implementation for secure PII handling with JWT authentica
      }
    }
    ```
+
 3. **Copy the Issuer URL** (needed for Supabase)
 
 ### Step 2: Configure Clerk Webhooks
@@ -66,6 +68,7 @@ CLERK_JWT_ISSUER=https://your-clerk-frontend-api.clerk.accounts.dev
 
 1. **Authentication** → Providers → Add Provider
 2. **Custom OAuth Provider**:
+
    ```json
    {
      "enabled": true,
@@ -430,14 +433,14 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
 
 ## Troubleshooting
 
-### Common Issues:
+### Common Issues
 
 1. **JWT Token Invalid**: Check Clerk JWT template configuration
 2. **RLS Policy Denies Access**: Verify JWT sub claim matches clerk_id
 3. **Webhook Not Working**: Check endpoint URL and signature verification
 4. **CORS Errors**: Configure allowed origins in Supabase
 
-### Debug Tools:
+### Debug Tools
 
 - Supabase logs: Dashboard → Logs
 - Clerk logs: Dashboard → Logs

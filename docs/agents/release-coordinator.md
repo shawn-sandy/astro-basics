@@ -90,6 +90,7 @@ Establish non-negotiable quality gates:
    - Cross-browser compatibility verified
 
 4. **Documentation Gate**
+
    ```markdown
    Delegate to documentation agent:
    "Generate complete release documentation for version X.Y.Z including

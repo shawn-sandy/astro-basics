@@ -36,6 +36,7 @@ Before starting, ensure you have:
 - [ ] Clerk account with a project configured
 - [ ] Supabase project with users table created
 - [ ] Environment variables configured in `.env`:
+
   ```env
   PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
   CLERK_SECRET_KEY=sk_test_...
@@ -181,9 +182,11 @@ ngrok http 4321 --region=eu
 1. After creation, click on the webhook endpoint
 2. Copy the **Signing Secret** (starts with `whsec_`)
 3. Update your `.env` file:
+
    ```env
    CLERK_WEBHOOK_SECRET=whsec_YOUR_ACTUAL_SECRET
    ```
+
 4. Restart your Astro dev server to load the new environment variable
 
 ## Testing Webhook Events
@@ -197,11 +200,12 @@ ngrok http 4321 --region=eu
 
 2. **Monitor ngrok inspector**:
 
-   - Open http://127.0.0.1:4040 in your browser
+   - Open <http://127.0.0.1:4040> in your browser
    - View incoming webhook requests
    - Check response status (should be 200)
 
 3. **Verify in Supabase**:
+
    ```sql
    SELECT * FROM public.users
    WHERE email = 'test@example.com'
@@ -221,6 +225,7 @@ ngrok http 4321 --region=eu
    - Should show successful delivery (200 status)
 
 3. **Verify update in Supabase**:
+
    ```sql
    SELECT clerk_id, email, username, full_name, updated_at
    FROM public.users
@@ -237,6 +242,7 @@ ngrok http 4321 --region=eu
    ```
 
 2. **Check last_sign_in_at update**:
+
    ```sql
    SELECT clerk_id, email, last_sign_in_at
    FROM public.users
@@ -257,7 +263,7 @@ curl -X POST https://abc123def456.ngrok-free.app/api/user/sync \
 
 ### ngrok Web Interface
 
-Access the inspector at http://127.0.0.1:4040 to:
+Access the inspector at <http://127.0.0.1:4040> to:
 
 - View all HTTP requests and responses
 - Inspect request headers and bodies
@@ -374,10 +380,12 @@ npm run dev
 
 - Check Supabase service role key is configured
 - Verify database connection:
+
   ```typescript
   const { data, error } = await supabase.from('users').select('count')
   console.log('Connection test:', { data, error })
   ```
+
 - Check RLS policies allow service role operations
 
 ### Debug Checklist

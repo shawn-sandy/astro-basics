@@ -779,7 +779,7 @@ $$ LANGUAGE plpgsql;
 
 ## Troubleshooting
 
-### Common Issues:
+### Common Issues
 
 1. **"Invalid JWT" errors**:
 
@@ -795,7 +795,7 @@ $$ LANGUAGE plpgsql;
    - Check Clerk session configuration
    - Verify `accessToken` function in Supabase client
 
-### Debug Steps:
+### Debug Steps
 
 ```javascript
 // Debug JWT claims
