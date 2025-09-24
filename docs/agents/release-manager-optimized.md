@@ -114,6 +114,7 @@ Before any production release:
    - Cross-browser compatibility verified
 
 4. **Documentation Gate**
+
    ```markdown
    Delegate to documentation agent:
    "Generate release documentation for version X.Y.Z including release notes,

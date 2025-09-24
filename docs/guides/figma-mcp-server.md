@@ -251,6 +251,7 @@ Create design system rules for this project
    - Add new tokens as needed
 
 3. **Generate Documentation**
+
    ```markdown
    Create design system rules for the updated tokens
    ```
@@ -269,6 +270,7 @@ Create design system rules for this project
    - Discover code components not represented in designs
 
 3. **Generate Missing Components**
+
    ```markdown
    Generate React code for the unmapped components
    ```
@@ -430,6 +432,7 @@ Given the astro-basics project structure, here's how to effectively use the Figm
    ```
 
 3. **React Component Support**
+
    ```markdown
    Create a React component for client-side interactivity, following our src/components/react/ patterns
    ```

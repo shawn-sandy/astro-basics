@@ -48,11 +48,13 @@ SUPABASE_JWT_SECRET=your-jwt-secret  # New: Must match Supabase dashboard
 
 1. Navigate to Supabase Dashboard → Authentication → Providers
 2. Add Custom JWT Provider:
+
    - **Issuer**: `https://clerk.com`
    - **JWKS URL**: `https://[your-clerk-domain].clerk.accounts.dev/.well-known/jwks.json`
    - **Audience**: Your Supabase project URL
    - **Role Claim Path**: `role` (optional)
    - **Custom Claims Mapping**:
+
      ```json
      {
        "user_id": "sub",
@@ -67,6 +69,7 @@ SUPABASE_JWT_SECRET=your-jwt-secret  # New: Must match Supabase dashboard
 1. In Clerk Dashboard → JWT Templates → New Template
 2. Name: `supabase`
 3. Claims:
+
    ```json
    {
      "sub": "{{user.id}}",

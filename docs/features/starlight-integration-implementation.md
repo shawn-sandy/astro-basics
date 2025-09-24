@@ -52,7 +52,7 @@ npm install @astrojs/starlight
 
 **Status**: ✅ **COMPLETED** - Full Starlight configuration implemented with comprehensive features
 
-#### Update `astro.config.mjs`:
+#### Update `astro.config.mjs`
 
 **Implemented Configuration**:
 

@@ -130,6 +130,7 @@ When `DATABASE_PROVIDER` is not set or set to `auto`:
    ```
 
 5. **Verify Switch**
+
    ```bash
    node scripts/test-comments-system.mjs
    npm run build
@@ -262,6 +263,7 @@ If switching fails:
    ```
 
 3. **Check Application**
+
    ```bash
    npm run build
    npm run dev

@@ -209,18 +209,22 @@ Thanks to all contributors who made this release possible:
 ### For Users
 
 1. Update your dependencies:
+
    ```bash
    npm install astro-basics-website@{VERSION}
    ```
+
 2. {ADDITIONAL_USER_STEPS}
 
 ### For Developers
 
 1. Pull latest changes:
+
    ```bash
    git pull origin primary
    npm install
    ```
+
 2. {DEVELOPER_SPECIFIC_STEPS}
 
 ## 🔗 Links

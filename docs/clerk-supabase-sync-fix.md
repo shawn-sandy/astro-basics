@@ -74,8 +74,10 @@ To complete the integration, you need to configure webhooks in the Clerk Dashboa
      - `session.created`
 
 3. **Copy Webhook Secret**
+
    - Copy the webhook secret from Clerk Dashboard
    - Update `.env` file:
+
      ```env
      CLERK_WEBHOOK_SECRET=whsec_your_actual_webhook_secret_here
      ```
