@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro'
 
-import { insertMessage, isTursoConfigured } from '#libs/turso'
-import type { MessageData } from '#libs/turso'
+import { getDatabase } from '#libs/database'
+import type { MessageData } from '#libs/database-types'
 import {
   validateCsrfToken,
   extractCsrfTokenFromForm,
@@ -13,12 +13,27 @@ import { sanitizeMessageData } from '#utils/input-sanitization'
 import { extractClientIP } from '#utils/ip-validation'
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-  // Check if Turso is configured
-  if (!isTursoConfigured()) {
+  let db
+  try {
+    db = getDatabase()
+    if (!db.isConfigured()) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Database is not configured. Please contact the administrator.',
+        }),
+        {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    }
+  } catch (error) {
+    console.error('Database initialization error:', error)
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Database is not configured. Please contact the administrator.',
+        error: 'Database service unavailable. Please contact the administrator.',
       }),
       {
         status: 503,
@@ -177,7 +192,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Insert message into database
-    const messageId = await insertMessage(messageData)
+    const messageId = await db.insertMessage(messageData)
 
     return new Response(
       JSON.stringify({
@@ -208,11 +223,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
 // Optional: Add GET endpoint to check API status
 export const GET: APIRoute = async () => {
+  let isConfigured = false
+  let providerName = 'none'
+
+  try {
+    const db = getDatabase()
+    isConfigured = db.isConfigured()
+    providerName = db.getProviderName()
+  } catch (error) {
+    console.error('Database check error:', error)
+  }
+
   return new Response(
     JSON.stringify({
       success: true,
       message: 'Contact API is running',
-      configured: isTursoConfigured(),
+      configured: isConfigured,
+      provider: providerName,
     }),
     {
       status: 200,

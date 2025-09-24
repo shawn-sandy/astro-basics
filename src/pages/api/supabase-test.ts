@@ -1,16 +1,18 @@
 import type { APIRoute } from 'astro'
 
-import { getSupabase, isSupabaseConfigured } from '#libs/supabase'
+import { getDatabase } from '#libs/database'
 
 export const GET: APIRoute = async () => {
   try {
-    // Check if Supabase is configured
-    if (!isSupabaseConfigured()) {
+    // Use database abstraction layer
+    const db = getDatabase()
+
+    if (!db.isConfigured()) {
       return new Response(
         JSON.stringify({
           success: false,
-          message: 'Supabase not configured',
-          error: 'Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables',
+          message: 'Database not configured',
+          error: 'No database provider is properly configured',
         }),
         {
           status: 503,
@@ -21,12 +23,35 @@ export const GET: APIRoute = async () => {
       )
     }
 
-    const supabase = getSupabase()
-    if (!supabase) {
+    const providerName = db.getProviderName()
+
+    // Test basic connection by attempting to get messages
+    try {
+      const messages = await db.getMessages({ limit: 1 })
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: `Database connection successful (${providerName})`,
+          provider: providerName,
+          timestamp: new Date().toISOString(),
+          testResult: `Found ${messages.length} messages in test query`,
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+    } catch (queryError) {
+      console.error('Database query error:', queryError)
       return new Response(
         JSON.stringify({
           success: false,
-          message: 'Failed to initialize Supabase client',
+          message: `Database connection failed (${providerName})`,
+          provider: providerName,
+          error: queryError instanceof Error ? queryError.message : 'Unknown query error',
         }),
         {
           status: 500,
@@ -36,41 +61,6 @@ export const GET: APIRoute = async () => {
         }
       )
     }
-
-    // Test basic connection by checking auth
-    const { data, error } = await supabase.auth.getSession()
-
-    if (error) {
-      console.error('Supabase connection error:', error)
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: 'Failed to connect to Supabase',
-          error: error.message,
-        }),
-        {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Supabase connection successful',
-        timestamp: new Date().toISOString(),
-        sessionData: data ? 'Session data available' : 'No session data',
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    )
   } catch (error) {
     console.error('Unexpected error:', error)
     return new Response(
@@ -91,13 +81,14 @@ export const GET: APIRoute = async () => {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    // Check if Supabase is configured
-    if (!isSupabaseConfigured()) {
+    const db = getDatabase()
+
+    if (!db.isConfigured()) {
       return new Response(
         JSON.stringify({
           success: false,
-          message: 'Supabase not configured',
-          error: 'Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables',
+          message: 'Database not configured',
+          error: 'No database provider is properly configured',
         }),
         {
           status: 503,
@@ -108,49 +99,47 @@ export const POST: APIRoute = async ({ request }) => {
       )
     }
 
-    const supabase = getSupabase()
-    if (!supabase) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: 'Failed to initialize Supabase client',
-        }),
-        {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-    }
-
     const body = await request.json()
     const { action } = body
+    const providerName = db.getProviderName()
 
     switch (action) {
       case 'test-query': {
-        // Test a simple query (this will fail if no tables exist, which is expected)
-        const { data: testData, error: testError } = await supabase
-          .from('test_table')
-          .select('*')
-          .limit(1)
+        try {
+          // Test database operations using abstraction layer
+          const messages = await db.getMessages({ limit: 1 })
 
-        return new Response(
-          JSON.stringify({
-            success: !testError,
-            message: testError
-              ? 'No test table found (expected for new setup)'
-              : 'Test query successful',
-            error: testError?.message,
-            data: testData,
-          }),
-          {
-            status: 200,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
+          return new Response(
+            JSON.stringify({
+              success: true,
+              message: `Test query successful (${providerName})`,
+              provider: providerName,
+              testResult: `Retrieved ${messages.length} messages`,
+              data: messages,
+            }),
+            {
+              status: 200,
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          )
+        } catch (testError) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              message: `Test query failed (${providerName})`,
+              provider: providerName,
+              error: testError instanceof Error ? testError.message : 'Unknown error',
+            }),
+            {
+              status: 500,
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          )
+        }
       }
 
       default:
