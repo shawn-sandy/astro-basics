@@ -1,0 +1,905 @@
+---
+title: Database Troubleshooting
+description: Complete troubleshooting guide for diagnosing and resolving database switching system issues, with step-by-step solutions for common problems.
+sidebar:
+  order: 7
+---
+
+import { Card, CardGrid, Code, Tabs, TabItem, Aside, Steps } from '@astrojs/starlight/components'
+
+This comprehensive troubleshooting guide helps you diagnose and resolve issues with the database switching system. Whether you're dealing with connection failures, switching problems, or configuration errors, this guide provides step-by-step solutions.
+
+## Quick Diagnostics
+
+Start with these commands to understand your current system state:
+
+<CardGrid>
+  <Card title="🔍 System Status" icon="information">
+    ```bash
+    npm run db:status
+    ```
+    Shows current configuration, active provider, and available options.
+  </Card>
+  <Card title="🔗 Connection Test" icon="approve-check">
+    ```bash
+    npm run db:manage test
+    ```
+    Tests connectivity to all configured database providers.
+  </Card>
+  <Card title="💊 Health Check" icon="heart">
+    ```bash
+    npm run db:manage health
+    ```
+    Runs comprehensive diagnostics and performance checks.
+  </Card>
+  <Card title="🚨 Emergency Recovery" icon="warning">
+    ```bash
+    npm run db:restore
+    ```
+    Restores previous configuration if switching failed.
+  </Card>
+</CardGrid>
+
+## Common Error Messages
+
+### "Database not configured"
+
+This error appears when the system can't find valid database credentials.
+
+**Symptoms:**
+- API endpoints return 503 Service Unavailable errors
+- Dashboard shows "Database service unavailable"
+- `npm run db:status` shows "❌ No database providers configured"
+
+<Tabs>
+  <TabItem label="Quick Fix">
+    <Steps>
+      1. Check what's missing:
+         ```bash
+         npm run db:status
+         ```
+
+      2. Run the setup wizard:
+         ```bash
+         npm run db:wizard
+         ```
+
+      3. Follow the interactive prompts to configure your database
+    </Steps>
+  </TabItem>
+  <TabItem label="Manual Fix">
+    <Steps>
+      1. Check your `.env` file has required variables:
+         ```bash
+         cat .env | grep -E "(TURSO|SUPABASE)"
+         ```
+
+      2. Add missing credentials to `.env`:
+         ```env
+         # For Turso
+         TURSO_DATABASE_URL=libsql://your-db-name.turso.io
+         TURSO_AUTH_TOKEN=eyJ...
+
+         # For Supabase  
+         SUPABASE_URL=https://your-project.supabase.co
+         SUPABASE_SERVICE_ROLE_KEY=eyJ...
+         ```
+
+      3. Verify file exists and has content:
+         ```bash
+         ls -la .env
+         wc -l .env  # Should show more than just comments
+         ```
+    </Steps>
+  </TabItem>
+</Tabs>
+
+### "Connection failed" During Operations
+
+Database operations timeout or fail to connect to the server.
+
+**Symptoms:**
+- Database operations timeout
+- "Failed to connect" errors in logs
+- API endpoints return 500 Internal Server errors
+
+<Aside type="tip" title="Debug Network Issues">
+Test connectivity outside the application to isolate network vs. configuration issues.
+</Aside>
+
+<Tabs>
+  <TabItem label="Network Diagnosis">
+    <Steps>
+      1. Test connectivity to both providers:
+         ```bash
+         npm run db:manage test --verbose
+         ```
+
+      2. Check network connectivity (Supabase):
+         ```bash
+         curl -I https://your-project.supabase.co
+         ```
+
+      3. Test from different network if possible
+    </Steps>
+  </TabItem>
+  <TabItem label="Credential Issues">
+    <Steps>
+      1. **Turso**: Verify token hasn't expired
+         - Visit: https://app.turso.tech/[your-org]/[your-db]/settings/tokens
+         - Generate new token if expired
+
+      2. **Supabase**: Verify project is active
+         - Visit: https://supabase.com/dashboard/projects
+         - Check project status and billing
+
+      3. Test with fresh credentials
+    </Steps>
+  </TabItem>
+  <TabItem label="Server Issues">
+    - Check provider status pages for outages
+    - Verify database instance is running
+    - Check for scheduled maintenance windows
+    - Verify database instance performance tier
+  </TabItem>
+</Tabs>
+
+### "Provider detection failed"
+
+Auto-detection doesn't select the expected database provider.
+
+**Symptoms:**
+- Wrong database provider is selected automatically
+- Inconsistent behavior between environments
+- `npm run db:status` shows unexpected active provider
+
+**Solutions:**
+
+<Steps>
+1. **Set Explicit Provider** (Recommended):
+   ```bash
+   # Set explicit provider in .env
+   echo "DATABASE_PROVIDER=turso" >> .env
+   # or
+   echo "DATABASE_PROVIDER=supabase" >> .env
+   ```
+
+2. **Clear Auto-Detection Issues**:
+   ```bash
+   # Remove auto-detection, use explicit choice
+   sed -i 's/DATABASE_PROVIDER=auto/DATABASE_PROVIDER=turso/' .env
+   ```
+
+3. **Understand Priority Logic**:
+   - Priority: Explicit choice → Supabase → Turso → Error
+   - Multiple providers? Set `DATABASE_PROVIDER` to override
+</Steps>
+
+### "Schema validation failed"
+
+Operations succeed but data doesn't match expectations.
+
+**Symptoms:**
+- Missing tables or columns
+- Type conversion errors
+- Inconsistent data between providers
+
+<Tabs>
+  <TabItem label="Quick Schema Check">
+    ```bash
+    npm run db:schema
+    # Shows detailed schema comparison between providers
+    ```
+  </TabItem>
+  <TabItem label="Migration Fix">
+    <Steps>
+      1. **For Turso**:
+         ```bash
+         npm run db:migrate
+         ```
+
+      2. **For Supabase**:
+         - Open Supabase Dashboard
+         - Check migrations in Database → Migrations
+         - Apply pending migrations
+
+      3. **Manual Schema Verification**:
+         ```bash
+         # List tables in current database
+         npm run db:manage tables
+         
+         # Compare with expected schema in docs
+         ```
+    </Steps>
+  </TabItem>
+</Tabs>
+
+## Database-Specific Issues
+
+### Turso (LibSQL) Problems
+
+<CardGrid>
+  <Card title="Invalid URL Format" icon="error">
+    **Problem**: `TURSO_DATABASE_URL` has wrong format
+    
+    **Fix**:
+    ```env
+    # ✅ Correct format:
+    TURSO_DATABASE_URL=libsql://database-name.turso.io
+    
+    # ❌ Wrong format:
+    TURSO_DATABASE_URL=https://database-name.turso.io
+    ```
+  </Card>
+  <Card title="Authentication Failed" icon="lock-closed">
+    **Problem**: Auth token expired or invalid
+    
+    **Fix**:
+    1. Visit: https://app.turso.tech/[org]/[db]/settings/tokens
+    2. Generate new token
+    3. Update `TURSO_AUTH_TOKEN` in `.env`
+  </Card>
+  <Card title="Database Not Found" icon="question-mark">
+    **Problem**: Database doesn't exist in Turso
+    
+    **Fix**:
+    - Verify database exists in Turso dashboard
+    - Check organization and database name spelling
+    - Ensure you have access permissions
+  </Card>
+</CardGrid>
+
+### Supabase (PostgreSQL) Problems
+
+<CardGrid>
+  <Card title="Invalid API Key" icon="key">
+    **Problem**: Using wrong key type for operations
+    
+    **Fix**:
+    ```env
+    # ❌ Don't use anon key for server operations
+    SUPABASE_ANON_KEY=eyJ...
+    
+    # ✅ Use service role for server operations
+    SUPABASE_SERVICE_ROLE_KEY=eyJ...
+    ```
+  </Card>
+  <Card title="RLS Policy Violation" icon="shield">
+    **Problem**: Row Level Security blocks operations
+    
+    **Fix**:
+    - Check RLS policies in Supabase Dashboard
+    - Ensure service role can access required tables
+    - Review policy conditions for your use case
+  </Card>
+  <Card title="Project Paused" icon="pause">
+    **Problem**: Free tier project paused due to inactivity
+    
+    **Fix**:
+    - Visit Supabase Dashboard
+    - Unpause project in Settings
+    - Consider upgrading plan if needed frequently
+  </Card>
+</CardGrid>
+
+## Switching Operation Issues
+
+### Backup Creation Failed
+
+Switching command fails before making configuration changes.
+
+**Symptoms:**
+- Switching stops with "backup creation failed"
+- `.env.backup` file is not created
+- File permission errors
+
+<Tabs>
+  <TabItem label="Automatic Fix">
+    <Steps>
+      1. Check filesystem permissions:
+         ```bash
+         ls -la .env
+         ls -la .env.backup 2>/dev/null || echo "Backup doesn't exist"
+         ```
+
+      2. Fix permissions if needed:
+         ```bash
+         chmod 644 .env
+         ```
+
+      3. Retry switching operation
+    </Steps>
+  </TabItem>
+  <TabItem label="Manual Backup">
+    <Steps>
+      1. Create backup manually:
+         ```bash
+         cp .env .env.backup
+         ```
+
+      2. Verify backup was created:
+         ```bash
+         ls -la .env.backup
+         ```
+
+      3. Proceed with switching operation
+    </Steps>
+  </TabItem>
+</Tabs>
+
+### Environment Update Failed
+
+Switching appears successful but database doesn't change.
+
+**Diagnosis Steps:**
+
+<Steps>
+1. Check if `.env` file is writable:
+   ```bash
+   ls -la .env
+   ```
+
+2. Verify current provider:
+   ```bash
+   npm run db:status | grep "Active Provider"
+   ```
+
+3. Check file contents:
+   ```bash
+   cat .env | grep DATABASE_PROVIDER
+   ```
+</Steps>
+
+**Solutions:**
+
+<Tabs>
+  <TabItem label="Fix Permissions">
+    ```bash
+    # Make .env writable
+    chmod 644 .env
+    
+    # Retry switching operation
+    npm run db:switch:turso  # or supabase
+    ```
+  </TabItem>
+  <TabItem label="Manual Update">
+    ```bash
+    # Update environment manually
+    echo "DATABASE_PROVIDER=turso" >> .env
+    
+    # Or edit directly with your preferred editor
+    nano .env  # or vim, code, etc.
+    ```
+  </TabItem>
+</Tabs>
+
+### Rollback Required
+
+Switch completed but new database configuration doesn't work.
+
+<Aside type="caution" title="Act Quickly">
+If your application is broken in production, use the emergency rollback first, then diagnose the issue.
+</Aside>
+
+<Steps>
+1. **Immediate Rollback**:
+   ```bash
+   npm run db:restore
+   ```
+
+2. **Verify Restoration**:
+   ```bash
+   npm run db:status
+   ```
+
+3. **Manual Rollback** (if automatic fails):
+   ```bash
+   cp .env.backup .env
+   npm run db:status  # Verify restoration
+   ```
+
+4. **Diagnose Original Issue**:
+   ```bash
+   # Test the problematic configuration
+   npm run db:manage test
+   npm run db:manage health --verbose
+   ```
+</Steps>
+
+## Development Environment Issues
+
+### Module Import Errors
+
+**Symptoms:**
+- Import errors for database modules
+- TypeScript compilation fails
+- "Cannot find module" errors
+
+**Solutions:**
+
+<Tabs>
+  <TabItem label="Node Modules Reset">
+    <Steps>
+      1. Clear Node modules and package lock:
+         ```bash
+         rm -rf node_modules package-lock.json
+         ```
+
+      2. Reinstall dependencies:
+         ```bash
+         npm install
+         ```
+
+      3. Check TypeScript configuration:
+         ```bash
+         npm run type-check
+         ```
+    </Steps>
+  </TabItem>
+  <TabItem label="Cache Issues">
+    <Steps>
+      1. Clear npm cache:
+         ```bash
+         npm cache clean --force
+         ```
+
+      2. Clear TypeScript cache:
+         ```bash
+         npx tsc --build --clean
+         ```
+
+      3. Restart development server:
+         ```bash
+         npm run start
+         ```
+    </Steps>
+  </TabItem>
+</Tabs>
+
+### Hot Reload Not Working
+
+Database configuration changes don't take effect without server restart.
+
+**Expected Behavior**: The system supports real-time provider switching without server restart.
+
+**Troubleshooting Steps:**
+
+<Steps>
+1. **Check Current Provider** in real-time:
+   ```bash
+   # This should show changes immediately
+   npm run db:status
+   ```
+
+2. **Test API Endpoint** for real-time switching:
+   ```bash
+   curl http://localhost:4321/api/supabase-test
+   # Response should show current active provider
+   ```
+
+3. **Force Restart** if needed:
+   ```bash
+   # Kill existing processes
+   pkill -f "npm run"
+   
+   # Start fresh
+   npm run start
+   ```
+</Steps>
+
+### Production vs Development Behavior
+
+**Symptoms:**
+- Works locally but fails in production
+- Different database provider selected in different environments
+
+<Tabs>
+  <TabItem label="Environment Variables">
+    <Steps>
+      1. **Check Production Environment Variables**:
+         - Ensure `DATABASE_PROVIDER` is set explicitly
+         - Verify all required credentials are present
+         - Use same credential format as local
+
+      2. **Set Explicit Provider** in production:
+         ```env
+         DATABASE_PROVIDER=supabase  # or turso
+         ```
+
+      3. **Validate Network Access**:
+         - Test database connectivity from production environment
+         - Check firewall rules and security groups
+    </Steps>
+  </TabItem>
+  <TabItem label="Configuration Debugging">
+    <Steps>
+      1. **Compare Environment Files**:
+         ```bash
+         # Local
+         cat .env | grep -E "(DATABASE|TURSO|SUPABASE)" | sort
+         
+         # Production (if accessible)
+         env | grep -E "(DATABASE|TURSO|SUPABASE)" | sort
+         ```
+
+      2. **Test Production Database Access**:
+         ```bash
+         # From production environment
+         npm run db:manage test
+         npm run db:manage health
+         ```
+    </Steps>
+  </TabItem>
+</Tabs>
+
+## API Endpoint Issues
+
+### Wrong Provider Information
+
+API endpoints report incorrect or inconsistent provider information.
+
+**Diagnosis:**
+
+<Steps>
+1. **Test API Endpoint**:
+   ```bash
+   curl http://localhost:4321/api/supabase-test
+   ```
+
+2. **Check System Status**:
+   ```bash
+   npm run db:status
+   ```
+
+3. **Compare Results**: API response should match system status
+</Steps>
+
+**Solutions:**
+
+<Tabs>
+  <TabItem label="Cache Issues">
+    - Clear any cached environment variables
+    - Restart development server completely
+    - Check for multiple `.env` files in different locations
+  </TabItem>
+  <TabItem label="Code Issues">
+    - Verify API endpoints use `getDatabase()` correctly
+    - Check for hardcoded database client imports
+    - Ensure provider detection logic is working
+  </TabItem>
+</Tabs>
+
+### Silent API Failures
+
+**Symptoms:**
+- No errors but operations don't work
+- Empty results from database queries
+- API returns success but no data changes
+
+<Steps>
+1. **Test Direct Database Connection**:
+   ```bash
+   npm run db:manage test
+   ```
+
+2. **Check API Logs** in development:
+   ```bash
+   npm run dev
+   # Look for console errors in terminal
+   ```
+
+3. **Verify Database Tables**:
+   ```bash
+   npm run db:manage tables
+   ```
+
+4. **Check Permissions** (Supabase):
+   - Review RLS policies in dashboard
+   - Verify service role permissions
+</Steps>
+
+## Performance Issues
+
+### Slow Database Operations
+
+**Symptoms:**
+- API endpoints timeout frequently
+- Dashboard takes long time to load
+- Database queries are slower than expected
+
+<Tabs>
+  <TabItem label="Performance Diagnosis">
+    <Steps>
+      1. **Run Health Check** with timing:
+         ```bash
+         npm run db:manage health --verbose
+         ```
+
+      2. **Check Network Latency**:
+         - Test connection speed to database
+         - Consider geographic distance to database server
+
+      3. **Compare Providers**:
+         ```bash
+         # Switch and compare performance
+         npm run db:switch:turso
+         # Test operations...
+         
+         npm run db:switch:supabase  
+         # Test same operations...
+         ```
+    </Steps>
+  </TabItem>
+  <TabItem label="Performance Solutions">
+    - **Database Instance**: Verify performance tier/plan
+    - **Network**: Check for network issues or proxy delays
+    - **Provider Choice**: Turso typically faster for simple queries
+    - **Query Optimization**: Review query patterns and indexes
+  </TabItem>
+</Tabs>
+
+### Memory Issues During Switching
+
+**Symptoms:**
+- Switching process crashes
+- Out of memory errors during database operations
+
+**Solutions:**
+
+<Steps>
+1. **Use Dry-Run Mode** first:
+   ```bash
+   node scripts/switch-database.js --to turso --dry-run
+   ```
+
+2. **Stop Other Processes** before switching:
+   ```bash
+   # Stop dev server and other resource-intensive processes
+   pkill -f "npm run"
+   ```
+
+3. **Switch Without Other Operations** running:
+   ```bash
+   npm run db:switch:turso
+   # Then restart other processes
+   npm run start
+   ```
+</Steps>
+
+## File System Issues
+
+### Permission Denied Errors
+
+**Symptoms:**
+- Cannot read or write `.env` files
+- Script execution fails with permission errors
+
+<Steps>
+1. **Fix File Permissions**:
+   ```bash
+   chmod 644 .env .env.backup
+   chmod +x scripts/*.js
+   ```
+
+2. **Check Directory Permissions**:
+   ```bash
+   ls -la .
+   # Verify you can read/write in current directory
+   ```
+
+3. **Fix Ownership Issues** (if needed):
+   ```bash
+   # Only if files are owned by different user
+   sudo chown $USER:$USER .env .env.backup
+   ```
+</Steps>
+
+### Git Conflicts with Backup Files
+
+**Problem**: Git wants to commit `.env.backup` files, causing merge conflicts.
+
+<Steps>
+1. **Ensure Backup Files are Ignored**:
+   ```bash
+   echo ".env.backup*" >> .gitignore
+   echo ".env.*.backup" >> .gitignore
+   ```
+
+2. **Remove from Git** if already tracked:
+   ```bash
+   git rm --cached .env.backup
+   git rm --cached .env.*.backup
+   ```
+
+3. **Clean Up Repository**:
+   ```bash
+   git add .gitignore
+   git commit -m "Add .env backup files to .gitignore"
+   ```
+</Steps>
+
+## Advanced Debugging
+
+### Enable Debug Mode
+
+For detailed troubleshooting information:
+
+<Tabs>
+  <TabItem label="Environment Debug">
+    ```bash
+    # Enable debug logging for all database operations
+    DEBUG=1 npm run db:manage test
+    DEBUG=1 npm run db:switch:turso
+    ```
+  </TabItem>
+  <TabItem label="Verbose Diagnostics">
+    ```bash
+    # Get detailed output for all operations
+    npm run db:manage status --verbose
+    npm run db:manage health --verbose
+    ```
+  </TabItem>
+</Tabs>
+
+### Manual Database Testing
+
+Test database connections directly outside the abstraction layer:
+
+<Tabs>
+  <TabItem label="Turso Direct Test">
+    ```bash
+    node -e "
+    import { createClient } from '@libsql/client';
+    const client = createClient({
+      url: process.env.TURSO_DATABASE_URL,
+      authToken: process.env.TURSO_AUTH_TOKEN
+    });
+    console.log(await client.execute('SELECT 1 as test'));
+    "
+    ```
+  </TabItem>
+  <TabItem label="Supabase Direct Test">
+    ```bash
+    node -e "
+    import { createClient } from '@supabase/supabase-js';
+    const client = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+    const { data, error } = await client
+      .from('messages')
+      .select('count');
+    console.log('Result:', data, 'Error:', error);
+    "
+    ```
+  </TabItem>
+</Tabs>
+
+### Environment Variable Debugging
+
+Check for hidden characters or configuration issues:
+
+```bash
+# Check all database-related environment variables
+env | grep -E "(DATABASE|TURSO|SUPABASE)" | sort
+
+# Check for invisible characters or extra spaces
+od -c .env | grep -E "(TURSO|SUPABASE|DATABASE)"
+
+# Validate .env file format
+npm run db:manage validate-config
+```
+
+## Recovery Procedures
+
+### Complete System Reset
+
+If all else fails, reset the entire database configuration:
+
+<Steps>
+1. **Backup Current State**:
+   ```bash
+   cp .env .env.emergency-backup
+   cp .env.backup .env.backup.emergency 2>/dev/null || true
+   ```
+
+2. **Run Fresh Setup**:
+   ```bash
+   npm run db:wizard
+   # Follow prompts to reconfigure from scratch
+   ```
+
+3. **Test New Configuration**:
+   ```bash
+   npm run db:status
+   npm run db:manage test
+   ```
+
+4. **Restore if Needed**:
+   ```bash
+   # If new setup doesn't work
+   cp .env.emergency-backup .env
+   ```
+</Steps>
+
+### Collecting Diagnostic Information
+
+When reporting issues or asking for help, collect this information:
+
+```bash
+# Create comprehensive diagnostic report
+{
+  echo "=== System Information ==="
+  echo "Node version: $(node --version)"
+  echo "NPM version: $(npm --version)"
+  echo "OS: $(uname -a)"
+  echo
+  
+  echo "=== Database Status ==="
+  npm run db:status
+  echo
+  
+  echo "=== Health Check ==="
+  npm run db:manage health
+  echo
+  
+  echo "=== Environment Variables ==="
+  env | grep -E "(DATABASE|TURSO|SUPABASE)" | sed 's/=.*/=***/' | sort
+} > debug-report.txt
+```
+
+## Prevention Best Practices
+
+### Regular Health Checks
+
+Add these to your development routine:
+
+```bash
+# Weekly health check
+npm run db:status
+npm run db:manage health
+
+# Before major changes
+npm run db:backup
+npm run db:schema
+```
+
+### Safe Development Workflow
+
+<Steps>
+1. **Always Backup** before experiments:
+   ```bash
+   npm run db:backup
+   ```
+
+2. **Test Changes** with dry-run first:
+   ```bash
+   node scripts/switch-database.js --to turso --dry-run
+   ```
+
+3. **Validate Configuration** after changes:
+   ```bash
+   npm run db:schema
+   npm run db:manage test
+   ```
+
+4. **Keep Emergency Backup**:
+   ```bash
+   # Maintain a known-good configuration
+   cp .env .env.known-good
+   ```
+</Steps>
+
+### Version Control Safety
+
+```bash
+# Always check before committing
+git status | grep -E "(\.env|backup)" && echo "⚠️  Check .env files"
+
+# Verify .gitignore is protecting secrets
+git ls-files | grep -E "\.env" && echo "⚠️  .env files in git!"
+```
+
+---
+
+This troubleshooting guide covers the most common issues you might encounter with the database switching system. For additional help or to report new issues, refer to the [main database switching guide](/guide/database-switching/) or check the project's GitHub repository for the latest updates and community support.
