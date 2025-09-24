@@ -95,6 +95,21 @@ npx playwright test path/to/e2e.spec.ts  # Run specific Playwright test
 ### Database Commands
 
 ```bash
+# Database Management
+npm run db:status     # Check current database configuration and status
+npm run db:wizard     # Interactive setup wizard for first-time configuration
+npm run db:manage     # Advanced database management CLI
+
+# Database Switching (with automatic backups)
+npm run db:switch:turso      # Switch to Turso database
+npm run db:switch:supabase   # Switch to Supabase database
+npm run db:backup           # Create configuration backup
+npm run db:restore          # Restore from backup
+
+# Schema and Validation
+npm run db:schema     # Validate database schema compatibility
+
+# Legacy Commands (still available)
 npm run db:setup      # Initialize database
 npm run db:reset      # Reset database
 npm run db:check      # Check database connection
@@ -171,8 +186,26 @@ Three collections share identical schema (`src/content/config.ts`):
 
 ### Database Integration
 
-- **Supabase**: Client initialized when env vars present
-- **Turso**: LibSQL client at `src/libs/turso.ts`, validates `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` on import
+The project features a **unified database abstraction layer** that enables seamless switching between database providers:
+
+- **Database Abstraction**: `src/libs/database.ts` provides unified interface for all database operations
+- **Provider Auto-Detection**: Automatically detects and uses available database based on configuration
+- **Unified Types**: `src/libs/database-types.ts` ensures consistent data structures across providers
+- **Safe Switching**: Built-in backup/restore system prevents configuration loss during database switching
+
+**Supported Providers:**
+
+- **Supabase**: PostgreSQL with real-time features, uses service role for server operations
+- **Turso**: LibSQL with edge distribution and low latency
+
+**Provider Selection Priority:**
+
+1. Explicit choice via `DATABASE_PROVIDER` environment variable
+2. Supabase (if configured)
+3. Turso (if configured)
+4. Error if no providers available
+
+All API endpoints and components automatically adapt to the active database provider without code changes.
 
 ### Deployment Adapters
 
@@ -238,14 +271,25 @@ PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 ```
 
-### Optional Services
+### Database Configuration
+
+**Choose one or both database providers:**
 
 ```env
-SUPABASE_URL=https://...
-SUPABASE_ANON_KEY=eyJ...
-TURSO_DATABASE_URL=libsql://...
-TURSO_AUTH_TOKEN=...
+# Database Provider Selection (optional - auto-detects if not specified)
+DATABASE_PROVIDER=turso           # 'turso', 'supabase', or 'auto'
+
+# Supabase (PostgreSQL)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=eyJ...         # For client-side operations
+SUPABASE_SERVICE_ROLE_KEY=eyJ... # For server-side operations (required)
+
+# Turso (LibSQL)
+TURSO_DATABASE_URL=libsql://your-db.turso.io
+TURSO_AUTH_TOKEN=eyJ...          # Authentication token
 ```
+
+**Quick Setup:** Run `npm run db:wizard` for guided configuration.
 
 ## Branch Structure
 
@@ -257,6 +301,8 @@ TURSO_AUTH_TOKEN=...
 - `src/utils/site-config.ts`: Site constants, PAGINATION_COUNT=2
 - `src/libs/content.ts`: Slugify, Truncate utilities
 - `src/constants/formErrors.ts`: Form validation messages
+- `src/libs/database.ts`: Unified database abstraction layer with provider auto-detection
+- `src/libs/database-types.ts`: Shared TypeScript interfaces for consistent data structures
 - `src/libs/turso.ts`: Turso database client with retry logic and message operations
 - `src/libs/supabase.ts`: Supabase client initialization
 - `src/utils/comments-availability.ts`: Comment system availability checker
