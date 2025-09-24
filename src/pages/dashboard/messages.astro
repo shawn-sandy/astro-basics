@@ -1,23 +1,31 @@
 ---
 import Auth from '#layouts/Auth.astro'
 import MessageList from '#components/dashboard/MessageList.astro'
-import { getMessages, isTursoConfigured, type MessageRow } from '#libs/turso'
+import { getDatabase } from '#libs/database'
+import type { Message } from '#libs/database-types'
 
-let messages: MessageRow[] = []
+let messages: Message[] = []
 let error: string | null = null
 
-if (isTursoConfigured()) {
-  try {
-    messages = await getMessages({
-      is_archived: false,
-      limit: 50,
-    })
-  } catch (err) {
-    error = err instanceof Error ? err.message : 'Failed to load messages'
-    console.error('Error fetching messages:', err)
+try {
+  const db = getDatabase()
+
+  if (!db.isConfigured()) {
+    error = 'Database not configured'
+  } else {
+    try {
+      messages = await db.getMessages({
+        archived: false,
+        limit: 50,
+      })
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to load messages'
+      console.error('Error fetching messages:', err)
+    }
   }
-} else {
-  error = 'Database not configured'
+} catch (initError) {
+  error = 'Database service unavailable'
+  console.error('Database initialization error:', initError)
 }
 ---
 
