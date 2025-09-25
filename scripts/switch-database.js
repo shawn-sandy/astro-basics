@@ -137,20 +137,32 @@ function updateDatabaseProvider(newProvider) {
     let envContent = readFileSync(envPath, 'utf-8')
 
     if (newProvider === 'auto') {
-      // Remove DATABASE_PROVIDER line
+      // Remove DATABASE_PROVIDER line with robust regex matching
       envContent = envContent
         .split('\n')
-        .filter(line => !line.startsWith('DATABASE_PROVIDER='))
+        .filter(line => {
+          // Match DATABASE_PROVIDER with optional whitespace and comments
+          const databaseProviderRegex = /^\s*DATABASE_PROVIDER\s*=/i
+          return !databaseProviderRegex.test(line)
+        })
         .join('\n')
       log.info('Removed DATABASE_PROVIDER (auto-detection enabled)')
     } else {
-      // Update or add DATABASE_PROVIDER line
+      // Update or add DATABASE_PROVIDER line with robust parsing
       const lines = envContent.split('\n')
       let found = false
 
+      // Regex to match DATABASE_PROVIDER with optional whitespace and capture comments
+      const databaseProviderRegex = /^\s*DATABASE_PROVIDER\s*=.*?(\s*#.*)?$/i
+
       for (let i = 0; i < lines.length; i++) {
-        if (lines[i].startsWith('DATABASE_PROVIDER=')) {
-          lines[i] = `DATABASE_PROVIDER=${newProvider}`
+        if (databaseProviderRegex.test(lines[i])) {
+          // Extract any trailing comment from the original line
+          const commentMatch = lines[i].match(/\s*#.*$/)
+          const comment = commentMatch ? commentMatch[0] : ''
+          
+          // Replace with new value, preserving comment
+          lines[i] = `DATABASE_PROVIDER=${newProvider}${comment}`
           found = true
           break
         }
