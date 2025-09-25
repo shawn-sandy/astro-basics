@@ -302,8 +302,12 @@ export function getDatabase(): Database {
     case 'supabase':
       return new SupabaseDatabase()
 
+    case 'auto':
+      throw new Error('Auto provider should have resolved to a specific provider during detection')
+
     default:
-      throw new Error(`Unsupported database provider: ${detection.recommended}`)
+      // This should never happen with proper TypeScript typing, but provides safety
+      throw new Error(`Unsupported database provider: ${String(detection.recommended)}`)
   }
 }
 
