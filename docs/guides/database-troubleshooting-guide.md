@@ -78,6 +78,7 @@ npm run db:status
    ```
 
 3. **Manual Configuration Check**
+
    ```bash
    # Validate environment file exists and has content
    ls -la .env
