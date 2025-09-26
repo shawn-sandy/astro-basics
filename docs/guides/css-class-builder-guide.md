@@ -36,11 +36,11 @@ The system scans your component markup and identifies utility classes that can b
 
 ```astro
 <!-- Before: Multiple utility classes -->
-<div class="flex items-center justify-between p-6 bg-white rounded-lg shadow-md border border-gray-200">
+<div
+  class="flex items-center justify-between p-6 bg-white rounded-lg shadow-md border border-gray-200"
+>
   <h3 class="text-xl font-bold text-gray-900">Card Title</h3>
-  <button class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-    Action
-  </button>
+  <button class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"> Action </button>
 </div>
 ```
 
@@ -79,7 +79,7 @@ Utilities are grouped by category and converted to semantic CSS using design tok
     background-color: var(--color-primary-500);
     color: var(--color-neutral-50);
     border-radius: var(--radius-base);
-    
+
     &:hover {
       background-color: var(--color-primary-600);
     }
@@ -90,6 +90,7 @@ Utilities are grouped by category and converted to semantic CSS using design tok
 ### 3. Automatic File Management
 
 The system automatically:
+
 - Creates new SCSS file in `src/styles/components/`
 - Updates `src/styles/index.scss` with the new import
 - Provides before/after code comparison
@@ -101,12 +102,12 @@ The system automatically:
 
 All utility classes are mapped to design tokens for consistency:
 
-| Utility Class | Design Token | CSS Output |
-|---------------|--------------|------------|
-| `p-6` | `--space-6` | `padding: var(--space-6)` |
+| Utility Class    | Design Token          | CSS Output                                   |
+| ---------------- | --------------------- | -------------------------------------------- |
+| `p-6`            | `--space-6`           | `padding: var(--space-6)`                    |
 | `bg-primary-500` | `--color-primary-500` | `background-color: var(--color-primary-500)` |
-| `rounded-lg` | `--radius-lg` | `border-radius: var(--radius-lg)` |
-| `shadow-md` | `--shadow-md` | `box-shadow: var(--shadow-md)` |
+| `rounded-lg`     | `--radius-lg`         | `border-radius: var(--radius-lg)`            |
+| `shadow-md`      | `--shadow-md`         | `box-shadow: var(--shadow-md)`               |
 
 ### Responsive Design Preservation
 
@@ -117,7 +118,7 @@ Design tokens maintain responsive behavior:
   // Tokens automatically adapt to screen size and theme
   padding: var(--space-4); // Responsive spacing
   color: var(--color-primary-500); // Theme-aware colors
-  
+
   @media (min-width: 768px) {
     padding: var(--space-6);
   }
@@ -222,16 +223,19 @@ The system checks for existing class names and suggests alternatives:
 ### Common Issues
 
 **Generated CSS has duplicate properties**
+
 - This is expected when utilities have overlapping styles
 - The last declaration takes precedence (CSS cascade)
 - Review generated CSS and remove duplicates manually if needed
 
 **Class names conflict with existing styles**
+
 - Use the `--class-name` option to specify a custom name
 - Follow your project's naming conventions
 - Check existing `src/styles/components/` directory
 
 **Missing utility mappings**
+
 - Not all utility classes are mapped to design tokens
 - Add custom mappings to the `UTILITY_MAPPINGS` object in the script
 - Submit issues for commonly needed utility mappings
@@ -248,6 +252,7 @@ The system checks for existing class names and suggests alternatives:
 ### Example 1: Card Component
 
 **Input Component:**
+
 ```astro
 <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
   <div class="flex items-center justify-between mb-4">
@@ -259,11 +264,13 @@ The system checks for existing class names and suggests alternatives:
 ```
 
 **Command:**
+
 ```bash
 /css-class-builder --file=src/components/astro/FeatureCard.astro --class-name=feature-card
 ```
 
 **Generated SCSS:**
+
 ```scss
 .feature-card {
   background-color: var(--color-neutral-50);
@@ -303,19 +310,24 @@ The system checks for existing class names and suggests alternatives:
 ### Example 2: Button Component
 
 **Input Component:**
+
 ```astro
-<button class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
+<button
+  class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+>
   <svg class="w-5 h-5 mr-2" fill="currentColor">...</svg>
   Get Started
 </button>
 ```
 
 **Command:**
+
 ```bash
 /css-class-builder --class-name=primary-button
 ```
 
 **Generated SCSS:**
+
 ```scss
 .primary-button {
   display: inline-flex;
@@ -336,7 +348,9 @@ The system checks for existing class names and suggests alternatives:
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 2px var(--color-primary-500), 0 0 0 4px rgba(59, 130, 246, 0.1);
+    box-shadow:
+      0 0 0 2px var(--color-primary-500),
+      0 0 0 4px rgba(59, 130, 246, 0.1);
   }
 
   &__icon {

@@ -59,20 +59,22 @@ import { Header } from 'astro-basics-website'
 ## Environment Setup
 
 1. **Copy environment template**:
+
    ```bash
    cp .env.example .env
    ```
 
 2. **Configure required variables**:
+
    ```env
    # Required for authentication
    PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
    CLERK_SECRET_KEY=sk_test_...
-   
+
    # Optional: Database configuration
    SUPABASE_URL=https://...
    SUPABASE_ANON_KEY=eyJ...
-   
+
    # Optional: Turso configuration
    TURSO_DATABASE_URL=libsql://...
    TURSO_AUTH_TOKEN=...

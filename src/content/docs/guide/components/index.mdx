@@ -10,6 +10,7 @@ The astro-basics component library provides a collection of reusable, well-teste
 ## Component Types
 
 ### Astro Components
+
 Server-rendered components optimized for static content and SEO.
 
 - **Location**: `src/components/astro/`
@@ -17,6 +18,7 @@ Server-rendered components optimized for static content and SEO.
 - **Use Case**: Layout, content display, server-side logic
 
 ### React Components
+
 Interactive components for client-side functionality.
 
 - **Location**: `src/components/react/`
@@ -24,6 +26,7 @@ Interactive components for client-side functionality.
 - **Use Case**: Forms, interactive UI, state management
 
 ### Dashboard Components
+
 Specialized components for authenticated areas.
 
 - **Location**: `src/components/dashboard/`
@@ -35,6 +38,7 @@ Specialized components for authenticated areas.
 ### Layout Components
 
 #### Header
+
 Main site navigation and branding.
 
 ```astro
@@ -42,14 +46,11 @@ Main site navigation and branding.
 import { Header } from '#components/astro/Header.astro'
 ---
 
-<Header 
-  title="My Site"
-  showAuth={true}
-  theme="light"
-/>
+<Header title="My Site" showAuth={true} theme="light" />
 ```
 
 #### Footer
+
 Site footer with links and copyright information.
 
 ```astro
@@ -57,15 +58,13 @@ Site footer with links and copyright information.
 import { Footer } from '#components/astro/Footer.astro'
 ---
 
-<Footer 
-  showSocial={true}
-  copyright="© 2025 My Company"
-/>
+<Footer showSocial={true} copyright="© 2025 My Company" />
 ```
 
 ### Content Components
 
 #### PostCard
+
 Display blog posts and articles in card format.
 
 ```astro
@@ -73,7 +72,7 @@ Display blog posts and articles in card format.
 import { PostCard } from '#components/astro/PostCard.astro'
 ---
 
-<PostCard 
+<PostCard
   title="Article Title"
   description="Article description"
   pubDate={new Date()}
@@ -84,6 +83,7 @@ import { PostCard } from '#components/astro/PostCard.astro'
 ```
 
 #### Breadcrumbs
+
 Navigation breadcrumbs for page hierarchy.
 
 ```astro
@@ -91,33 +91,27 @@ Navigation breadcrumbs for page hierarchy.
 import { Breadcrumbs } from '#components/astro/Breadcrumbs.astro'
 ---
 
-<Breadcrumbs 
-  links={[
-    { text: 'Home', href: '/' },
-    { text: 'Blog', href: '/posts' },
-    { text: 'Current Page' }
-  ]}
+<Breadcrumbs
+  links={[{ text: 'Home', href: '/' }, { text: 'Blog', href: '/posts' }, { text: 'Current Page' }]}
 />
 ```
 
 ### Interactive Components
 
 #### SearchBox (React)
+
 Client-side search functionality.
 
 ```tsx
 import { SearchBox } from '#components/react/SearchBox'
 
-<SearchBox 
-  placeholder="Search..."
-  onSearch={(query) => console.log(query)}
-  variant="default"
-/>
+;<SearchBox placeholder="Search..." onSearch={query => console.log(query)} variant="default" />
 ```
 
 ### Utility Components
 
 #### BaseLayout
+
 Main layout wrapper for pages.
 
 ```astro
@@ -125,11 +119,7 @@ Main layout wrapper for pages.
 import BaseLayout from '#layouts/BaseLayout.astro'
 ---
 
-<BaseLayout 
-  title="Page Title"
-  description="Page description"
-  image="/og-image.jpg"
->
+<BaseLayout title="Page Title" description="Page description" image="/og-image.jpg">
   <!-- Page content -->
 </BaseLayout>
 ```
@@ -202,11 +192,11 @@ import Footer from '#components/astro/Footer.astro'
 
 <BaseLayout title="My Page">
   <Header title="Site Name" />
-  
+
   <main>
     <!-- Page content -->
   </main>
-  
+
   <Footer />
 </BaseLayout>
 ```
@@ -223,16 +213,18 @@ const publishedPosts = posts.filter(post => post.data.publish)
 ---
 
 <div class="posts-grid">
-  {publishedPosts.map(post => (
-    <PostCard 
-      title={post.data.title}
-      description={post.data.description}
-      pubDate={post.data.pubDate}
-      author={post.data.author}
-      href={`/posts/${post.slug}`}
-      featured={post.data.featured}
-    />
-  ))}
+  {
+    publishedPosts.map(post => (
+      <PostCard
+        title={post.data.title}
+        description={post.data.description}
+        pubDate={post.data.pubDate}
+        author={post.data.author}
+        href={`/posts/${post.slug}`}
+        featured={post.data.featured}
+      />
+    ))
+  }
 </div>
 ```
 
@@ -241,11 +233,8 @@ const publishedPosts = posts.filter(post => post.data.publish)
 ### 1. Import Patterns
 
 ```astro
-// Use # alias for internal imports
-import Component from '#components/astro/Component.astro'
-
-// Use import type for types
-import type { Props } from './types'
+// Use # alias for internal imports import Component from '#components/astro/Component.astro' // Use
+import type for types import type {Props} from './types'
 ```
 
 ### 2. Props Destructuring

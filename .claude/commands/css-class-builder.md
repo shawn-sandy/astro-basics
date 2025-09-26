@@ -14,18 +14,21 @@ Build semantic CSS classes from utility class patterns and store them in `src/st
 ## Command Process
 
 ### 1. Component Analysis
+
 - Scans component HTML/Astro files for utility class patterns
 - Maps utility classes to design token values from `_design-tokens.scss`
 - Identifies common patterns (layout, spacing, colors, typography)
 - Groups related utilities for semantic consolidation
 
 ### 2. Semantic Class Generation
+
 - Creates meaningful class names based on component purpose and context
 - Generates consolidated CSS using design token variables
 - Maintains full design system compatibility
 - Preserves responsive behavior and interactions
 
 ### 3. File Management
+
 - Creates new SCSS file in `src/styles/components/_[component-name].scss`
 - Updates `src/styles/index.scss` to include new component styles
 - Provides before/after code comparison
@@ -34,14 +37,20 @@ Build semantic CSS classes from utility class patterns and store them in `src/st
 ## Example Transformation
 
 **Before (Multiple Utilities):**
+
 ```html
-<div class="flex items-center justify-between p-6 bg-neutral-50 border border-neutral-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+<div
+  class="flex items-center justify-between p-6 bg-neutral-50 border border-neutral-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+>
   <h3 class="text-lg font-semibold text-neutral-900">Card Title</h3>
-  <button class="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600">Action</button>
+  <button class="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600">
+    Action
+  </button>
 </div>
 ```
 
 **After (Semantic Class):**
+
 ```html
 <div class="content-panel">
   <h3 class="content-panel__title">Card Title</h3>
@@ -50,6 +59,7 @@ Build semantic CSS classes from utility class patterns and store them in `src/st
 ```
 
 **Generated SCSS:**
+
 ```scss
 // src/styles/components/_content-panel.scss
 .content-panel {
@@ -98,18 +108,21 @@ Build semantic CSS classes from utility class patterns and store them in `src/st
 ## Intelligent Features
 
 ### Smart Naming Conventions
+
 - **Context-aware naming**: Analyzes component purpose and content structure
-- **BEM methodology**: Follows block__element--modifier conventions
+- **BEM methodology**: Follows block\_\_element--modifier conventions
 - **Conflict detection**: Checks for existing class names and suggests alternatives
 - **Pattern recognition**: Identifies common design patterns (cards, panels, forms)
 
 ### Design Token Integration
+
 - **Full compatibility**: Maintains existing design system architecture
 - **CSS custom properties**: Uses design tokens for consistent theming
 - **Dark mode support**: Preserves responsive design token behavior
 - **Future-proof**: Enables easy design system evolution
 
 ### Code Quality
+
 - **Performance optimization**: Reduces HTML class verbosity and CSS specificity
 - **Maintainability**: Creates single source of truth for component styles
 - **Accessibility**: Preserves focus states, ARIA compatibility, and semantic structure
@@ -134,6 +147,7 @@ This command demonstrates key architectural concepts:
 ## Output and Documentation
 
 The command provides:
+
 1. **Consolidated SCSS file** with semantic classes using design tokens
 2. **Updated component markup** with new semantic class names
 3. **Implementation guide** with usage examples and best practices

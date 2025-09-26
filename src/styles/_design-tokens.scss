@@ -41,21 +41,24 @@
   --color-info-dark: #1d4ed8;
 
   // Typography Tokens
-  --font-family-sans: ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Helvetica Neue", arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-family-sans: ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI",
+    roboto, "Helvetica Neue", arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
   --font-family-serif: ui-serif, georgia, cambria, "Times New Roman", times, serif;
-  --font-family-mono: ui-monospace, sfmono-regular, "SF Mono", menlo, monaco, consolas, "Liberation Mono", "Courier New", monospace;
+  --font-family-mono: ui-monospace, sfmono-regular, "SF Mono", menlo, monaco, consolas,
+    "Liberation Mono", "Courier New", monospace;
 
   // Font Size Tokens (Type Scale)
-  --font-size-xs: 0.75rem;      // 12px
-  --font-size-sm: 0.875rem;     // 14px
-  --font-size-base: 1rem;       // 16px
-  --font-size-lg: 1.125rem;     // 18px
-  --font-size-xl: 1.25rem;      // 20px
-  --font-size-2xl: 1.5rem;      // 24px
-  --font-size-3xl: 1.875rem;    // 30px
-  --font-size-4xl: 2.25rem;     // 36px
-  --font-size-5xl: 3rem;        // 48px
-  --font-size-6xl: 3.75rem;     // 60px
+  --font-size-xs: 0.75rem; // 12px
+  --font-size-sm: 0.875rem; // 14px
+  --font-size-base: 1rem; // 16px
+  --font-size-lg: 1.125rem; // 18px
+  --font-size-xl: 1.25rem; // 20px
+  --font-size-2xl: 1.5rem; // 24px
+  --font-size-3xl: 1.875rem; // 30px
+  --font-size-4xl: 2.25rem; // 36px
+  --font-size-5xl: 3rem; // 48px
+  --font-size-6xl: 3.75rem; // 60px
 
   // Font Weight Tokens
   --font-weight-thin: 100;
@@ -78,50 +81,50 @@
   // Spacing Tokens (8pt Grid System)
   --space-0: 0;
   --space-px: 1px;
-  --space-0-5: 0.125rem;  // 2px
-  --space-1: 0.25rem;     // 4px
-  --space-1-5: 0.375rem;  // 6px
-  --space-2: 0.5rem;      // 8px
-  --space-2-5: 0.625rem;  // 10px
-  --space-3: 0.75rem;     // 12px
-  --space-3-5: 0.875rem;  // 14px
-  --space-4: 1rem;        // 16px
-  --space-5: 1.25rem;     // 20px
-  --space-6: 1.5rem;      // 24px
-  --space-7: 1.75rem;     // 28px
-  --space-8: 2rem;        // 32px
-  --space-9: 2.25rem;     // 36px
-  --space-10: 2.5rem;     // 40px
-  --space-11: 2.75rem;    // 44px
-  --space-12: 3rem;       // 48px
-  --space-14: 3.5rem;     // 56px
-  --space-16: 4rem;       // 64px
-  --space-20: 5rem;       // 80px
-  --space-24: 6rem;       // 96px
-  --space-28: 7rem;       // 112px
-  --space-32: 8rem;       // 128px
-  --space-36: 9rem;       // 144px
-  --space-40: 10rem;      // 160px
-  --space-44: 11rem;      // 176px
-  --space-48: 12rem;      // 192px
-  --space-52: 13rem;      // 208px
-  --space-56: 14rem;      // 224px
-  --space-60: 15rem;      // 240px
-  --space-64: 16rem;      // 256px
-  --space-72: 18rem;      // 288px
-  --space-80: 20rem;      // 320px
-  --space-96: 24rem;      // 384px
+  --space-0-5: 0.125rem; // 2px
+  --space-1: 0.25rem; // 4px
+  --space-1-5: 0.375rem; // 6px
+  --space-2: 0.5rem; // 8px
+  --space-2-5: 0.625rem; // 10px
+  --space-3: 0.75rem; // 12px
+  --space-3-5: 0.875rem; // 14px
+  --space-4: 1rem; // 16px
+  --space-5: 1.25rem; // 20px
+  --space-6: 1.5rem; // 24px
+  --space-7: 1.75rem; // 28px
+  --space-8: 2rem; // 32px
+  --space-9: 2.25rem; // 36px
+  --space-10: 2.5rem; // 40px
+  --space-11: 2.75rem; // 44px
+  --space-12: 3rem; // 48px
+  --space-14: 3.5rem; // 56px
+  --space-16: 4rem; // 64px
+  --space-20: 5rem; // 80px
+  --space-24: 6rem; // 96px
+  --space-28: 7rem; // 112px
+  --space-32: 8rem; // 128px
+  --space-36: 9rem; // 144px
+  --space-40: 10rem; // 160px
+  --space-44: 11rem; // 176px
+  --space-48: 12rem; // 192px
+  --space-52: 13rem; // 208px
+  --space-56: 14rem; // 224px
+  --space-60: 15rem; // 240px
+  --space-64: 16rem; // 256px
+  --space-72: 18rem; // 288px
+  --space-80: 20rem; // 320px
+  --space-96: 24rem; // 384px
 
   // Border Radius Tokens
   --radius-none: 0;
-  --radius-sm: 0.125rem;      // 2px
-  --radius-base: 0.25rem;     // 4px
-  --radius-md: 0.375rem;      // 6px
-  --radius-lg: 0.5rem;        // 8px
-  --radius-xl: 0.75rem;       // 12px
-  --radius-2xl: 1rem;         // 16px
-  --radius-3xl: 1.5rem;       // 24px
-  --radius-full: 9999px;      // Fully rounded
+  --radius-sm: 0.125rem; // 2px
+  --radius-base: 0.25rem; // 4px
+  --radius-md: 0.375rem; // 6px
+  --radius-lg: 0.5rem; // 8px
+  --radius-xl: 0.75rem; // 12px
+  --radius-2xl: 1rem; // 16px
+  --radius-3xl: 1.5rem; // 24px
+  --radius-full: 9999px; // Fully rounded
 
   // Border Width Tokens
   --border-width-0: 0;
@@ -131,13 +134,13 @@
   --border-width-8: 8px;
 
   // Shadow Tokens
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 2px 0 rgb(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgb(0, 0, 0, 0.1), 0 1px 2px -1px rgb(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0, 0, 0, 0.1), 0 2px 4px -2px rgb(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0, 0, 0, 0.1), 0 4px 6px -4px rgb(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0, 0, 0, 0.1), 0 8px 10px -6px rgb(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0, 0, 0, 0.05);
   --shadow-none: 0 0 #0000;
 
   // Z-Index Tokens
@@ -171,17 +174,17 @@
 
   // Layout Tokens
   --max-width-none: none;
-  --max-width-xs: 20rem;      // 320px
-  --max-width-sm: 24rem;      // 384px
-  --max-width-md: 28rem;      // 448px
-  --max-width-lg: 32rem;      // 512px
-  --max-width-xl: 36rem;      // 576px
-  --max-width-2xl: 42rem;     // 672px
-  --max-width-3xl: 48rem;     // 768px
-  --max-width-4xl: 56rem;     // 896px
-  --max-width-5xl: 64rem;     // 1024px
-  --max-width-6xl: 72rem;     // 1152px
-  --max-width-7xl: 80rem;     // 1280px
+  --max-width-xs: 20rem; // 320px
+  --max-width-sm: 24rem; // 384px
+  --max-width-md: 28rem; // 448px
+  --max-width-lg: 32rem; // 512px
+  --max-width-xl: 36rem; // 576px
+  --max-width-2xl: 42rem; // 672px
+  --max-width-3xl: 48rem; // 768px
+  --max-width-4xl: 56rem; // 896px
+  --max-width-5xl: 64rem; // 1024px
+  --max-width-6xl: 72rem; // 1152px
+  --max-width-7xl: 80rem; // 1280px
   --max-width-full: 100%;
   --max-width-screen-sm: 640px;
   --max-width-screen-md: 768px;
@@ -196,39 +199,8 @@
   --img-radius: var(--radius-2xl);
   --error-color: var(--color-error);
   --success-color: var(--color-success);
-}
 
-// Dark Mode Tokens
-@media (prefers-color-scheme: dark) {
-  :root {
-    // Override semantic tokens for dark mode
-    --color-primary-50: #0c4a6e;
-    --color-primary-100: #075985;
-    --color-primary-200: #0369a1;
-    --color-primary-300: #0284c7;
-    --color-primary-400: #0ea5e9;
-    --color-primary-500: #38bdf8;
-    --color-primary-600: #7dd3fc;
-    --color-primary-700: #bae6fd;
-    --color-primary-800: #e0f2fe;
-    --color-primary-900: #f0f9ff;
-
-    // Dark neutral palette
-    --color-neutral-50: #18181b;
-    --color-neutral-100: #27272a;
-    --color-neutral-200: #3f3f46;
-    --color-neutral-300: #52525b;
-    --color-neutral-400: #71717a;
-    --color-neutral-500: #a1a1aa;
-    --color-neutral-600: #d4d4d8;
-    --color-neutral-700: #e4e4e7;
-    --color-neutral-800: #f4f4f5;
-    --color-neutral-900: #fafafa;
-  }
-}
-
-// Component-Specific Token Aliases
-:root {
+  // Component-Specific Token Aliases
   // Card tokens
   --card-background: var(--color-neutral-50);
   --card-border: var(--color-neutral-200);
@@ -258,4 +230,33 @@
   // Footer tokens
   --footer-background: var(--color-neutral-100);
   --footer-padding: var(--space-12);
+}
+
+// Dark Mode Tokens
+@media (prefers-color-scheme: dark) {
+  :root {
+    // Override semantic tokens for dark mode
+    --color-primary-50: #0c4a6e;
+    --color-primary-100: #075985;
+    --color-primary-200: #0369a1;
+    --color-primary-300: #0284c7;
+    --color-primary-400: #0ea5e9;
+    --color-primary-500: #38bdf8;
+    --color-primary-600: #7dd3fc;
+    --color-primary-700: #bae6fd;
+    --color-primary-800: #e0f2fe;
+    --color-primary-900: #f0f9ff;
+
+    // Dark neutral palette
+    --color-neutral-50: #18181b;
+    --color-neutral-100: #27272a;
+    --color-neutral-200: #3f3f46;
+    --color-neutral-300: #52525b;
+    --color-neutral-400: #71717a;
+    --color-neutral-500: #a1a1aa;
+    --color-neutral-600: #d4d4d8;
+    --color-neutral-700: #e4e4e7;
+    --color-neutral-800: #f4f4f5;
+    --color-neutral-900: #fafafa;
+  }
 }
