@@ -1,9 +1,5 @@
-:root {
-  --img-radius: 1rem;
-  --error-color: firebrick;
-  --success-color: green;
-  --max-content-width: 1280px;
-}
+// Base styles now use design tokens
+// Legacy tokens are maintained for backward compatibility
 
 body {
   min-width: 20.3125rem;

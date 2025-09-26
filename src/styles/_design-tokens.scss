@@ -30,23 +30,20 @@
   --color-success: #22c55e;
   --color-success-light: #dcfce7;
   --color-success-dark: #166534;
-  
   --color-warning: #f59e0b;
   --color-warning-light: #fef3c7;
   --color-warning-dark: #92400e;
-  
   --color-error: #ef4444;
   --color-error-light: #fee2e2;
   --color-error-dark: #991b1b;
-  
   --color-info: #3b82f6;
   --color-info-light: #dbeafe;
   --color-info-dark: #1d4ed8;
 
   // Typography Tokens
-  --font-family-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-family-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-family-sans: ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Helvetica Neue", arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-family-serif: ui-serif, georgia, cambria, "Times New Roman", times, serif;
+  --font-family-mono: ui-monospace, sfmono-regular, "SF Mono", menlo, monaco, consolas, "Liberation Mono", "Courier New", monospace;
 
   // Font Size Tokens (Type Scale)
   --font-size-xs: 0.75rem;      // 12px
@@ -167,7 +164,6 @@
   --transition-duration-500: 500ms;
   --transition-duration-700: 700ms;
   --transition-duration-1000: 1000ms;
-
   --transition-timing-linear: linear;
   --transition-timing-in: cubic-bezier(0.4, 0, 1, 1);
   --transition-timing-out: cubic-bezier(0, 0, 0.2, 1);
