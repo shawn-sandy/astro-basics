@@ -21,13 +21,16 @@ The database switching system provides:
 
 <CardGrid>
   <Card title="🔄 Easy Switching" icon="rocket">
-    Switch databases with `npm run db:switch:turso` or `npm run db:switch:supabase` - automatic backups included.
+    Switch databases with `npm run db:switch:turso` or `npm run db:switch:supabase` - automatic
+    backups included.
   </Card>
   <Card title="🛡️ Safe Operations" icon="approve-check">
-    Built-in backup/restore system prevents configuration loss. Roll back anytime with `npm run db:restore`.
+    Built-in backup/restore system prevents configuration loss. Roll back anytime with `npm run
+    db:restore`.
   </Card>
   <Card title="🎯 Auto-Detection" icon="setting">
-    Smart provider detection automatically uses the best available database based on your configuration.
+    Smart provider detection automatically uses the best available database based on your
+    configuration.
   </Card>
   <Card title="🧙‍♂️ Setup Wizard" icon="star">
     Interactive wizard guides you through database setup with step-by-step instructions.
@@ -47,19 +50,12 @@ This shows your current database configuration, active provider, and available o
 ### Switch Database Provider
 
 <Tabs>
-  <TabItem label="Switch to Turso">
-    ```bash
-    npm run db:switch:turso
-    ```
-  </TabItem>
-  <TabItem label="Switch to Supabase">
-    ```bash
-    npm run db:switch:supabase
-    ```
-  </TabItem>
+  <TabItem label="Switch to Turso">```bash npm run db:switch:turso ```</TabItem>
+  <TabItem label="Switch to Supabase">```bash npm run db:switch:supabase ```</TabItem>
 </Tabs>
 
 Each switch automatically:
+
 1. Creates a backup of your current configuration
 2. Tests connectivity to the new database
 3. Updates your environment variables
@@ -74,6 +70,7 @@ npm run db:wizard
 ```
 
 The interactive wizard will:
+
 - Guide you through choosing database providers
 - Help you obtain necessary credentials
 - Test connections automatically
@@ -97,7 +94,7 @@ const messages = await db.getMessages({ limit: 10 })
 
 - **`src/libs/database.ts`** - Main abstraction layer with provider auto-detection
 - **`src/libs/database-types.ts`** - Unified TypeScript interfaces
-- **`src/libs/turso.ts`** - Turso (LibSQL) implementation  
+- **`src/libs/turso.ts`** - Turso (LibSQL) implementation
 - **`src/libs/supabase.ts`** - Supabase (PostgreSQL) implementation
 
 ### Provider Selection Logic
@@ -115,40 +112,19 @@ The system automatically selects databases using this priority:
 
 <Tabs>
   <TabItem label="Supabase Setup">
-    ```env
-    # Supabase Configuration
-    SUPABASE_URL=https://your-project-id.supabase.co
-    SUPABASE_ANON_KEY=eyJ...                    # For client operations
-    SUPABASE_SERVICE_ROLE_KEY=eyJ...            # For server operations (required)
-    
-    # Optional: Explicit provider selection
-    DATABASE_PROVIDER=supabase
-    ```
+    ```env # Supabase Configuration SUPABASE_URL=https://your-project-id.supabase.co
+    SUPABASE_ANON_KEY=eyJ... # For client operations SUPABASE_SERVICE_ROLE_KEY=eyJ... # For server
+    operations (required) # Optional: Explicit provider selection DATABASE_PROVIDER=supabase ```
   </TabItem>
   <TabItem label="Turso Setup">
-    ```env
-    # Turso Configuration  
-    TURSO_DATABASE_URL=libsql://your-database-name.turso.io
-    TURSO_AUTH_TOKEN=eyJ...
-    
-    # Optional: Explicit provider selection
-    DATABASE_PROVIDER=turso
-    ```
+    ```env # Turso Configuration TURSO_DATABASE_URL=libsql://your-database-name.turso.io
+    TURSO_AUTH_TOKEN=eyJ... # Optional: Explicit provider selection DATABASE_PROVIDER=turso ```
   </TabItem>
   <TabItem label="Both Providers">
-    ```env
-    # Configure both providers
-    # Supabase
-    SUPABASE_URL=https://your-project-id.supabase.co
-    SUPABASE_SERVICE_ROLE_KEY=eyJ...
-    
-    # Turso
-    TURSO_DATABASE_URL=libsql://your-database-name.turso.io
-    TURSO_AUTH_TOKEN=eyJ...
-    
-    # Choose which one to use (or omit for auto-detection)
-    DATABASE_PROVIDER=supabase
-    ```
+    ```env # Configure both providers # Supabase SUPABASE_URL=https://your-project-id.supabase.co
+    SUPABASE_SERVICE_ROLE_KEY=eyJ... # Turso TURSO_DATABASE_URL=libsql://your-database-name.turso.io
+    TURSO_AUTH_TOKEN=eyJ... # Choose which one to use (or omit for auto-detection)
+    DATABASE_PROVIDER=supabase ```
   </TabItem>
 </Tabs>
 
@@ -197,12 +173,14 @@ npm run db:manage switch
 ### Supabase (PostgreSQL)
 
 **Best for:**
+
 - Real-time subscriptions
 - Advanced PostgreSQL features
 - Row-level security (RLS)
 - Built-in authentication integration
 
 **Configuration:**
+
 - Requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
 - Uses service role for server-side operations
 - Supports real-time features and complex queries
@@ -210,12 +188,14 @@ npm run db:manage switch
 ### Turso (LibSQL)
 
 **Best for:**
+
 - Low latency applications
 - Edge deployment
 - SQLite compatibility
 - Simple data models
 
 **Configuration:**
+
 - Requires `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`
 - Distributed SQLite with edge replication
 - Fast read operations with eventual consistency
@@ -228,29 +208,13 @@ Perfect for teams working with different database preferences:
 
 <Tabs>
   <TabItem label="Developer Setup">
-    ```bash
-    # Each developer chooses their preferred database
-    npm run db:wizard
-    
-    # Select Turso for fast local development
-    # or Supabase for advanced features
-    ```
+    ```bash # Each developer chooses their preferred database npm run db:wizard # Select Turso for
+    fast local development # or Supabase for advanced features ```
   </TabItem>
   <TabItem label="Testing Workflow">
-    ```bash
-    # Test with Turso
-    npm run db:switch:turso
-    npm run dev
-    # Run your tests...
-    
-    # Switch and test with Supabase
-    npm run db:switch:supabase
-    npm run dev  
-    # Run your tests...
-    
-    # Restore original setup
-    npm run db:restore
-    ```
+    ```bash # Test with Turso npm run db:switch:turso npm run dev # Run your tests... # Switch and
+    test with Supabase npm run db:switch:supabase npm run dev # Run your tests... # Restore original
+    setup npm run db:restore ```
   </TabItem>
 </Tabs>
 
@@ -305,31 +269,19 @@ For quick issues, try these common solutions:
 
 <CardGrid>
   <Card title="🔧 Configuration Issues" icon="setting">
-    **"Database not configured" error:**
-    ```bash
-    npm run db:status    # Check what's missing
-    npm run db:wizard    # Run setup wizard
-    ```
+    **"Database not configured" error:** ```bash npm run db:status # Check what's missing npm run
+    db:wizard # Run setup wizard ```
   </Card>
   <Card title="🔗 Connection Problems" icon="warning">
-    **Connection failures during switching:**
-    ```bash
-    npm run db:manage test    # Test connections
-    npm run db:manage health  # Run diagnostics
-    ```
+    **Connection failures during switching:** ```bash npm run db:manage test # Test connections npm
+    run db:manage health # Run diagnostics ```
   </Card>
   <Card title="🎯 Provider Detection" icon="magnifier">
-    **Wrong provider selected:**
-    ```bash
-    # Set explicit provider in .env
-    echo "DATABASE_PROVIDER=turso" >> .env
-    ```
+    **Wrong provider selected:** ```bash # Set explicit provider in .env echo
+    "DATABASE_PROVIDER=turso" >> .env ```
   </Card>
   <Card title="🚨 Emergency Recovery" icon="error">
-    **Something went wrong:**
-    ```bash
-    npm run db:restore   # Rollback to previous config
-    ```
+    **Something went wrong:** ```bash npm run db:restore # Rollback to previous config ```
   </Card>
 </CardGrid>
 
@@ -355,14 +307,16 @@ All existing API endpoints automatically work with both databases:
 import { getDatabase } from '#libs/database'
 
 export const GET: APIRoute = async () => {
-  const db = getDatabase()  // Automatically uses active provider
+  const db = getDatabase() // Automatically uses active provider
   const data = await db.getMessages({ limit: 10 })
-  
-  return new Response(JSON.stringify({
-    success: true,
-    provider: db.getProviderName(),  // Shows which DB is active
-    data
-  }))
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      provider: db.getProviderName(), // Shows which DB is active
+      data,
+    })
+  )
 }
 ```
 
@@ -386,12 +340,14 @@ try {
 ---
 
 <div>
-  {messages.map(message => (
-    <div key={message.id}>
-      <h3>{message.name}</h3>
-      <p>{message.message}</p>
-    </div>
-  ))}
+  {
+    messages.map(message => (
+      <div key={message.id}>
+        <h3>{message.name}</h3>
+        <p>{message.message}</p>
+      </div>
+    ))
+  }
 </div>
 ```
 
@@ -463,7 +419,7 @@ Unlike traditional database switching that requires server restarts, this system
 
 ```typescript
 // Database provider changes automatically without restart
-const db = getDatabase()  // Always returns currently configured provider
+const db = getDatabase() // Always returns currently configured provider
 ```
 
 ### Provider-Aware Error Handling
@@ -490,7 +446,7 @@ npm run db:schema
 
 # Reports:
 # - Missing tables
-# - Column mismatches  
+# - Column mismatches
 # - Type incompatibilities
 # - Required migrations
 ```
@@ -510,7 +466,7 @@ The database abstraction system is designed to support:
 If you encounter issues with the database switching system:
 
 1. **Check status**: `npm run db:status` for current configuration
-2. **Test connections**: `npm run db:manage test` for connectivity issues  
+2. **Test connections**: `npm run db:manage test` for connectivity issues
 3. **Health check**: `npm run db:manage health` for comprehensive diagnostics
 4. **Reset configuration**: `npm run db:wizard` to start fresh
 

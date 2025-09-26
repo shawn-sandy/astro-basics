@@ -167,18 +167,22 @@ import type { Props } from 'astro-basics-website'
 ### Common Issues
 
 **1. Installation takes too long**
+
 - Expected: npm install takes ~4 minutes
 - Warnings during installation are normal
 
 **2. Authentication errors**
+
 - Ensure `PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are set
 - Use dummy keys for build-only testing
 
 **3. E2E tests failing**
+
 - Run `npx playwright install` to install browsers
 - Ensure dev server is running on port 4321
 
 **4. Build warnings**
+
 - getStaticPaths warnings in dynamic pages are expected
 - These don't affect functionality
 

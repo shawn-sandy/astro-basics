@@ -10,7 +10,7 @@ import AstroPWA from '@vite-pwa/astro'
 import node from '@astrojs/node'
 import clerk from '@clerk/astro'
 
-import starlight from '@astrojs/starlight';
+import starlight from '@astrojs/starlight'
 
 // https://astro.build/config
 export default defineConfig({
@@ -21,7 +21,7 @@ export default defineConfig({
     embeds(),
     starlight({
       title: 'Astro-Basics Guide',
-      
+
       // Social links (array format for v0.35.2)
       social: [
         {
@@ -30,14 +30,12 @@ export default defineConfig({
           href: 'https://github.com/shawn-sandy/astro-basics',
         },
       ],
-      
+
       // Sidebar configuration for src/content/docs/guide structure
       sidebar: [
         {
           label: 'Guide',
-          items: [
-            { label: 'Welcome', link: '/guide/' },
-          ],
+          items: [{ label: 'Welcome', link: '/guide/' }],
         },
         {
           label: 'Getting Started',
@@ -72,10 +70,10 @@ export default defineConfig({
           ],
         },
       ],
-      
+
       // Custom styling
       customCss: ['./src/styles/starlight-custom.scss'],
-      
+
       // Enable features
       editLink: {
         baseUrl: 'https://github.com/shawn-sandy/astro-basics/edit/main/',

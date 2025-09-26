@@ -44,7 +44,7 @@ When importing Figma designs, extract design tokens in this order:
 ```
 src/components/
 ├── astro/           # Server-rendered components
-├── react/           # Client-interactive components  
+├── react/           # Client-interactive components
 ├── dashboard/       # Protected route components
 └── views/           # Page-level view components
 ```
@@ -112,10 +112,14 @@ export function Component({ title }: Props) {
 // Supports multiple deployment targets
 adapter: (() => {
   switch (process.env.ASTRO_ADAPTER) {
-    case 'node': return node({ mode: 'standalone' })
-    case 'vercel': return vercel()
-    case 'netlify': return netlify()
-    default: return netlify()
+    case 'node':
+      return node({ mode: 'standalone' })
+    case 'vercel':
+      return vercel()
+    case 'netlify':
+      return netlify()
+    default:
+      return netlify()
   }
 })()
 ```
@@ -143,9 +147,10 @@ public/
 
 ```astro
 ---
-import { Image } from 'astro:assets';
-import heroImage from '/public/images/hero.webp';
+import { Image } from 'astro:assets'
+import heroImage from '/public/images/hero.webp'
 ---
+
 <Image src={heroImage} alt="Hero" width={854} height={184} />
 ```
 
@@ -193,8 +198,9 @@ type Props = {
   size?: string
   color?: string
 }
-const { name, size = "24", color = "currentColor" } = Astro.props
+const { name, size = '24', color = 'currentColor' } = Astro.props
 ---
+
 <svg width={size} height={size} fill={color}>
   <use href={`/icons/${name}.svg#icon`}></use>
 </svg>
@@ -345,14 +351,14 @@ type ContentEntry = {
   --secondary-color: #64748b;
   --success-color: #22c55e;
   --error-color: #ef4444;
-  
+
   // Spacing Scale
   --space-xs: 0.5rem;
   --space-sm: 1rem;
   --space-md: 1.5rem;
   --space-lg: 2rem;
   --space-xl: 3rem;
-  
+
   // Typography
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;

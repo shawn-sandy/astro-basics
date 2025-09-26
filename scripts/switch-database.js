@@ -160,7 +160,7 @@ function updateDatabaseProvider(newProvider) {
           // Extract any trailing comment from the original line
           const commentMatch = lines[i].match(/\s*#.*$/)
           const comment = commentMatch ? commentMatch[0] : ''
-          
+
           // Replace with new value, preserving comment
           lines[i] = `DATABASE_PROVIDER=${newProvider}${comment}`
           found = true
