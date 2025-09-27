@@ -50,16 +50,8 @@ This shows your current database configuration, active provider, and available o
 ### Switch Database Provider
 
 <Tabs>
-  <TabItem label="Switch to Turso">
-    ```bash
-    npm run db:switch:turso
-    ```
-  </TabItem>
-  <TabItem label="Switch to Supabase">
-    ```bash
-    npm run db:switch:supabase
-    ```
-  </TabItem>
+  <TabItem label="Switch to Turso">```bash npm run db:switch:turso ```</TabItem>
+  <TabItem label="Switch to Supabase">```bash npm run db:switch:supabase ```</TabItem>
 </Tabs>
 
 Each switch automatically:
@@ -120,41 +112,19 @@ The system automatically selects databases using this priority:
 
 <Tabs>
   <TabItem label="Supabase Setup">
-    ```env
-    # Supabase Configuration
-    SUPABASE_URL=https://your-project-id.supabase.co
-    SUPABASE_ANON_KEY=eyJ...                    # For client operations
-    SUPABASE_SERVICE_ROLE_KEY=eyJ...            # For server operations (required)
-    
-    # Optional: Explicit provider selection
-    DATABASE_PROVIDER=supabase
-    ```
+    ```env # Supabase Configuration SUPABASE_URL=https://your-project-id.supabase.co
+    SUPABASE_ANON_KEY=eyJ... # For client operations SUPABASE_SERVICE_ROLE_KEY=eyJ... # For server
+    operations (required) # Optional: Explicit provider selection DATABASE_PROVIDER=supabase ```
   </TabItem>
   <TabItem label="Turso Setup">
-    ```env
-    # Turso Configuration
-    TURSO_DATABASE_URL=libsql://your-database-name.turso.io
-    TURSO_AUTH_TOKEN=eyJ...
-    
-    # Optional: Explicit provider selection
-    DATABASE_PROVIDER=turso
-    ```
+    ```env # Turso Configuration TURSO_DATABASE_URL=libsql://your-database-name.turso.io
+    TURSO_AUTH_TOKEN=eyJ... # Optional: Explicit provider selection DATABASE_PROVIDER=turso ```
   </TabItem>
   <TabItem label="Both Providers">
-    ```env
-    # Configure both providers
-    
-    # Supabase
-    SUPABASE_URL=https://your-project-id.supabase.co
-    SUPABASE_SERVICE_ROLE_KEY=eyJ...
-    
-    # Turso
-    TURSO_DATABASE_URL=libsql://your-database-name.turso.io
-    TURSO_AUTH_TOKEN=eyJ...
-    
-    # Choose which one to use (or omit for auto-detection)
-    DATABASE_PROVIDER=supabase
-    ```
+    ```env # Configure both providers # Supabase SUPABASE_URL=https://your-project-id.supabase.co
+    SUPABASE_SERVICE_ROLE_KEY=eyJ... # Turso TURSO_DATABASE_URL=libsql://your-database-name.turso.io
+    TURSO_AUTH_TOKEN=eyJ... # Choose which one to use (or omit for auto-detection)
+    DATABASE_PROVIDER=supabase ```
   </TabItem>
 </Tabs>
 
@@ -238,28 +208,13 @@ Perfect for teams working with different database preferences:
 
 <Tabs>
   <TabItem label="Developer Setup">
-    ```bash
-    # Each developer chooses their preferred database
-    npm run db:wizard
-    # Select Turso for fast local development
-    # or Supabase for advanced features
-    ```
+    ```bash # Each developer chooses their preferred database npm run db:wizard # Select Turso for
+    fast local development # or Supabase for advanced features ```
   </TabItem>
   <TabItem label="Testing Workflow">
-    ```bash
-    # Test with Turso
-    npm run db:switch:turso
-    npm run dev
-    # Run your tests...
-    
-    # Switch and test with Supabase
-    npm run db:switch:supabase
-    npm run dev
-    # Run your tests...
-    
-    # Restore original setup
-    npm run db:restore
-    ```
+    ```bash # Test with Turso npm run db:switch:turso npm run dev # Run your tests... # Switch and
+    test with Supabase npm run db:switch:supabase npm run dev # Run your tests... # Restore original
+    setup npm run db:restore ```
   </TabItem>
 </Tabs>
 
