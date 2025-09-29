@@ -11,6 +11,10 @@
       "env": {
         "SUPABASE_ACCESS_TOKEN": "<personal-access-token>"
       }
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["chrome-devtools-mcp@latest"]
     }
   }
 }
