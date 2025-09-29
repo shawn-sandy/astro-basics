@@ -155,14 +155,13 @@ Document API interactions and data transformations:
 
 ### Phase 1: Automatic Analysis
 
-1. **File Detection**: Detect when files are opened or code is selected in the IDE
-2. **Complexity Scoring**: Calculate complexity based on:
+1. **Complexity Scoring**: Calculate complexity based on:
    - Cyclomatic complexity (nested conditions, loops)
    - TypeScript diagnostic density (type errors, warnings)
    - Business logic indicators (database operations, authentication, security)
    - Integration complexity (external services, middleware)
-3. **Threshold Filtering**: Only process code sections with complexity score above threshold (default: 7/10)
-4. **Existing Comment Quality**: Parse and evaluate existing documentation to avoid redundancy
+2. **Threshold Filtering**: Only process code sections with complexity score above threshold (default: 7/10)
+3. **Existing Comment Quality**: Parse and evaluate existing documentation to avoid redundancy
 
 ### Phase 2: Intelligent Comment Generation
 
@@ -200,6 +199,41 @@ Generate targeted JSDoc comments that:
 - Obvious getters/setters and trivial utility functions
 - Auto-generated code and third-party integrations
 
+The Double-Edged Sword of Comments: Boosting AI Context While Minding Token Usage
+Yes, well-written code comments can significantly improve the context for AI coding assistants like Claude and Copilot, leading to more accurate and relevant code generation. However, they also increase the number of "tokens" sent to the model, which can impact performance and cost. The key lies in writing concise, informative comments that provide maximum context with minimal token overhead.
+
+How Comments Enhance AI Understanding
+AI coding assistants don't just read your code; they analyze the surrounding context to understand your intent. This context includes not only other code in the file but also, crucially, the comments you've written. High-quality comments act as a direct line of communication to the AI, clarifying the purpose, logic, and limitations of your code in natural language. This is especially beneficial for:
+
+Complex Logic: Explaining the "why" behind a complicated algorithm or a specific implementation choice.
+
+Function and Class Documentation: Providing clear docstrings that outline what a function or class does, its parameters, and what it returns.
+
+Generating Entire Code Blocks: Writing a detailed comment describing the desired functionality can enable the AI to generate a complete and accurate code snippet.
+
+By providing this explicit context, you reduce the AI's need to infer your intentions, which can lead to more precise and useful suggestions.
+
+The Token Trade-Off
+AI models process information in chunks called tokens. Both your code and your comments are broken down into these tokens before being processed. Each interaction with the AI, whether it's a prompt or the context from your editor, has a limited "context window," which is the maximum number of tokens the model can consider at one time.
+
+Since comments are tokenized along with the code, verbose or unnecessary comments can quickly consume this limited token space. This can be counterproductive, as it may force the AI to overlook more critical parts of the code.
+
+## Best Practices for AI-Friendly Comments
+
+- To strike the right balance between providing valuable context and managing token usage, consider these best practices when writing comments for AI coding assistants:
+
+- Focus on the "Why," Not the "What": The AI can generally understand what a piece of code does. Your comments should explain the reasoning behind your implementation choices.
+
+- Be Clear and Concise: Use simple and direct language to convey your meaning without unnecessary words.
+
+- Document Functions and Classes: Write clear and comprehensive docstrings for your functions and classes, detailing their purpose, parameters, and return values.
+
+- Use Comments to Guide Code Generation: When you want the AI to generate a block of code, write a detailed comment outlining your requirements.
+
+- Avoid Redundant or Obvious Comments: Comments that merely restate what the code is doing add to the token count without providing any real value.
+
+In essence, the goal is to treat your comments as a form of "prompt engineering" within your code. By providing high-signal, low-noise information, you can guide the AI to be a more effective and efficient coding partner, ultimately improving your productivity and the quality of your code.
+
 **Avoid Adding:**
 
 - Comments that restate what the code obviously does
@@ -233,124 +267,3 @@ Provide enhanced code with strategic JSDoc documentation:
 **Focus**: Transform complex code sections into AI-comprehensible resources while maintaining clean, professional documentation standards and avoiding comment bloat.
 
 ---
-
-## Usage Examples
-
-**Auto-Detection Mode (Recommended):**
-
-- `/ai-comments --auto-detect` - Analyze currently open file or selected code automatically
-- `/ai-comments` - Smart analysis of current context (same as --auto-detect)
-
-**Manual Invocation:**
-
-- `/ai-comments src/middleware.ts` - Analyze specific file with intelligent filtering
-- `/ai-comments src/libs/` - Analyze entire directory with complexity filtering
-- `/ai-comments --force-all src/utils/` - Force analysis of all functions regardless of complexity
-
-**Configuration:**
-
-- `/ai-comments --complexity-threshold=5` - Lower threshold for more comments
-- `/ai-comments --complexity-threshold=9` - Higher threshold for only most complex code
-
-## Project-Specific Intelligence
-
-**Astro-Basics Patterns Recognized:**
-
-- Middleware authentication flows (`src/middleware.ts`)
-- Database abstraction layer (`src/libs/database.ts`, `src/libs/turso.ts`, `src/libs/supabase.ts`)
-- Security implementations (CSRF, rate limiting in `src/utils/`)
-- Astro component server/client boundaries
-- Content collection patterns and SSR considerations
-- Clerk authentication integration points
-
-## Complexity Scoring Algorithm
-
-**High Priority (Score 8-10):**
-
-- Security-sensitive functions (authentication, CSRF, validation)
-- Database abstraction and provider switching logic
-- Complex middleware with multiple responsibilities
-- Error handling with business logic implications
-- Performance-critical algorithms with optimizations
-
-**Medium Priority (Score 5-7):**
-
-- Business logic functions with non-obvious rules
-- Integration points with external services
-- Functions with multiple TypeScript diagnostics
-- Complex type transformations or data processing
-
-**Low Priority (Score 1-4):**
-
-- Simple utility functions and helpers
-- Obvious CRUD operations
-- Standard React/Astro component patterns
-- Well-typed functions with clear signatures
-
-## Performance Optimizations
-
-**Smart Caching System:**
-
-- Cache complexity analysis results per file modification timestamp
-- Store processed file signatures to avoid re-analysis of unchanged code
-- Maintain session-based memory of recently analyzed functions
-
-**Incremental Processing:**
-
-- Process only modified sections when files change
-- Skip unchanged functions that were previously analyzed
-- Use AST diffing to identify specific code changes requiring re-analysis
-
-**Fast Analysis Pipeline:**
-
-1. **Quick Scan**: Rapid complexity scoring using regex patterns and AST basics
-2. **Diagnostic Check**: Fetch TypeScript diagnostics only for flagged areas
-3. **Deep Analysis**: Full business logic assessment only for high-complexity candidates
-4. **Comment Generation**: Strategic JSDoc creation for approved functions
-
-**Resource Management:**
-
-- Limit concurrent file analysis to prevent IDE slowdown
-- Use streaming analysis for large files (>1000 lines)
-- Implement timeout controls for complex analysis operations
-
----
-
-**Examples of Intelligent Analysis:**
-
-✅ **Will Comment** (High Complexity Score: 9/10):
-
-```typescript
-// Complex middleware with auth, CSRF, rate limiting, and error handling
-async function authMiddleware(auth, context, next) {
-  // Multiple providers, security logic, business rules
-}
-```
-
-✅ **Will Comment** (Medium Complexity Score: 6/10):
-
-```typescript
-// Database abstraction with provider switching logic
-export async function executeQuery(query: string, provider?: DatabaseProvider) {
-  // Provider detection, connection management, retry logic
-}
-```
-
-❌ **Will Skip** (Low Complexity Score: 2/10):
-
-```typescript
-// Simple getter with obvious purpose and clear types
-export const getSiteTitle = (): string => SITE_CONFIG.title
-```
-
-❌ **Will Skip** (Already Well-Documented):
-
-```typescript
-/**
- * CSRF protection utilities following OWASP guidelines
- * [Existing comprehensive JSDoc - will not add redundant comments]
- */
-export async function generateCsrfToken(options?: CsrfOptions) {
-  // Already has excellent documentation
-}
-```
