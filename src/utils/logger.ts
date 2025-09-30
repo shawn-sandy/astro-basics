@@ -6,7 +6,6 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
  * Supports both common API patterns (userId, endpoint, method) and
  * arbitrary context data while maintaining type safety for sanitization.
  *
- * @interface LogContext
  * @property {string} [userId] - User identifier for request tracing
  * @property {string} [endpoint] - API endpoint for request correlation
  * @property {string} [method] - HTTP method for debugging context
@@ -21,7 +20,6 @@ interface LogContext {
 /**
  * Structured log entry format for consistent output across environments.
  *
- * @interface LogEntry
  * @property {string} timestamp - ISO timestamp for log correlation
  * @property {LogLevel} level - Log severity level
  * @property {string} message - Human-readable log message
