@@ -26,7 +26,6 @@ import { isIP } from 'node:net'
  *
  * @param {string} rawIP - Untrusted IP address from client headers or connection data
  * @returns {string} Normalized IP address or 'unknown' for invalid/malformed input
- * @throws {never} Never throws - always returns a safe string value
  * @example
  * // Handle proxy forwarded IPs
  * normalizeIPAddress('[2001:db8::1]:8080') // Returns: '2001:db8::1'
