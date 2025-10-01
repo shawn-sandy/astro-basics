@@ -1,4 +1,4 @@
-import { $authStore } from '@clerk/astro/client'
+import { $authStore, $sessionStore, $isLoadedStore } from '@clerk/astro/client'
 import { useStore } from '@nanostores/react'
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -51,7 +51,9 @@ import type { Database } from '#libs/database.types'
  * @since 1.0.0
  */
 export function useSupabase() {
-  const { getToken, isLoaded, userId } = useStore($authStore)
+  const { userId } = useStore($authStore)
+  const session = useStore($sessionStore)
+  const isLoaded = useStore($isLoadedStore)
   const [client, setClient] = useState<SupabaseClient<Database> | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -89,10 +91,10 @@ export function useSupabase() {
     try {
       let token: string | null = null
 
-      // Only try to get token if user is signed in
-      if (userId) {
+      // Only try to get token if user is signed in and session exists
+      if (userId && session) {
         try {
-          token = await getToken({ template: 'supabase' })
+          token = await session.getToken({ template: 'supabase' })
           tokenRef.current = token
         } catch (err: any) {
           /**
@@ -158,7 +160,7 @@ export function useSupabase() {
     } finally {
       setLoading(false)
     }
-  }, [getToken, userId])
+  }, [session, userId])
 
   // Initialize client when auth state changes
   useEffect(() => {
@@ -186,12 +188,12 @@ export function useSupabase() {
    * @since 1.0.0
    */
   useEffect(() => {
-    if (!userId || !client) return
+    if (!userId || !client || !session) return
 
     const refreshInterval = window.setInterval(
       async () => {
         try {
-          const newToken = await getToken({ template: 'supabase' })
+          const newToken = await session.getToken({ template: 'supabase' })
 
           // Only recreate client if token changed
           if (newToken !== tokenRef.current) {
@@ -215,7 +217,7 @@ export function useSupabase() {
     ) // Refresh every 5 minutes
 
     return () => window.clearInterval(refreshInterval)
-  }, [userId, client, getToken, initClient])
+  }, [userId, client, session, initClient])
 
   return {
     client,
@@ -355,13 +357,17 @@ export function useSupabaseSubscription<T = unknown>(
                 setData(prev => [payload.new as T, ...prev])
               } else if (payload.eventType === 'UPDATE') {
                 setData(prev =>
-                  prev.map((item: T & { id: string }) =>
-                    item.id === payload.new.id ? (payload.new as T) : item
-                  )
+                  prev.map(item => {
+                    const record = item as T & { id?: string }
+                    return record.id === payload.new.id ? (payload.new as T) : item
+                  })
                 )
               } else if (payload.eventType === 'DELETE') {
                 setData(prev =>
-                  prev.filter((item: T & { id: string }) => item.id !== payload.old.id)
+                  prev.filter(item => {
+                    const record = item as T & { id?: string }
+                    return record.id !== payload.old.id
+                  })
                 )
               }
             }
