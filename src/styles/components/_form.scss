@@ -5,7 +5,7 @@ form {
   }
 
   label {
-    &:where(+ input[required], + textarea[required], + select[required]) {
+    &:has(+ input[required], + textarea[required], + select[required]) {
       &::after {
         color: var(--error-color);
         content: " required *";
