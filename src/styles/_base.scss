@@ -74,10 +74,12 @@ footer > div {
   margin-block-start: 2rem;
 }
 
-section:where(> nav) {
-  display: flex;
-  flex-direction: column;
-  justify-items: flex-start;
+section {
+  > nav {
+    display: flex;
+    flex-direction: column;
+    justify-items: flex-start;
+  }
 }
 
 article > * + * {
