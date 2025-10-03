@@ -92,12 +92,16 @@ export function extractPrimaryEmail(user: ClerkUser): string | null {
  * @returns User data object ready for database insertion
  */
 export function buildUserData(user: ClerkUser, email: string) {
+  // Extract role from publicMetadata, default to 'member' if not set
+  const role = (user.publicMetadata?.role as string) || 'member'
+
   return {
     clerk_id: user.id,
     email,
     username: user.username,
     full_name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || null,
     avatar_url: user.imageUrl,
+    role, // User-level role from Clerk
     metadata: user.publicMetadata || {},
     last_sign_in_at: user.lastSignInAt ? new Date(user.lastSignInAt).toISOString() : null,
   }
