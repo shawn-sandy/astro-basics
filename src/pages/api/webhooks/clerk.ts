@@ -122,12 +122,16 @@ export const POST: APIRoute = async ({ request }) => {
         )
       }
 
+      // Extract role from public metadata, default to 'member'
+      const role = (public_metadata?.role as string) || 'member'
+
       const userData = {
         clerk_id: id,
         email: validEmail,
         username,
         full_name: `${first_name || ''} ${last_name || ''}`.trim() || null,
         avatar_url: image_url,
+        role, // User-level role from Clerk
         app_metadata: public_metadata || {},
         last_sign_in_at: last_sign_in_at ? new Date(last_sign_in_at).toISOString() : null,
       }
@@ -188,11 +192,15 @@ export const POST: APIRoute = async ({ request }) => {
         primaryEmail?.email_address ||
         (email_addresses && email_addresses.length > 0 && email_addresses[0]?.email_address)
 
+      // Extract role from public metadata, default to 'member'
+      const role = (public_metadata?.role as string) || 'member'
+
       const userData = {
         email: validEmail,
         username,
         full_name: `${first_name || ''} ${last_name || ''}`.trim() || null,
         avatar_url: image_url,
+        role, // User-level role from Clerk
         app_metadata: public_metadata || {},
         last_sign_in_at: last_sign_in_at ? new Date(last_sign_in_at).toISOString() : null,
       }
