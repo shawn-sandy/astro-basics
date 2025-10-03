@@ -95,7 +95,7 @@ import { clerkClient } from '@clerk/astro/server'
 
 await clerkClient.users.updateUser('user_xxx', {
   publicMetadata: {
-    role: 'volunteer',
+    role: 'member',
   },
 })
 ```
@@ -164,7 +164,7 @@ To add more roles, update the constraint in migration 003 or create a new migrat
 
 ## Troubleshooting
 
-### Issue: Users still showing 'member' instead of 'volunteer'
+### Issue: Users still showing 'member' instead of 'member'
 
 **Cause:** Role not set in Clerk `publicMetadata`
 
@@ -186,7 +186,7 @@ To add more roles, update the constraint in migration 003 or create a new migrat
 ```sql
 ALTER TABLE users DROP CONSTRAINT users_role_check;
 ALTER TABLE users ADD CONSTRAINT users_role_check
-CHECK (role IN ('member', 'volunteer', 'coordinator', 'admin', 'super_admin', 'your_new_role'));
+CHECK (role IN ('member', 'member', 'coordinator', 'admin', 'super_admin', 'your_new_role'));
 ```
 
 ### Issue: Session claims don't include role

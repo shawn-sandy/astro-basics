@@ -117,7 +117,7 @@ CREATE POLICY "Coordinators can delete comments" ON public.comments
 
 | Role        | Create | Read Own | Read Others         | Update Own | Delete Own | Delete Others |
 | ----------- | ------ | -------- | ------------------- | ---------- | ---------- | ------------- |
-| volunteer   | ✓      | ✓        | Public only         | ✓          | ✗          | ✗             |
+| member      | ✓      | ✓        | Public only         | ✓          | ✗          | ✗             |
 | coordinator | ✓      | ✓        | All (inc. internal) | ✓          | ✓          | ✓             |
 | super_admin | ✓      | ✓        | All (inc. internal) | ✓          | ✓          | ✓             |
 

@@ -10,7 +10,7 @@ ADD COLUMN IF NOT EXISTS role text DEFAULT 'member' NOT NULL;
 -- Add check constraint for common role values (can be extended)
 ALTER TABLE users
 ADD CONSTRAINT users_role_check
-CHECK (role IN ('member', 'volunteer', 'coordinator', 'admin', 'super_admin'));
+CHECK (role IN ('member', 'coordinator', 'admin', 'super_admin'));
 
 -- Create index for role-based queries
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
