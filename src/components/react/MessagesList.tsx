@@ -7,8 +7,16 @@ import type { Database } from '#libs/database.types'
 
 type Message = Database['public']['Tables']['messages']['Row']
 
+type RealtimePayload = {
+  eventType: string
+  new?: Message
+  old?: Message
+  [key: string]: unknown
+}
+
 export function MessagesList() {
-  const { userId, isLoaded } = useStore($authStore)
+  const auth = useStore($authStore)
+  const { userId } = auth
   const { client, loading: clientLoading, isAuthenticated } = useSupabase()
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,7 +46,7 @@ export function MessagesList() {
         // Initial fetch - secure approach using RPC function to prevent SQL injection
         // We'll use a stored function approach or multiple queries for security
         // First, get messages with direct clerk_user_id match (primary pathway)
-        const { data: directMessages, error: directError } = await client
+        const { data: directMessages, error: directError } = await client!
           .from('messages')
           .select('*')
           .eq('clerk_user_id', userId)
@@ -47,11 +55,11 @@ export function MessagesList() {
 
         // Second, get messages via users table relationship (secondary pathway)
         // Using inner join with proper parameterized query
-        const { data: relatedMessages, error: relatedError } = await client
+        const { data: relatedMessages, error: relatedError } = await client!
           .from('messages')
           .select(
             `
-            id, subject, message, name, email, created_at, updated_at, 
+            id, subject, message, name, email, created_at, updated_at,
             is_read, is_archived, user_id, clerk_user_id,
             users!inner(clerk_id)
           `
@@ -76,24 +84,24 @@ export function MessagesList() {
         setError(null)
 
         // Helper function for handling real-time updates
-        const handleRealtimeUpdate = (payload: any) => {
-          if (payload.eventType === 'INSERT') {
+        const handleRealtimeUpdate = (payload: RealtimePayload) => {
+          if (payload.eventType === 'INSERT' && payload.new) {
             setMessages(prev => [payload.new as Message, ...prev])
-          } else if (payload.eventType === 'UPDATE') {
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
             setMessages(prev =>
-              prev.map(msg => (msg.id === payload.new.id ? (payload.new as Message) : msg))
+              prev.map(msg => (msg.id === payload.new!.id ? (payload.new as Message) : msg))
             )
-          } else if (payload.eventType === 'DELETE') {
-            setMessages(prev => prev.filter(msg => msg.id !== payload.old.id))
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            setMessages(prev => prev.filter(msg => msg.id !== payload.old!.id))
           }
         }
 
         // Real-time subscription for messages - handle both pathways securely
         // Primary subscription: direct clerk_user_id matches (most common case)
-        subscription = client
+        subscription = client!
           .channel('user-messages')
           .on(
-            'postgres_changes',
+            'postgres_changes' as 'system',
             {
               event: '*',
               schema: 'public',
@@ -172,7 +180,7 @@ export function MessagesList() {
     }
   }
 
-  if (!isLoaded || clientLoading || loading) {
+  if (clientLoading || loading) {
     return (
       <div className="messages-loading">
         <p>Loading messages...</p>

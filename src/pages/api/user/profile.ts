@@ -8,24 +8,26 @@ export const GET: APIRoute = async ({ locals }) => {
     userId?: string | null
     clerkToken?: string | null
   }
-  logApiRequest('/api/user/profile', 'GET', enhancedLocals.userId)
+  // Convert null to undefined for type safety with logger
+  const userId = enhancedLocals.userId ?? undefined
+  logApiRequest('/api/user/profile', 'GET', userId)
 
   logger.debug('Profile API - Authentication check', {
-    userId: enhancedLocals.userId,
+    userId,
     hasToken: !!enhancedLocals.clerkToken,
   })
 
-  if (!enhancedLocals.userId || !enhancedLocals.clerkToken) {
+  if (!userId || !enhancedLocals.clerkToken) {
     logger.warn('Profile API - Unauthorized access attempt', {
       endpoint: '/api/user/profile',
-      hasUserId: !!enhancedLocals.userId,
+      hasUserId: !!userId,
       hasToken: !!enhancedLocals.clerkToken,
     })
     return new Response(
       JSON.stringify({
         error: 'Unauthorized',
         debug: {
-          hasUserId: !!enhancedLocals.userId,
+          hasUserId: !!userId,
           hasToken: !!enhancedLocals.clerkToken,
         },
       }),
@@ -74,7 +76,7 @@ export const GET: APIRoute = async ({ locals }) => {
         user_preferences (*)
       `
       )
-      .eq('clerk_id', enhancedLocals.userId)
+      .eq('clerk_id', userId)
       .single()
 
     if (error) {
@@ -82,9 +84,9 @@ export const GET: APIRoute = async ({ locals }) => {
         // User not found in database - this is expected for new users
         logger.info('User profile not found in database - new user', {
           endpoint: '/api/user/profile',
-          userId: enhancedLocals.userId,
+          userId,
         })
-        logApiResponse('/api/user/profile', 200, enhancedLocals.userId)
+        logApiResponse('/api/user/profile', 200, userId)
         return new Response(
           JSON.stringify({
             user: null,
@@ -99,7 +101,7 @@ export const GET: APIRoute = async ({ locals }) => {
       throw error
     }
 
-    logApiResponse('/api/user/profile', 200, enhancedLocals.userId)
+    logApiResponse('/api/user/profile', 200, userId)
     return new Response(
       JSON.stringify({
         user: data,
@@ -111,7 +113,7 @@ export const GET: APIRoute = async ({ locals }) => {
       }
     )
   } catch (error) {
-    logApiError('/api/user/profile', error, enhancedLocals.userId)
+    logApiError('/api/user/profile', error, userId)
     return new Response(
       JSON.stringify({
         error: 'Failed to fetch user profile',
@@ -130,13 +132,15 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     userId?: string | null
     clerkToken?: string | null
   }
-  logApiRequest('/api/user/profile', 'PATCH', enhancedLocals.userId)
+  // Convert null to undefined for type safety with logger
+  const userId = enhancedLocals.userId ?? undefined
+  logApiRequest('/api/user/profile', 'PATCH', userId)
 
-  if (!enhancedLocals.userId || !enhancedLocals.clerkToken) {
+  if (!userId || !enhancedLocals.clerkToken) {
     logger.warn('Profile API PATCH - Unauthorized access attempt', {
       endpoint: '/api/user/profile',
       method: 'PATCH',
-      hasUserId: !!enhancedLocals.userId,
+      hasUserId: !!userId,
       hasToken: !!enhancedLocals.clerkToken,
     })
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -202,7 +206,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     const { data, error } = await supabase
       .from('users')
       .update(updateData)
-      .eq('clerk_id', enhancedLocals.userId)
+      .eq('clerk_id', userId)
       .select()
       .single()
 
@@ -211,7 +215,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
         logger.warn('Profile update failed - user not found', {
           endpoint: '/api/user/profile',
           method: 'PATCH',
-          userId: enhancedLocals.userId,
+          userId,
         })
         return new Response(
           JSON.stringify({
@@ -226,7 +230,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
       throw error
     }
 
-    logApiResponse('/api/user/profile', 200, enhancedLocals.userId)
+    logApiResponse('/api/user/profile', 200, userId)
     return new Response(
       JSON.stringify({
         user: data,
@@ -238,7 +242,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
       }
     )
   } catch (error) {
-    logApiError('/api/user/profile', error, enhancedLocals.userId)
+    logApiError('/api/user/profile', error, userId)
     return new Response(
       JSON.stringify({
         error: 'Failed to update user profile',
