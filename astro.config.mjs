@@ -21,7 +21,7 @@ export default defineConfig({
     embeds(),
     starlight({
       title: 'Astro-Basics Guide',
-
+      disable404Route: true,
       // Social links (array format for v0.35.2)
       social: [
         {
