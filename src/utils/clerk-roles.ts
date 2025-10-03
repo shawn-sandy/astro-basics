@@ -232,3 +232,111 @@ export function formatRoleLabel(role: string | null | undefined): string {
     .replace(/_/g, ' ') // Replace underscores with spaces
     .replace(/\b\w/g, char => char.toUpperCase()) // Capitalize words
 }
+
+/**
+ * Organization role hierarchy for permission comparison
+ *
+ * Assigns numeric weight to each role for hierarchical comparisons.
+ * Higher number indicates more permissions. Used for "minimum role required"
+ * authorization checks in middleware and UI components.
+ *
+ * @constant
+ */
+const ROLE_HIERARCHY = {
+  [ClerkRole.ADMIN]: 100,
+  [ClerkRole.MEMBER]: 10,
+} as const
+
+/**
+ * Checks if user role has equal or higher permissions than required role
+ *
+ * Implements hierarchical role authorization using numeric weights.
+ * Useful for middleware authorization checks and UI conditional rendering
+ * where you need "admin or higher" type logic.
+ *
+ * Unknown/custom roles default to weight 0 (no permissions) following
+ * the principle of least privilege.
+ *
+ * @param {string | null | undefined} userRole - Current user's role from session
+ * @param {ClerkRoleType} requiredRole - Minimum required role for access
+ * @returns {boolean} True if user meets or exceeds permission level
+ *
+ * @security Defaults to deny (false) for null/unknown roles
+ * @performance Simple numeric comparison, O(1) lookup
+ *
+ * @example
+ * ```typescript
+ * // Middleware protection
+ * if (!hasRequiredRole(locals.userRole, ClerkRole.ADMIN)) {
+ *   return new Response('Forbidden - Admin access required', { status: 403 })
+ * }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // UI conditional rendering
+ * {hasRequiredRole(Astro.locals.userRole, ClerkRole.MEMBER) && (
+ *   <OrganizationContent />
+ * )}
+ * ```
+ */
+export function hasRequiredRole(
+  userRole: string | null | undefined,
+  requiredRole: ClerkRoleType
+): boolean {
+  if (!userRole) return false
+
+  const userLevel = ROLE_HIERARCHY[userRole as ClerkRoleType] ?? 0
+  const requiredLevel = ROLE_HIERARCHY[requiredRole] ?? 0
+
+  return userLevel >= requiredLevel
+}
+
+/**
+ * Extracts organization ID from Clerk session claims
+ *
+ * Helper function to safely extract the organization ID from session claims
+ * returned by Clerk's auth(). Handles cases where user is not in an organization
+ * context (returns null).
+ *
+ * This ID can be used for:
+ * - Filtering data by organization
+ * - Organization-scoped API requests
+ * - Multi-tenant query parameters
+ *
+ * @param {Record<string, unknown> | undefined} sessionClaims - Clerk session claims object
+ * @returns {string | null} Organization ID or null if not in org context
+ *
+ * @example
+ * ```typescript
+ * // In Astro component
+ * const { sessionClaims } = auth()
+ * const orgId = getOrgIdFromClaims(sessionClaims)
+ *
+ * if (orgId) {
+ *   // User is in organization context, filter data
+ *   const { data } = await supabase
+ *     .from('organization_memberships')
+ *     .select('*')
+ *     .eq('clerk_org_id', orgId)
+ * }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // In API route
+ * export const GET: APIRoute = async ({ locals }) => {
+ *   const orgId = locals.orgId // Set by middleware
+ *
+ *   if (!orgId) {
+ *     return new Response('Organization context required', { status: 400 })
+ *   }
+ * }
+ * ```
+ */
+export function getOrgIdFromClaims(
+  sessionClaims: Record<string, unknown> | undefined
+): string | null {
+  if (!sessionClaims) return null
+  return (sessionClaims.org_id as string) ?? null
+}

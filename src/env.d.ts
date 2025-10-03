@@ -7,7 +7,8 @@ declare namespace App {
     // Custom properties added to the Clerk Locals interface
     csrfToken?: string
     userId?: string | null
-    userRole?: string
+    userRole?: string | null // Organization role: 'org:admin' | 'org:member' | null
+    orgId?: string | null // Clerk organization ID
     clerkToken?: string | null
   }
 }

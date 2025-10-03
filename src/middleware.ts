@@ -269,13 +269,21 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
   // Store auth data in locals for server components
   if (auth().userId) {
     locals.userId = auth().userId
-    locals.userRole = auth().sessionClaims?.role as string
+
+    // Extract organization context from session claims
+    const claims = auth().sessionClaims
+    locals.userRole = (claims?.org_role as string) ?? null
+    locals.orgId = (claims?.org_id as string) ?? null
 
     // Get Clerk session token for Supabase native integration
     try {
       const token = await auth().getToken()
       locals.clerkToken = token
-      logger.debug('Auth middleware - User authenticated', { userId: locals.userId ?? undefined })
+      logger.debug('Auth middleware - User authenticated', {
+        userId: locals.userId ?? undefined,
+        role: locals.userRole,
+        orgId: locals.orgId,
+      })
 
       // Update last sign in timestamp (async, don't block request)
       // Only sync on protected routes to avoid unnecessary calls

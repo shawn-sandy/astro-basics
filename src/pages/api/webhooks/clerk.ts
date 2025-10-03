@@ -41,6 +41,18 @@ export const POST: APIRoute = async ({ request }) => {
       last_sign_in_at?: number
       created_at?: number
       user_id?: string
+      // Organization membership fields
+      organization?: {
+        id: string
+        name: string
+        slug: string
+      }
+      public_user_data?: {
+        user_id: string
+        first_name?: string
+        last_name?: string
+      }
+      role?: string
     }
   }
 
@@ -75,8 +87,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   // Handle different event types
   switch (evt.type) {
-    case 'user.created':
-    case 'user.updated': {
+    case 'user.created': {
       const {
         id,
         email_addresses,
@@ -98,7 +109,7 @@ export const POST: APIRoute = async ({ request }) => {
         (email_addresses && email_addresses.length > 0 && email_addresses[0]?.email_address)
 
       if (!validEmail) {
-        console.error('User sync failed - no valid email address found for user:', id)
+        logger.error('User sync failed - no valid email address', { userId: id })
         return new Response(
           JSON.stringify({
             error: 'No valid email address found',
@@ -117,38 +128,260 @@ export const POST: APIRoute = async ({ request }) => {
         username,
         full_name: `${first_name || ''} ${last_name || ''}`.trim() || null,
         avatar_url: image_url,
-        metadata: public_metadata || {},
+        app_metadata: public_metadata || {},
         last_sign_in_at: last_sign_in_at ? new Date(last_sign_in_at).toISOString() : null,
       }
 
-      const { error } = await supabase.from('users').upsert(userData, {
-        onConflict: 'clerk_id',
-        ignoreDuplicates: false,
-      })
+      const { data: user, error: userError } = await supabase
+        .from('users')
+        .upsert(userData, {
+          onConflict: 'clerk_id',
+          ignoreDuplicates: false,
+        })
+        .select()
+        .single()
 
-      if (error) {
-        console.error('Failed to sync user:', error)
-        return new Response(`Failed to sync user: ${error.message}`, { status: 500 })
+      if (userError) {
+        logger.error('Failed to sync user', { userId: id, error: userError.message })
+        return new Response(`Failed to sync user: ${userError.message}`, { status: 500 })
       }
 
-      console.log(`User ${evt.type === 'user.created' ? 'created' : 'updated'}: ${id}`)
+      // Create default preferences for new users
+      if (user) {
+        const { error: prefsError } = await supabase
+          .from('user_preferences')
+          .insert({
+            user_id: user.id,
+          })
+          .onConflict('user_id')
+          .ignoreDuplicates()
+
+        if (prefsError) {
+          logger.warn('Failed to create default preferences', {
+            userId: id,
+            error: prefsError.message,
+          })
+        }
+      }
+
+      logger.info('User created and synced', { userId: id, email: validEmail })
+      break
+    }
+
+    case 'user.updated': {
+      const {
+        id,
+        email_addresses,
+        username,
+        first_name,
+        last_name,
+        image_url,
+        public_metadata,
+        last_sign_in_at,
+      } = evt.data
+
+      const primaryEmail = email_addresses?.find(
+        email => email.id === evt.data.primary_email_address_id
+      )
+
+      const validEmail =
+        primaryEmail?.email_address ||
+        (email_addresses && email_addresses.length > 0 && email_addresses[0]?.email_address)
+
+      const userData = {
+        email: validEmail,
+        username,
+        full_name: `${first_name || ''} ${last_name || ''}`.trim() || null,
+        avatar_url: image_url,
+        app_metadata: public_metadata || {},
+        last_sign_in_at: last_sign_in_at ? new Date(last_sign_in_at).toISOString() : null,
+      }
+
+      const { error } = await supabase.from('users').update(userData).eq('clerk_id', id)
+
+      if (error) {
+        logger.error('Failed to update user', { userId: id, error: error.message })
+        return new Response(`Failed to update user: ${error.message}`, { status: 500 })
+      }
+
+      logger.info('User updated', { userId: id })
       break
     }
 
     case 'user.deleted': {
-      const { error } = await supabase.from('users').delete().eq('clerk_id', evt.data.id)
+      // Soft delete - anonymize user data
+      const { error } = await supabase
+        .from('users')
+        .update({
+          email: null,
+          username: `deleted_user_${evt.data.id}`,
+          full_name: 'Deleted User',
+          avatar_url: null,
+          app_metadata: {},
+        })
+        .eq('clerk_id', evt.data.id)
 
       if (error) {
-        console.error('Failed to delete user:', error)
+        logger.error('Failed to delete user', { userId: evt.data.id, error: error.message })
         return new Response(`Failed to delete user: ${error.message}`, { status: 500 })
       }
 
-      console.log(`User deleted: ${evt.data.id}`)
+      logger.info('User deleted and anonymized', { userId: evt.data.id })
+      break
+    }
+
+    case 'organizationMembership.created': {
+      const { organization, public_user_data, role } = evt.data
+
+      if (!organization || !public_user_data) {
+        logger.warn('Organization membership creation missing required data')
+        break
+      }
+
+      // Get user ID from clerk_id
+      const { data: user } = await supabase
+        .from('users')
+        .select('id')
+        .eq('clerk_id', public_user_data.user_id)
+        .single()
+
+      if (!user) {
+        logger.warn('User not found for organization membership', {
+          userId: public_user_data.user_id,
+        })
+        break
+      }
+
+      const { error } = await supabase.from('organization_memberships').insert({
+        user_id: user.id,
+        clerk_org_id: organization.id,
+        clerk_org_role: role || 'org:member',
+        org_name: organization.name,
+        org_slug: organization.slug,
+      })
+
+      if (error) {
+        logger.error('Failed to create organization membership', {
+          userId: public_user_data.user_id,
+          orgId: organization.id,
+          error: error.message,
+        })
+        return new Response(`Failed to create organization membership: ${error.message}`, {
+          status: 500,
+        })
+      }
+
+      logger.info('Organization membership created', {
+        userId: public_user_data.user_id,
+        orgId: organization.id,
+        role: role,
+      })
+      break
+    }
+
+    case 'organizationMembership.updated': {
+      const { organization, public_user_data, role } = evt.data
+
+      if (!organization || !public_user_data) {
+        logger.warn('Organization membership update missing required data')
+        break
+      }
+
+      // Get user ID from clerk_id
+      const { data: user } = await supabase
+        .from('users')
+        .select('id')
+        .eq('clerk_id', public_user_data.user_id)
+        .single()
+
+      if (!user) {
+        logger.warn('User not found for organization membership update', {
+          userId: public_user_data.user_id,
+        })
+        break
+      }
+
+      const { error } = await supabase
+        .from('organization_memberships')
+        .update({
+          clerk_org_role: role || 'org:member',
+          org_name: organization.name,
+          org_slug: organization.slug,
+        })
+        .eq('user_id', user.id)
+        .eq('clerk_org_id', organization.id)
+
+      if (error) {
+        logger.error('Failed to update organization membership', {
+          userId: public_user_data.user_id,
+          orgId: organization.id,
+          error: error.message,
+        })
+        return new Response(`Failed to update organization membership: ${error.message}`, {
+          status: 500,
+        })
+      }
+
+      logger.info('Organization membership updated', {
+        userId: public_user_data.user_id,
+        orgId: organization.id,
+        role: role,
+      })
+      break
+    }
+
+    case 'organizationMembership.deleted': {
+      const { organization, public_user_data } = evt.data
+
+      if (!organization || !public_user_data) {
+        logger.warn('Organization membership deletion missing required data')
+        break
+      }
+
+      // Get user ID from clerk_id
+      const { data: user } = await supabase
+        .from('users')
+        .select('id')
+        .eq('clerk_id', public_user_data.user_id)
+        .single()
+
+      if (!user) {
+        logger.warn('User not found for organization membership deletion', {
+          userId: public_user_data.user_id,
+        })
+        break
+      }
+
+      const { error } = await supabase
+        .from('organization_memberships')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('clerk_org_id', organization.id)
+
+      if (error) {
+        logger.error('Failed to delete organization membership', {
+          userId: public_user_data.user_id,
+          orgId: organization.id,
+          error: error.message,
+        })
+        return new Response(`Failed to delete organization membership: ${error.message}`, {
+          status: 500,
+        })
+      }
+
+      logger.info('Organization membership deleted', {
+        userId: public_user_data.user_id,
+        orgId: organization.id,
+      })
       break
     }
 
     case 'session.created': {
       // Update last sign in time
+      if (!evt.data.user_id || !evt.data.created_at) {
+        break
+      }
+
       const { error } = await supabase
         .from('users')
         .update({
@@ -157,13 +390,16 @@ export const POST: APIRoute = async ({ request }) => {
         .eq('clerk_id', evt.data.user_id)
 
       if (error) {
-        console.error('Failed to update last sign in:', error)
+        logger.warn('Failed to update last sign in', {
+          userId: evt.data.user_id,
+          error: error.message,
+        })
       }
       break
     }
 
     default:
-      console.log(`Unhandled webhook event type: ${evt.type}`)
+      logger.debug('Unhandled webhook event type', { eventType: evt.type })
   }
 
   return new Response('Webhook processed', { status: 200 })
