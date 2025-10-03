@@ -1,308 +1,289 @@
 # Clerk Roles Reset Guide
 
-## Overview
+**Quick Reference**: Reset your Clerk organization roles to defaults in 3 steps. No code changes required.
 
-This guide provides instructions for resetting Clerk organization roles to their default configuration. Your codebase is already compatible with Clerk's default roles - no code changes are required.
+## TL;DR - Reset Steps
 
-## Current State Analysis
+| Step | Action                          | Location                                                                         |
+| ---- | ------------------------------- | -------------------------------------------------------------------------------- |
+| 1    | Navigate to Roles & Permissions | Clerk Dashboard → Your Application → Organization Settings → Roles & Permissions |
+| 2    | Remove custom roles             | Delete any roles beyond `org:admin` and `org:member`                             |
+| 3    | Reassign members                | Assign members to `org:admin` or `org:member`                                    |
 
-### ✅ Code Compatibility
+**Result**: Your organization will use Clerk's default two-role system.
 
-Your codebase uses Clerk's standard role system correctly:
+---
 
-- **Middleware**: [src/middleware.ts:271](../src/middleware.ts#L271) - Extracts role from session claims generically
-- **TypeScript**: [src/env.d.ts:10](../src/env.d.ts#L10) - Flexible type definition for userRole
-- **Components**: [src/pages/organization/index.astro](../src/pages/organization/index.astro) - Uses Clerk's built-in `<OrganizationProfile>` component
+## Default Role Reference
 
-**Key Finding**: Your application doesn't hardcode any custom role checks. All role logic is handled by Clerk's built-in components and session claims.
+### Role Comparison Matrix
 
-## Clerk Default Roles
+| Capability      | `org:admin` | `org:member` |
+| --------------- | ----------- | ------------ |
+| Manage settings | ✅          | ❌           |
+| Invite members  | ✅          | ❌           |
+| Remove members  | ✅          | ❌           |
+| Assign roles    | ✅          | ❌           |
+| Manage billing  | ✅          | ❌           |
+| View members    | ✅          | ✅           |
+| View billing    | ✅          | ✅           |
 
-Clerk provides two default organization roles out of the box:
+### In This Codebase
 
-### 1. `org:admin`
+The application uses role-based UI controls:
 
-- **Permissions**: Full access to organization resources
-- **Capabilities**:
-  - Manage organization settings
-  - Invite/remove members
-  - Assign roles to members
-  - Manage billing
-  - Full CRUD on organization resources
+- **Middleware** ([src/middleware.ts:272](../src/middleware.ts#L272)) - Stores role in `locals.userRole`
+- **Role Utility** ([src/utils/clerk-roles.ts](../src/utils/clerk-roles.ts)) - Permission checking functions
+- **Organization Page** ([src/pages/organization/index.astro](../src/pages/organization/index.astro)) - Conditional action cards based on permissions
 
-### 2. `org:member`
+**Admin users see**: Members, Settings, Billing, Integrations action cards
+**Member users see**: Members (view only), Billing (view only) action cards
 
-- **Permissions**: Limited access to organization resources
-- **Capabilities**:
-  - Read member list
-  - Read billing information
-  - Access organization resources (based on your app's logic)
-  - **Cannot**: Manage organization, invite members, or change settings
+---
 
-**Note**: For applications created before December 2023, the roles were named `admin` and `basic_member`.
+## Step-by-Step Reset Process
 
-## Reset Process
+### Step 1: Access Clerk Dashboard
 
-### Phase 1: Clerk Dashboard Configuration (Required)
+1. Sign in to [Clerk Dashboard](https://dashboard.clerk.com)
+2. Select your application
+3. Navigate to: **Organization Settings** → **Roles & Permissions**
 
-**You must perform these steps in the Clerk Dashboard:**
+### Step 2: Inventory Current Roles
 
-1. **Navigate to Role Settings**
+Document any custom roles before deletion:
 
-   ```
-   Clerk Dashboard → Your Application → Organization Settings → Roles & Permissions
-   ```
+- Role name
+- Permission set
+- Number of members assigned
+- Business purpose (for future reference)
 
-2. **Identify Custom Roles**
+### Step 3: Remove Custom Roles
 
-   - Review the list of roles
-   - Note any roles beyond `org:admin` and `org:member`
+For each custom role:
 
-3. **Remove Custom Roles**
+1. Click the role name to view details
+2. Click **Delete Role** button
+3. Confirm deletion
 
-   - Delete each custom role you've created
-   - **Warning**: This will affect existing members assigned to these roles
-   - Members with custom roles will need to be reassigned to default roles
+**Warning**: Members assigned to deleted roles will lose their current role assignment.
 
-4. **Verify Default Roles**
+### Step 4: Verify Default Roles Exist
 
-   - Confirm `org:admin` exists with full permissions
-   - Confirm `org:member` exists with limited permissions (read members, read billing)
+Ensure these two roles are present:
 
-5. **Reset Modified Permissions** (if applicable)
+#### `org:admin`
 
-   - If you've modified the default role permissions, reset them to:
-     - **`org:admin`**: All permissions enabled
-     - **`org:member`**: Only "Read members" and "Read billing" enabled
+- **All permissions enabled** (8 checkboxes checked)
+- Default role for organization creators
 
-6. **Reassign Members**
-   - Review organization members
-   - Reassign anyone with custom roles to either:
-     - `org:admin` for administrators
-     - `org:member` for regular users
+#### `org:member`
 
-### Phase 2: Code Verification (Optional)
+- **Limited permissions**: Only "Read members" and "Read billing" enabled
+- Default role for invited members
 
-**No code changes are needed**, but you can verify compatibility:
+If permissions were modified, reset them to match above.
 
-#### Middleware Compatibility Check
+### Step 5: Reassign Members
 
-Your middleware already handles roles generically:
+1. Go to **Organization Settings** → **Members**
+2. For each member previously assigned to custom roles:
+   - Click member name
+   - Change role to `org:admin` or `org:member`
+   - Save changes
+
+**Guideline**:
+
+- Assign `org:admin` to: Organization owners, technical leads, administrators
+- Assign `org:member` to: Regular team members, contributors
+
+### Step 6: Force Session Refresh
+
+Users may need to re-login to receive updated role claims:
+
+1. Ask affected users to sign out and sign back in
+2. Alternatively, wait for session token expiration (typically 1 hour)
+3. Verify role badge appears correctly on organization page
+
+---
+
+## Testing Role-Based Access
+
+After resetting roles, verify the implementation works:
+
+### Test as Admin (`org:admin`)
+
+1. Sign in with admin credentials
+2. Navigate to `/organization`
+3. **Expected behavior**:
+   - Role badge shows "Administrator" in green
+   - See 4 action cards: Members, Settings, Billing, Integrations
+   - Card descriptions show "Manage" wording
+   - Full access to organization management
+
+### Test as Member (`org:member`)
+
+1. Sign in with member credentials
+2. Navigate to `/organization`
+3. **Expected behavior**:
+   - Role badge shows "Member" in blue
+   - See 2 action cards: Members, Billing
+   - Card descriptions show "View" wording
+   - Limited read-only access
+
+### Test Edge Cases
+
+- **No organization**: Should show "Create Organization" prompt
+- **No role assigned**: Should default to member-level permissions
+- **Multiple organizations**: Role badge updates when switching orgs
+
+---
+
+## Code Implementation Reference
+
+The codebase implements role-based access control through a utility module:
+
+### Role Checking Functions
 
 ```typescript
-// src/middleware.ts:271
-locals.userRole = auth().sessionClaims?.role as string
+import { isOrgAdmin, hasPermission, formatRoleLabel } from '#utils/clerk-roles'
+
+// Check if user is admin
+const isAdmin = isOrgAdmin(Astro.locals.userRole)
+
+// Check specific permission
+const canInvite = hasPermission(Astro.locals.userRole, 'canInviteMembers')
+
+// Format role for display
+const label = formatRoleLabel(Astro.locals.userRole) // "Administrator" or "Member"
 ```
 
-This works with any role name, including the defaults.
-
-#### Component Compatibility Check
-
-Your organization page uses Clerk's built-in components:
+### Component Usage Example
 
 ```astro
-<OrganizationProfile client:load />
-```
+---
+import { hasPermission } from '#utils/clerk-roles'
 
-These components automatically adapt to your role configuration in Clerk Dashboard.
+const userRole = Astro.locals.userRole
+const canManageSettings = hasPermission(userRole, 'canManageSettings')
+---
 
-#### TypeScript Type Safety
-
-Your type definitions are flexible:
-
-```typescript
-// src/env.d.ts
-interface Locals {
-  userId?: string | null
-  userRole?: string // ✅ Accepts any role string
-  clerkToken?: string | null
+{
+  canManageSettings && (
+    <a href="/organization/settings" class="action-card">
+      <h3>Settings</h3>
+      <p>Configure organization settings</p>
+    </a>
+  )
 }
 ```
 
-### Phase 3: Testing
+**Key Pattern**: Permission checks happen at compile time (Astro components) or request time (middleware), ensuring role logic is enforced server-side.
 
-After resetting roles in Clerk Dashboard:
-
-1. **Test Admin Access**
-
-   - Sign in as an organization admin
-   - Verify access to `/organization` page
-   - Confirm ability to manage members via `<OrganizationProfile>`
-
-2. **Test Member Access**
-
-   - Sign in as an organization member
-   - Verify limited access to organization features
-   - Confirm inability to manage organization settings
-
-3. **Test Role Display**
-   - Check that `locals.userRole` contains correct values
-   - Verify role is properly extracted from session claims
-
-## Migration Considerations
-
-### If You Had Custom Roles
-
-**Before deletion, document:**
-
-- Custom role names
-- Custom permissions assigned to each role
-- Number of users assigned to each custom role
-- Business logic that may depend on custom roles
-
-**After deletion:**
-
-- Map custom roles to default roles:
-  - High-privilege custom roles → `org:admin`
-  - Low-privilege custom roles → `org:member`
-- Communicate role changes to affected users
-- Update any external documentation referencing custom roles
-
-### Impact on Existing Members
-
-- Members will retain organization membership
-- Members will need new role assignments
-- No data loss occurs
-- Session tokens may need refresh (users may need to re-login)
-
-## Role-Based Access Control in Your App
-
-Your application uses Clerk's role system in these areas:
-
-### 1. Middleware Role Storage
-
-```typescript
-// src/middleware.ts
-if (auth().userId) {
-  locals.userId = auth().userId
-  locals.userRole = auth().sessionClaims?.role as string
-}
-```
-
-**Usage**: Stores role in request context for server-side access control.
-
-### 2. Component-Level Access
-
-```astro
-<!-- src/pages/organization/index.astro -->
-<OrganizationProfile client:load />
-```
-
-**Usage**: Clerk components automatically enforce role-based permissions.
-
-### 3. Protected Routes
-
-```typescript
-// src/middleware.ts
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)', '/organization(.*)'])
-```
-
-**Usage**: Routes are protected by authentication, not specific roles. This means both `org:admin` and `org:member` can access these routes (role-specific restrictions are handled within components).
-
-## Best Practices
-
-### 1. Use Default Roles When Possible
-
-- Default roles cover most use cases
-- Easier to maintain and understand
-- Better compatibility with Clerk's built-in components
-- Reduced complexity in codebase
-
-### 2. When to Consider Custom Roles
-
-Only create custom roles if you need:
-
-- More than two permission levels
-- Granular permissions beyond admin/member
-- Industry-specific role names (e.g., "moderator", "editor")
-
-### 3. Role Naming Conventions
-
-If you add custom roles in the future:
-
-- Use the `org:` prefix: `org:moderator`
-- Use lowercase with underscores: `org:content_editor`
-- Be descriptive but concise
-- Document permissions clearly
-
-### 4. Permission Management
-
-- Keep permissions as simple as possible
-- Avoid overlapping permission sets
-- Document why each permission exists
-- Review permissions quarterly
+---
 
 ## Troubleshooting
 
-### Issue: Role Not Appearing in Session Claims
+### Issue: Role badge not appearing
 
-**Symptoms**: `locals.userRole` is undefined or null
+**Cause**: User not assigned to an organization role
 
-**Solutions**:
+**Solution**:
 
-1. Check user is actually a member of an organization
-2. Verify user has been assigned a role in Clerk Dashboard
-3. Clear session and re-login to get fresh token
-4. Check Clerk Dashboard → Sessions → Session Tokens to verify role claim exists
+1. Verify user is organization member in Clerk Dashboard
+2. Assign role (`org:admin` or `org:member`)
+3. Have user sign out and sign back in
 
-### Issue: Permission Denied After Role Reset
+### Issue: Wrong action cards showing
 
-**Symptoms**: Users can't access previously available features
+**Cause**: Stale session token with old role claim
 
-**Solutions**:
+**Solution**:
 
-1. Verify user's new role assignment in Clerk Dashboard
-2. Check if role has required permissions enabled
-3. Ensure user has re-logged in to refresh session token
-4. Review your app's permission checks (if any)
+1. Clear browser cookies
+2. Sign out and sign back in
+3. Wait for token expiration (1 hour) and refresh page
 
-### Issue: "Unknown Role" Errors
+### Issue: Permission denied errors
 
-**Symptoms**: Application logs show unrecognized role values
+**Cause**: Role permissions were modified from defaults
 
-**Solutions**:
+**Solution**:
 
-1. This shouldn't happen with generic role handling
-2. Check for hardcoded role checks in your codebase (use grep):
-   ```bash
-   grep -r "role === 'custom_role'" src/
-   ```
-3. Review any third-party integrations expecting specific role names
+1. Go to Roles & Permissions in Clerk Dashboard
+2. Reset `org:admin` to have all permissions
+3. Reset `org:member` to have only "Read members" and "Read billing"
 
-## Verification Checklist
+### Issue: Custom role still referenced in code
 
-After resetting to default roles, verify:
+**Cause**: Hardcoded role checks in codebase (not expected)
 
-- [ ] Only `org:admin` and `org:member` roles exist in Clerk Dashboard
-- [ ] All organization members have been reassigned to default roles
-- [ ] Admins can access full organization management features
-- [ ] Members have appropriate limited access
-- [ ] No console errors related to roles appear
-- [ ] `locals.userRole` correctly reflects assigned role
-- [ ] Organization pages load without errors
-- [ ] Role-based UI elements display correctly
+**Solution**:
+
+1. Search codebase: `grep -r "role === 'custom_role'" src/`
+2. Replace with permission-based checks using utility functions
+3. Use `hasPermission()` instead of direct role comparison
+
+---
+
+## Migration Checklist
+
+Use this checklist when resetting roles:
+
+- [ ] Document all custom roles and their purposes
+- [ ] Record member assignments to custom roles
+- [ ] Delete custom roles in Clerk Dashboard
+- [ ] Verify `org:admin` has all permissions enabled
+- [ ] Verify `org:member` has only read permissions enabled
+- [ ] Reassign all members to default roles
+- [ ] Test admin access to organization page
+- [ ] Test member access to organization page
+- [ ] Verify role badge displays correctly
+- [ ] Confirm action cards appear based on role
+- [ ] Check server logs for role-related errors
+- [ ] Update internal documentation about roles
+
+---
+
+## When to Use Custom Roles
+
+**Current system is sufficient if you need**:
+
+- Two permission levels (admin vs member)
+- Simple organization hierarchy
+- Standard access patterns
+
+**Consider custom roles only if you need**:
+
+- More than two permission tiers
+- Industry-specific role names (e.g., "moderator", "editor")
+- Granular permission combinations not covered by defaults
+
+**Best Practice**: Start with default roles. Add custom roles only when business requirements clearly justify the added complexity.
+
+---
 
 ## Related Documentation
 
 - [Clerk Official Docs - Roles & Permissions](https://clerk.com/docs/organizations/roles-permissions)
+- [Role Utility API Reference](../src/utils/clerk-roles.ts) - JSDoc documentation
 - [Authentication Developer Guide](./AUTHENTICATION_DEVELOPER_GUIDE.md)
 - [Clerk Configuration Utility](./utilities/clerk-configuration-utility.md)
-- [Clerk-Supabase Integration](./integration/clerk-supabase-integration.md)
 
-## Support
+## Support Resources
 
-### Internal Resources
+**Internal**:
 
-- Middleware implementation: [src/middleware.ts](../src/middleware.ts)
+- Middleware: [src/middleware.ts](../src/middleware.ts)
+- Role utilities: [src/utils/clerk-roles.ts](../src/utils/clerk-roles.ts)
 - Organization page: [src/pages/organization/index.astro](../src/pages/organization/index.astro)
-- TypeScript types: [src/env.d.ts](../src/env.d.ts)
 
-### External Resources
+**External**:
 
 - [Clerk Support](https://clerk.com/support)
 - [Clerk Community Discord](https://clerk.com/discord)
-- [Clerk Documentation](https://clerk.com/docs)
 
-## Changelog
+---
 
-- **2025-10-02**: Initial guide created for resetting roles to Clerk defaults
+**Last Updated**: 2025-10-02
+**Guide Version**: 2.0 (Simplified with role-based UI implementation)

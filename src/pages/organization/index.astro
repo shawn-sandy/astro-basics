@@ -6,20 +6,39 @@ import {
   OrganizationSwitcher,
   OrganizationProfile,
 } from '@clerk/astro/components'
+import { formatRoleLabel, hasPermission } from '#utils/clerk-roles'
 
 const auth = Astro.locals.auth()
 const { userId, orgId } = auth
+const userRole = Astro.locals.userRole
 
 if (!userId) {
   return Astro.redirect('/sign-in')
 }
+
+// Determine which action cards to show based on role permissions
+const showMembersCard =
+  hasPermission(userRole, 'canManageRoles') || hasPermission(userRole, 'canViewMembers')
+const showSettingsCard = hasPermission(userRole, 'canManageSettings')
+const showBillingCard =
+  hasPermission(userRole, 'canManageBilling') || hasPermission(userRole, 'canViewBilling')
+const roleLabel = formatRoleLabel(userRole)
 ---
 
 <Auth title="Organization - Astro Basics">
   <main class="container organization-page">
     <SignedIn client:load>
       <div class="org-header">
-        <h1>Organization Management</h1>
+        <div class="org-title">
+          <h1>Organization Management</h1>
+          {
+            userRole && (
+              <span class="role-badge" data-role={userRole}>
+                {roleLabel}
+              </span>
+            )
+          }
+        </div>
         <div class="org-switcher">
           <OrganizationSwitcher client:load />
         </div>
@@ -36,22 +55,38 @@ if (!userId) {
             <section class="org-actions">
               <h2>Organization Actions</h2>
               <div class="action-cards">
-                <a href="/organization/members" class="action-card">
-                  <h3>Members</h3>
-                  <p>Manage organization members and roles</p>
-                </a>
-                <a href="/organization/settings" class="action-card">
-                  <h3>Settings</h3>
-                  <p>Configure organization settings</p>
-                </a>
-                <a href="/organization/billing" class="action-card">
-                  <h3>Billing</h3>
-                  <p>Manage billing and subscriptions</p>
-                </a>
-                <a href="/organization/integrations" class="action-card">
-                  <h3>Integrations</h3>
-                  <p>Connect third-party services</p>
-                </a>
+                {showMembersCard && (
+                  <a href="/organization/members" class="action-card">
+                    <h3>Members</h3>
+                    <p>
+                      {hasPermission(userRole, 'canManageRoles')
+                        ? 'Manage organization members and roles'
+                        : 'View organization members'}
+                    </p>
+                  </a>
+                )}
+                {showSettingsCard && (
+                  <a href="/organization/settings" class="action-card">
+                    <h3>Settings</h3>
+                    <p>Configure organization settings</p>
+                  </a>
+                )}
+                {showBillingCard && (
+                  <a href="/organization/billing" class="action-card">
+                    <h3>Billing</h3>
+                    <p>
+                      {hasPermission(userRole, 'canManageBilling')
+                        ? 'Manage billing and subscriptions'
+                        : 'View billing information'}
+                    </p>
+                  </a>
+                )}
+                {hasPermission(userRole, 'canManageSettings') && (
+                  <a href="/organization/integrations" class="action-card">
+                    <h3>Integrations</h3>
+                    <p>Connect third-party services</p>
+                  </a>
+                )}
               </div>
             </section>
           </div>
@@ -88,6 +123,38 @@ if (!userId) {
     margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--color-border, #e0e0e0);
+  }
+
+  .org-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .org-title h1 {
+    margin: 0;
+  }
+
+  .role-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.25rem;
+    background: var(--color-bg-tertiary, #e0e0e0);
+    color: var(--color-text-secondary, #666);
+  }
+
+  .role-badge[data-role='org:admin'] {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+  }
+
+  .role-badge[data-role='org:member'] {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #93c5fd;
   }
 
   .org-switcher {
@@ -184,6 +251,12 @@ if (!userId) {
       flex-direction: column;
       align-items: flex-start;
       gap: 1rem;
+    }
+
+    .org-title {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
     }
 
     .action-cards {
