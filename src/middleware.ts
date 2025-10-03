@@ -75,7 +75,8 @@ const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)', '/o
  * @see {@link isProtectedRoute} for when this sync is triggered
  * @since 1.0.0 - Added for user analytics and engagement tracking
  */
-async function updateUserLastSignIn(userId: string): Promise<void> {
+async function updateUserLastSignIn(userId: string | undefined): Promise<void> {
+  if (!userId) return
   if (!isSupabaseConfigured()) {
     return
   }
@@ -274,21 +275,22 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
     try {
       const token = await auth().getToken()
       locals.clerkToken = token
-      logger.debug('Auth middleware - User authenticated', { userId: locals.userId })
+      logger.debug('Auth middleware - User authenticated', { userId: locals.userId ?? undefined })
 
       // Update last sign in timestamp (async, don't block request)
       // Only sync on protected routes to avoid unnecessary calls
       if (isProtectedRoute(context.request)) {
-        updateUserLastSignIn(locals.userId).catch(error => {
+        const userId = locals.userId ?? undefined
+        updateUserLastSignIn(userId).catch(error => {
           logger.warn('Background user sync failed', {
-            userId: locals.userId,
+            userId,
             error: error instanceof Error ? error.message : 'Unknown error',
           })
         })
       }
     } catch (error) {
       logger.error('Failed to get Clerk token', {
-        userId: locals.userId,
+        userId: locals.userId ?? undefined,
         error: error instanceof Error ? error.message : 'Unknown error',
       })
     }

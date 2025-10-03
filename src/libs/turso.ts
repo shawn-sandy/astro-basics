@@ -219,7 +219,7 @@ export async function getMessageById(id: number): Promise<MessageRow | null> {
       return null
     }
 
-    return result.rows[0] as MessageRow
+    return result.rows[0] as unknown as MessageRow
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('Failed to get message:', errorMessage)
@@ -264,8 +264,8 @@ export async function getMessages(options?: {
   }
 
   try {
-    const result = await executeQuery(query, params)
-    return result.rows as MessageRow[]
+    const result = await executeQuery(query, params as Parameters<typeof executeQuery>[1])
+    return result.rows as unknown as MessageRow[]
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('Failed to get messages:', errorMessage)
