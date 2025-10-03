@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Update Database Users from 'member' to 'member'
- * Updates all users in Supabase who currently have 'member' role to 'member'
+ * Update Database Users from 'volunteer' to 'member'
+ * Updates all users in Supabase who currently have 'volunteer' role to 'member'
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -19,7 +19,7 @@ const colors = {
 
 async function updateUsersToMember() {
   console.log('\n' + colors.cyan + '='.repeat(60) + colors.reset)
-  console.log(colors.cyan + 'Update Users: member → member' + colors.reset)
+  console.log(colors.cyan + 'Update Users: volunteer → member' + colors.reset)
   console.log(colors.cyan + '='.repeat(60) + colors.reset + '\n')
 
   const supabaseUrl = process.env.SUPABASE_URL
@@ -33,33 +33,35 @@ async function updateUsersToMember() {
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
   try {
-    // Check current member users
-    const { data: memberUsers, error: checkError } = await supabase
+    // Check current volunteer users
+    const { data: volunteerUsers, error: checkError } = await supabase
       .from('users')
       .select('clerk_id, email')
-      .eq('role', 'member')
+      .eq('role', 'volunteer')
 
     if (checkError) {
       throw checkError
     }
 
-    if (!memberUsers || memberUsers.length === 0) {
-      console.log(colors.green + '✓ No member users found - nothing to update\n' + colors.reset)
+    if (!volunteerUsers || volunteerUsers.length === 0) {
+      console.log(colors.green + '✓ No volunteer users found - nothing to update\n' + colors.reset)
       return
     }
 
-    console.log(colors.yellow + `Found ${memberUsers.length} member user(s):\n` + colors.reset)
-    memberUsers.forEach(user => {
+    console.log(
+      colors.yellow + `Found ${volunteerUsers.length} volunteer user(s):\n` + colors.reset
+    )
+    volunteerUsers.forEach(user => {
       console.log(colors.cyan + '  • ' + colors.reset + user.email)
     })
 
     console.log(colors.yellow + '\n▶ Updating all to member...\n' + colors.reset)
 
-    // Update all member users to member
+    // Update all volunteer users to member
     const { error: updateError } = await supabase
       .from('users')
       .update({ role: 'member' })
-      .eq('role', 'member')
+      .eq('role', 'volunteer')
 
     if (updateError) {
       throw updateError
@@ -68,7 +70,7 @@ async function updateUsersToMember() {
     console.log(
       colors.green +
         '✅ Successfully updated ' +
-        memberUsers.length +
+        volunteerUsers.length +
         ' user(s) to member role\n' +
         colors.reset
     )
