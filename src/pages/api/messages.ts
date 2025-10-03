@@ -2,10 +2,8 @@ import type { APIRoute } from 'astro'
 
 import { getAuthenticatedSupabase } from '#libs/supabase-server'
 
-export const GET: APIRoute = async context => {
-  const auth = context.locals.auth()
-
-  if (!auth.userId) {
+export const GET: APIRoute = async ({ locals }) => {
+  if (!locals.userId) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
@@ -13,7 +11,7 @@ export const GET: APIRoute = async context => {
   }
 
   try {
-    const supabase = await getAuthenticatedSupabase(context)
+    const supabase = await getAuthenticatedSupabase({ locals })
 
     if (!supabase) {
       return new Response(JSON.stringify({ error: 'Database not configured' }), {
@@ -27,7 +25,7 @@ export const GET: APIRoute = async context => {
       .from('messages')
       .select('*')
       .or(
-        `clerk_user_id.eq.${auth.userId},user_id.in.(select id from users where clerk_id='${auth.userId}')`
+        `clerk_user_id.eq.${locals.userId},user_id.in.(select id from users where clerk_id='${locals.userId}')`
       )
       .order('created_at', { ascending: false })
       .limit(50)
