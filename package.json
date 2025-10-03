@@ -67,6 +67,8 @@
     "db:restore": "node --env-file=.env scripts/switch-database.js --restore",
     "test:blog-comments": "node --env-file=.env scripts/test-blog-comments-schema.js",
     "test:comments-api": "node --env-file=.env scripts/test-comments-api.js",
+    "db:setup-users": "node --env-file=.env scripts/apply-user-migrations.js",
+    "db:sync-user": "node --env-file=.env scripts/sync-current-user.js",
     "npm-update": "npx npm-check-updates -u",
     "npm-update-i": "npx npm-check-updates -i",
     "ticket:validate": "gh auth status && gh repo view && echo '✅ GitHub CLI ready for ticket creation'",
