@@ -1,24 +1,24 @@
 # Role Synchronization Issue - Resolution
 
 **Date:** 2025-10-03
-**Issue:** Users syncing to Supabase with "member" role instead of default "member" role
+**Issue:** Users syncing to Supabase with "volunteer" role instead of default "member" role
 **Status:** ✅ Resolved (Pending Manual Migration)
 
 ---
 
 ## Problem Summary
 
-Users were being synced from Clerk to Supabase with the "member" role, but the expectation was for them to have the default "member" role. Investigation revealed:
+Users were being synced from Clerk to Supabase with the "volunteer" role, but the expectation was for them to have the default "member" role. Investigation revealed:
 
 1. **Role column exists** in the `users` table (already created)
 2. **ENUM type mismatch**: Database uses `user_role` ENUM type that includes:
-   - ✅ `member`
+   - ✅ `volunteer`
    - ✅ `coordinator`
    - ✅ `super_admin`
    - ❌ `member` (missing)
    - ❌ `admin` (missing)
 3. **Code was correct**: Webhook and sync endpoints properly extract role from Clerk
-4. **Clerk metadata**: User had "member" set in `publicMetadata.role`
+4. **Clerk metadata**: User had "volunteer" set in `publicMetadata.role`
 
 ---
 
@@ -26,7 +26,7 @@ Users were being synced from Clerk to Supabase with the "member" role, but the e
 
 ### Step 1: Updated Clerk User Role ✅
 
-Changed user role from "member" to "member" in Clerk's publicMetadata:
+Changed user role from "volunteer" to "member" in Clerk's publicMetadata:
 
 ```bash
 node scripts/update-user-roles.js
@@ -35,7 +35,7 @@ node scripts/update-user-roles.js
 **Result:**
 
 - ✅ 1 user updated in Clerk
-- Role changed from "member" → "member"
+- Role changed from "volunteer" → "member"
 
 ### Step 2: Database ENUM Update (Required)
 
@@ -225,7 +225,6 @@ node scripts/check-role-enum.js
 ```
 Testing role values:
   ✓ member - allowed
-  ✓ member - allowed
   ✓ coordinator - allowed
   ✓ admin - allowed
   ✓ super_admin - allowed
@@ -312,11 +311,11 @@ Update Clerk session token customization to include user role:
 2. Verify ENUM includes "member": `node scripts/check-role-enum.js`
 3. Re-sync users: `node scripts/trigger-user-sync.js`
 
-### Issue: Users still showing "member"
+### Issue: Users still showing "volunteer"
 
 **Cause:** Either:
 
-- Clerk still has "member" in publicMetadata
+- Clerk still has "volunteer" in publicMetadata
 - Sync hasn't been triggered
 
 **Solution:**
