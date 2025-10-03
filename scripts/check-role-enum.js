@@ -66,7 +66,7 @@ async function checkRoleEnum() {
         console.log(colors.blue + 'Trying to insert test values...\n' + colors.reset)
 
         // Try inserting with different roles to see what's allowed
-        const testRoles = ['member', 'volunteer', 'coordinator', 'admin', 'super_admin']
+        const testRoles = ['member', 'coordinator', 'admin', 'super_admin']
         console.log(colors.cyan + 'Testing role values:' + colors.reset)
 
         for (const role of testRoles) {

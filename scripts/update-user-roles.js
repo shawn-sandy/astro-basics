@@ -3,7 +3,7 @@
 /**
  * Update User Roles in Clerk
  *
- * Changes user roles from "volunteer" to "member" in Clerk's publicMetadata.
+ * Sets user roles to "member" in Clerk's publicMetadata.
  * This will automatically sync to Supabase via webhook or manual sync.
  *
  * Usage:
