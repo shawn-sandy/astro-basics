@@ -1,8 +1,10 @@
 # Role Synchronization Issue - Resolution
 
-**Date:** 2025-10-03
+**Date:** 2025-10-03 (Updated: 2025-10-04)
 **Issue:** Users syncing to Supabase with "volunteer" role instead of default "member" role
-**Status:** ✅ Resolved (Pending Manual Migration)
+**Status:** ✅ Fully Resolved with Migration 006
+
+> **Update 2025-10-04:** This issue has been completely resolved with migration 006, which consolidates migrations 004 and 005 into a single atomic transaction. See [Migration 006 section](#migration-006-complete-solution) below.
 
 ---
 
@@ -336,15 +338,86 @@ Update Clerk session token customization to include user role:
 
 ---
 
+---
+
+## Migration 006: Complete Solution
+
+**Date:** 2025-10-04
+**Status:** ✅ Ready for Execution
+
+### What Changed
+
+On 2025-10-04, a comprehensive Phase 1 verification revealed that migrations 004 and 005 were **never applied to production**. This meant:
+
+- ❌ Database DEFAULT was 'volunteer' (not 'member')
+- ❌ ENUM still contained 'volunteer'
+- ❌ ENUM was missing 'member' and 'admin'
+- ✅ Code was correctly defaulting to 'member'
+
+### Migration 006: Atomic Fix
+
+Migration 006 consolidates all required changes into a single atomic transaction:
+
+**File:** [`scripts/migrations/006_complete_member_migration.sql`](../scripts/migrations/006_complete_member_migration.sql)
+
+**What it does:**
+
+1. Adds 'member' and 'admin' to user_role ENUM
+2. Updates all users from 'volunteer' to 'member'
+3. Removes 'volunteer' from user_role ENUM
+4. Sets DEFAULT to 'member'::user_role
+5. Verifies all changes
+
+**How to apply:**
+
+```bash
+# Display migration SQL with instructions
+node scripts/apply-member-migration.js
+
+# Then copy SQL to Supabase Dashboard → SQL Editor and execute
+```
+
+**Verification:**
+
+```bash
+# Verify migration was successful
+node scripts/verify-role-schema.js
+```
+
+### Documentation
+
+Complete implementation documentation:
+
+- [Implementation Plan](./default-member-role-implementation-plan.md) - Master plan
+- [Phase 1 Verification Report](./phase-1-verification-report.md) - Discovery findings
+- [Phase 2 Migration Ready](./phase-2-migration-ready.md) - Execution guide
+- [Implementation Complete](./IMPLEMENTATION-COMPLETE.md) - Quick start
+
+### Integration Tests
+
+Added comprehensive test suite:
+
+- **File:** [`tests/integration/default-role-assignment.test.ts`](../tests/integration/default-role-assignment.test.ts)
+- **Coverage:** DEFAULT behavior, ENUM validation, webhook patterns, update operations
+
+**Run tests after migration:**
+
+```bash
+npm test tests/integration/default-role-assignment.test.ts
+```
+
+---
+
 ## Related Documentation
 
 - [Clerk-Supabase Setup Guide](./clerk-supabase-setup-guide.md)
 - [Role Sync Fix (Original)](./ROLE-SYNC-FIX.md)
 - [Clerk Roles Utility](../src/utils/clerk-roles.ts)
 - [User Utility Functions](../src/utils/user.ts)
+- [Implementation Complete](./IMPLEMENTATION-COMPLETE.md) - **NEW: Quick start for migration 006**
 
 ---
 
-**Version:** 1.0
-**Last Updated:** 2025-10-03
+**Version:** 2.0
+**Last Updated:** 2025-10-04
 **Maintainer:** astro-basics team
