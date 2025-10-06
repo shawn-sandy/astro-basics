@@ -28,22 +28,25 @@ DROP POLICY IF EXISTS "users_service_all" ON users;
 
 -- Users can view their own profile
 -- Uses Clerk JWT 'sub' claim (user ID) to match clerk_id column
+-- Performance: SELECT wrapper ensures auth.jwt() evaluated once per query, not per row
 CREATE POLICY "users_select_own" ON users
     FOR SELECT
-    USING ((auth.jwt()->>'sub')::text = clerk_id);
+    USING (((select auth.jwt())->>'sub')::text = clerk_id);
 
 -- Users can update their own profile
 -- WITH CHECK ensures users can only update their own record
+-- Performance: SELECT wrapper ensures auth.jwt() evaluated once per query, not per row
 CREATE POLICY "users_update_own" ON users
     FOR UPDATE
-    USING ((auth.jwt()->>'sub')::text = clerk_id)
-    WITH CHECK ((auth.jwt()->>'sub')::text = clerk_id);
+    USING (((select auth.jwt())->>'sub')::text = clerk_id)
+    WITH CHECK (((select auth.jwt())->>'sub')::text = clerk_id);
 
 -- Service role has full access (for webhooks and admin operations)
 -- Service role is used by Supabase server-side operations
+-- Performance: SELECT wrapper ensures auth.role() evaluated once per query, not per row
 CREATE POLICY "users_service_all" ON users
     FOR ALL
-    USING (auth.role() = 'service_role');
+    USING ((select auth.role()) = 'service_role');
 
 -- ----------------------------------------------------------------------------
 -- ORGANIZATION MEMBERSHIPS POLICIES
@@ -55,18 +58,20 @@ DROP POLICY IF EXISTS "org_memberships_service_all" ON organization_memberships;
 
 -- Users can view their own memberships
 -- Matches user_id through users table using Clerk JWT
+-- Performance: SELECT wrapper ensures auth.jwt() evaluated once per query, not per row
 CREATE POLICY "org_memberships_select_own" ON organization_memberships
     FOR SELECT
     USING (
         user_id IN (
             SELECT id FROM users
-            WHERE clerk_id = (auth.jwt()->>'sub')::text
+            WHERE clerk_id = ((select auth.jwt())->>'sub')::text
         )
     );
 
 -- Org admins can view all members in their organizations
 -- This enables organization member directory features
 -- Admin role check: clerk_org_role = 'org:admin'
+-- Performance: SELECT wrapper ensures auth.jwt() evaluated once per query, not per row
 CREATE POLICY "org_memberships_select_org_admin" ON organization_memberships
     FOR SELECT
     USING (
@@ -74,16 +79,17 @@ CREATE POLICY "org_memberships_select_org_admin" ON organization_memberships
             SELECT clerk_org_id FROM organization_memberships
             WHERE user_id IN (
                 SELECT id FROM users
-                WHERE clerk_id = (auth.jwt()->>'sub')::text
+                WHERE clerk_id = ((select auth.jwt())->>'sub')::text
             )
             AND clerk_org_role = 'org:admin'
         )
     );
 
 -- Service role has full access
+-- Performance: SELECT wrapper ensures auth.role() evaluated once per query, not per row
 CREATE POLICY "org_memberships_service_all" ON organization_memberships
     FOR ALL
-    USING (auth.role() = 'service_role');
+    USING ((select auth.role()) = 'service_role');
 
 -- ----------------------------------------------------------------------------
 -- USER PREFERENCES POLICIES
@@ -94,19 +100,21 @@ DROP POLICY IF EXISTS "user_prefs_service_all" ON user_preferences;
 
 -- Users can fully manage their own preferences (SELECT, INSERT, UPDATE, DELETE)
 -- This is app-specific data not managed by Clerk
+-- Performance: SELECT wrapper ensures auth.jwt() evaluated once per query, not per row
 CREATE POLICY "user_prefs_all_own" ON user_preferences
     FOR ALL
     USING (
         user_id IN (
             SELECT id FROM users
-            WHERE clerk_id = (auth.jwt()->>'sub')::text
+            WHERE clerk_id = ((select auth.jwt())->>'sub')::text
         )
     );
 
 -- Service role has full access
+-- Performance: SELECT wrapper ensures auth.role() evaluated once per query, not per row
 CREATE POLICY "user_prefs_service_all" ON user_preferences
     FOR ALL
-    USING (auth.role() = 'service_role');
+    USING ((select auth.role()) = 'service_role');
 
 -- ----------------------------------------------------------------------------
 -- POLICY DOCUMENTATION

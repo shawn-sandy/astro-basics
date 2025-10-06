@@ -113,8 +113,11 @@ CREATE INDEX IF NOT EXISTS idx_org_memberships_role ON organization_memberships(
 -- ----------------------------------------------------------------------------
 
 -- Updated_at trigger function (idempotent)
+-- Security: SET search_path prevents search_path injection attacks
 CREATE OR REPLACE FUNCTION update_updated_at()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SET search_path = public
+AS $$
 BEGIN
     NEW.updated_at = now();
     RETURN NEW;
