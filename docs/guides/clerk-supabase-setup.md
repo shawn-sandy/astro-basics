@@ -1,5 +1,14 @@
 # Clerk + Supabase Integration Setup Guide
 
+> **⚠️ OUTDATED:** This guide contains information about the deprecated JWT template method.
+>
+> **Please refer to the updated 2025 guide:**
+>
+> - [Clerk + Supabase Integration 2025](../integrations/clerk-supabase-integration-2025.md)
+> - [Starlight User Guide](/src/content/docs/guide/integrations/clerk-supabase.mdx)
+
+---
+
 This guide walks you through setting up the Clerk authentication with Supabase database integration for the astro-basics project.
 
 ## Prerequisites
