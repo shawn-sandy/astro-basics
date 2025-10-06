@@ -1,8 +1,9 @@
 # Supabase Migration Refactoring Implementation Plan
 
-**Document Version:** 1.0
+**Document Version:** 1.1
 **Created:** 2025-10-06
-**Status:** DRAFT - Awaiting Review & Refinement
+**Updated:** 2025-10-06
+**Status:** APPROVED - Ready for Implementation
 **Author:** Claude Code Assistant
 
 ---
@@ -41,6 +42,8 @@ The role system went through 4 iterations (migrations 003-006):
 - Migration 006: Combined migrations 004-005 into single transaction (but kept old migrations)
 
 **Root Cause:** Migration 003 created role as TEXT with CHECK constraint, but migrations 004-006 assume it's an ENUM type, creating type mismatch.
+
+**Note:** The 'coordinator' role has been removed from the final schema, simplifying the role hierarchy to 3 levels: member, admin, super_admin.
 
 #### 2. **Duplicate Migration Directories**
 
@@ -149,7 +152,7 @@ migrations/
 
 **Contents:**
 
-1. Create user_role ENUM (member, coordinator, admin, super_admin)
+1. Create user_role ENUM (member, admin, super_admin)
 2. Create users table with role as user_role type
 3. Create organization_memberships table
 4. Create user_preferences table
@@ -211,7 +214,6 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
         CREATE TYPE user_role AS ENUM (
             'member',       -- Default role for all users
-            'coordinator',  -- Team coordinators
             'admin',        -- Organization administrators
             'super_admin'   -- System administrators
         );
@@ -547,12 +549,12 @@ BEGIN
     ) THEN
         -- Create ENUM if not exists
         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
-            CREATE TYPE user_role AS ENUM ('member', 'coordinator', 'admin', 'super_admin');
+            CREATE TYPE user_role AS ENUM ('member', 'admin', 'super_admin');
         END IF;
 
-        -- Update any invalid roles to 'member'
+        -- Update any invalid roles to 'member' (including deprecated 'coordinator' and 'volunteer')
         UPDATE users SET role = 'member'
-        WHERE role NOT IN ('member', 'coordinator', 'admin', 'super_admin');
+        WHERE role NOT IN ('member', 'admin', 'super_admin');
 
         -- Drop TEXT constraint
         ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
@@ -674,7 +676,7 @@ COMMIT;
    JOIN pg_type t ON e.enumtypid = t.oid
    WHERE t.typname = 'user_role'
    ORDER BY e.enumsortorder;
-   -- Expected: member, coordinator, admin, super_admin
+   -- Expected: member, admin, super_admin
 
    -- Verify default role
    SELECT column_default FROM information_schema.columns
@@ -833,7 +835,7 @@ COMMIT;
 
 1. ✅ Schema matches consolidated migration exactly
 2. ✅ All RLS policies functioning correctly
-3. ✅ User role ENUM properly defined with 4 values
+3. ✅ User role ENUM properly defined with 3 values (member, admin, super_admin)
 4. ✅ Default role = 'member' for new users
 5. ✅ All indexes created and performing optimally
 6. ✅ Triggers functioning (updated_at updates automatically)
@@ -953,10 +955,10 @@ COMMIT;
 
 ### Review Status
 
-- [ ] **Technical Review** - Reviewed by: ********\_******** Date: **\_\_\_**
-- [ ] **Security Review** - Reviewed by: ********\_******** Date: **\_\_\_**
+- [ ] **Technical Review** - Reviewed by: **\*\*\*\***\_**\*\*\*\*** Date: **\_\_\_**
+- [ ] **Security Review** - Reviewed by: **\*\*\*\***\_**\*\*\*\*** Date: **\_\_\_**
 - [ ] **Team Consensus** - Approved by team: Yes / No
-- [ ] **Stakeholder Approval** - Approved by: ********\_******** Date: **\_\_\_**
+- [ ] **Stakeholder Approval** - Approved by: **\*\*\*\***\_**\*\*\*\*** Date: **\_\_\_**
 
 ### Implementation Authorization
 
@@ -968,9 +970,10 @@ COMMIT;
 
 ## Revision History
 
-| Version | Date       | Author      | Changes                  |
-| ------- | ---------- | ----------- | ------------------------ |
-| 1.0     | 2025-10-06 | Claude Code | Initial draft for review |
+| Version | Date       | Author      | Changes                                               |
+| ------- | ---------- | ----------- | ----------------------------------------------------- |
+| 1.0     | 2025-10-06 | Claude Code | Initial draft for review                              |
+| 1.1     | 2025-10-06 | Claude Code | Removed coordinator role, approved for implementation |
 
 ---
 
