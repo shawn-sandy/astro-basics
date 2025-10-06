@@ -1,5 +1,16 @@
 # JWT-Based Clerk-Supabase Implementation Guide
 
+> **⚠️ DEPRECATED:** This guide uses the JWT template method which was deprecated on April 1st, 2025.
+>
+> **Please use the new native integration guide instead:**
+>
+> - [Clerk + Supabase Integration 2025](./integrations/clerk-supabase-integration-2025.md)
+> - [Starlight Documentation](/src/content/docs/guide/integrations/clerk-supabase.mdx)
+>
+> This document is kept for reference only.
+
+---
+
 Complete step-by-step implementation for secure PII handling with JWT authentication.
 
 ## Prerequisites Checklist

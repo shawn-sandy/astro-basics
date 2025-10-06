@@ -1,0 +1,286 @@
+---
+title: Clerk + Supabase Integration
+description: Learn how to integrate Clerk authentication with Supabase database using the native third-party auth method (2025).
+---
+
+import { Tabs, TabItem, Card, Aside } from '@astrojs/starlight/components';
+
+This guide shows you how to integrate Clerk authentication with Supabase database using the **2025 native third-party authentication method**.
+
+<Aside type="caution" title="JWT Templates Deprecated">
+As of April 1st, 2025, the JWT template method is deprecated. This guide uses the recommended **native third-party auth integration**.
+</Aside>
+
+## Overview
+
+The native integration allows Supabase to directly accept Clerk-signed session tokens without requiring custom JWT templates or token generation.
+
+### Benefits
+
+- ✅ No JWT template configuration needed
+- ✅ Automatic token refresh handled by Supabase
+- ✅ Simpler setup with fewer environment variables
+- ✅ Better performance with shared session tokens
+
+## Quick Start
+
+### 1. Enable in Clerk Dashboard
+
+1. Go to **Integrations** → **Supabase**
+2. Click **"Enable Supabase Integration"**
+3. Copy your Clerk domain (e.g., `my-app.clerk.accounts.dev`)
+
+### 2. Configure in Supabase Dashboard
+
+1. Go to **Authentication** → **Providers**
+2. Scroll to **"Third-party Auth"**
+3. Click **"Add Provider"** → Select **"Clerk"**
+4. Enter your Clerk domain
+5. Toggle **"Enable"** → Save
+
+### 3. Update Environment Variables
+
+```env title=".env"
+# Clerk Configuration
+PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxxxx
+CLERK_SECRET_KEY=sk_live_xxxxx
+CLERK_WEBHOOK_SECRET=whsec_xxxxx  # Optional, for user sync
+
+# Supabase Configuration
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=eyJhbGci...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGci...  # For webhooks only
+
+# Public keys (client-side)
+PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
+```
+
+<Aside type="note">
+No `SUPABASE_JWT_SECRET` needed! The native integration handles token verification automatically.
+</Aside>
+
+### 4. Apply Database Migrations
+
+Run these migrations in your Supabase SQL Editor:
+
+<Tabs>
+<TabItem label="Migration 001: Core Schema">
+
+```sql
+-- Copy and paste from:
+-- scripts/migrations/001_core_schema.sql
+
+-- Creates:
+-- - users table
+-- - organization_memberships table
+-- - user_preferences table
+-- - Indexes and triggers
+```
+
+</TabItem>
+
+<TabItem label="Migration 002: Security Policies">
+
+```sql
+-- Copy and paste from:
+-- scripts/migrations/002_security_policies.sql
+
+-- Creates RLS policies for:
+-- - User data access
+-- - Organization member access
+-- - Admin-level access
+```
+
+</TabItem>
+</Tabs>
+
+## Usage Patterns
+
+### Server-Side (API Routes)
+
+Use the Clerk token from middleware to create authenticated Supabase clients:
+
+```typescript title="src/pages/api/user/profile.ts"
+import type { APIRoute } from 'astro'
+import { createServerSupabaseClient } from '#libs/supabase-native'
+
+export const GET: APIRoute = async ({ locals }) => {
+  const { clerkToken, userId } = locals
+
+  const supabase = createServerSupabaseClient(clerkToken)
+
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('clerk_id', userId)
+    .single()
+
+  return new Response(JSON.stringify(data))
+}
+```
+
+### Client-Side (React Components)
+
+Use the `useSupabase` hook for automatic token handling:
+
+```tsx title="src/components/react/UserProfile.tsx"
+import { useSupabase } from '#hooks/useSupabase'
+
+export function UserProfile() {
+  const { supabase, userId, isLoaded } = useSupabase()
+  const [profile, setProfile] = useState(null)
+
+  useEffect(() => {
+    if (!supabase || !userId) return
+
+    supabase
+      .from('users')
+      .select('*')
+      .eq('clerk_id', userId)
+      .single()
+      .then(({ data }) => setProfile(data))
+  }, [supabase, userId])
+
+  if (!isLoaded) return <div>Loading...</div>
+
+  return <div>{profile?.full_name}</div>
+}
+```
+
+## Row Level Security (RLS)
+
+### Understanding RLS Policies
+
+Supabase RLS policies use Clerk's JWT claims to control data access:
+
+```sql
+-- Users can only see their own profile
+CREATE POLICY "users_select_own" ON users
+    FOR SELECT
+    USING (((select auth.jwt())->>'sub')::text = clerk_id);
+```
+
+**How it works:**
+1. Clerk JWT contains `sub` claim (user ID)
+2. Supabase extracts it via `auth.jwt()->>'sub'`
+3. Policy compares to `clerk_id` column
+4. Only matching rows are returned
+
+### Common Policy Patterns
+
+<Card title="User owns data" icon="lock">
+
+```sql
+-- Users can view/edit their own data
+USING (((select auth.jwt())->>'sub')::text = clerk_id)
+```
+
+</Card>
+
+<Card title="Organization admin access" icon="seti:config">
+
+```sql
+-- Org admins see all members in their org
+USING (
+    clerk_org_id IN (
+        SELECT clerk_org_id FROM organization_memberships
+        WHERE user_id IN (
+            SELECT id FROM users
+            WHERE clerk_id = ((select auth.jwt())->>'sub')::text
+        )
+        AND clerk_org_role = 'org:admin'
+    )
+)
+```
+
+</Card>
+
+<Card title="Service role (webhooks)" icon="seti:pipeline">
+
+```sql
+-- Bypass RLS for admin operations
+USING ((select auth.role()) = 'service_role')
+```
+
+</Card>
+
+## Troubleshooting
+
+### JWT Verification Failed
+
+**Problem:** Queries return empty despite data existing.
+
+**Solution:**
+- ✅ Verify Clerk domain is correct in Supabase settings
+- ✅ Ensure Supabase integration is enabled in Clerk dashboard
+- ✅ Check JWT contains `role: "authenticated"` claim
+
+**Debug:**
+```typescript
+const token = await auth().getToken()
+console.log('JWT Claims:', JSON.parse(atob(token.split('.')[1])))
+```
+
+### RLS Policy Denies Access
+
+**Problem:** Authenticated users can't access their own data.
+
+**Solution:**
+- ✅ Verify policies use `auth.jwt()->>'sub'` (not `auth.uid()`)
+- ✅ Check user exists in `users` table
+- ✅ Ensure `clerk_id` matches JWT `sub` claim
+
+**Test in SQL Editor:**
+```sql
+SELECT
+    (select auth.jwt()->>'sub') as jwt_sub,
+    clerk_id,
+    clerk_id = (select auth.jwt()->>'sub')::text as matches
+FROM users;
+```
+
+### Webhooks Not Syncing Users
+
+**Problem:** Users don't appear in Supabase after signup.
+
+**Solution:**
+- ✅ Verify webhook secret matches `.env` value
+- ✅ Check endpoint is publicly accessible
+- ✅ Review webhook logs in Clerk dashboard
+
+**Local testing with ngrok:**
+```bash
+ngrok http 4321
+# Update Clerk webhook to: https://abc123.ngrok.io/api/webhooks/clerk
+```
+
+## Migration from JWT Templates
+
+If you're using the deprecated JWT template method:
+
+1. **Remove** JWT template from Clerk dashboard
+2. **Enable** native Supabase integration in Clerk
+3. **Add** Clerk as third-party provider in Supabase
+4. **Update** code to remove `{ template: 'supabase' }` parameter
+5. **Remove** `SUPABASE_JWT_SECRET` from environment variables
+
+<Aside type="tip" title="Zero downtime migration">
+The native integration is backward compatible. You can enable it alongside the JWT template, test thoroughly, then remove the template.
+</Aside>
+
+## Additional Resources
+
+### Documentation
+- [Clerk Official Integration Guide](https://clerk.com/docs/integrations/databases/supabase)
+- [Supabase Third-Party Auth](https://supabase.com/docs/guides/auth/third-party/clerk)
+- [Detailed Technical Guide](/docs/integrations/clerk-supabase-integration-2025)
+
+### Project Files
+- [Core Schema Migration](https://github.com/your-org/astro-basics/blob/main/scripts/migrations/001_core_schema.sql)
+- [Security Policies Migration](https://github.com/your-org/astro-basics/blob/main/scripts/migrations/002_security_policies.sql)
+- [Supabase Client Utilities](https://github.com/your-org/astro-basics/blob/main/src/libs/supabase-native.ts)
+
+---
+
+**Last Updated:** 2025-10-06 | **Method:** Native Third-Party Auth
