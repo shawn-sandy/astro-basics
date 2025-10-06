@@ -360,12 +360,14 @@ describe('Clerk User Creation - Default Role', () => {
 2. Create new test user
 3. Check webhook logs: `tail -f logs/webhook.log` (if logging configured)
 4. Verify in Supabase:
+
    ```sql
    SELECT clerk_id, email, role, created_at
    FROM users
    ORDER BY created_at DESC
    LIMIT 5;
    ```
+
 5. Confirm new user has `role = 'member'`
 
 #### Task 4.3: Monitor Production
