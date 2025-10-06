@@ -207,6 +207,66 @@ The project features a **unified database abstraction layer** that enables seaml
 
 All API endpoints and components automatically adapt to the active database provider without code changes.
 
+#### Supabase Migrations
+
+**Migration Structure (Consolidated - Updated 2025-10-06):**
+
+The project uses a streamlined 2-migration approach for Supabase:
+
+```
+scripts/migrations/
+├── 001_core_schema.sql              # All tables, indexes, triggers, functions
+├── 002_security_policies.sql        # Row Level Security policies
+├── rollback_001_core_schema.sql     # Rollback for migration 001
+├── rollback_002_security_policies.sql  # Rollback for migration 002
+└── archived/                        # Old fragmented migrations (6 files)
+    └── README.md                    # Why migrations were consolidated
+```
+
+**User Role System:**
+
+- **3-tier role hierarchy**: `member` (default) → `admin` → `super_admin`
+- **Stored as ENUM type**: `user_role` in PostgreSQL
+- **Synced from Clerk**: `publicMetadata.role` field
+- **Default role**: All new users receive `member` role automatically
+
+**Key Tables:**
+
+- `users` - User profiles with role-based access control
+- `organization_memberships` - Multi-tenant organization support
+- `user_preferences` - App-specific user settings
+
+**Applying Migrations:**
+
+```bash
+# For fresh databases - apply in order
+npm run db:migrate -- 001_core_schema.sql
+npm run db:migrate -- 002_security_policies.sql
+
+# For databases with old migrations applied
+# See: docs/database/supabase-migration-refactor-plan.md
+```
+
+**Rolling Back Migrations:**
+
+```bash
+# Rollback security policies first
+npm run db:migrate -- rollback_002_security_policies.sql
+
+# Then rollback core schema (WARNING: Deletes all data!)
+npm run db:migrate -- rollback_001_core_schema.sql
+```
+
+**Migration Best Practices:**
+
+1. **Idempotent design** - All migrations use IF NOT EXISTS/IF EXISTS
+2. **Transaction-wrapped** - Each migration runs in single BEGIN/COMMIT
+3. **Self-verifying** - Built-in verification reports success/failure
+4. **Well-documented** - Extensive COMMENT statements for AI/developer context
+5. **Rollback-ready** - Dedicated rollback scripts for safe downgrades
+
+For detailed migration information, see [docs/database/supabase-migration-refactor-plan.md](docs/database/supabase-migration-refactor-plan.md)
+
 ### Deployment Adapters
 
 Configured via `ASTRO_ADAPTER` environment variable:
