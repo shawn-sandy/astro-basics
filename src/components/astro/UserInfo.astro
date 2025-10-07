@@ -52,17 +52,22 @@ if (userId) {
               role: 'member' as UserRole, // Default role for new users
             }
 
-            const { data: insertedUser, error: insertError } = await supabase
+            // Use upsert with onConflict to handle race condition with webhook
+            // If webhook already created user, this will update instead of failing
+            const { data: upsertedUser, error: upsertError } = await supabase
               .from('users')
-              .insert(newUser)
+              .upsert(newUser, {
+                onConflict: 'clerk_id',
+                ignoreDuplicates: false,
+              })
               .select('role')
               .single()
 
-            if (insertError) {
-              console.error('Failed to create user in Supabase:', insertError.message)
+            if (upsertError) {
+              console.error('Failed to create/update user in Supabase:', upsertError.message)
               roleError = 'Role information unavailable'
-            } else if (insertedUser) {
-              userRole = insertedUser.role as UserRole
+            } else if (upsertedUser) {
+              userRole = upsertedUser.role as UserRole
             }
           } else {
             console.warn('Failed to fetch user role:', roleQueryError.message)
