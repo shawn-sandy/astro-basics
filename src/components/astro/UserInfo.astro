@@ -2,6 +2,9 @@
 import { clerkClient } from '@clerk/astro/server'
 import type { User } from '@clerk/backend'
 import { formatMetadataForDisplay } from '#utils/sanitize'
+import { getSupabaseServiceRole, isSupabaseConfigured } from '#libs/supabase-native'
+import RoleBadge from '#components/react/RoleBadge.tsx'
+import type { UserRole } from '#components/react/RoleBadge.tsx'
 
 // Get the current user's auth info
 const auth = Astro.locals.auth()
@@ -9,6 +12,8 @@ const { userId } = auth
 
 let user: User | null = null
 let error: string | null = null
+let userRole: UserRole | null = null
+let roleError: string | null = null
 
 if (userId) {
   try {
@@ -18,6 +23,63 @@ if (userId) {
   } catch (err) {
     console.error('Failed to fetch user data:', err)
     error = `Failed to load user information: ${err instanceof Error ? err.message : 'Unknown error'}`
+  }
+
+  // Fetch user role from Supabase
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = getSupabaseServiceRole()
+      if (supabase) {
+        const { data, error: roleQueryError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('clerk_id', userId)
+          .single()
+
+        if (roleQueryError) {
+          // PGRST116 means no user found - try to create it automatically
+          if (roleQueryError.code === 'PGRST116' && user) {
+            // Create user record with data from Clerk and default "member" role
+            const primaryEmail = user.emailAddresses?.find(
+              email => email.id === user?.primaryEmailAddressId
+            )
+            const newUser = {
+              clerk_id: userId,
+              email: primaryEmail?.emailAddress || user.emailAddresses?.[0]?.emailAddress,
+              username: user.username,
+              full_name: user.fullName || `${user.firstName} ${user.lastName}`.trim() || null,
+              avatar_url: user.imageUrl,
+              role: 'member' as UserRole, // Default role for new users
+            }
+
+            const { data: insertedUser, error: insertError } = await supabase
+              .from('users')
+              .insert(newUser)
+              .select('role')
+              .single()
+
+            if (insertError) {
+              console.error('Failed to create user in Supabase:', insertError.message)
+              roleError = 'Role information unavailable'
+            } else if (insertedUser) {
+              userRole = insertedUser.role as UserRole
+            }
+          } else {
+            console.warn('Failed to fetch user role:', roleQueryError.message)
+            roleError = 'Role information unavailable'
+          }
+        } else if (data) {
+          userRole = data.role as UserRole
+        } else {
+          roleError = 'Role information unavailable'
+        }
+      } else {
+        roleError = 'Database connection unavailable'
+      }
+    } catch (err) {
+      console.error('Error fetching user role:', err)
+      roleError = 'Role information unavailable'
+    }
   }
 }
 
@@ -117,6 +179,19 @@ const formatDateTime = (timestamp: number | undefined) => {
               {primaryEmail?.emailAddress || user.emailAddresses?.[0]?.emailAddress || 'No email'}
               {primaryEmail?.verification?.status === 'verified' && (
                 <span class="user-info__badge user-info__badge--verified">Verified</span>
+              )}
+            </span>
+          </div>
+
+          <div class="user-info__row">
+            <span class="user-info__label">Role:</span>
+            <span class="user-info__value">
+              {roleError ? (
+                <span class="user-info__value--error">{roleError}</span>
+              ) : userRole ? (
+                <RoleBadge role={userRole} client:only="react" />
+              ) : (
+                <span class="user-info__badge user-info__badge--default">Member</span>
               )}
             </span>
           </div>
@@ -282,6 +357,11 @@ const formatDateTime = (timestamp: number | undefined) => {
   .user-info__badge--success {
     background: #d1fae5;
     color: #065f46;
+  }
+
+  .user-info__badge--default {
+    background: #dbeafe;
+    color: #1e40af;
   }
 
   .user-info__signed-out,
