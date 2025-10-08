@@ -11,6 +11,7 @@ import {
 } from '#/components/dashboard'
 import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
 import UserInfo from '#/components/astro/UserInfo.astro'
+import RoleGuard from '#components/astro/RoleGuard.astro'
 
 // Dashboard data
 const stats = [
@@ -103,6 +104,14 @@ const posts = [
           <PostPreview posts={posts} />
         </DashboardCard>
       </DashboardLayout>
+      <RoleGuard allowedRoles={['admin', 'super_admin']}>
+        <DashboardCard title="Admin Panel Access" className="mt-4">
+          <p>Access the admin panel for advanced management features.</p>
+          <div style="text-align: center; margin-top: 2rem;">
+            <a href="/admin" class="btn btn-primary">Go to Admin Panel</a>
+          </div>
+        </DashboardCard>
+      </RoleGuard>
     </div>
   </SignedIn>
 
