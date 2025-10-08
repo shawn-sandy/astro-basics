@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-This document outlines the implementation plan for integrating Axiom production logging service into the existing `src/utils/logger.ts`. This enhancement adds persistent log storage, searchable log history, real-time alerting, request correlation, and performance monitoring while preserving all existing functionality.
+This document outlines the implementation plan for integrating Axiom production logging service into the existing `src/utils/logger.ts`. This enhancement adds persistent log storage, searchable log history, real-time alerting, request correlation, and performance monitoring while preserving all existing functionality. A critical requirement is maintaining graceful degradation: if Axiom environment variables are absent, the application must continue operating with console-only logging and no runtime failures.
 
 ## Current State Analysis
 
@@ -122,6 +122,8 @@ AXIOM_TOKEN=YOUR_AXIOM_API_TOKEN
 AXIOM_DATASET=astro-basics  # Dataset name in Axiom
 ```
 
+> Note: These variables are optional. When `AXIOM_TOKEN` or `AXIOM_DATASET` are missing the logger will automatically disable the Axiom client and fall back to console-only output so local development and CI builds remain unaffected.
+
 **File:** `src/env.d.ts` (if it exists, otherwise create type declarations)
 
 ```typescript
@@ -231,6 +233,8 @@ class Logger {
   // ... existing methods ...
 }
 ```
+
+This initialization pattern ensures the logger never throws when Axiom configuration is missing; `axiomEnabled` remains `false` and the existing console output continues to function normally.
 
 #### Step 2.3: Enhance Core log() Method
 
@@ -806,8 +810,13 @@ describe('Logger with Axiom Integration', () => {
   })
 
   it('should handle missing Axiom configuration gracefully', async () => {
-    // Logger should work even without Axiom configured
+    // Simulate missing env vars – logger should fall back to console logging
+    vi.stubEnv('AXIOM_TOKEN', '')
+    vi.stubEnv('AXIOM_DATASET', '')
+
     await expect(logger.info('Test message')).resolves.not.toThrow()
+
+    vi.unstubAllEnvs()
   })
 })
 ```
@@ -1219,7 +1228,7 @@ If exceeding free tier:
 **Mitigation:**
 - Graceful fallback to console-only logging
 - Startup warning when Axiom not configured
-- CI/CD validation checks for required environment variables
+- Non-blocking CI/CD smoke check that warns when Axiom variables are missing (no deployment failures)
 
 ### Risk 4: Log Ingestion Failures
 
@@ -1319,6 +1328,7 @@ If exceeding free tier:
 AXIOM_TOKEN=xaat-your-token-here
 AXIOM_DATASET=astro-basics
 AXIOM_ORG_ID=optional-org-id  # Optional
+# Leave these blank to continue using console-only logging (e.g., local dev, CI)
 ```
 
 ---
