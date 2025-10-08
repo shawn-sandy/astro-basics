@@ -653,10 +653,12 @@ If issues occur:
 
 1. **Disable new webhook events** in Clerk Dashboard (keep existing user events)
 2. **Revert database migration** (if data corruption):
+
    ```sql
    DROP TABLE IF EXISTS organization_memberships CASCADE;
    DROP TABLE IF EXISTS organizations CASCADE;
    ```
+
 3. **Redeploy previous application version**
 4. **Investigate issues** in staging environment
 

@@ -90,11 +90,12 @@ ORDER BY e.enumsortorder;
 ```
 
 **Expected Result:**
-| role_value |
-|---------------|
-| member |
+
+| role_value  |
+| ----------- |
+| member      |
 | coordinator |
-| admin |
+| admin       |
 | super_admin |
 
 **Verify:**
@@ -116,9 +117,10 @@ WHERE table_schema = 'public'
 ```
 
 **Expected Result:**
-| column_name | column_default |
-|-------------|-------------------------|
-| role | 'member'::user_role |
+
+| column_name | column_default      |
+| ----------- | ------------------- |
+| role        | 'member'::user_role |
 
 **Verify:**
 
@@ -138,8 +140,9 @@ ORDER BY role;
 ```
 
 **Expected Result:**
-| role | user_count |
-|--------|-----------|
+
+| role   | user_count  |
+| ------ | ----------- |
 | member | 1 (or more) |
 
 **Verify:**
@@ -167,9 +170,10 @@ RETURNING clerk_id, email, role;
 ```
 
 **Expected Result:**
-| clerk*id | email | role |
-|----------|-------|------|
-| test_migration_006*... | test_migration_006@example.com | member |
+
+| clerk\*id               | email                            | role   |
+| ----------------------- | -------------------------------- | ------ |
+| test_migration_006\*... | <test_migration_006@example.com> | member |
 
 **Verify:**
 
@@ -612,7 +616,7 @@ When ALL of the following are true, migration 006 is confirmed successful:
 
 **Status:** [ ] Migration 006 Verified and Complete
 
-**Signed:** **********\_********** **Date:** **********\_**********
+**Signed:** ****\*\*****\_****\*\***** **Date:** ****\*\*****\_****\*\*****
 
 ---
 
