@@ -46,6 +46,14 @@ export default defineConfig({
           autogenerate: { directory: 'guide/components' },
         },
         {
+          label: 'Features',
+          items: [
+            { label: 'Database Switching', link: '/guide/database-switching' },
+            { label: 'Database Troubleshooting', link: '/guide/database-troubleshooting' },
+            { label: 'Role Guard System', link: '/guide/role-guard-usage' },
+          ],
+        },
+        {
           label: 'API Reference',
           autogenerate: { directory: 'guide/api' },
         },
