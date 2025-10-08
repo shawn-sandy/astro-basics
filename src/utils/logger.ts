@@ -86,6 +86,7 @@ class Logger {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Axiom SDK types not available at compile time due to dynamic import
   private axiom: any | null = null
   private axiomEnabled = false
+  private _axiomInitialization: Promise<void> | null = null
 
   constructor() {
     // Initialize Axiom client if configured
@@ -114,7 +115,7 @@ class Logger {
 
     try {
       // Dynamic import to avoid bundling Axiom in environments that don't need it
-      import('@axiomhq/js')
+      this._axiomInitialization = import('@axiomhq/js')
         .then(({ Axiom }) => {
           const orgId = import.meta.env.AXIOM_ORG_ID
           this.axiom = new Axiom({
