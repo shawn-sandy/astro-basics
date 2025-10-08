@@ -93,6 +93,7 @@ node scripts/run-clerk-supabase-migrations.js
    - ✅ `session.created` (optional - for last sign-in tracking)
 
 5. **Copy Webhook Secret** → Add to `.env`:
+
    ```env
    CLERK_WEBHOOK_SECRET=whsec_...
    ```
@@ -393,8 +394,8 @@ Configure log levels in production:
 ## Support & Resources
 
 - **Integration Plan**: `docs/clerk-supabase-integration-plan.md`
-- **Clerk Documentation**: https://clerk.com/docs
-- **Supabase Documentation**: https://supabase.com/docs
+- **Clerk Documentation**: <https://clerk.com/docs>
+- **Supabase Documentation**: <https://supabase.com/docs>
 - **Project Issues**: Create GitHub issue for bugs or questions
 
 ---

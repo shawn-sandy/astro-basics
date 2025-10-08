@@ -23,7 +23,7 @@ Phase 2 is **complete and ready** for you to execute the database migration. All
 
 ### Step 1: Go to Supabase SQL Editor
 
-1. Open your browser and go to: https://supabase.com/dashboard
+1. Open your browser and go to: <https://supabase.com/dashboard>
 2. Navigate to your project: **kjjkbxmertpykaqraoju**
 3. Click **SQL Editor** in the left sidebar
 4. Click **New Query**
@@ -194,7 +194,7 @@ UPDATE users SET role = 'member' WHERE role IS NULL;
 
 **Why:** We must remove all 'volunteer' values before we can remove 'volunteer' from the ENUM.
 
-**Impact:** Updates 1 user (shawnsandy04@gmail.com) from 'volunteer' to 'member'
+**Impact:** Updates 1 user (<shawnsandy04@gmail.com>) from 'volunteer' to 'member'
 
 **Safe:** This is a data migration - the user will keep all other data, just role changes.
 
@@ -355,11 +355,12 @@ ORDER BY e.enumsortorder;
 ```
 
 **Expected:**
-| role_value |
-|---------------|
-| member |
+
+| role_value  |
+| ----------- |
+| member      |
 | coordinator |
-| admin |
+| admin       |
 | super_admin |
 
 **Should NOT show:** volunteer
@@ -375,9 +376,10 @@ WHERE table_name = 'users' AND column_name = 'role';
 ```
 
 **Expected:**
-| column_name | column_default |
-|-------------|-------------------------|
-| role | 'member'::user_role |
+
+| column_name | column_default      |
+| ----------- | ------------------- |
+| role        | 'member'::user_role |
 
 ---
 
@@ -390,9 +392,10 @@ GROUP BY role;
 ```
 
 **Expected:**
-| role | count |
-|--------|-------|
-| member | 1 |
+
+| role   | count |
+| ------ | ----- |
+| member | 1     |
 
 ---
 
@@ -487,7 +490,7 @@ SELECT COUNT(*) FROM users WHERE role = 'volunteer';
 
 ## Success Criteria
 
-### Migration is successful when:
+### Migration is successful when
 
 - ✅ No errors in SQL Editor output
 - ✅ Sees "MIGRATION COMPLETE" message

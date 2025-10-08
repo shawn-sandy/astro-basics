@@ -414,8 +414,8 @@ Before deploying:
 
 - **Setup Guide:** `docs/clerk-supabase-setup-guide.md`
 - **Full Plan:** `docs/clerk-supabase-integration-plan.md`
-- **Clerk Docs:** https://clerk.com/docs
-- **Supabase Docs:** https://supabase.com/docs
+- **Clerk Docs:** <https://clerk.com/docs>
+- **Supabase Docs:** <https://supabase.com/docs>
 
 ---
 

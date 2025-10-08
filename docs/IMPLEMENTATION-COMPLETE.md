@@ -12,7 +12,7 @@
 
 1. **Open Supabase SQL Editor**
 
-   - Go to: https://supabase.com/dashboard/project/kjjkbxmertpykaqraoju
+   - Go to: <https://supabase.com/dashboard/project/kjjkbxmertpykaqraoju>
    - Click **SQL Editor** → **New Query**
 
 2. **Run Migration 006**
@@ -22,6 +22,7 @@
    - Click **Run**
 
 3. **Verify Success**
+
    ```bash
    node scripts/verify-role-schema.js
    ```
@@ -178,7 +179,7 @@ PostgreSQL's ENUM type can't have values removed directly. We must create a new 
 
 ## Success Criteria
 
-### Migration is successful when:
+### Migration is successful when
 
 - ✅ SQL executes without errors
 - ✅ See "MIGRATION COMPLETE" message
@@ -194,9 +195,11 @@ PostgreSQL's ENUM type can't have values removed directly. We must create a new 
 
 1. **Execute the migration** (see Quick Start above)
 2. **Run verification**
+
    ```bash
    node scripts/verify-role-schema.js
    ```
+
 3. **Test user creation** via Clerk or direct insert
 4. **Commit changes**
 

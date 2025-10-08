@@ -157,6 +157,7 @@ SUPABASE_SERVICE_ROLE_KEY=xxx  # NEW (more accurate name)
    ```
 
 4. **Real-time subscriptions** (if used)
+
    ```typescript
    // Should continue working without changes
    const subscription = supabase
@@ -198,6 +199,7 @@ If you encounter issues, you can rollback:
    ```
 
 3. **Restore environment variables**
+
    ```env
    SUPABASE_JWT_SECRET=your-jwt-secret
    ```
