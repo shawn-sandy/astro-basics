@@ -127,11 +127,14 @@ const correlationMiddleware: MiddlewareHandler = async (context, next) => {
   const correlationId = logger.createCorrelationId()
   context.locals.correlationId = correlationId
 
-  await logger.debug('Request started', {
-    correlationId,
-    endpoint: context.url.pathname,
-    method: context.request.method,
-  })
+  // Only log request start in development or if explicitly enabled
+  if (process.env.NODE_ENV === 'development' || process.env.DEBUG_REQUEST_LOG === 'true') {
+    await logger.debug('Request started', {
+      correlationId,
+      endpoint: context.url.pathname,
+      method: context.request.method,
+    })
+  }
 
   try {
     const response = await next()
