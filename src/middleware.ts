@@ -108,6 +108,59 @@ async function updateUserLastSignIn(userId: string | undefined): Promise<void> {
 }
 
 /**
+ * Correlation middleware for distributed request tracing.
+ *
+ * Generates a unique correlation ID for each request to enable end-to-end
+ * tracing across services and logs. The correlation ID is stored in
+ * context.locals and automatically included in all logger calls.
+ *
+ * @type {MiddlewareHandler} Astro middleware function
+ * @param {APIContext} context - Astro request context
+ * @param {Function} next - Next middleware in the chain
+ * @returns {Promise<Response>} Response with correlation tracking
+ * @example
+ * // Access correlation ID in API routes:
+ * // const correlationId = locals.correlationId
+ * @since 1.0.0
+ */
+const correlationMiddleware: MiddlewareHandler = async (context, next) => {
+  const correlationId = logger.createCorrelationId()
+  context.locals.correlationId = correlationId
+
+  await logger.debug('Request started', {
+    correlationId,
+    endpoint: context.url.pathname,
+    method: context.request.method,
+  })
+
+  try {
+    const response = await next()
+
+    await logger.debug('Request completed', {
+      correlationId,
+      endpoint: context.url.pathname,
+      status: response.status,
+    })
+
+    // Flush logs before serverless function terminates
+    await logger.flush()
+
+    return response
+  } catch (error) {
+    await logger.error('Request failed', {
+      correlationId,
+      endpoint: context.url.pathname,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+
+    // Ensure logs are sent even on error
+    await logger.flush()
+
+    throw error
+  }
+}
+
+/**
  * CSRF protection middleware implementing token-based validation for form submissions.
  *
  * Generates cryptographically secure tokens for GET requests to HTML pages and validates
@@ -314,24 +367,26 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
  * Main middleware pipeline combining security, rate limiting, and authentication.
  *
  * Middleware execution order is critical for security and performance:
- * 1. Rate limiting (fastest rejection, prevents DoS)
- * 2. CSRF protection (lightweight token management)
- * 3. Authentication (most complex, only when needed)
+ * 1. Correlation tracking (request tracing across all operations)
+ * 2. Rate limiting (fastest rejection, prevents DoS)
+ * 3. CSRF protection (lightweight token management)
+ * 4. Authentication (most complex, only when needed)
  *
  * Conditionally includes authentication based on environment configuration
  * to support development with dummy keys while maintaining security in production.
  *
  * @constant {MiddlewareHandler} onRequest - Astro's middleware export
- * @security Rate limiting → CSRF → Authentication provides defense in depth
+ * @security Correlation → Rate limiting → CSRF → Authentication provides defense in depth
  * @performance Early rejection of malicious requests reduces processing overhead
  * @example
- * // Production: All three middlewares active with real Clerk keys
+ * // Production: All middlewares active with real Clerk keys
  * // Development: Rate limiting + CSRF only, auth disabled with dummy keys
+ * @see {@link correlationMiddleware} for distributed request tracing
  * @see {@link rateLimitMiddleware} for API abuse prevention
  * @see {@link csrfMiddleware} for form submission protection
  * @see {@link authMiddleware} for route protection and session management
  * @since 1.0.0
  */
 export const onRequest = hasValidClerkKeys
-  ? sequence(rateLimitMiddleware, csrfMiddleware, authMiddleware)
-  : sequence(rateLimitMiddleware, csrfMiddleware)
+  ? sequence(correlationMiddleware, rateLimitMiddleware, csrfMiddleware, authMiddleware)
+  : sequence(correlationMiddleware, rateLimitMiddleware, csrfMiddleware)
