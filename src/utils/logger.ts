@@ -83,6 +83,7 @@ interface LogEntry {
 class Logger {
   private isDev = import.meta.env.DEV
   private isProd = import.meta.env.PROD
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Axiom SDK types not available at compile time due to dynamic import
   private axiom: any | null = null
   private axiomEnabled = false
 
@@ -261,21 +262,26 @@ class Logger {
       return
     }
 
-    const consoleMethod = this.getConsoleMethod(level)
+    try {
+      const consoleMethod = this.getConsoleMethod(level)
 
-    if (this.isDev) {
-      // Development: Rich formatting with emojis and colors
-      const emoji = this.getDevEmoji(level)
-      const prefix = `${emoji} [${level.toUpperCase()}]`
+      if (this.isDev) {
+        // Development: Rich formatting with emojis and colors
+        const emoji = this.getDevEmoji(level)
+        const prefix = `${emoji} [${level.toUpperCase()}]`
 
-      if (context && Object.keys(context).length > 0) {
-        consoleMethod(`${prefix} ${message}`, logEntry.context)
+        if (context && Object.keys(context).length > 0) {
+          consoleMethod(`${prefix} ${message}`, logEntry.context)
+        } else {
+          consoleMethod(`${prefix} ${message}`)
+        }
       } else {
-        consoleMethod(`${prefix} ${message}`)
+        // Production: Structured JSON logging
+        consoleMethod(JSON.stringify(logEntry))
       }
-    } else {
-      // Production: Structured JSON logging
-      consoleMethod(JSON.stringify(logEntry))
+    } catch {
+      // Gracefully handle console errors - logging failures shouldn't break the app
+      // This is extremely rare but possible in test environments or unusual runtime scenarios
     }
   }
 
@@ -494,6 +500,12 @@ class Logger {
 }
 
 /**
+ * Creates a fresh logger instance. Useful for testing scenarios where environment
+ * variables need to be stubbed before instantiation.
+ */
+export const createLogger = (): Logger => new Logger()
+
+/**
  * Singleton logger instance for consistent logging across the application.
  *
  * Provides centralized logging with automatic security sanitization and
@@ -504,7 +516,7 @@ class Logger {
  * import { logger } from '#utils/logger'
  * logger.info('User authenticated', { userId: 'user123' })
  */
-export const logger = new Logger()
+export const logger = createLogger()
 
 /**
  * Convenience function for standardized API request logging.
