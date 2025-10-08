@@ -1,0 +1,151 @@
+---
+/**
+ * RoleGuard - Astro component for role-based content visibility
+ *
+ * Server-side role checking component that conditionally renders content
+ * based on user roles. Supports both Supabase user roles and Clerk org roles.
+ *
+ * @module components/astro/RoleGuard
+ *
+ * @example
+ * ```astro
+ * <RoleGuard allowedRoles={['admin', 'super_admin']}>
+ *   <AdminPanel />
+ * </RoleGuard>
+ * ```
+ *
+ * @example
+ * ```astro
+ * <RoleGuard
+ *   allowedRoles={['super_admin']}
+ *   fallback="You need super admin permissions to view this."
+ *   debug={true}
+ * >
+ *   <DangerZone />
+ * </RoleGuard>
+ * ```
+ */
+
+import type { AnyRole } from '#utils/role-types'
+import { canViewContent, getUserRole } from '#utils/role-guard'
+
+export interface Props {
+  /**
+   * Roles allowed to view the content
+   *
+   * Array of role strings. User must have at least ONE of these roles.
+   */
+  allowedRoles: AnyRole[]
+
+  /**
+   * Fallback message when user lacks permission
+   *
+   * If provided, displays this message instead of hiding content entirely.
+   * Useful for providing feedback about why content is hidden.
+   */
+  fallback?: string
+
+  /**
+   * Show role debug info in development
+   *
+   * When true and in development mode, displays debugging information
+   * showing current user role, allowed roles, and access decision.
+   */
+  debug?: boolean
+
+  /**
+   * Whether to fetch role from Supabase if not in locals
+   *
+   * Default: true. Set to false to only check Clerk org roles in locals.
+   */
+  fetchFromSupabase?: boolean
+}
+
+const { allowedRoles, fallback, debug = false, fetchFromSupabase = true } = Astro.props
+
+// Check if user can view content
+const canView = await canViewContent(Astro.locals, allowedRoles, { fetchFromSupabase })
+
+// Debug mode data (only fetched in development)
+const isDev = import.meta.env.DEV
+let userRole: AnyRole | null = null
+
+if (debug && isDev) {
+  userRole = await getUserRole(Astro.locals, fetchFromSupabase)
+}
+---
+
+{
+  debug && isDev && (
+    <div class="role-guard-debug" role="status" aria-live="polite">
+      <p>
+        <strong>🔍 RoleGuard Debug</strong>
+      </p>
+      <p>
+        User Role: <code>{userRole || 'Not authenticated'}</code>
+      </p>
+      <p>
+        Allowed Roles: <code>{allowedRoles.join(', ')}</code>
+      </p>
+      <p>
+        Access:{' '}
+        <strong class={canView ? 'access-granted' : 'access-denied'}>
+          {canView ? '✅ Granted' : '❌ Denied'}
+        </strong>
+      </p>
+    </div>
+  )
+}
+
+{
+  canView ? (
+    <slot />
+  ) : fallback ? (
+    <div class="role-guard-fallback" role="alert">
+      <p>{fallback}</p>
+    </div>
+  ) : null
+}
+
+<style>
+  .role-guard-debug {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas,
+      'DejaVu Sans Mono', monospace;
+  }
+
+  .role-guard-debug p {
+    margin: 0.25rem 0;
+  }
+
+  .role-guard-debug code {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 0.125rem 0.25rem;
+    border-radius: 2px;
+  }
+
+  .role-guard-debug .access-granted {
+    color: #28a745;
+  }
+
+  .role-guard-debug .access-denied {
+    color: #dc3545;
+  }
+
+  .role-guard-fallback {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-left: 4px solid #6c757d;
+    color: #6c757d;
+    border-radius: 4px;
+  }
+
+  .role-guard-fallback p {
+    margin: 0;
+  }
+</style>
