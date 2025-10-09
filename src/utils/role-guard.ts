@@ -13,8 +13,8 @@
 
 import { getSupabaseServiceRole, isSupabaseConfigured } from '#libs/supabase-native'
 
-import type { AnyRole, RoleCheckResult, RoleGuardConfig, UserRole } from './role-types'
-import { ALL_ROLES, ROLE_LABELS, USER_ROLES } from './role-types'
+import type { AnyRole, OrgRole, RoleCheckResult, RoleGuardConfig, UserRole } from './role-types'
+import { ALL_ROLES, ORG_ROLES, ROLE_HIERARCHY, ROLE_LABELS, USER_ROLES } from './role-types'
 
 /**
  * Cache entry for user roles
@@ -53,6 +53,47 @@ const DEFAULT_CACHE_TTL = 60000
  */
 export function isValidRole(role: string): role is AnyRole {
   return ALL_ROLES.includes(role as AnyRole)
+}
+
+/**
+ * Checks if a role is an organization role (Clerk org roles)
+ *
+ * @param role - Role to check
+ * @returns True if role is an org role
+ *
+ * @internal
+ */
+function isOrgRole(role: AnyRole): role is OrgRole {
+  return ORG_ROLES.includes(role as OrgRole)
+}
+
+/**
+ * Checks if user role meets or exceeds required role in the hierarchy
+ *
+ * Implements hierarchical privilege escalation for user roles only.
+ * Organization roles always use flat equality matching.
+ *
+ * @param userRole - The user's current role
+ * @param requiredRole - The minimum required role
+ * @returns True if user's role is equal to or higher than required role
+ *
+ * @example
+ * hasRoleOrHigher('admin', 'member')        // true (admin > member)
+ * hasRoleOrHigher('member', 'admin')        // false (member < admin)
+ * hasRoleOrHigher('super_admin', 'admin')   // true (super_admin > admin)
+ * hasRoleOrHigher('org:admin', 'org:admin') // true (exact match)
+ * hasRoleOrHigher('org:admin', 'org:member')// false (no hierarchy for org roles)
+ */
+export function hasRoleOrHigher(userRole: AnyRole, requiredRole: AnyRole): boolean {
+  // Org roles always use flat matching (no hierarchy)
+  if (isOrgRole(userRole) || isOrgRole(requiredRole)) {
+    return userRole === requiredRole
+  }
+
+  // User roles use hierarchy comparison
+  const userLevel = ROLE_HIERARCHY[userRole as UserRole] ?? 0
+  const requiredLevel = ROLE_HIERARCHY[requiredRole as UserRole] ?? 0
+  return userLevel >= requiredLevel
 }
 
 /**
@@ -194,21 +235,33 @@ export async function getUserRole(
  * Checks if user can view content based on role requirements
  *
  * Primary role-checking function. Supports both OR logic (user has ANY
- * of the allowed roles) and automatic role system detection.
+ * of the allowed roles) and hierarchical privilege escalation (default).
  *
  * @param locals - Astro.locals containing auth state
  * @param allowedRoles - Array of roles that can view content
  * @param options - Optional configuration
- * @returns True if user has any of the allowed roles
+ * @returns True if user has any of the allowed roles (or higher with hierarchy)
  *
  * @example
  * ```astro
  * ---
- * // Check if user is admin or super_admin
- * const canView = await canViewContent(Astro.locals, ['admin', 'super_admin'])
+ * // Hierarchical (default) - admin and super_admin can also view
+ * const canView = await canViewContent(Astro.locals, ['member'])
  * ---
  *
- * {canView && <AdminPanel />}
+ * {canView && <UserDashboard />}
+ * ```
+ *
+ * @example
+ * ```astro
+ * ---
+ * // Exact role matching - only members can view
+ * const canView = await canViewContent(
+ *   Astro.locals,
+ *   ['member'],
+ *   { useHierarchy: false }
+ * )
+ * ---
  * ```
  *
  * @example
@@ -234,6 +287,7 @@ export async function canViewContent(
     context: options?.context ?? 'auto',
     fetchFromSupabase: options?.fetchFromSupabase ?? true,
     cacheTTL: options?.cacheTTL ?? DEFAULT_CACHE_TTL,
+    useHierarchy: options?.useHierarchy ?? true,
   }
 
   // Get user's current role
@@ -244,8 +298,14 @@ export async function canViewContent(
     return false
   }
 
-  // Check if user's role is in allowed list
-  return config.allowedRoles.includes(userRole)
+  // Check access based on hierarchy setting
+  if (config.useHierarchy) {
+    // Hierarchical check: user needs to meet or exceed ANY allowed role
+    return config.allowedRoles.some(allowedRole => hasRoleOrHigher(userRole, allowedRole))
+  } else {
+    // Flat check: user's role must be in the allowed list
+    return config.allowedRoles.includes(userRole)
+  }
 }
 
 /**
@@ -257,15 +317,17 @@ export async function canViewContent(
  * @param locals - Astro.locals containing auth state
  * @param allowedRoles - Array of roles that can view content
  * @param options - Optional configuration
- * @returns Detailed authorization result
+ * @returns Detailed authorization result with hierarchy information
  *
  * @example
  * ```astro
  * ---
- * const result = await canViewContentDetailed(Astro.locals, ['admin'])
+ * const result = await canViewContentDetailed(Astro.locals, ['member'])
  *
  * if (!result.allowed) {
  *   console.log('Access denied:', result.reason)
+ * } else {
+ *   console.log('Access granted via:', result.evaluationMethod)
  * }
  * ---
  * ```
@@ -280,6 +342,7 @@ export async function canViewContentDetailed(
     context: options?.context ?? 'auto',
     fetchFromSupabase: options?.fetchFromSupabase ?? true,
     cacheTTL: options?.cacheTTL ?? DEFAULT_CACHE_TTL,
+    useHierarchy: options?.useHierarchy ?? true,
   }
 
   const userRole = await getUserRole(locals, config.fetchFromSupabase)
@@ -289,23 +352,46 @@ export async function canViewContentDetailed(
       allowed: false,
       userRole: null,
       reason: 'User not authenticated',
+      evaluationMethod: config.useHierarchy ? 'hierarchy' : 'exact',
     }
   }
 
-  const allowed = config.allowedRoles.includes(userRole)
+  // Determine access based on hierarchy setting
+  let allowed = false
+  if (config.useHierarchy) {
+    allowed = config.allowedRoles.some(allowedRole => hasRoleOrHigher(userRole, allowedRole))
+  } else {
+    allowed = config.allowedRoles.includes(userRole)
+  }
 
   if (!allowed) {
-    return {
+    const result: RoleCheckResult = {
       allowed: false,
       userRole,
-      reason: `User role "${userRole}" not in allowed roles: ${config.allowedRoles.join(', ')}`,
+      reason: config.useHierarchy
+        ? `User role "${userRole}" does not meet hierarchy requirements for roles: ${config.allowedRoles.join(', ')}`
+        : `User role "${userRole}" not in allowed roles: ${config.allowedRoles.join(', ')}`,
+      evaluationMethod: config.useHierarchy ? 'hierarchy' : 'exact',
     }
+
+    if (config.useHierarchy && !isOrgRole(userRole)) {
+      result.hierarchyLevel = ROLE_HIERARCHY[userRole as UserRole]
+    }
+
+    return result
   }
 
-  return {
+  const result: RoleCheckResult = {
     allowed: true,
     userRole,
+    evaluationMethod: config.useHierarchy ? 'hierarchy' : 'exact',
   }
+
+  if (config.useHierarchy && !isOrgRole(userRole)) {
+    result.hierarchyLevel = ROLE_HIERARCHY[userRole as UserRole]
+  }
+
+  return result
 }
 
 /**
@@ -354,15 +440,17 @@ export async function requireRole(
  * Alias for canViewContent with explicit name. Use when you want
  * to make the OR logic semantically clear in your code.
  *
+ * Supports hierarchical checking by default (can be disabled via useHierarchy: false).
+ *
  * @param locals - Astro.locals containing auth state
  * @param roles - Array of roles to check
  * @param options - Optional configuration
- * @returns True if user has any of the roles
+ * @returns True if user has any of the roles (or higher with hierarchy)
  *
  * @example
  * ```astro
  * ---
- * // User needs to be admin OR super_admin
+ * // User needs to be admin OR super_admin (or higher)
  * const isStaff = await hasAnyRole(Astro.locals, ['admin', 'super_admin'])
  * ---
  * ```
@@ -384,15 +472,17 @@ export async function hasAnyRole(
  * Note: Currently requires manual fetching of both role types.
  * Future enhancement: automatic multi-role fetching.
  *
+ * Supports hierarchical checking by default (can be disabled via useHierarchy: false).
+ *
  * @param locals - Astro.locals containing auth state
  * @param roles - Array of roles user must have ALL of
  * @param options - Optional configuration
- * @returns True if user has all specified roles
+ * @returns True if user has all specified roles (or higher with hierarchy)
  *
  * @example
  * ```astro
  * ---
- * // User must be both org:admin AND super_admin
+ * // User must be both org:admin AND super_admin (or higher)
  * const isSuperOrgAdmin = await hasAllRoles(
  *   Astro.locals,
  *   ['org:admin', 'super_admin']
@@ -419,15 +509,23 @@ export async function hasAllRoles(
     )
   }
 
-  const userRole = await getUserRole(locals, options?.fetchFromSupabase ?? true)
+  const config: Partial<RoleGuardConfig> = {
+    ...options,
+    useHierarchy: options?.useHierarchy ?? true,
+  }
+
+  const userRole = await getUserRole(locals, config.fetchFromSupabase ?? true)
 
   if (!userRole) {
     return false
   }
 
-  // Check if user has all specified roles
-  // (Current implementation: check if user's role is in the list)
-  return roles.includes(userRole)
+  // Check based on hierarchy setting
+  if (config.useHierarchy) {
+    return roles.every(role => hasRoleOrHigher(userRole, role))
+  } else {
+    return roles.includes(userRole)
+  }
 }
 
 /**
