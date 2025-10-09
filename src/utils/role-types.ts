@@ -52,6 +52,10 @@ export interface RoleCheckResult {
   userRole: AnyRole | null
   /** Human-readable reason for denial (undefined if allowed) */
   reason?: string
+  /** Evaluation method used ('hierarchy' or 'exact') */
+  evaluationMethod?: 'hierarchy' | 'exact'
+  /** User's hierarchy level (only populated for hierarchical checks) */
+  hierarchyLevel?: number
 }
 
 /**
@@ -69,6 +73,25 @@ export interface RoleGuardConfig {
   fetchFromSupabase?: boolean
   /** Cache TTL in milliseconds (default: 60000 = 1 minute) */
   cacheTTL?: number
+  /**
+   * Whether to use hierarchical role checking (default: true)
+   *
+   * When enabled, higher-privilege roles can access content restricted to lower roles.
+   * For example, if allowedRoles is ['member'], then 'admin' and 'super_admin' also gain access.
+   *
+   * Set to false for exact role matching (only the specified roles can access).
+   *
+   * @default true
+   *
+   * @example
+   * // Hierarchical (default) - admin and super_admin can also view
+   * { allowedRoles: ['member'], useHierarchy: true }
+   *
+   * @example
+   * // Exact matching - only members can view
+   * { allowedRoles: ['member'], useHierarchy: false }
+   */
+  useHierarchy?: boolean
 }
 
 /**

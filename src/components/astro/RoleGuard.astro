@@ -5,12 +5,27 @@
  * Server-side role checking component that conditionally renders content
  * based on user roles. Supports both Supabase user roles and Clerk org roles.
  *
+ * **Hierarchical Access Control** (default): Higher-privilege roles automatically
+ * gain access to content restricted to lower roles. For example, if allowedRoles
+ * is ['member'], then 'admin' and 'super_admin' can also view the content.
+ *
+ * Set useHierarchy={false} for exact role matching (only specified roles allowed).
+ *
  * @module components/astro/RoleGuard
  *
  * @example
  * ```astro
- * <RoleGuard allowedRoles={['admin', 'super_admin']}>
- *   <AdminPanel />
+ * // Hierarchical (default) - admin and super_admin can also view
+ * <RoleGuard allowedRoles={['member']}>
+ *   <UserDashboard />
+ * </RoleGuard>
+ * ```
+ *
+ * @example
+ * ```astro
+ * // Exact role matching - only members can view
+ * <RoleGuard allowedRoles={['member']} useHierarchy={false}>
+ *   <MemberOnlyFeature />
  * </RoleGuard>
  * ```
  *
@@ -27,13 +42,14 @@
  */
 
 import type { AnyRole } from '#utils/role-types'
-import { canViewContent, getUserRole } from '#utils/role-guard'
+import { canViewContent, canViewContentDetailed, getUserRole } from '#utils/role-guard'
 
 export interface Props {
   /**
    * Roles allowed to view the content
    *
-   * Array of role strings. User must have at least ONE of these roles.
+   * Array of role strings. User must have at least ONE of these roles
+   * (or higher when useHierarchy is true).
    */
   allowedRoles: AnyRole[]
 
@@ -49,7 +65,7 @@ export interface Props {
    * Show role debug info in development
    *
    * When true and in development mode, displays debugging information
-   * showing current user role, allowed roles, and access decision.
+   * showing current user role, allowed roles, access decision, and hierarchy evaluation.
    */
   debug?: boolean
 
@@ -59,24 +75,48 @@ export interface Props {
    * Default: true. Set to false to only check Clerk org roles in locals.
    */
   fetchFromSupabase?: boolean
+
+  /**
+   * Whether to use hierarchical role checking
+   *
+   * Default: true. When enabled, higher-privilege roles can access content
+   * restricted to lower roles (e.g., admin can view member-only content).
+   *
+   * Set to false for exact role matching (only specified roles allowed).
+   */
+  useHierarchy?: boolean
 }
 
-const { allowedRoles, fallback, debug = false, fetchFromSupabase = true } = Astro.props
+const {
+  allowedRoles,
+  fallback,
+  debug = false,
+  fetchFromSupabase = true,
+  useHierarchy = true,
+} = Astro.props
 
 // Check if user can view content
-const canView = await canViewContent(Astro.locals, allowedRoles, { fetchFromSupabase })
+const canView = await canViewContent(Astro.locals, allowedRoles, {
+  fetchFromSupabase,
+  useHierarchy,
+})
 
 // Debug mode data (only fetched in development)
 const isDev = import.meta.env.DEV
 let userRole: AnyRole | null = null
+let debugResult = null
 
 if (debug && isDev) {
   userRole = await getUserRole(Astro.locals, fetchFromSupabase)
+  debugResult = await canViewContentDetailed(Astro.locals, allowedRoles, {
+    fetchFromSupabase,
+    useHierarchy,
+  })
 }
 ---
 
 {
-  debug && isDev && (
+  debug && isDev && debugResult && (
     <div class="role-guard-debug" role="status" aria-live="polite">
       <p>
         <strong>🔍 RoleGuard Debug</strong>
@@ -88,11 +128,20 @@ if (debug && isDev) {
         Allowed Roles: <code>{allowedRoles.join(', ')}</code>
       </p>
       <p>
+        Evaluation: <code>{debugResult.evaluationMethod}</code>
+      </p>
+      {debugResult.hierarchyLevel && (
+        <p>
+          Hierarchy Level: <code>{debugResult.hierarchyLevel}</code>
+        </p>
+      )}
+      <p>
         Access:{' '}
         <strong class={canView ? 'access-granted' : 'access-denied'}>
           {canView ? '✅ Granted' : '❌ Denied'}
         </strong>
       </p>
+      {!canView && debugResult.reason && <p class="debug-reason">Reason: {debugResult.reason}</p>}
     </div>
   )
 }
@@ -147,5 +196,11 @@ if (debug && isDev) {
 
   .role-guard-fallback p {
     margin: 0;
+  }
+
+  .role-guard-debug .debug-reason {
+    font-size: 0.8125rem;
+    color: #856404;
+    font-style: italic;
   }
 </style>

@@ -104,7 +104,16 @@ const posts = [
           <PostPreview posts={posts} />
         </DashboardCard>
       </DashboardLayout>
-      <RoleGuard allowedRoles={['admin', 'super_admin']}>
+      <RoleGuard allowedRoles={['member']}>
+        <DashboardCard title="Member Panel Access" className="mt-4">
+          <p>Access the member panel for advanced management features.</p>
+          <div style="text-align: center; margin-top: 2rem;">
+            <a href="/admin" class="btn btn-primary">Go to Member Panel</a>
+          </div>
+        </DashboardCard>
+      </RoleGuard>
+      <hr />
+      <RoleGuard allowedRoles={['admin', `super_admin`]}>
         <DashboardCard title="Admin Panel Access" className="mt-4">
           <p>Access the admin panel for advanced management features.</p>
           <div style="text-align: center; margin-top: 2rem;">

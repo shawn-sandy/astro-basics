@@ -21,6 +21,7 @@ import {
   formatRoleForDisplay,
   clearRoleCache,
   getRoleCacheStats,
+  hasRoleOrHigher,
 } from '#utils/role-guard'
 import type { AnyRole } from '#utils/role-types'
 
@@ -198,7 +199,7 @@ describe('Role Guard Utilities', () => {
       const result = await canViewContentDetailed(locals, ['admin'])
       expect(result.allowed).toBe(false)
       expect(result.userRole).toBe('member')
-      expect(result.reason).toContain('not in allowed roles')
+      expect(result.reason).toContain('hierarchy requirements')
     })
 
     it('should return detailed result for unauthenticated user', async () => {
@@ -350,6 +351,263 @@ describe('Role Guard Utilities', () => {
     })
   })
 
+  describe('Hierarchical Role Checking', () => {
+    describe('hasRoleOrHigher', () => {
+      it('should allow admin to access member content', () => {
+        expect(hasRoleOrHigher('admin', 'member')).toBe(true)
+      })
+
+      it('should allow super_admin to access member content', () => {
+        expect(hasRoleOrHigher('super_admin', 'member')).toBe(true)
+      })
+
+      it('should allow super_admin to access admin content', () => {
+        expect(hasRoleOrHigher('super_admin', 'admin')).toBe(true)
+      })
+
+      it('should deny member accessing admin content', () => {
+        expect(hasRoleOrHigher('member', 'admin')).toBe(false)
+      })
+
+      it('should deny member accessing super_admin content', () => {
+        expect(hasRoleOrHigher('member', 'super_admin')).toBe(false)
+      })
+
+      it('should allow same-level access', () => {
+        expect(hasRoleOrHigher('member', 'member')).toBe(true)
+        expect(hasRoleOrHigher('admin', 'admin')).toBe(true)
+        expect(hasRoleOrHigher('super_admin', 'super_admin')).toBe(true)
+      })
+
+      it('should use flat matching for org roles', () => {
+        expect(hasRoleOrHigher('org:admin', 'org:admin')).toBe(true)
+        expect(hasRoleOrHigher('org:admin', 'org:member')).toBe(false)
+        expect(hasRoleOrHigher('org:member', 'org:admin')).toBe(false)
+      })
+
+      it('should handle mixed role types with flat matching', () => {
+        expect(hasRoleOrHigher('super_admin', 'org:admin')).toBe(false)
+        expect(hasRoleOrHigher('org:admin', 'admin')).toBe(false)
+      })
+
+      it('should handle null/undefined roles', () => {
+        expect(hasRoleOrHigher('admin', null as unknown as AnyRole)).toBe(true)
+        expect(hasRoleOrHigher(null as unknown as AnyRole, 'admin')).toBe(false)
+      })
+    })
+
+    describe('canViewContent with hierarchy (default)', () => {
+      it('should allow admin to view member-only content', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'admin',
+        } as unknown as App.Locals
+
+        const canView = await canViewContent(locals, ['member'])
+        expect(canView).toBe(true)
+      })
+
+      it('should allow super_admin to view member-only content', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'super_admin',
+        } as unknown as App.Locals
+
+        const canView = await canViewContent(locals, ['member'])
+        expect(canView).toBe(true)
+      })
+
+      it('should allow super_admin to view admin-only content', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'super_admin',
+        } as unknown as App.Locals
+
+        const canView = await canViewContent(locals, ['admin'])
+        expect(canView).toBe(true)
+      })
+
+      it('should deny member accessing admin-only content', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'member',
+        } as unknown as App.Locals
+
+        const canView = await canViewContent(locals, ['admin'])
+        expect(canView).toBe(false)
+      })
+
+      it('should allow member to view member content', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'member',
+        } as unknown as App.Locals
+
+        const canView = await canViewContent(locals, ['member'])
+        expect(canView).toBe(true)
+      })
+
+      it('should support multiple allowed roles with hierarchy', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'admin',
+        } as unknown as App.Locals
+
+        // Admin should match member OR super_admin requirement (via hierarchy on member)
+        const canView = await canViewContent(locals, ['member', 'super_admin'])
+        expect(canView).toBe(true)
+      })
+    })
+
+    describe('canViewContent with hierarchy disabled', () => {
+      it('should deny admin viewing member-only content when hierarchy disabled', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'admin',
+        } as unknown as App.Locals
+
+        const canView = await canViewContent(locals, ['member'], { useHierarchy: false })
+        expect(canView).toBe(false)
+      })
+
+      it('should only allow exact role match when hierarchy disabled', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'admin',
+        } as unknown as App.Locals
+
+        const canView = await canViewContent(locals, ['admin'], { useHierarchy: false })
+        expect(canView).toBe(true)
+      })
+
+      it('should deny super_admin viewing member content when hierarchy disabled', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'super_admin',
+        } as unknown as App.Locals
+
+        const canView = await canViewContent(locals, ['member'], { useHierarchy: false })
+        expect(canView).toBe(false)
+      })
+    })
+
+    describe('canViewContentDetailed with hierarchy', () => {
+      it('should include hierarchy metadata in detailed results', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'admin',
+        } as unknown as App.Locals
+
+        const result = await canViewContentDetailed(locals, ['member'])
+        expect(result.allowed).toBe(true)
+        expect(result.evaluationMethod).toBe('hierarchy')
+        expect(result.hierarchyLevel).toBe(2) // admin level
+      })
+
+      it('should include hierarchy metadata when access denied', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'member',
+        } as unknown as App.Locals
+
+        const result = await canViewContentDetailed(locals, ['admin'])
+        expect(result.allowed).toBe(false)
+        expect(result.evaluationMethod).toBe('hierarchy')
+        expect(result.hierarchyLevel).toBe(1) // member level
+        expect(result.reason).toContain('hierarchy requirements')
+      })
+
+      it('should show exact evaluation method when hierarchy disabled', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'admin',
+        } as unknown as App.Locals
+
+        const result = await canViewContentDetailed(locals, ['member'], { useHierarchy: false })
+        expect(result.allowed).toBe(false)
+        expect(result.evaluationMethod).toBe('exact')
+      })
+
+      it('should not include hierarchy level for org roles', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'org:admin',
+        } as unknown as App.Locals
+
+        const result = await canViewContentDetailed(locals, ['org:admin'])
+        expect(result.allowed).toBe(true)
+        expect(result.evaluationMethod).toBe('hierarchy')
+        expect(result.hierarchyLevel).toBeUndefined()
+      })
+    })
+
+    describe('hasAnyRole with hierarchy', () => {
+      it('should respect hierarchy by default', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'admin',
+        } as unknown as App.Locals
+
+        const hasRole = await hasAnyRole(locals, ['member'])
+        expect(hasRole).toBe(true)
+      })
+
+      it('should allow disabling hierarchy', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'admin',
+        } as unknown as App.Locals
+
+        const hasRole = await hasAnyRole(locals, ['member'], { useHierarchy: false })
+        expect(hasRole).toBe(false)
+      })
+    })
+
+    describe('hasAllRoles with hierarchy', () => {
+      it('should respect hierarchy for single role checks', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'admin',
+        } as unknown as App.Locals
+
+        const hasRole = await hasAllRoles(locals, ['member'])
+        expect(hasRole).toBe(true)
+      })
+
+      it('should allow disabling hierarchy', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'admin',
+        } as unknown as App.Locals
+
+        const hasRole = await hasAllRoles(locals, ['member'], { useHierarchy: false })
+        expect(hasRole).toBe(false)
+      })
+    })
+
+    describe('Backward Compatibility', () => {
+      it('should maintain existing behavior for org roles (no hierarchy)', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'org:admin',
+        } as unknown as App.Locals
+
+        const canViewMember = await canViewContent(locals, ['org:member'])
+        expect(canViewMember).toBe(false)
+      })
+
+      it('should work with mixed role arrays', async () => {
+        const locals = {
+          userId: 'user_123',
+          userRole: 'super_admin',
+        } as unknown as App.Locals
+
+        const canView = await canViewContent(locals, ['member', 'org:admin'] as AnyRole[])
+        expect(canView).toBe(true) // super_admin >= member
+      })
+    })
+  })
+
   describe('Edge Cases', () => {
     it('should handle undefined userRole in locals', async () => {
       const locals = {
@@ -377,8 +635,9 @@ describe('Role Guard Utilities', () => {
         userRole: 'admin',
       } as unknown as App.Locals
 
-      // 'Admin' (capital A) should not match 'admin'
-      const canView = await canViewContent(locals, ['Admin' as AnyRole])
+      // 'Admin' (capital A) should not match 'admin', even with hierarchy
+      // (because 'Admin' is not a valid role)
+      const canView = await canViewContent(locals, ['Admin' as AnyRole], { useHierarchy: false })
       expect(canView).toBe(false)
     })
   })
