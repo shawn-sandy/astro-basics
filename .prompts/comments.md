@@ -22,6 +22,7 @@ ALWAYS comment:
 - Workarounds (why the "wrong" approach is actually correct)
 - Critical sections (security, transactions, race conditions)
 - External dependencies (APIs, databases, cron jobs, cache)
+- only use inline comments when absolutely necessary for clarity
 - TODOs (include timeline, ticket number, blocking factors)
 
 NEVER comment:
@@ -148,6 +149,19 @@ When writing code, structure comments as:
 2. Inline comments before the code they explain
 3. All comments on their own line (not end-of-line unless very brief)
 4. Empty line between comment and code for readability
+
+## Best Practices for AI-Friendly Comments
+
+- To strike the right balance between providing valuable context and managing token usage, consider these best practices when writing comments for AI coding assistants:
+  - Focus on the "Why," Not the "What": The AI can generally understand what a piece of code does. Your comments should explain the reasoning behind your implementation choices.
+
+  - Be Clear and Concise: Use simple and direct language to convey your meaning without unnecessary words.
+
+  - Document Functions and Classes: Write clear and comprehensive docstrings for your functions and classes, detailing their purpose, parameters, and return values.
+
+  - Use Comments to Guide Code Generation: When you want the AI to generate a block of code, write a detailed comment outlining your requirements.
+
+  - Avoid Redundant or Obvious Comments: Comments that merely restate what the code is doing add to the token count without providing any real value.
 
 ## Checklist
 
