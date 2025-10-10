@@ -72,6 +72,10 @@ TURSO_AUTH_TOKEN=your_auth_token_here
 
 ### 2. Database Setup (Optional)
 
+:::tip[Configure Roles Before Database Setup]
+If you plan to customize user roles, **configure them before running database migrations**. Role configuration generates database migrations that define your role schema. See [Section 3: Role Configuration](#3-role-configuration-optional) below for details, or skip to use the default 3-tier system (member, admin, super_admin).
+:::
+
 The project supports **Supabase** (PostgreSQL) and **Turso** (LibSQL) backends.
 
 #### Interactive Setup (Recommended)
@@ -125,7 +129,65 @@ npm run db:restore
 
 See the [Complete Setup Guide](/guide/getting-started/setup/) and [Database Switching Guide](/guide/database-switching/) for detailed configuration.
 
-### 3. Verify Installation
+### 3. Role Configuration (Optional)
+
+The project includes a **configurable role system** for managing user permissions and access control.
+
+#### Default Roles
+
+By default, astro-basics comes with a 3-tier role system:
+
+- **member** (Level 1) - Default role for new users
+- **admin** (Level 2) - Administrative access
+- **super_admin** (Level 3) - Full system control
+
+These roles are ready to use without any configuration.
+
+#### Customizing Roles
+
+If you need custom roles for your application (e.g., author, moderator, editor):
+
+**1. Edit the configuration file:**
+
+```bash
+vim config/roles.config.ts
+```
+
+**2. Add or modify roles:**
+
+```typescript
+export const roleConfig: RoleConfig = {
+  roles: [
+    { name: 'member', level: 1, label: 'Member' },
+    { name: 'author', level: 2, label: 'Author' },      // Custom
+    { name: 'moderator', level: 3, label: 'Moderator' }, // Custom
+    { name: 'admin', level: 4, label: 'Admin' },
+    { name: 'super_admin', level: 5, label: 'Super Admin' },
+  ],
+  coreRoles: ['member', 'admin', 'super_admin'],
+}
+```
+
+**3. Generate types and migrations:**
+
+```bash
+# Generate TypeScript types and database migrations
+npm run setup:roles
+
+# Apply the migration
+npm run db:migrate
+```
+
+**4. Commit your changes:**
+
+```bash
+git add config/ src/types/ scripts/migrations/
+git commit -m "Configure custom roles"
+```
+
+See the [Complete Setup Guide - Role Configuration](/guide/getting-started/setup/#step-4-role-configuration) and [Configurable Roles Guide](/guide/configurable-roles/) for detailed instructions and templates.
+
+### 4. Verify Installation
 
 Start the development server:
 
@@ -237,7 +299,7 @@ import type { Props } from 'astro-basics-website'
 After installation, explore these guides:
 
 - **[Complete Setup](/guide/getting-started/setup/)** - Full feature configuration (database, roles, security)
-- **[Configurable Roles](/guide/configurable-roles/)** - Custom role system setup
+- **[Configurable Roles](/guide/configurable-roles/)** - Custom role system with templates and examples
+- **[Role Guard Usage](/guide/role-guard-usage/)** - Access control patterns and best practices
 - **[Database Switching](/guide/database-switching/)** - Flexible backend selection
 - **[Components](/guide/components/)** - Explore available components
-- **[Role Guard Usage](/guide/role-guard-usage/)** - Access control patterns

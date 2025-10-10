@@ -105,6 +105,8 @@ functionality, and enterprise-grade security features.
 
 3. **Setup database** (optional, for advanced features):
 
+   > **⚠️ Configure Roles First:** If you plan to customize user roles, configure them BEFORE running database migrations. Role configuration generates database migrations that define your role schema. See [Role Management](#role-management) below, or skip to use the default 3-tier system (member, admin, super_admin).
+
    ```bash
    npm run db:wizard              # Interactive database setup wizard
    # Or manually: npm run db:setup
