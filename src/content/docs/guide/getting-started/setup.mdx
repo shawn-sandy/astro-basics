@@ -1,0 +1,572 @@
+---
+title: Complete Setup Guide
+description: Comprehensive guide to setting up astro-basics with authentication, database, and role management.
+---
+
+# Complete Setup Guide
+
+This comprehensive guide walks you through setting up astro-basics with all its features including authentication, database integration, role-based access control, and security features.
+
+## Overview
+
+Astro-basics is a production-ready web development framework with:
+
+- ✅ **Authentication** - Clerk integration with protected routes
+- ✅ **Database Support** - Supabase (PostgreSQL) and Turso (LibSQL) backends
+- ✅ **Role System** - Configurable roles with TypeScript type safety
+- ✅ **Security** - CSRF protection, rate limiting, RLS policies
+- ✅ **Testing** - Unit tests (Vitest) and E2E tests (Playwright)
+- ✅ **PWA Ready** - Progressive Web App capabilities
+
+## Quick Start (5 Minutes)
+
+For experienced developers who want to get running quickly:
+
+```bash
+# 1. Install and configure
+git clone https://github.com/shawn-sandy/astro-basics.git
+cd astro-basics
+npm install                    # ~4 minutes
+npm run prepare                # Setup hooks
+cp .env.example .env           # Copy template
+
+# 2. Add Clerk keys to .env (required)
+# PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+# CLERK_SECRET_KEY=sk_test_...
+
+# 3. Setup database (optional)
+npm run db:wizard              # Interactive setup
+
+# 4. Start developing
+npm run start                  # Dev server + SCSS watcher
+```
+
+Visit `http://localhost:4321` to see your site!
+
+## Detailed Setup
+
+### Step 1: Installation
+
+#### Prerequisites
+
+- **Node.js** v18.0.0 or higher
+- **npm** v9.0.0 or higher
+- **Git** for version control
+
+#### Clone and Install
+
+```bash
+# Clone repository
+git clone https://github.com/shawn-sandy/astro-basics.git
+cd astro-basics
+
+# Install dependencies (takes ~4 minutes, warnings are expected)
+npm install
+
+# Setup pre-commit hooks (Husky + lint-staged)
+npm run prepare
+
+# Install Playwright browsers (for E2E tests)
+npx playwright install
+```
+
+### Step 2: Authentication Setup
+
+Authentication is **required** for protected routes and user features.
+
+#### Create a Clerk Application
+
+1. Sign up at [clerk.com](https://clerk.com) (free tier available)
+2. Create a new application
+3. Choose authentication methods (email, Google, GitHub, etc.)
+
+#### Get API Keys
+
+From your Clerk dashboard:
+
+1. Navigate to **API Keys**
+2. Copy **Publishable Key** → `PUBLIC_CLERK_PUBLISHABLE_KEY`
+3. Copy **Secret Key** → `CLERK_SECRET_KEY`
+4. (Optional) Copy **Webhook Secret** → `CLERK_WEBHOOK_SECRET`
+
+#### Configure Environment
+
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit .env file
+vim .env
+```
+
+Add your Clerk keys:
+
+```env
+# Authentication (Required)
+PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+CLERK_WEBHOOK_SECRET=whsec_...  # Optional
+```
+
+#### Protected Routes
+
+These routes require authentication (configured in `src/middleware.ts`):
+
+- `/dashboard/*` - User dashboard and profile
+- `/forum/*` - Community forum features
+- `/organization/*` - Organization management
+
+Unauthenticated users are automatically redirected to sign-in.
+
+### Step 3: Database Setup
+
+Choose **one or both** database backends:
+
+- **Supabase** (PostgreSQL): Real-time features, native Clerk integration, RLS
+- **Turso** (LibSQL): Edge-first SQLite, low latency, global distribution
+
+#### Option A: Guided Setup (Recommended)
+
+Use the interactive database wizard:
+
+```bash
+npm run db:wizard
+```
+
+The wizard will:
+- Detect available database credentials
+- Guide you through configuration
+- Set up database schema automatically
+- Verify connection
+
+#### Option B: Manual Setup - Supabase
+
+**1. Create Supabase Project**
+
+- Sign up at [supabase.com](https://supabase.com)
+- Create a new project
+- Wait for initialization (~2 minutes)
+
+**2. Get Credentials**
+
+Navigate to **Project Settings** → **API**:
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...  # Required for server operations
+
+# Public keys (for client-side)
+PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+PUBLIC_SUPABASE_ANON_KEY=eyJ...
+```
+
+**3. Run Migrations**
+
+```bash
+# Apply database schema (users, roles, organizations, comments)
+npm run db:migrate
+
+# Verify migration status
+npm run db:migrate:status
+
+# Set up Clerk-Supabase user sync
+npm run db:setup-users
+```
+
+See the [Clerk-Supabase Integration Guide](/guide/integrations/clerk-supabase/) for detailed instructions.
+
+#### Option C: Manual Setup - Turso
+
+**1. Install Turso CLI**
+
+```bash
+curl -sSfL https://get.tur.so/install.sh | bash
+turso auth login
+```
+
+**2. Create Database**
+
+```bash
+# Create database
+turso db create astro-basics
+
+# Get connection details
+turso db show astro-basics
+```
+
+**3. Configure Environment**
+
+```bash
+# Get database URL
+turso db show astro-basics --url
+# → TURSO_DATABASE_URL
+
+# Create auth token
+turso db tokens create astro-basics
+# → TURSO_AUTH_TOKEN
+```
+
+Add to `.env`:
+
+```env
+TURSO_DATABASE_URL=libsql://your-db.turso.io
+TURSO_AUTH_TOKEN=eyJ...
+```
+
+**4. Initialize Database**
+
+```bash
+npm run db:setup
+```
+
+#### Database Switching
+
+The project includes a **unified database abstraction layer**:
+
+```bash
+# Check current database status
+npm run db:status
+
+# Switch databases (with automatic backup)
+npm run db:switch:supabase
+npm run db:switch:turso
+npm run db:switch:auto        # Auto-detect
+
+# Backup and restore
+npm run db:backup
+npm run db:restore
+```
+
+**Key Features:**
+- Automatic backup before switching
+- Provider auto-detection via `DATABASE_PROVIDER` env var
+- Unified TypeScript types
+- Zero code changes required
+
+See the [Database Switching Guide](/guide/database-switching/) for complete documentation.
+
+### Step 4: Role Configuration
+
+The project includes a **configurable role system** for setup-time customization.
+
+#### Understanding Roles
+
+Roles control user access with hierarchical privilege escalation:
+
+```
+Level 3: super_admin  ⚡ Full system access
+         │
+Level 2: admin        👔 Manage users & settings
+         │
+Level 1: member       👤 View content (default)
+```
+
+**Default Behavior:** Higher-level roles automatically inherit lower-level permissions.
+
+#### Default Configuration
+
+Pre-configured roles in `config/roles.config.ts`:
+
+- `member` (level 1) - Default for new users
+- `admin` (level 2) - Administrative access
+- `super_admin` (level 3) - Full system access
+
+#### Customizing Roles
+
+**1. Edit Configuration**
+
+```bash
+vim config/roles.config.ts
+```
+
+**2. Add Custom Roles**
+
+```typescript
+export const roleConfig: RoleConfig = {
+  roles: [
+    { id: 'member', level: 1, name: 'Member', isDefault: true },
+    { id: 'author', level: 2, name: 'Author' },      // New
+    { id: 'moderator', level: 3, name: 'Moderator' }, // New
+    { id: 'admin', level: 4, name: 'Admin' },
+    { id: 'super_admin', level: 5, name: 'Super Admin' },
+  ],
+}
+```
+
+**3. Generate Types and Migrations**
+
+```bash
+# Preview changes
+npm run setup:roles:dry-run
+
+# Generate files
+npm run setup:roles
+```
+
+This creates:
+- TypeScript types in `src/types/generated-roles.ts`
+- Database migrations in `scripts/migrations/`
+
+**4. Apply Migration**
+
+```bash
+npm run db:migrate
+```
+
+**5. Commit Changes**
+
+```bash
+git add config/ src/types/ scripts/migrations/
+git commit -m "Configure custom roles"
+```
+
+#### Using Role Guards
+
+Protect components and pages:
+
+```astro
+---
+import { RoleGuard } from '#components/react/RoleGuard'
+---
+
+<!-- Hierarchical (default): members, admins, super_admins can access -->
+<RoleGuard allowedRoles={['member']} client:load>
+  <Dashboard />
+</RoleGuard>
+
+<!-- Exact matching: only admins can access -->
+<RoleGuard allowedRoles={['admin']} useHierarchy={false} client:load>
+  <AdminPanel />
+</RoleGuard>
+```
+
+See the [Configurable Roles Guide](/guide/configurable-roles/) and [Role Guard Usage Guide](/guide/role-guard-usage/) for complete documentation.
+
+## Development Workflow
+
+### Starting Development
+
+```bash
+# Recommended: Dev server + SCSS watcher together
+npm run start
+
+# Or start separately:
+npm run dev     # Astro dev server (port 4321)
+npm run sass    # SCSS watcher
+```
+
+### Project Structure
+
+```
+src/
+├── components/          # Reusable components
+│   ├── astro/          # Server-rendered (.astro)
+│   ├── react/          # Client-side (.tsx)
+│   └── dashboard/      # Protected components
+├── pages/              # Route pages & API endpoints
+├── content/            # Content collections (MDX)
+│   ├── posts/         # Blog posts
+│   ├── docs/          # Documentation
+│   └── content/       # General content
+├── layouts/           # Page layouts
+├── styles/            # SCSS stylesheets
+├── libs/              # Database clients & utilities
+├── utils/             # Helper functions
+└── middleware.ts      # Authentication middleware
+```
+
+### Import Patterns
+
+Use `#` path aliases for clean imports:
+
+```typescript
+// ✅ Recommended
+import Header from '#components/astro/Header.astro'
+import { SITE_TITLE } from '#utils/site-config'
+import type { User } from '#types/users'
+
+// ❌ Avoid
+import Header from '../../components/astro/Header.astro'
+```
+
+### Code Quality
+
+Before committing:
+
+```bash
+# Fix all auto-fixable issues
+npm run fix:all
+
+# Or run individually:
+npm run lint            # ESLint
+npm run format          # Prettier
+npm run type-check      # TypeScript
+npm run lint:styles:fix # StyleLint
+npm run lint:md:fix     # Markdown
+```
+
+Pre-commit hooks (Husky) automatically run on staged files.
+
+## Testing
+
+### Unit Tests (Vitest)
+
+```bash
+# Run all unit tests
+npm test
+
+# Run specific test
+npm test path/to/test.test.ts
+
+# Watch mode
+npm test -- --watch
+```
+
+### E2E Tests (Playwright)
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run with UI
+npx playwright test --ui
+
+# View report
+npm run test:e2e:report
+```
+
+**Note:** Dev server must run on port 4321 for E2E tests.
+
+## Database Management
+
+### Common Commands
+
+```bash
+# Status and validation
+npm run db:status       # Check configuration
+npm run db:schema       # Validate schema
+
+# Migrations
+npm run db:migrate      # Run migrations
+npm run db:migrate:status  # Check status
+npm run db:migrate:rollback # Rollback
+
+# Data management
+npm run db:seed:messages    # Seed data
+npm run db:reset            # Reset (deletes all data)
+```
+
+See the [Database Troubleshooting Guide](/guide/database-troubleshooting/) for help with common issues.
+
+## Building for Production
+
+```bash
+# Create production build
+npm run build
+
+# Preview locally
+npm run preview
+
+# Deploy to Netlify
+npm run deploy:prod
+```
+
+Build time: ~10-15 seconds
+Output: `dist/` directory
+
+### Deployment Adapters
+
+Configure via `.env`:
+
+```env
+ASTRO_ADAPTER=netlify  # or 'node', 'vercel'
+```
+
+## Troubleshooting
+
+### Authentication Errors
+
+**Problem:** "Clerk keys not configured"
+
+**Solution:**
+```bash
+# Verify keys in .env
+grep CLERK .env
+
+# Keys should start with:
+# PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ or pk_live_
+# CLERK_SECRET_KEY: sk_test_ or sk_live_
+```
+
+### Database Connection Issues
+
+**Problem:** "Failed to connect to database"
+
+**Solution:**
+```bash
+# Check status
+npm run db:status
+
+# Verify connection
+npm run db:check
+
+# See troubleshooting guide
+# /guide/database-troubleshooting/
+```
+
+### Missing Tables
+
+**Problem:** "Table does not exist" errors
+
+**Solution:**
+```bash
+# Run migrations
+npm run db:migrate
+
+# Verify schema
+npm run db:schema
+```
+
+### Build Warnings
+
+**Problem:** getStaticPaths warnings
+
+**Solution:** These are expected for dynamic routes and don't affect functionality.
+
+### Pre-commit Failures
+
+**Problem:** Commits fail due to linting
+
+**Solution:**
+```bash
+# Fix all issues
+npm run fix:all
+```
+
+## Next Steps
+
+Now that you're set up:
+
+1. **Explore Features**
+   - [Configurable Roles](/guide/configurable-roles/) - Custom role system
+   - [Database Switching](/guide/database-switching/) - Provider flexibility
+   - [Role Guard Usage](/guide/role-guard-usage/) - Access control patterns
+
+2. **Learn the Stack**
+   - [Components](/guide/components/) - Available components
+   - [API Reference](/guide/api/) - Detailed API docs
+   - [MCP Servers](/guide/mcp/) - Model Context Protocol integration
+
+3. **Build Your App**
+   - Create components in `src/components/`
+   - Add content to collections in `src/content/`
+   - Build API endpoints in `src/pages/api/`
+
+## Getting Help
+
+- **Documentation** - Browse this guide for detailed information
+- **GitHub Issues** - [Report bugs or request features](https://github.com/shawn-sandy/astro-basics/issues)
+- **Examples** - Check `/src/pages/` for usage examples
+
+Happy coding! 🚀

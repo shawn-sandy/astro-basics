@@ -72,18 +72,58 @@ TURSO_AUTH_TOKEN=your_auth_token_here
 
 ### 2. Database Setup (Optional)
 
-If using database features:
+The project supports **Supabase** (PostgreSQL) and **Turso** (LibSQL) backends.
+
+#### Interactive Setup (Recommended)
 
 ```bash
-# Initialize database
+# Use the database wizard for guided setup
+npm run db:wizard
+```
+
+The wizard will detect available credentials and guide you through configuration.
+
+#### Manual Setup
+
+```bash
+# Check database status and configuration
+npm run db:status
+
+# Initialize database schema
 npm run db:setup
 
-# Check connection
+# Verify connection
 npm run db:check
 
-# Run migrations
+# Run migrations (Supabase)
 npm run db:migrate
+
+# Check migration status
+npm run db:migrate:status
 ```
+
+#### Database Switching
+
+The project includes seamless database switching with automatic backups:
+
+```bash
+# Switch to Supabase (with backup)
+npm run db:switch:supabase
+
+# Switch to Turso (with backup)
+npm run db:switch:turso
+
+# Auto-detect and use available database
+npm run db:switch:auto
+
+# Create backup only
+npm run db:backup
+
+# Restore from backup
+npm run db:restore
+```
+
+See the [Complete Setup Guide](/guide/getting-started/setup/) and [Database Switching Guide](/guide/database-switching/) for detailed configuration.
 
 ### 3. Verify Installation
 
@@ -194,6 +234,10 @@ import type { Props } from 'astro-basics-website'
 
 ## Next Steps
 
-- **[Configuration](/guide/getting-started/configuration/)** - Configure your project
+After installation, explore these guides:
+
+- **[Complete Setup](/guide/getting-started/setup/)** - Full feature configuration (database, roles, security)
+- **[Configurable Roles](/guide/configurable-roles/)** - Custom role system setup
+- **[Database Switching](/guide/database-switching/)** - Flexible backend selection
 - **[Components](/guide/components/)** - Explore available components
-- **[Development](/guide/getting-started/development/)** - Development workflow
+- **[Role Guard Usage](/guide/role-guard-usage/)** - Access control patterns

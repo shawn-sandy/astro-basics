@@ -9,14 +9,16 @@ Welcome to astro-basics! This guide will help you get up and running with our co
 
 ## What is Astro-Basics?
 
-Astro-basics is a comprehensive web development framework built on Astro that provides:
+Astro-basics is a production-ready web development framework built on Astro that provides:
 
 - **Component Library**: Reusable Astro and React components
-- **Authentication**: Pre-configured Clerk integration
-- **Database Support**: Supabase and Turso backends
+- **Authentication**: Pre-configured Clerk integration with protected routes
+- **Database Support**: Supabase (PostgreSQL) and Turso (LibSQL) with seamless switching
+- **Role System**: Configurable user roles with TypeScript type safety
+- **Security Features**: CSRF protection, rate limiting, RLS policies
 - **Styling System**: SCSS-based design tokens and utilities
 - **Testing Suite**: Unit and E2E testing with Vitest and Playwright
-- **PWA Ready**: Progressive Web App capabilities
+- **PWA Ready**: Progressive Web App capabilities with offline support
 
 ## Prerequisites
 
@@ -108,13 +110,41 @@ npm test
 npm run test:e2e
 ```
 
+## Setup Options
+
+Choose your setup path based on your needs:
+
+### Quick Start (5 Minutes)
+
+For minimal setup to start exploring:
+
+1. Clone and install dependencies
+2. Configure Clerk authentication
+3. Start development server
+
+👉 See [Installation Guide](/guide/getting-started/installation/) for quick setup.
+
+### Complete Setup (Full Features)
+
+For production-ready setup with all features:
+
+1. Authentication (Clerk)
+2. Database (Supabase or Turso)
+3. Role management system
+4. Security features
+
+👉 See [Complete Setup Guide](/guide/getting-started/setup/) for comprehensive configuration.
+
 ## Next Steps
 
-Now that you have astro-basics installed and running:
+After setup, explore these guides:
 
-1. **[Configuration](/guide/getting-started/configuration/)** - Configure your project settings
-2. **[Components](/guide/components/)** - Explore available components
-3. **[API Reference](/guide/api/)** - Detailed API documentation
+1. **[Complete Setup](/guide/getting-started/setup/)** - Full feature configuration with database and roles
+2. **[Configurable Roles](/guide/configurable-roles/)** - Custom role system with TypeScript types
+3. **[Database Switching](/guide/database-switching/)** - Flexible backend selection
+4. **[Role Guard Usage](/guide/role-guard-usage/)** - Access control patterns
+5. **[Components](/guide/components/)** - Available components library
+6. **[API Reference](/guide/api/)** - Detailed API documentation
 
 ## Getting Help
 
