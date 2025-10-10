@@ -37,9 +37,9 @@ export default defineConfig({
           items: [
             { label: 'Database Switching', link: '/guide/database-switching' },
             { label: 'Database Troubleshooting', link: '/guide/database-troubleshooting' },
+            { label: 'Configurable Roles', link: '/guide/configurable-roles' },
             { label: 'Role Guard System', link: '/guide/role-guard-usage' },
             { label: 'Page Level Guards', link: '/guide/page-level-protection/' },
-            { label: 'Configure Roles', link: '/guide/configurable-roles' },
           ],
         },
         { label: 'API Reference', autogenerate: { directory: 'guide/api' } },
