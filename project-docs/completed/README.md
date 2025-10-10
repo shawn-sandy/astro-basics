@@ -81,7 +81,7 @@ When an implementation plan is complete:
 
 ```bash
 # Move the plan
-git mv specs/06-implementation-plans/feature-name.md specs/completed/feature-name.md
+git mv project-docs/06-implementation-plans/feature-name.md project-docs/completed/feature-name.md
 
 # Update the implementation plans README
 # Update cross-references in other documents

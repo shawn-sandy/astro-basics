@@ -5,7 +5,7 @@
 
 ## Overview
 
-The `specs/` directory has been reorganized from a flat structure with 95 markdown files (44 at root level) into a hierarchical, numbered directory system for improved navigation and maintainability.
+The `project-docs/` directory has been reorganized from a flat structure with 95 markdown files (44 at root level) into a hierarchical, numbered directory system for improved navigation and maintainability.
 
 ## Changes Summary
 
@@ -29,7 +29,7 @@ The `specs/` directory has been reorganized from a flat structure with 95 markdo
 
 ### New Organization
 ```
-specs/
+project-docs/
 ├── README.md                    # Master navigation hub
 ├── QUICK-START.md               # 5-minute orientation guide
 │
@@ -117,7 +117,7 @@ specs/
 
 ### 10. Updated Cross-References
 **Updated**: `CLAUDE.md` with new paths
-**Changed**: 7 references to specs/ directories
+**Changed**: 7 references to project-docs/ directories
 
 ## File Movements
 
@@ -141,31 +141,31 @@ Examples:
 
 ## New Documentation Created
 
-1. **[specs/README.md](./README.md)** (157 lines)
+1. **[project-docs/README.md](./README.md)** (157 lines)
    - Master navigation hub
    - Directory structure explanation
    - "I want to..." quick links
    - Contributing guidelines
 
-2. **[specs/QUICK-START.md](./QUICK-START.md)** (242 lines)
+2. **[project-docs/QUICK-START.md](./QUICK-START.md)** (242 lines)
    - 5-minute orientation
    - Essential commands
    - Quick setup guides
    - Common troubleshooting
 
-3. **[specs/archived/README.md](./archived/README.md)** (96 lines)
+3. **[project-docs/archived/README.md](./archived/README.md)** (96 lines)
    - Archive policy
    - When to archive
    - Archive process
    - Restoration guidelines
 
-4. **[specs/completed/README.md](./completed/README.md)** (130 lines)
+4. **[project-docs/completed/README.md](./completed/README.md)** (130 lines)
    - Completion criteria
    - Difference from archives
    - How to use completed docs
    - Retention policy
 
-5. **[specs/REORGANIZATION-SUMMARY.md](./REORGANIZATION-SUMMARY.md)** (this file)
+5. **[project-docs/REORGANIZATION-SUMMARY.md](./REORGANIZATION-SUMMARY.md)** (this file)
 
 ## Benefits
 
@@ -238,7 +238,7 @@ $ find . -maxdepth 1 -name "*.md" -type f
 
 ### Cross-Reference Updates
 ```bash
-$ grep -c "specs/02-guides" ../CLAUDE.md
+$ grep -c "project-docs/02-guides" ../CLAUDE.md
 2
 ```
 ✅ CLAUDE.md references updated

@@ -228,7 +228,7 @@ git add config/ src/types/ scripts/migrations/
 git commit -m "Configure custom roles"
 ```
 
-See [specs/02-guides/configurable-roles.md](specs/02-guides/configurable-roles.md) and [specs/02-guides/role-guard-usage-guide.md](specs/02-guides/role-guard-usage-guide.md) for complete documentation.
+See [project-docs/02-guides/configurable-roles.md](project-docs/02-guides/configurable-roles.md) and [project-docs/02-guides/role-guard-usage-guide.md](project-docs/02-guides/role-guard-usage-guide.md) for complete documentation.
 
 ### Content Collections
 
@@ -298,7 +298,7 @@ npm run db:migrate -- 001_core_schema.sql
 npm run db:migrate -- 002_security_policies.sql
 
 # For databases with old migrations applied
-# See: specs/05-database/supabase-migration-refactor-plan.md
+# See: project-docs/05-database/supabase-migration-refactor-plan.md
 ```
 
 **Rolling Back Migrations:**
@@ -319,7 +319,7 @@ npm run db:migrate -- rollback_001_core_schema.sql
 4. **Well-documented** - Extensive COMMENT statements for AI/developer context
 5. **Rollback-ready** - Dedicated rollback scripts for safe downgrades
 
-For detailed migration information, see [specs/05-database/supabase-migration-refactor-plan.md](specs/05-database/supabase-migration-refactor-plan.md)
+For detailed migration information, see [project-docs/05-database/supabase-migration-refactor-plan.md](project-docs/05-database/supabase-migration-refactor-plan.md)
 
 ### Deployment Adapters
 
@@ -512,7 +512,7 @@ This project uses a comprehensive release management system with specialized Cla
 
 ### Release Process
 
-**Standard Process:** Follow the 4-phase release workflow documented in [/specs/09-releases/RELEASE-PROCESS.md](specs/09-releases/RELEASE-PROCESS.md)
+**Standard Process:** Follow the 4-phase release workflow documented in [/project-docs/09-releases/RELEASE-PROCESS.md](project-docs/09-releases/RELEASE-PROCESS.md)
 
 1. **Planning Phase** (T-14 days): Epic creation, team assignment, security planning
 2. **Development Phase** (T-7 days): Feature freeze, security audit, testing
@@ -530,7 +530,7 @@ I need you to act as the astro-basics-release-manager agent and guide me through
 Please start by analyzing the current state and recommending the appropriate release type.
 ```
 
-**Agent Documentation:** `@specs/13-agents/release-manager-optimized.md`
+**Agent Documentation:** `@project-docs/13-agents/release-manager-optimized.md`
 
 ### Release Types
 
@@ -543,7 +543,7 @@ Please start by analyzing the current state and recommending the appropriate rel
 
 **Security First:** Every release MUST include:
 
-- Complete security audit using `/specs/09-releases/vX.Y.Z-RELEASE-security-audit-checklist.md`
+- Complete security audit using `/project-docs/09-releases/vX.Y.Z-RELEASE-security-audit-checklist.md`
 - OWASP Top 10 2021 compliance verification
 - Technology-specific security checks (Astro, Clerk, Supabase, Turso)
 - Zero critical/high vulnerabilities before production deployment
@@ -578,10 +578,10 @@ Before any production release:
 
 ### Release Documentation
 
-- **Process Guide:** [/specs/09-releases/RELEASE-PROCESS.md](specs/09-releases/RELEASE-PROCESS.md)
-- **Template Generator:** [/specs/09-releases/release-template-generator.md](specs/09-releases/release-template-generator.md)
-- **Agent Instructions:** [@specs/13-agents/release-manager-optimized.md](specs/13-agents/release-manager-optimized.md)
-- **Current Releases:** [/specs/09-releases/](specs/09-releases/) (version-specific files)
+- **Process Guide:** [/project-docs/09-releases/RELEASE-PROCESS.md](project-docs/09-releases/RELEASE-PROCESS.md)
+- **Template Generator:** [/project-docs/09-releases/release-template-generator.md](project-docs/09-releases/release-template-generator.md)
+- **Agent Instructions:** [@project-docs/13-agents/release-manager-optimized.md](project-docs/13-agents/release-manager-optimized.md)
+- **Current Releases:** [/project-docs/09-releases/](project-docs/09-releases/) (version-specific files)
 
 ### Emergency Releases
 

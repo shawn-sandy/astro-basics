@@ -251,6 +251,6 @@ await logger.flush()
 
 **Project Support:**
 
-- Review implementation plan: `specs/logging/axiom-integration-implementation.md`
+- Review implementation plan: `project-docs/logging/axiom-integration-implementation.md`
 - Check logger source: `src/utils/logger.ts`
 - Test configuration: `npm run dev` and check console output

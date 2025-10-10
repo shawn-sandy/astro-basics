@@ -118,7 +118,7 @@ functionality, and enterprise-grade security features.
    npm run start                  # Dev server + SCSS watcher (port 4321)
    ```
 
-**For detailed setup instructions**, see [specs/GETTING-STARTED.md](specs/GETTING-STARTED.md) which includes:
+**For detailed setup instructions**, see [project-docs/01-getting-started/setup-guide.md](project-docs/01-getting-started/setup-guide.md) which includes:
 
 - Complete authentication setup with Clerk
 - Database configuration (Supabase & Turso)
@@ -199,7 +199,7 @@ npm run db:migrate
 - Component-level and page-level role guards
 - Zero runtime overhead
 
-See [specs/guides/configurable-roles.md](specs/guides/configurable-roles.md) for complete documentation.
+See [project-docs/02-guides/configurable-roles.md](project-docs/02-guides/configurable-roles.md) for complete documentation.
 
 ### Component Usage
 
