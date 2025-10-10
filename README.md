@@ -29,7 +29,11 @@ functionality, and enterprise-grade security features.
 
 - Clerk integration for user authentication with native Supabase integration (2025 production-ready)
 - Protected routes via middleware (`/dashboard`, `/forum`, `/organization`)
-- Role-based access control with user role management
+- **Role-based access control** with hierarchical privilege escalation
+  - Configurable user roles (member, admin, super_admin)
+  - Automatic privilege inheritance (higher roles access lower-level content)
+  - Component-level and page-level role guards
+  - Flexible configuration with `useHierarchy` option for exact matching
 - Environment-based configuration
 - **Security Enhancements**:
   - CSRF protection for all form submissions
