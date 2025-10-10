@@ -24,39 +24,24 @@ export default defineConfig({
       disable404Route: true,
       // Social links (array format for v0.35.2)
       social: [
-        {
-          icon: 'github',
-          label: 'GitHub',
-          href: 'https://github.com/shawn-sandy/astro-basics',
-        },
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/shawn-sandy/astro-basics' },
       ],
 
       // Sidebar configuration for src/content/docs/guide structure
       sidebar: [
-        {
-          label: 'Guide',
-          items: [{ label: 'Welcome', link: '/guide/' }],
-        },
-        {
-          label: 'Getting Started',
-          autogenerate: { directory: 'guide/getting-started' },
-        },
-        {
-          label: 'Components',
-          autogenerate: { directory: 'guide/components' },
-        },
+        { label: 'Guide', items: [{ label: 'Welcome', link: '/guide/' }] },
+        { label: 'Getting Started', autogenerate: { directory: 'guide/getting-started' } },
+        { label: 'Components', autogenerate: { directory: 'guide/components' } },
         {
           label: 'Features',
           items: [
             { label: 'Database Switching', link: '/guide/database-switching' },
             { label: 'Database Troubleshooting', link: '/guide/database-troubleshooting' },
             { label: 'Role Guard System', link: '/guide/role-guard-usage' },
+            { label: 'Configure Roles', link: '/guide/configurable-roles' },
           ],
         },
-        {
-          label: 'API Reference',
-          autogenerate: { directory: 'guide/api' },
-        },
+        { label: 'API Reference', autogenerate: { directory: 'guide/api' } },
         {
           label: 'MCP Servers',
           items: [
@@ -83,23 +68,16 @@ export default defineConfig({
       customCss: ['./src/styles/starlight-custom.scss'],
 
       // Enable features
-      editLink: {
-        baseUrl: 'https://github.com/shawn-sandy/astro-basics/edit/main/',
-      },
+      editLink: { baseUrl: 'https://github.com/shawn-sandy/astro-basics/edit/main/' },
       lastUpdated: true,
       pagination: true,
-      tableOfContents: {
-        minHeadingLevel: 2,
-        maxHeadingLevel: 3,
-      },
+      tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
     }),
     mdx(),
     clerk(),
     AstroPWA({
       registerType: 'autoUpdate',
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2,ttf,eot}'],
-      },
+      workbox: { globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2,ttf,eot}'] },
       manifest: {
         name: 'Astro Kit - Component Library & Demo',
         short_name: 'AstroKit',
@@ -112,16 +90,8 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         icons: [
-          {
-            src: '/icons/icon-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: '/icons/icon-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
+          { src: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
         ],
       },
     }),
@@ -132,9 +102,7 @@ export default defineConfig({
       host: process.env.EXPOSE_DEV_SERVER === 'true' ? true : 'localhost',
       allowedHosts: ['476cd5383d8f.ngrok-free.app'],
     },
-    ssr: {
-      noExternal: ['astro-imagetools'],
-    },
+    ssr: { noExternal: ['astro-imagetools'] },
   },
   // Choose adapter based on deployment target
   adapter: (() => {
