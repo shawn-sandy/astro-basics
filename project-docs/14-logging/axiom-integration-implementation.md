@@ -136,7 +136,7 @@ interface ImportMetaEnv {
 
 #### Step 1.3: Create Axiom Setup Guide
 
-**File:** `specs/logging/axiom-setup-guide.md`
+**File:** `project-docs/logging/axiom-setup-guide.md`
 
 Document the Axiom account creation and configuration process:
 
@@ -843,7 +843,7 @@ test.describe('Logging Correlation', () => {
 
 #### Step 5.3: Create Axiom Setup Guide
 
-**File:** `specs/logging/axiom-setup-guide.md`
+**File:** `project-docs/logging/axiom-setup-guide.md`
 
 ````markdown
 # Axiom Setup Guide
@@ -922,7 +922,7 @@ AXIOM_DATASET=astro-basics
 
 #### Step 5.4: Create Usage Guide
 
-**File:** `specs/logging/axiom-usage-guide.md`
+**File:** `project-docs/logging/axiom-usage-guide.md`
 
 ```markdown
 # Axiom Logger Usage Guide
@@ -1098,9 +1098,9 @@ export const POST: APIRoute = async ({ locals }) => {
 
 **Documentation:**
 
-- Setup: `specs/logging/axiom-setup-guide.md`
-- Usage: `specs/logging/axiom-usage-guide.md`
-- Implementation: `specs/logging/axiom-integration-implementation.md`
+- Setup: `project-docs/logging/axiom-setup-guide.md`
+- Usage: `project-docs/logging/axiom-usage-guide.md`
+- Implementation: `project-docs/logging/axiom-integration-implementation.md`
 
 ```
 
@@ -1144,7 +1144,7 @@ export const POST: APIRoute = async ({ locals }) => {
 3. Monitor Axiom dashboard for first 30 minutes
 4. Verify log volume is within expected range
 5. Set up error rate alerts in Axiom
-6. Document any issues in `specs/logging/deployment-notes.md`
+6. Document any issues in `project-docs/logging/deployment-notes.md`
 
 ---
 
@@ -1296,8 +1296,8 @@ If exceeding free tier:
 ### File Changes Summary
 
 **New Files:**
-- `specs/logging/axiom-setup-guide.md`
-- `specs/logging/axiom-usage-guide.md`
+- `project-docs/logging/axiom-setup-guide.md`
+- `project-docs/logging/axiom-usage-guide.md`
 - `tests/utils/logger.test.ts`
 - `e2e/logging-correlation.spec.ts`
 
@@ -1380,4 +1380,4 @@ AXIOM_ORG_ID=optional-org-id  # Optional
 
 **Document Status:** Ready for Implementation
 **Next Steps:** Begin Phase 1 - Dependencies & Configuration
-**Questions?** Review `specs/logging/axiom-setup-guide.md` or consult Axiom documentation
+**Questions?** Review `project-docs/logging/axiom-setup-guide.md` or consult Axiom documentation

@@ -4,7 +4,7 @@
 >
 > **Current Implementation**: See [src/utils/role-guard.ts](../../src/utils/role-guard.ts)
 >
-> **Documentation**: See [specs/guides/role-guard-usage-guide.md](../guides/role-guard-usage-guide.md) and [specs/guides/configurable-roles.md](../guides/configurable-roles.md)
+> **Documentation**: See [project-docs/02-guides/role-guard-usage-guide.md](../guides/role-guard-usage-guide.md) and [project-docs/02-guides/configurable-roles.md](../guides/configurable-roles.md)
 >
 > **Archived Date**: 2025-10-10
 >

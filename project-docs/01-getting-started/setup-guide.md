@@ -171,7 +171,7 @@ The wizard will:
    npm run db:setup-users
    ```
 
-   See [specs/integrations/supabase-setup-guide.md](specs/integrations/supabase-setup-guide.md) for detailed instructions.
+   See [project-docs/04-integrations/supabase-setup-guide.md](project-docs/04-integrations/supabase-setup-guide.md) for detailed instructions.
 
 ##### Turso Setup
 
@@ -240,7 +240,7 @@ npm run db:restore
 - Unified TypeScript types
 - Zero code changes required
 
-See [specs/guides/database-switching-guide.md](specs/guides/database-switching-guide.md) for detailed information.
+See [project-docs/02-guides/database-switching-guide.md](project-docs/02-guides/database-switching-guide.md) for detailed information.
 
 ### Role Configuration
 
@@ -348,8 +348,8 @@ import { RoleGuard } from '#components/react/RoleGuard'
 
 For complete documentation, see:
 
-- [specs/guides/configurable-roles.md](specs/guides/configurable-roles.md) - Role configuration guide
-- [specs/guides/role-guard-usage-guide.md](specs/guides/role-guard-usage-guide.md) - Using role guards in components
+- [project-docs/02-guides/configurable-roles.md](project-docs/02-guides/configurable-roles.md) - Role configuration guide
+- [project-docs/02-guides/role-guard-usage-guide.md](project-docs/02-guides/role-guard-usage-guide.md) - Using role guards in components
 
 ## Development Workflow
 
@@ -394,7 +394,7 @@ astro-basics/
 │   └── roles.config.ts   # Role definitions
 ├── scripts/              # Database & utility scripts
 │   └── migrations/       # Database migrations
-├── specs/                # Project documentation
+├── project-docs/                # Project documentation
 ├── e2e/                  # Playwright E2E tests
 └── tests/                # Vitest unit tests
 ```
@@ -586,7 +586,7 @@ npm run db:status
 npm run db:check
 
 # See detailed troubleshooting guide
-# specs/guides/database-troubleshooting-guide.md
+# project-docs/02-guides/database-troubleshooting-guide.md
 ```
 
 #### 3. Missing Database Tables
@@ -626,9 +626,9 @@ npm run format
 
 ### Getting Help
 
-- **Documentation**: Browse [specs/](specs/) directory for detailed guides
-- **Database Issues**: See [specs/guides/database-troubleshooting-guide.md](specs/guides/database-troubleshooting-guide.md)
-- **Role System**: See [specs/guides/configurable-roles.md](specs/guides/configurable-roles.md)
+- **Documentation**: Browse [project-docs/](project-docs/) directory for detailed guides
+- **Database Issues**: See [project-docs/02-guides/database-troubleshooting-guide.md](project-docs/02-guides/database-troubleshooting-guide.md)
+- **Role System**: See [project-docs/02-guides/configurable-roles.md](project-docs/02-guides/configurable-roles.md)
 - **GitHub Issues**: Report bugs at [github.com/shawn-sandy/astro-basics/issues](https://github.com/shawn-sandy/astro-basics/issues)
 
 ## Next Steps
@@ -638,12 +638,12 @@ Now that you have the project running:
 1. **Explore the codebase**
    - Review [CLAUDE.md](CLAUDE.md) for project overview and architecture
    - Check [FEATURES.md](FEATURES.md) for complete feature list
-   - Browse [specs/](specs/) for detailed documentation
+   - Browse [project-docs/](project-docs/) for detailed documentation
 
 2. **Configure custom features**
-   - Set up custom roles: [specs/guides/configurable-roles.md](specs/guides/configurable-roles.md)
-   - Configure database: [specs/guides/database-switching-guide.md](specs/guides/database-switching-guide.md)
-   - Add MCP servers: Check [specs/](specs/) for MCP integration guides
+   - Set up custom roles: [project-docs/02-guides/configurable-roles.md](project-docs/02-guides/configurable-roles.md)
+   - Configure database: [project-docs/02-guides/database-switching-guide.md](project-docs/02-guides/database-switching-guide.md)
+   - Add MCP servers: Check [project-docs/](project-docs/) for MCP integration guides
 
 3. **Start building**
    - Create new components in [src/components/](src/components/)
@@ -651,8 +651,8 @@ Now that you have the project running:
    - Build API endpoints in [src/pages/api/](src/pages/api/)
 
 4. **Read the guides**
-   - [specs/AUTHENTICATION_DEVELOPER_GUIDE.md](specs/AUTHENTICATION_DEVELOPER_GUIDE.md) - Authentication patterns
-   - [specs/LINTING_GUIDE.md](specs/LINTING_GUIDE.md) - Code quality standards
-   - [specs/releases/RELEASE-PROCESS.md](specs/releases/RELEASE-PROCESS.md) - Release management
+   - [project-docs/01-getting-started/authentication-guide.md](project-docs/01-getting-started/authentication-guide.md) - Authentication patterns
+   - [project-docs/01-getting-started/linting-guide.md](project-docs/01-getting-started/linting-guide.md) - Code quality standards
+   - [project-docs/09-releases/RELEASE-PROCESS.md](project-docs/09-releases/RELEASE-PROCESS.md) - Release management
 
 Happy coding! 🚀

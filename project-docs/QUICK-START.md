@@ -23,7 +23,7 @@ astro-basics/
 │   ├── content/         # MDX content (posts, docs)
 │   ├── layouts/         # Page templates
 │   └── libs/            # Database clients and utilities
-├── specs/              # 📍 YOU ARE HERE - All documentation
+├── project-docs/              # 📍 YOU ARE HERE - All documentation
 ├── docs/               # Public-facing Starlight docs
 ├── e2e/                # Playwright end-to-end tests
 └── tests/              # Vitest unit tests
@@ -269,7 +269,7 @@ cat .env | grep -E "(TURSO|SUPABASE)"
 - **Starlight Docs**: [../docs/](../docs/) - Public-facing documentation
 
 ### Getting Support
-1. **Search existing docs** in `specs/` directory
+1. **Search existing docs** in `project-docs/` directory
 2. **Check troubleshooting guides** in `02-guides/`
 3. **Review GitHub issues** for similar problems
 4. **Ask in discussions** or create new issue
@@ -287,7 +287,7 @@ After this quick start:
 ## Key Files to Bookmark
 
 ```
-/specs/README.md                    # Documentation hub (you are here)
+/project-docs/README.md                    # Documentation hub (you are here)
 /CLAUDE.md                          # Project guidelines
 /astro.config.mjs                   # Astro configuration
 /src/middleware.ts                  # Auth middleware

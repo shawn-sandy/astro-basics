@@ -10,7 +10,7 @@
 
 - ✅ Axiom SDK installed (@axiomhq/js v1.3.1)
 - ✅ Environment variables documented in `.env.example`
-- ✅ Axiom setup guide created at `specs/logging/axiom-setup-guide.md`
+- ✅ Axiom setup guide created at `project-docs/logging/axiom-setup-guide.md`
 
 ### Phase 2: Logger Enhancement (100%)
 
@@ -50,7 +50,7 @@
 
 ### Phase 6: Documentation (100%)
 
-- ✅ Usage guide created at `specs/logging/axiom-usage-guide.md`:
+- ✅ Usage guide created at `project-docs/logging/axiom-usage-guide.md`:
   - Quick start examples
   - API route patterns
   - Correlation ID tracking
@@ -248,11 +248,11 @@
 
 ### Created
 
-- `specs/logging/axiom-setup-guide.md` (setup instructions)
-- `specs/logging/axiom-usage-guide.md` (usage examples)
+- `project-docs/logging/axiom-setup-guide.md` (setup instructions)
+- `project-docs/logging/axiom-usage-guide.md` (usage examples)
 - `tests/utils/logger.test.ts` (unit tests)
 - `e2e/logging-correlation.spec.ts` (E2E tests)
-- `specs/logging/implementation-status.md` (this file)
+- `project-docs/logging/implementation-status.md` (this file)
 
 ### Modified
 
