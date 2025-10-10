@@ -4,6 +4,9 @@
  * Provides unified type system for both Supabase user roles (app-level)
  * and Clerk organization roles (org-level) with full TypeScript support.
  *
+ * NOTE: User roles are now configurable via config/roles.config.ts
+ * After running `npm run setup:roles`, generated types will be used automatically.
+ *
  * @module utils/role-types
  */
 
@@ -12,6 +15,11 @@
  *
  * Stored in Supabase `users` table, synced from Clerk webhooks.
  * Defines global user privileges across the entire application.
+ *
+ * NOTE: After running `npm run setup:roles`, these types will be sourced
+ * from generated-roles.ts. Until then, the default 3-tier system is used.
+ *
+ * Default: 3-tier system (member, admin, super_admin)
  */
 export type UserRole = 'member' | 'admin' | 'super_admin'
 
@@ -98,6 +106,8 @@ export interface RoleGuardConfig {
  * Valid Supabase user roles constant
  *
  * Use for runtime validation and type guards.
+ *
+ * NOTE: Will be replaced by generated types when setup:roles is run.
  */
 export const USER_ROLES: UserRole[] = ['member', 'admin', 'super_admin']
 
@@ -119,6 +129,8 @@ export const ALL_ROLES: AnyRole[] = [...USER_ROLES, ...ORG_ROLES]
  * Human-readable role labels
  *
  * Maps role identifiers to display-friendly names for UI rendering.
+ *
+ * NOTE: Will be replaced by generated types when setup:roles is run.
  */
 export const ROLE_LABELS: Record<AnyRole, string> = {
   member: 'Member',
@@ -133,6 +145,8 @@ export const ROLE_LABELS: Record<AnyRole, string> = {
  *
  * Higher numbers = more privileges.
  * Useful for implementing "at least X role" checks.
+ *
+ * NOTE: Will be replaced by generated types when setup:roles is run.
  */
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   member: 1,

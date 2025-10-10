@@ -198,6 +198,37 @@ Clerk middleware (`src/middleware.ts`) protects routes:
 - Validation: Checks for `PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` on startup
 - Redirects unauthenticated users to sign-in
 
+### Role Configuration System
+
+The project includes a configurable role system for setup-time customization:
+
+- **Configuration**: Define roles in `config/roles.config.ts`
+- **Type Generation**: Auto-generates TypeScript types in `src/types/generated-roles.ts`
+- **Migration Generation**: Creates database migrations for PostgreSQL/SQLite
+- **Core Roles**: Three required roles (`member`, `admin`, `super_admin`)
+- **Setup Command**: `npm run setup:roles` to generate types and migrations
+- **Validation**: Zod schemas ensure safe role definitions
+- **Type Safety**: Full TypeScript support with zero runtime overhead
+
+**Quick Setup:**
+
+```bash
+# Edit configuration
+vim config/roles.config.ts
+
+# Generate types and migrations
+npm run setup:roles
+
+# Apply database migration
+npm run db:migrate
+
+# Commit generated files
+git add config/ src/types/ scripts/migrations/
+git commit -m "Configure custom roles"
+```
+
+See [docs/guide/configurable-roles.md](docs/guide/configurable-roles.md) for complete documentation.
+
 ### Content Collections
 
 Three collections share identical schema (`src/content/config.ts`):

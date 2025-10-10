@@ -75,6 +75,9 @@
     "ticket:create": "gh issue create --web",
     "ticket:list": "gh issue list --state open",
     "ticket:labels": "gh label list",
+    "setup:roles": "tsx scripts/setup-roles.ts",
+    "setup:roles:dry-run": "tsx scripts/setup-roles.ts --dry-run",
+    "validate:roles": "tsx -e \"import { validateRoleConfig } from './scripts/lib/role-validator.js'; import { roleConfig } from './config/roles.config.js'; const result = validateRoleConfig(roleConfig); if (!result.success) { console.error('Validation failed:', result.errors); process.exit(1); } console.log('✓ Configuration is valid!');\"",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -134,6 +137,7 @@
     "@playwright/test": "^1.54.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
+    "@types/inquirer": "^9.0.9",
     "@types/node": "^22.15.3",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
@@ -146,6 +150,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "happy-dom": "^19.0.2",
     "husky": "^9.1.7",
+    "inquirer": "^12.9.6",
     "lint-staged": "^16.1.2",
     "markdownlint-cli": "^0.45.0",
     "npm-run-all": "^4.1.5",
@@ -155,6 +160,8 @@
     "stylelint": "^16.22.0",
     "stylelint-config-standard-scss": "^15.0.1",
     "stylelint-order": "^7.0.0",
-    "vitest": "^3.2.4"
+    "tsx": "^4.20.6",
+    "vitest": "^3.2.4",
+    "zod": "^3.25.76"
   }
 }
