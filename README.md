@@ -89,19 +89,40 @@ functionality, and enterprise-grade security features.
 
 ## Quick Start
 
-### Initial Setup
+### 5-Minute Setup
 
-1. **Install dependencies**: `npm install`
-2. **Setup pre-commit hooks**: `npm run prepare`
-3. **Copy environment variables**: Copy `.env.example` to `.env` and configure:
-   - Clerk authentication keys (required for auth features)
-   - Turso database credentials (optional, for message system)
-   - Supabase credentials (optional, alternative to Turso, includes native Clerk integration)
-4. **Setup database** (if using message system or comments):
-   - For Supabase: `npm run db:setup-users` (set up user sync with Clerk)
-   - For general setup: `npm run db:setup`
-   - Check database connection: `npm run db:check`
-5. **Start development**: `npm run start` (dev server + SCSS watcher)
+1. **Install and configure**:
+
+   ```bash
+   npm install                    # Install dependencies (~4 minutes)
+   npm run prepare                # Setup pre-commit hooks
+   cp .env.example .env           # Copy environment template
+   ```
+
+2. **Configure authentication** (required):
+   - Get Clerk keys from [clerk.com](https://clerk.com)
+   - Add to `.env`: `PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`
+
+3. **Setup database** (optional, for advanced features):
+
+   ```bash
+   npm run db:wizard              # Interactive database setup wizard
+   # Or manually: npm run db:setup
+   ```
+
+4. **Start developing**:
+
+   ```bash
+   npm run start                  # Dev server + SCSS watcher (port 4321)
+   ```
+
+**For detailed setup instructions**, see [specs/GETTING-STARTED.md](specs/GETTING-STARTED.md) which includes:
+
+- Complete authentication setup with Clerk
+- Database configuration (Supabase & Turso)
+- Role management system setup
+- Security features configuration
+- Troubleshooting common issues
 
 ### Development Commands
 
@@ -126,18 +147,57 @@ npm run type-check   # Run TypeScript type checking
 npm run fix:all      # Fix all auto-fixable issues
 
 # Database Management
-npm run db:setup     # Initialize Turso database schema
-npm run db:reset     # Reset database (drop and recreate)
-npm run db:check     # Check database connection
+npm run db:wizard         # Interactive database setup wizard (recommended)
+npm run db:status         # Check current database configuration and status
+npm run db:manage         # Advanced database management CLI
+
+# Database Setup
+npm run db:setup          # Initialize database schema
+npm run db:reset          # Reset database (warning: deletes all data)
+npm run db:check          # Verify database connection
+npm run db:schema         # Validate database schema compatibility
+
+# Database Switching (with automatic backups)
+npm run db:switch         # Interactive database switching
+npm run db:switch:turso   # Switch to Turso backend
+npm run db:switch:supabase # Switch to Supabase backend
+npm run db:switch:auto    # Auto-detect and use available database
+npm run db:backup         # Create configuration backup
+npm run db:restore        # Restore from backup
+
+# Migrations
+npm run db:migrate        # Run migrations
+npm run db:migrate:status # Check migration status
+npm run db:migrate:create # Create new migration
+npm run db:migrate:rollback # Rollback last migration
+
+# Data Management
 npm run db:seed:messages  # Seed sample messages
 npm run db:setup-users    # Set up Supabase user sync with Clerk
 npm run db:sync-user      # Sync current user to database
-npm run db:switch         # Switch between database backends
-npm run db:switch:turso   # Switch to Turso backend
-npm run db:switch:supabase # Switch to Supabase backend
-npm run db:migrate        # Run database migrations
-npm run db:migrate:status # Check migration status
 ```
+
+### Role Management
+
+```bash
+# Configure custom roles (edit config/roles.config.ts first)
+npm run setup:roles           # Generate types and migrations
+npm run setup:roles:dry-run   # Preview changes without writing files
+npm run validate:roles        # Validate role configuration
+
+# After setup, apply database migration
+npm run db:migrate
+```
+
+**Role System Features:**
+
+- Configurable user roles with hierarchical privilege escalation
+- TypeScript type generation for compile-time safety
+- Automatic database migration generation
+- Component-level and page-level role guards
+- Zero runtime overhead
+
+See [specs/guides/configurable-roles.md](specs/guides/configurable-roles.md) for complete documentation.
 
 ### Component Usage
 
@@ -146,11 +206,17 @@ npm run db:migrate:status # Check migration status
 // Using path aliases for internal component imports
 import Header from '#components/astro/Header.astro'
 import { ThemeToggle } from '#components/react/ThemeToggle'
+import { RoleGuard } from '#components/react/RoleGuard'
 import { SITE_TITLE } from '#utils/site-config'
 ---
 
 <Header title={SITE_TITLE} />
 <ThemeToggle client:load />
+
+<!-- Role-based access control -->
+<RoleGuard allowedRoles={['admin']} client:load>
+  <AdminPanel />
+</RoleGuard>
 ```
 
 ## Architecture
