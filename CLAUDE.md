@@ -362,6 +362,10 @@ export function Component({ title }: Props) {
 }
 ```
 
+## Code Comments
+
+When writing code comments, always follow these guidelines from `.prompts/comments.md` for consistency:
+
 ### Styling System
 
 - SCSS compilation: `src/styles/index.scss` → compressed CSS
