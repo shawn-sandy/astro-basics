@@ -506,6 +506,7 @@ npm run setup:roles
    - Type `N` to cancel
 
 4. **Generates Files**: Creates 3 files automatically
+
    ```
    ✓ Types generated: src/types/generated-roles.ts
    ✓ Migration 003 created

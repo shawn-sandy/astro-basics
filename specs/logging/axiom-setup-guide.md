@@ -156,19 +156,16 @@ npm run dev
 **Possible Causes & Solutions:**
 
 1. **Invalid API Token**
-
    - Regenerate token in Axiom settings
    - Ensure "Ingest" permission is enabled
    - Update environment variables with new token
 
 2. **Wrong Dataset Name**
-
    - Verify dataset exists in Axiom dashboard
    - Check for typos (case-sensitive)
    - Ensure `AXIOM_DATASET` matches exactly
 
 3. **Network/Firewall Issues**
-
    - Check browser console for CORS errors
    - Verify outbound HTTPS requests are allowed
    - Test Axiom API directly: `curl -H "Authorization: Bearer $AXIOM_TOKEN" https://api.axiom.co/v1/datasets`
@@ -250,7 +247,7 @@ await logger.flush()
 
 - Documentation: [axiom.co/docs](https://axiom.co/docs)
 - Discord: [axiom.co/discord](https://axiom.co/discord)
-- Email: support@axiom.co
+- Email: <support@axiom.co>
 
 **Project Support:**
 

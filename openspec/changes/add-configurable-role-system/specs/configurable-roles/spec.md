@@ -249,6 +249,7 @@ The system SHALL generate PostgreSQL migration SQL files with ENUM type definiti
 - **GIVEN** any valid configuration
 - **WHEN** migration generation is executed
 - **THEN** generated SQL SHALL use DO block pattern:
+
   ```sql
   DO $$
   BEGIN
@@ -257,6 +258,7 @@ The system SHALL generate PostgreSQL migration SQL files with ENUM type definiti
       END IF;
   END$$;
   ```
+
 - **AND** migration SHALL be safe to run multiple times without errors
 
 #### Scenario: Transaction wrapper for atomicity
@@ -272,9 +274,11 @@ The system SHALL generate PostgreSQL migration SQL files with ENUM type definiti
 - **GIVEN** any valid configuration
 - **WHEN** migration generation is executed
 - **THEN** generated SQL SHALL include verification query like:
+
   ```sql
   SELECT enumlabel FROM pg_enum WHERE enumtypid = 'user_role'::regtype;
   ```
+
 - **AND** verification SHALL display success message if ENUM exists
 
 #### Scenario: Migration number auto-increments
