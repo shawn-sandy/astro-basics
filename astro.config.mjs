@@ -38,6 +38,7 @@ export default defineConfig({
             { label: 'Database Switching', link: '/guide/database-switching' },
             { label: 'Database Troubleshooting', link: '/guide/database-troubleshooting' },
             { label: 'Role Guard System', link: '/guide/role-guard-usage' },
+            { label: 'Page Level Guards', link: '/guide/page-level-protection/' },
             { label: 'Configure Roles', link: '/guide/configurable-roles' },
           ],
         },

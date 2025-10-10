@@ -1,0 +1,839 @@
+---
+title: Page-Level Protection with Role Guards
+description: Complete guide to protecting entire pages using requireRole() with hierarchical privilege escalation and exact role matching options.
+sidebar:
+  order: 8
+---
+
+import { Card, CardGrid, Code, Tabs, TabItem, Aside } from '@astrojs/starlight/components'
+
+Protect entire pages from unauthorized access using the `requireRole()` function. This guide covers hierarchical privilege escalation, exact role matching, and best practices for securing routes in your Astro application.
+
+**Quick Link**: For component-level protection, see [Role Guard Usage Guide](/guide/role-guard-usage/)
+
+## Overview
+
+**Page-level protection** blocks unauthorized users from accessing entire pages by throwing a 403 Forbidden error during server-side rendering. Unlike component-level guards that hide specific UI elements, page protection prevents the entire page from rendering if the user lacks required permissions.
+
+<CardGrid>
+  <Card title="🔒 Complete Page Blocking" icon="lock">
+    Entire page is protected - unauthorized users see 403 error instead of any page content
+  </Card>
+  <Card title="📊 Hierarchical Access" icon="list">
+    Higher-level roles automatically inherit lower-level permissions (configurable)
+  </Card>
+  <Card title="⚡ Server-Side Security" icon="shield">
+    Authorization happens during SSR - zero client-side JavaScript or data exposure
+  </Card>
+  <Card title="🎯 Flexible Matching" icon="setting">
+    Choose between hierarchical checking (default) or exact role matching
+  </Card>
+</CardGrid>
+
+### When to Use Page-Level Protection
+
+**✅ Use `requireRole()` for:**
+- Admin dashboards and super admin pages
+- Entire sections requiring specific roles (e.g., `/organization/*`)
+- Pages with sensitive data that shouldn't be rendered at all for unauthorized users
+- API routes and server endpoints requiring authentication
+
+**❌ Use `<RoleGuard>` component instead for:**
+- Hiding specific UI sections within a page
+- Conditional feature visibility (e.g., admin buttons)
+- Mixed-audience pages where some content is public
+
+## Core Concepts
+
+### Hierarchical Privilege Escalation
+
+**Default Behavior**: Higher-privilege roles automatically gain access to content restricted to lower roles.
+
+**Role Hierarchy** (from [config/roles.config.ts](../../../config/roles.config.ts)):
+- `member` → Level 1 (lowest privilege)
+- `admin` → Level 2 (can access member content + admin content)
+- `super_admin` → Level 3 (can access all content)
+
+```typescript
+// With hierarchical checking (default)
+await requireRole(Astro.locals, ['member'])
+// ✅ Allows: member, admin, super_admin (all equal or higher)
+
+// With exact role matching
+await requireRole(Astro.locals, ['member'], { useHierarchy: false })
+// ✅ Allows: member ONLY
+// ❌ Blocks: admin, super_admin
+```
+
+<Aside type="tip" title="When to Disable Hierarchy">
+Use `useHierarchy: false` when you need **exclusive access** for specific roles. For example, a "Members-Only Lounge" that admins shouldn't access to maintain separation of concerns.
+</Aside>
+
+### Organization Roles
+
+Organization roles (`org:admin`, `org:member`) from Clerk use **flat matching only** - no hierarchy applies:
+
+```typescript
+await requireRole(Astro.locals, ['org:admin'])
+// ✅ Allows: org:admin
+// ❌ Blocks: org:member (no hierarchy for org roles)
+```
+
+## The `requireRole()` Function
+
+### Function Signature
+
+```typescript
+requireRole(
+  locals: App.Locals,
+  allowedRoles: AnyRole[],
+  options?: Partial<RoleGuardConfig>
+): Promise<void>
+```
+
+### Parameters
+
+<Tabs>
+  <TabItem label="locals">
+    **Type**: `App.Locals`
+
+    Astro.locals object containing authentication state:
+    - `locals.userId` - Current user's Clerk ID
+    - `locals.userRole` - Organization role (if in org context)
+
+    ```astro
+    ---
+    await requireRole(Astro.locals, ['admin'])
+    ---
+    ```
+  </TabItem>
+  <TabItem label="allowedRoles">
+    **Type**: `AnyRole[]`
+
+    Array of roles that can access the page. User must have at least ONE role (with hierarchy) or exact match (without hierarchy).
+
+    **Available Roles**:
+    - User roles: `'member' | 'admin' | 'super_admin'`
+    - Org roles: `'org:admin' | 'org:member'`
+
+    ```astro
+    ---
+    // Single role
+    await requireRole(Astro.locals, ['super_admin'])
+
+    // Multiple roles (OR logic)
+    await requireRole(Astro.locals, ['admin', 'super_admin'])
+
+    // Mixed role types
+    await requireRole(Astro.locals, ['super_admin', 'org:admin'])
+    ---
+    ```
+  </TabItem>
+  <TabItem label="options">
+    **Type**: `Partial<RoleGuardConfig>`
+
+    Optional configuration object:
+
+    ```typescript
+    interface RoleGuardConfig {
+      fetchFromSupabase?: boolean  // Query Supabase for user role (default: true)
+      cacheTTL?: number             // Cache duration in ms (default: 60000)
+      useHierarchy?: boolean        // Enable hierarchical checking (default: true)
+    }
+    ```
+
+    **Examples**:
+    ```astro
+    ---
+    // Exact role matching only
+    await requireRole(Astro.locals, ['member'], {
+      useHierarchy: false
+    })
+
+    // Skip Supabase query (org roles only)
+    await requireRole(Astro.locals, ['org:admin'], {
+      fetchFromSupabase: false
+    })
+
+    // Custom cache duration (5 minutes)
+    await requireRole(Astro.locals, ['admin'], {
+      cacheTTL: 300000
+    })
+    ---
+    ```
+  </TabItem>
+</Tabs>
+
+### Return Behavior
+
+`requireRole()` **throws an error** if authorization fails:
+
+- ✅ **User authorized** → Returns `void` (page renders normally)
+- ❌ **User unauthorized** → Throws `Error: 403 Forbidden: ...`
+- ❌ **Not authenticated** → Throws `Error: 403 Forbidden: User not authenticated`
+
+Astro automatically converts thrown errors to error pages. Create `src/pages/403.astro` for custom forbidden pages.
+
+## Usage Examples
+
+### Basic Page Protection (Hierarchical)
+
+Protect a page allowing admin and super_admin roles:
+
+```astro title="src/pages/admin/index.astro"
+---
+import { requireRole } from '#utils/role-guard'
+
+// Hierarchical check (default) - super_admin can also access
+await requireRole(Astro.locals, ['admin'])
+---
+
+<html>
+  <body>
+    <h1>Admin Dashboard</h1>
+    <p>Only admins and super admins can see this page</p>
+  </body>
+</html>
+```
+
+**Who can access:**
+- ✅ `admin` (explicitly allowed)
+- ✅ `super_admin` (higher level, inherits access)
+- ❌ `member` (lower level, blocked)
+
+---
+
+### Exact Role Matching
+
+Create exclusive access for a specific role:
+
+```astro title="src/pages/members-lounge/index.astro"
+---
+import { requireRole } from '#utils/role-guard'
+
+// Exact match only - admins NOT allowed
+await requireRole(Astro.locals, ['member'], {
+  useHierarchy: false
+})
+---
+
+<html>
+  <body>
+    <h1>Members-Only Lounge</h1>
+    <p>Exclusively for regular members - admins use admin portal</p>
+  </body>
+</html>
+```
+
+**Who can access:**
+- ✅ `member` (exact match)
+- ❌ `admin` (hierarchy disabled)
+- ❌ `super_admin` (hierarchy disabled)
+
+---
+
+### Multiple Allowed Roles
+
+Allow any of several roles (OR logic):
+
+```astro title="src/pages/staff/index.astro"
+---
+import { requireRole } from '#utils/role-guard'
+
+// User needs to be admin OR super_admin (or higher with hierarchy)
+await requireRole(Astro.locals, ['admin', 'super_admin'])
+---
+
+<html>
+  <body>
+    <h1>Staff Portal</h1>
+    <p>Administrative staff only</p>
+  </body>
+</html>
+```
+
+**Who can access:**
+- ✅ `admin` (explicitly allowed)
+- ✅ `super_admin` (explicitly allowed)
+- ❌ `member` (not in allowed roles)
+
+---
+
+### Organization Roles
+
+Protect organization-specific pages:
+
+```astro title="src/pages/organization/settings/index.astro"
+---
+import { requireRole } from '#utils/role-guard'
+
+// Organization admins only (from Clerk session)
+await requireRole(Astro.locals, ['org:admin'], {
+  fetchFromSupabase: false // Org roles in Astro.locals, no DB query needed
+})
+---
+
+<html>
+  <body>
+    <h1>Organization Settings</h1>
+    <p>Configure your organization</p>
+  </body>
+</html>
+```
+
+<Aside type="note">
+Organization roles are stored in Clerk session claims (available in `Astro.locals.userRole`) so you can skip the Supabase query by setting `fetchFromSupabase: false` for better performance.
+</Aside>
+
+---
+
+### Mixed Role Types
+
+Allow both app-level and org-level roles:
+
+```astro title="src/pages/admin/organizations/index.astro"
+---
+import { requireRole } from '#utils/role-guard'
+
+// Super admins OR org admins can access
+await requireRole(Astro.locals, ['super_admin', 'org:admin'])
+---
+
+<html>
+  <body>
+    <h1>Organization Management</h1>
+    <p>Manage organizations (super admin) or your own org (org admin)</p>
+  </body>
+</html>
+```
+
+## Real-World Patterns
+
+### Pattern 1: Admin-Only Dashboard
+
+Complete admin dashboard with hierarchical access:
+
+```astro title="src/pages/admin/dashboard.astro"
+---
+import { requireRole } from '#utils/role-guard'
+import AdminLayout from '#/layouts/AdminLayout.astro'
+
+// Admin and super_admin can access (hierarchical)
+await requireRole(Astro.locals, ['admin'])
+
+// Page-specific data fetching (only executes if authorized)
+const stats = await fetchAdminStats()
+const recentActivity = await fetchRecentActivity()
+---
+
+<AdminLayout title="Admin Dashboard">
+  <h1>Admin Dashboard</h1>
+
+  <section class="stats">
+    <h2>System Statistics</h2>
+    <StatsCards stats={stats} />
+  </section>
+
+  <section class="activity">
+    <h2>Recent Activity</h2>
+    <ActivityFeed activities={recentActivity} />
+  </section>
+</AdminLayout>
+```
+
+`★ Insight ─────────────────────────────────────`
+1. **Security First**: `requireRole()` executes BEFORE any data fetching, preventing unauthorized data access
+2. **No Cleanup Needed**: If authorization fails, Astro stops execution - no need to handle error states in component logic
+`─────────────────────────────────────────────────`
+
+---
+
+### Pattern 2: Super Admin Exclusive
+
+Pages that ONLY super admins should access:
+
+```astro title="src/pages/super-admin/system-config.astro"
+---
+import { requireRole } from '#utils/role-guard'
+
+// ONLY super_admin - exact match
+await requireRole(Astro.locals, ['super_admin'], {
+  useHierarchy: false  // Explicitly disable hierarchy for clarity
+})
+
+// Or use hierarchical (same effect since super_admin is highest)
+// await requireRole(Astro.locals, ['super_admin'])
+---
+
+<html>
+  <body>
+    <h1>System Configuration</h1>
+    <p>Dangerous settings - super admins only</p>
+
+    <form method="post">
+      <button type="submit">Reset All User Data</button>
+      <button type="submit">Modify System Settings</button>
+    </form>
+  </body>
+</html>
+```
+
+<Aside type="caution">
+For highest-level roles like `super_admin`, both hierarchical and exact matching produce the same result. Use `useHierarchy: false` explicitly for code clarity and future-proofing if role hierarchy changes.
+</Aside>
+
+---
+
+### Pattern 3: Nested Protection (Page + Component)
+
+Combine page-level and component-level guards for granular control:
+
+```astro title="src/pages/admin/users.astro"
+---
+import { requireRole } from '#utils/role-guard'
+import RoleGuard from '#components/astro/RoleGuard.astro'
+
+// Page-level: Admin and super_admin can view page
+await requireRole(Astro.locals, ['admin'])
+
+const users = await fetchAllUsers()
+---
+
+<html>
+  <body>
+    <h1>User Management</h1>
+
+    <!-- All admins see user list -->
+    <section class="user-list">
+      <UserTable users={users} />
+    </section>
+
+    <!-- Component-level: ONLY super_admin sees danger zone -->
+    <RoleGuard allowedRoles={['super_admin']}>
+      <section class="danger-zone">
+        <h2>Danger Zone</h2>
+        <button>Delete All Users</button>
+        <button>Reset Database</button>
+      </section>
+    </RoleGuard>
+  </body>
+</html>
+```
+
+**Access Matrix:**
+
+| Role | View Page? | See User List? | Access Danger Zone? |
+|------|-----------|----------------|---------------------|
+| `member` | ❌ No | ❌ No | ❌ No |
+| `admin` | ✅ Yes | ✅ Yes | ❌ No |
+| `super_admin` | ✅ Yes | ✅ Yes | ✅ Yes |
+
+---
+
+### Pattern 4: Custom 403 Error Page
+
+Create a branded error page for unauthorized access:
+
+```astro title="src/pages/403.astro"
+---
+import BaseLayout from '#/layouts/BaseLayout.astro'
+
+// Extract error details from Astro (if available)
+const error = Astro.props.error as Error | undefined
+const message = error?.message || 'You do not have permission to access this page.'
+---
+
+<BaseLayout title="Access Denied - 403">
+  <main class="error-page">
+    <div class="error-container">
+      <h1>🔒 Access Denied</h1>
+      <p class="error-code">Error 403 - Forbidden</p>
+      <p class="error-message">{message}</p>
+
+      <div class="actions">
+        <a href="/dashboard" class="btn btn-primary">
+          Go to Dashboard
+        </a>
+        <a href="/support" class="btn btn-secondary">
+          Contact Support
+        </a>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .error-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    text-align: center;
+  }
+
+  .error-container {
+    max-width: 600px;
+    padding: 2rem;
+  }
+
+  .error-code {
+    font-size: 1.25rem;
+    color: #dc3545;
+    font-weight: 600;
+    margin: 1rem 0;
+  }
+
+  .error-message {
+    font-size: 1.125rem;
+    color: #6c757d;
+    margin: 1.5rem 0;
+  }
+
+  .actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+</style>
+```
+
+`★ Insight ─────────────────────────────────────`
+Astro automatically routes 403 errors to `src/pages/403.astro`. The error object contains the exact reason for denial, which you can display or log for debugging.
+`─────────────────────────────────────────────────`
+
+## Security Best Practices
+
+### 1. Defense in Depth
+
+Combine multiple security layers - never rely on client-side protection alone:
+
+```astro title="src/pages/api/admin/delete-user.ts"
+---
+import type { APIRoute } from 'astro'
+import { requireRole } from '#utils/role-guard'
+
+export const POST: APIRoute = async ({ locals }) => {
+  // Layer 1: Page-level role check
+  await requireRole(locals, ['super_admin'])
+
+  // Layer 2: Additional authorization logic
+  const canDelete = await checkUserDeletionPermissions(locals.userId)
+  if (!canDelete) {
+    return new Response('Insufficient permissions', { status: 403 })
+  }
+
+  // Layer 3: Database RLS policies (Supabase)
+  // These run automatically based on service role configuration
+
+  // Perform deletion
+  const result = await deleteUser(userId)
+  return new Response(JSON.stringify(result), { status: 200 })
+}
+---
+```
+
+<CardGrid>
+  <Card title="Layer 1: Role Guards" icon="shield">
+    `requireRole()` blocks unauthorized access at the route level
+  </Card>
+  <Card title="Layer 2: Business Logic" icon="checklist">
+    Additional permission checks specific to the operation
+  </Card>
+  <Card title="Layer 3: Database RLS" icon="database">
+    Supabase Row Level Security policies as final enforcement
+  </Card>
+</CardGrid>
+
+---
+
+### 2. Middleware Pre-Authentication
+
+For entire route sections, use middleware to protect multiple pages:
+
+```typescript title="src/middleware.ts" {15-19}
+import { sequence } from 'astro:middleware'
+import { clerkMiddleware } from '@clerk/astro/middleware'
+
+const protectedRoutes = [
+  '/admin',
+  '/super-admin',
+  '/api/admin',
+]
+
+const authCheck = async (context, next) => {
+  const { request, locals } = context
+  const url = new URL(request.url)
+
+  // Pre-check authentication for protected routes
+  if (protectedRoutes.some(route => url.pathname.startsWith(route))) {
+    if (!locals.userId) {
+      return new Response('Unauthorized', { status: 401 })
+    }
+  }
+
+  return next()
+}
+
+export const onRequest = sequence(clerkMiddleware(), authCheck)
+```
+
+Then use `requireRole()` for fine-grained role checking:
+
+```astro title="src/pages/admin/settings.astro"
+---
+import { requireRole } from '#utils/role-guard'
+
+// Middleware ensures authentication, requireRole enforces specific role
+await requireRole(Astro.locals, ['admin', 'super_admin'])
+---
+```
+
+---
+
+### 3. Audit Logging
+
+Use `canViewContentDetailed()` for audit trails:
+
+```astro title="src/pages/admin/sensitive-data.astro"
+---
+import { canViewContentDetailed } from '#utils/role-guard'
+
+const authResult = await canViewContentDetailed(
+  Astro.locals,
+  ['super_admin']
+)
+
+// Log access attempts
+if (!authResult.allowed) {
+  await logSecurityEvent({
+    event: 'unauthorized_access_attempt',
+    userId: Astro.locals.userId,
+    userRole: authResult.userRole,
+    requestedPage: Astro.url.pathname,
+    reason: authResult.reason,
+    timestamp: new Date().toISOString(),
+  })
+
+  throw new Error(`403 Forbidden: ${authResult.reason}`)
+}
+
+// Log successful access
+await logSecurityEvent({
+  event: 'authorized_access',
+  userId: Astro.locals.userId,
+  userRole: authResult.userRole,
+  page: Astro.url.pathname,
+  timestamp: new Date().toISOString(),
+})
+---
+```
+
+---
+
+### 4. Environment-Specific Protection
+
+Disable certain pages in production:
+
+```astro title="src/pages/admin/debug.astro"
+---
+import { requireRole } from '#utils/role-guard'
+
+// Development only
+if (import.meta.env.PROD) {
+  throw new Error('403 Forbidden: Debug page not available in production')
+}
+
+await requireRole(Astro.locals, ['super_admin'])
+---
+
+<html>
+  <body>
+    <h1>Debug Tools</h1>
+    <p>Development environment only</p>
+  </body>
+</html>
+```
+
+## Troubleshooting
+
+### Issue: "403 Forbidden" Despite Having Correct Role
+
+**Symptoms**: User with correct role sees 403 error
+
+**Possible Causes:**
+
+1. **Role not synced to Supabase**
+   ```astro
+   ---
+   // Check user's actual role
+   import { getUserRole } from '#utils/role-guard'
+   const currentRole = await getUserRole(Astro.locals, true)
+   console.log('Current role:', currentRole) // Check server logs
+   ---
+   ```
+
+2. **Stale cache**
+   ```typescript
+   // Clear role cache for specific user
+   import { clearRoleCache } from '#utils/role-guard'
+   clearRoleCache(locals.userId)
+   ```
+
+3. **Wrong role type** (user role vs org role)
+   ```astro
+   ---
+   // Check BOTH role sources
+   const userRole = await getUserRole(Astro.locals, true)  // Supabase
+   const orgRole = await getUserRole(Astro.locals, false)  // Clerk
+   console.log({ userRole, orgRole })
+   ---
+   ```
+
+---
+
+### Issue: Page Loads Blank Instead of 403 Error
+
+**Cause**: JavaScript error or missing error boundary
+
+**Solution**: Check browser console and server logs:
+
+```astro
+---
+try {
+  await requireRole(Astro.locals, ['admin'])
+} catch (error) {
+  console.error('[Page Protection] Authorization failed:', error)
+  throw error // Re-throw to trigger Astro's error handling
+}
+---
+```
+
+Ensure `src/pages/403.astro` exists for custom error pages.
+
+---
+
+### Issue: Performance Degradation with Many Protected Pages
+
+**Symptoms**: Slow page loads across protected routes
+
+**Solutions:**
+
+<Tabs>
+  <TabItem label="Increase Cache TTL">
+    ```astro
+    ---
+    // Cache role for 5 minutes (default: 1 minute)
+    await requireRole(Astro.locals, ['admin'], {
+      cacheTTL: 300000
+    })
+    ---
+    ```
+  </TabItem>
+  <TabItem label="Pre-fetch in Middleware">
+    ```typescript title="src/middleware.ts"
+    // Fetch role once in middleware for protected routes
+    if (protectedRoutes.includes(url.pathname)) {
+      const { getUserRole } = await import('#utils/role-guard')
+      locals.cachedRole = await getUserRole(locals, true)
+    }
+    ```
+  </TabItem>
+  <TabItem label="Use Org Roles">
+    ```astro
+    ---
+    // Org roles in Astro.locals (no DB query)
+    await requireRole(Astro.locals, ['org:admin'], {
+      fetchFromSupabase: false
+    })
+    ---
+    ```
+  </TabItem>
+</Tabs>
+
+## Quick Reference
+
+### Decision Tree: Which Protection Method?
+
+```
+Need to protect content?
+│
+├─ Entire page/route?
+│  └─ Use requireRole() in page frontmatter
+│     ├─ Higher roles should access? → useHierarchy: true (default)
+│     └─ Exact role only? → useHierarchy: false
+│
+├─ Specific UI components?
+│  └─ Use <RoleGuard> component
+│     └─ See: /guide/role-guard-usage/
+│
+└─ API endpoint?
+   └─ Use requireRole() in API route handler
+      └─ Combine with additional authorization checks
+```
+
+### Configuration Cheat Sheet
+
+| Option | Default | Use Case |
+|--------|---------|----------|
+| `useHierarchy: true` | ✅ | Higher roles inherit lower-role access |
+| `useHierarchy: false` | - | Exact role matching only |
+| `fetchFromSupabase: true` | ✅ | Query Supabase for user roles |
+| `fetchFromSupabase: false` | - | Use only Clerk org roles (faster) |
+| `cacheTTL: 60000` | ✅ | 1-minute cache (balance fresh vs performance) |
+| `cacheTTL: 300000` | - | 5-minute cache (stable roles) |
+| `cacheTTL: 0` | - | No cache (always fresh, slower) |
+
+### Common Role Combinations
+
+```astro
+---
+// Members and above (most common)
+await requireRole(Astro.locals, ['member'])
+
+// Admin features
+await requireRole(Astro.locals, ['admin', 'super_admin'])
+
+// Super admin only
+await requireRole(Astro.locals, ['super_admin'])
+
+// Organization admins
+await requireRole(Astro.locals, ['org:admin'])
+
+// Super admins OR org admins (mixed)
+await requireRole(Astro.locals, ['super_admin', 'org:admin'])
+
+// Members ONLY (exclude admins)
+await requireRole(Astro.locals, ['member'], { useHierarchy: false })
+---
+```
+
+## Summary
+
+Page-level protection with `requireRole()` provides:
+
+<CardGrid>
+  <Card title="🛡️ Complete Security" icon="shield">
+    Entire pages protected server-side before any rendering or data fetching occurs
+  </Card>
+  <Card title="📊 Flexible Hierarchy" icon="list">
+    Choose between hierarchical privilege escalation or exact role matching per route
+  </Card>
+  <Card title="⚡ High Performance" icon="rocket">
+    Built-in caching with configurable TTL reduces database queries while maintaining security
+  </Card>
+  <Card title="🔍 Full Debugging" icon="magnifier">
+    Detailed error messages and audit logging capabilities for security monitoring
+  </Card>
+</CardGrid>
+
+**Related Guides:**
+- [Role Guard Usage Guide](/guide/role-guard-usage/) - Component-level protection
+- [Configurable Roles](/guide/configurable-roles/) - Customize role hierarchy
+- [Clerk-Supabase Integration](/guide/integrations/clerk-supabase/) - Role synchronization
+
+---
+
+<Aside type="note">
+**Questions or Issues?** File an issue with the `role-guard` label on [GitHub](https://github.com/shawn-sandy/astro-basics/issues).
+</Aside>
