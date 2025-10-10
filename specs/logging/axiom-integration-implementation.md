@@ -36,7 +36,7 @@ Production environment limitations:
 
 ### Why Axiom?
 
-**Selected:** Axiom (https://axiom.co)
+**Selected:** Axiom (<https://axiom.co>)
 
 **Rationale:**
 
@@ -140,7 +140,7 @@ interface ImportMetaEnv {
 
 Document the Axiom account creation and configuration process:
 
-- Account signup at https://axiom.co
+- Account signup at <https://axiom.co>
 - Creating a dataset (e.g., "astro-basics")
 - Generating API tokens
 - Setting up environment variables locally and in Netlify
@@ -1336,13 +1336,11 @@ AXIOM_ORG_ID=optional-org-id  # Optional
 ## Implementation Checklist
 
 - [ ] **Phase 1: Dependencies & Configuration** (15 min)
-
   - [ ] Install `@axiomhq/js` package
   - [ ] Update `.env.example` with Axiom variables
   - [ ] Create Axiom setup guide
 
 - [ ] **Phase 2: Logger Enhancement** (30 min)
-
   - [ ] Update `LogContext` interface
   - [ ] Add Axiom client to Logger class
   - [ ] Enhance `log()` method with dual output
@@ -1353,21 +1351,18 @@ AXIOM_ORG_ID=optional-org-id  # Optional
   - [ ] Update method signatures to async
 
 - [ ] **Phase 3: Middleware Integration** (20 min)
-
   - [ ] Create correlation middleware
   - [ ] Add request lifecycle logging
   - [ ] Update middleware sequence
   - [ ] Add TypeScript types for `locals.correlationId`
 
 - [ ] **Phase 4: Critical Path Updates** (45 min)
-
   - [ ] Update `src/pages/api/webhooks/clerk.ts`
   - [ ] Update `src/libs/database.ts`
   - [ ] Update `src/pages/api/user/profile.ts`
   - [ ] Update `src/pages/api/user/profile-with-org.ts`
 
 - [ ] **Phase 5: Testing & Documentation** (30 min)
-
   - [ ] Create unit tests
   - [ ] Create E2E tests
   - [ ] Create Axiom setup guide

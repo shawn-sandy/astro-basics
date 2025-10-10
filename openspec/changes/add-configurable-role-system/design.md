@@ -7,13 +7,17 @@ The astro-basics project currently uses a hardcoded 3-tier role system (`member`
 **Current State**:
 
 - Roles hardcoded in `scripts/migrations/001_core_schema.sql`:
+
   ```sql
   CREATE TYPE user_role AS ENUM ('member', 'admin', 'super_admin');
   ```
+
 - Types hardcoded in `src/utils/role-types.ts`:
+
   ```typescript
   export type UserRole = 'member' | 'admin' | 'super_admin'
   ```
+
 - Hierarchy hardcoded in `ROLE_HIERARCHY` constant
 - Changes require manual editing of multiple files with risk of inconsistency
 
@@ -418,12 +422,12 @@ const RoleNameSchema = z
    ```
 
 2. **Configuration Review**:
-
    - Review `config/roles.config.ts` for role definitions
    - Review `src/types/generated-roles.ts` for type exports
    - Review `scripts/migrations/00X_user_roles.sql` for database changes
 
 3. **Commit**:
+
    ```bash
    git add config/ src/types/ scripts/migrations/
    git commit -m "Configure custom roles for project"
@@ -455,7 +459,6 @@ const RoleNameSchema = z
    ```
 
 3. **Review Generated Migration**:
-
    - Check that ENUM values match existing roles
    - Verify no data migration needed (user roles stay same)
    - If adding new roles, ENUM is extended (non-breaking)
@@ -467,11 +470,11 @@ const RoleNameSchema = z
    ```
 
 5. **Update Code**:
-
    - Imports from `role-types.ts` work unchanged (re-exports generated types)
    - No code changes required unless using new custom roles
 
 6. **Test**:
+
    ```bash
    npm test  # Verify role-guard tests pass
    npm run type-check  # Verify TypeScript compiles
@@ -503,6 +506,7 @@ const RoleNameSchema = z
 2. ENUM drops cleanly (no data loss if only extending)
 
 3. Revert configuration commit:
+
    ```bash
    git revert <commit-hash>
    ```
@@ -510,19 +514,16 @@ const RoleNameSchema = z
 ## Open Questions
 
 1. **Should we support role aliases?**
-
    - Example: `editor` is alias for `admin` level
    - Complexity vs flexibility trade-off
    - **Decision**: Defer to future enhancement if needed
 
 2. **Should setup support template presets?**
-
    - Example: "Blog roles", "SaaS roles", "Forum roles"
    - Would improve DX but adds maintenance
    - **Decision**: Start simple, add presets if requested by users
 
 3. **Should we generate Turso migrations too?**
-
    - Currently focused on Supabase (PostgreSQL)
    - Turso uses SQLite (no ENUMs)
    - **Decision**: Generate TEXT column with CHECK constraint for Turso (separate generator)
@@ -545,5 +546,5 @@ const RoleNameSchema = z
 - **Existing Implementation**: `src/utils/role-types.ts` (hardcoded 3-tier system)
 - **Related Proposal**: `add-custom-role-system` (runtime alternative)
 - **Similar Patterns**: Drizzle ORM schema generation, Prisma client generation
-- **Validation Library**: Zod (https://zod.dev)
-- **CLI Library**: Inquirer (https://github.com/SBoudrias/Inquirer.js)
+- **Validation Library**: Zod (<https://zod.dev>)
+- **CLI Library**: Inquirer (<https://github.com/SBoudrias/Inquirer.js>)
