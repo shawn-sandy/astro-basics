@@ -364,7 +364,7 @@ export function Component({ title }: Props) {
 
 ## Code Comments
 
-When writing code comments, always follow these guidelines from `.prompts/comments.md` for consistency:
+When writing code always follow these guidelines from `.prompts/comments.md` for writing comments that are clear, consistent, and helpful for future maintainers:
 
 ### Styling System
 
