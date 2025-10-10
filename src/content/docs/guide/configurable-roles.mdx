@@ -385,9 +385,9 @@ export const roleConfig: RoleConfig = {
 
 | Field     | What It Is                       | Rules                                                                                | Example           |
 | --------- | -------------------------------- | ------------------------------------------------------------------------------------ | ----------------- |
-| **name**  | Internal identifier used in code | • All lowercase<br>• No spaces (use `_`)<br>• Start with letter<br>• 2-30 characters | `content_creator` |
-| **level** | Power ranking                    | • Number from 1-10<br>• Must be unique<br>• Higher = more power                      | `3`               |
-| **label** | Display name shown to users      | • Any text<br>• User-friendly<br>• Can have spaces                                   | `Content Creator` |
+| **name**  | Internal identifier used in code | • All lowercase<br />• No spaces (use `_`)<br />• Start with letter<br />• 2-30 characters | `content_creator` |
+| **level** | Power ranking                    | • Number from 1-10<br />• Must be unique<br />• Higher = more power                      | `3`               |
+| **label** | Display name shown to users      | • Any text<br />• User-friendly<br />• Can have spaces                                   | `Content Creator` |
 
 **DO's and DON'Ts for Role Names:**
 
@@ -1083,8 +1083,8 @@ npm run db:migrate:status
 The configurable role system has:
 
 - **Setup time**: ~5-10 seconds (one-time)
-- **Type generation**: <1 second
-- **Migration generation**: <1 second
+- **Type generation**: &lt;1 second
+- **Migration generation**: &lt;1 second
 - **Runtime overhead**: **0ms** (roles are static after setup)
 
 ## Security Considerations
