@@ -206,6 +206,7 @@ The project includes a configurable role system for setup-time customization:
 - **Type Generation**: Auto-generates TypeScript types in `src/types/generated-roles.ts`
 - **Migration Generation**: Creates database migrations for PostgreSQL/SQLite
 - **Core Roles**: Three required roles (`member`, `admin`, `super_admin`)
+- **Hierarchical Privilege Escalation**: Higher-level roles automatically inherit lower-level permissions (default behavior, configurable via `useHierarchy` option in role guards)
 - **Setup Command**: `npm run setup:roles` to generate types and migrations
 - **Validation**: Zod schemas ensure safe role definitions
 - **Type Safety**: Full TypeScript support with zero runtime overhead
@@ -227,7 +228,7 @@ git add config/ src/types/ scripts/migrations/
 git commit -m "Configure custom roles"
 ```
 
-See [docs/guide/configurable-roles.md](docs/guide/configurable-roles.md) for complete documentation.
+See [specs/guides/configurable-roles.md](specs/guides/configurable-roles.md) and [specs/guides/role-guard-usage-guide.md](specs/guides/role-guard-usage-guide.md) for complete documentation.
 
 ### Content Collections
 

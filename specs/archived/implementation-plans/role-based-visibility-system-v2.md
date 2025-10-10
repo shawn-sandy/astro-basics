@@ -1,6 +1,16 @@
 # Role-Based Component Visibility System (v2 - Revised)
 
-**Status**: 🟢 Ready for Implementation
+> **⚠️ ARCHIVED**: This implementation plan has been superseded by the implemented role guard system with hierarchical checking.
+>
+> **Current Implementation**: See [src/utils/role-guard.ts](../../src/utils/role-guard.ts)
+>
+> **Documentation**: See [specs/guides/role-guard-usage-guide.md](../guides/role-guard-usage-guide.md) and [specs/guides/configurable-roles.md](../guides/configurable-roles.md)
+>
+> **Archived Date**: 2025-10-10
+>
+> **Reason**: System has been fully implemented with enhanced hierarchical role checking and `useHierarchy` configuration
+
+**Original Status**: 🟢 Ready for Implementation
 **Created**: 2025-10-07
 **Revised**: 2025-10-07
 **Estimated Effort**: 6-8 hours
@@ -1263,12 +1273,10 @@ Layer 4: API Validation (Server-side Enforcement)
 ### Attack Vector Mitigation
 
 1. **Role Spoofing** (Client modifies hasAccess prop)
-
    - ✅ Mitigation: Server never sends protected data to unauthorized clients
    - ✅ Even with tampered props, no sensitive data exposed
 
 2. **Cache Poisoning** (Attacker tries to elevate cached role)
-
    - ✅ Mitigation: Cache keys include userId (isolated per user)
    - ✅ Cache entries are immutable once set
    - ✅ Short TTL limits impact window

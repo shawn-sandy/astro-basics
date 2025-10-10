@@ -1,6 +1,16 @@
 # Role-Based Component Visibility System
 
-**Status**: 🟡 Planning Phase
+> **⚠️ ARCHIVED**: This implementation plan has been superseded by the implemented role guard system.
+>
+> **Current Implementation**: See [src/utils/role-guard.ts](../../src/utils/role-guard.ts)
+>
+> **Documentation**: See [specs/guides/role-guard-usage-guide.md](../guides/role-guard-usage-guide.md) and [specs/guides/configurable-roles.md](../guides/configurable-roles.md)
+>
+> **Archived Date**: 2025-10-10
+>
+> **Reason**: System has been fully implemented with hierarchical role checking support
+
+**Original Status**: 🟡 Planning Phase
 **Created**: 2025-10-07
 **Estimated Effort**: 5-7 hours
 **Implementation Approach**: Hybrid (Option 2 + Option 1)
@@ -297,7 +307,6 @@ export function isValidRole(role: string): role is AnyRole
    ```
 
 2. **Caching Strategy**:
-
    - Use in-memory cache with TTL for Supabase role queries
    - Cache key: `role:${userId}`
    - Invalidate on role changes (webhook)

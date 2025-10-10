@@ -1,11 +1,4 @@
----
-title: Configurable Role System
-description: Complete beginner-friendly guide to configuring custom user roles in astro-basics with templates, validation, and step-by-step instructions.
-sidebar:
-  order: 8
----
-
-import { Card, CardGrid, Code, Tabs, TabItem, Aside } from '@astrojs/starlight/components'
+# Configurable Role System
 
 The astro-basics project includes a powerful setup-time role configuration system that allows you to define custom user roles for your application. This system provides compile-time type safety, zero runtime overhead, and automatic database migration generation.
 
@@ -54,22 +47,16 @@ Level 1: Member       👤 View content
 
 The role system includes **automatic privilege escalation** through hierarchical role checking:
 
-<CardGrid>
-  <Card title="🔓 How It Works" icon="approve-check">
-    When you protect content with a role requirement (e.g., "member only"), users with higher-level
-    roles (admin, super_admin) can **automatically** access it. This is the **default behavior** - you
-    don't need to list every role explicitly.
-  </Card>
-  <Card title="⚙️ Configurable" icon="setting">
-    Set `useHierarchy={false}` in RoleGuard components to disable hierarchy and require exact role
-    matching. Perfect for role-specific features that shouldn't be accessible to higher roles.
-  </Card>
-</CardGrid>
+**How It Works:**
+
+- When you protect content with a role requirement (e.g., "member only"), users with higher-level roles (admin, super_admin) can **automatically** access it
+- This is the **default behavior** - you don't need to list every role explicitly
+- Makes role checking intuitive: admins naturally have all member permissions plus more
 
 **Example:**
 
-```tsx
-// Protect content for members (default: hierarchical)
+```typescript
+// Protect content for members
 <RoleGuard allowedRoles={['member']}>
   <Dashboard />
 </RoleGuard>
@@ -80,44 +67,34 @@ The role system includes **automatic privilege escalation** through hierarchical
 // ✅ super_admin (level 3) - highest level, inherits all access
 ```
 
-<Tabs>
-  <TabItem label="Hierarchical (Default)">
-    ```tsx
-    // Higher roles automatically get access
-    <RoleGuard allowedRoles={['member']}>
-      <MemberContent />
-    </RoleGuard>
-    // member, admin, and super_admin can all access
-    ```
-  </TabItem>
-  <TabItem label="Exact Matching">
-    ```tsx
-    // Only the specified role can access
-    <RoleGuard allowedRoles={['member']} useHierarchy={false}>
-      <MemberOnlyContent />
-    </RoleGuard>
-    // ONLY members can access (admins cannot)
-    ```
-  </TabItem>
-</Tabs>
-
 **When Hierarchy is Used:**
 
 - ✅ **User Roles**: member, admin, super_admin, and any custom user roles
 - ❌ **Organization Roles**: org:admin, org:member (always use exact matching)
 
-<Aside type="tip">
-  **Why This Matters for Custom Roles:** When you configure custom roles (e.g., author, editor,
-  moderator), the hierarchy system ensures that:
-  1. Higher-level roles automatically get lower-level permissions
-  2. You don't need to list every role in every guard
-  3. Adding new roles in the middle of the hierarchy "just works"
-</Aside>
+**Disabling Hierarchy (Exact Matching):**
+
+If you need **exact role matching** (only the specified role can access), disable hierarchy:
+
+```typescript
+// Only members can access (admins cannot)
+<RoleGuard allowedRoles={['member']} useHierarchy={false}>
+  <MemberOnlyContent />
+</RoleGuard>
+```
+
+**Why This Matters for Custom Roles:**
+
+When you configure custom roles (e.g., author, editor, moderator), the hierarchy system ensures that:
+
+1. Higher-level roles automatically get lower-level permissions
+2. You don't need to list every role in every guard
+3. Adding new roles in the middle of the hierarchy "just works"
 
 **Best Practices:**
 
 - Use hierarchical checking (default) for most content access
-- Use exact matching (`useHierarchy={false}`) for role-specific features
+- Use exact matching (`useHierarchy: false`) for role-specific features
 - Design your role levels to reflect real-world authority progression
 
 ### Do I Need Custom Roles?
@@ -152,12 +129,10 @@ Choose the pattern that matches your needs:
 **Every configuration MUST include these three core roles:**
 
 1. **`member`** - Base user role (Level 1)
-
    - Why required: Default role for new users
    - What they can do: Basic access to your app
 
 2. **`admin`** - Administrative role (Level 2+)
-
    - Why required: System administration functions
    - What they can do: Manage users and content
 
@@ -165,9 +140,7 @@ Choose the pattern that matches your needs:
    - Why required: Database security policies
    - What they can do: Everything (no restrictions)
 
-<Aside type="caution">
-  You can add other roles between or after these, but you cannot remove them.
-</Aside>
+**⚠️ Important**: You can add other roles between or after these, but you cannot remove them.
 
 ## Pre-Configuration Checklist
 
@@ -187,10 +160,10 @@ Example for a blog:
 
 ✍️ **Your turn**: List 3-7 user types for your app:
 
-- \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
-- \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
-- \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
-- \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+- ***
+- ***
+- ***
+- ***
 
 ### 2. Define Permissions
 
@@ -455,9 +428,9 @@ export const roleConfig: RoleConfig = {
 
 | Field     | What It Is                       | Rules                                                                                | Example           |
 | --------- | -------------------------------- | ------------------------------------------------------------------------------------ | ----------------- |
-| **name**  | Internal identifier used in code | • All lowercase<br />• No spaces (use `_`)<br />• Start with letter<br />• 2-30 characters | `content_creator` |
-| **level** | Power ranking                    | • Number from 1-10<br />• Must be unique<br />• Higher = more power                      | `3`               |
-| **label** | Display name shown to users      | • Any text<br />• User-friendly<br />• Can have spaces                                   | `Content Creator` |
+| **name**  | Internal identifier used in code | • All lowercase<br>• No spaces (use `_`)<br>• Start with letter<br>• 2-30 characters | `content_creator` |
+| **level** | Power ranking                    | • Number from 1-10<br>• Must be unique<br>• Higher = more power                      | `3`               |
+| **label** | Display name shown to users      | • Any text<br>• User-friendly<br>• Can have spaces                                   | `Content Creator` |
 
 **DO's and DON'Ts for Role Names:**
 
@@ -529,7 +502,6 @@ npm run setup:roles
    ```
 
 3. **Asks Confirmation**: "Do you want to generate types and migrations?"
-
    - Type `Y` and press Enter to continue
    - Type `N` to cancel
 
@@ -590,37 +562,30 @@ git commit -m "Configure custom roles for [your app type]"
 ### Critical (Must Pass)
 
 - [ ] **All role names are lowercase**
-
   - ✓ Good: `member`, `content_creator`, `admin`
   - ✗ Bad: `Member`, `ContentCreator`, `Admin`
 
 - [ ] **No spaces in role names**
-
   - ✓ Good: `content_creator`, `site_admin`
   - ✗ Bad: `content creator`, `site admin`
 
 - [ ] **Role names start with a letter**
-
   - ✓ Good: `moderator`, `level2_user`
   - ✗ Bad: `2nd_moderator`, `1st_tier`
 
 - [ ] **Only letters, numbers, and underscores**
-
   - ✓ Good: `support_agent`, `tier_2`
   - ✗ Bad: `support-agent`, `tier#2`, `admin!`
 
 - [ ] **All three core roles present**
-
   - [ ] `member` exists
   - [ ] `admin` exists
   - [ ] `super_admin` exists
 
 - [ ] **Each role has a unique name**
-
   - [ ] No duplicate names in the list
 
 - [ ] **Each role has a unique level**
-
   - [ ] No two roles have the same level number
 
 - [ ] **Levels are between 1 and 10**
@@ -630,17 +595,14 @@ git commit -m "Configure custom roles for [your app type]"
 ### Important (Recommended)
 
 - [ ] **Levels increase with power**
-
   - [ ] Level 1 = least powerful
   - [ ] Highest level = most powerful
 
 - [ ] **Levels are sequential**
-
   - ✓ Good: 1, 2, 3, 4, 5
   - ⚠️ OK but not ideal: 1, 3, 5, 7, 10
 
 - [ ] **Role labels are user-friendly**
-
   - ✓ Good: "Content Creator", "Administrator"
   - ⚠️ OK: "content_creator", "admin"
 
@@ -652,13 +614,11 @@ git commit -m "Configure custom roles for [your app type]"
 ### Double-Check
 
 - [ ] **Role names match your app's terminology**
-
   - Blog → author, editor
   - Store → vendor, customer
   - School → teacher, student
 
 - [ ] **Permissions make sense**
-
   - Can a "moderator" really have more power than an "author"?
   - Does your hierarchy match real-world expectations?
 
@@ -1071,9 +1031,7 @@ function isValidRole(role: string): role is UserRole {
 
 ### Removing a Role
 
-<Aside type="danger">
-  Removing a role requires careful consideration!
-</Aside>
+**WARNING**: Removing a role requires careful consideration!
 
 1. Ensure no users have the role you're removing
 2. Migrate existing users to a different role
@@ -1153,8 +1111,8 @@ npm run db:migrate:status
 The configurable role system has:
 
 - **Setup time**: ~5-10 seconds (one-time)
-- **Type generation**: &lt;1 second
-- **Migration generation**: &lt;1 second
+- **Type generation**: <1 second
+- **Migration generation**: <1 second
 - **Runtime overhead**: **0ms** (roles are static after setup)
 
 ## Security Considerations
