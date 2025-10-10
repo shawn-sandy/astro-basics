@@ -11,6 +11,8 @@ The **role-based visibility system** provides a unified API for controlling cont
 
 **Version**: 1.0 | **Status**: ✅ Production Ready
 
+**Looking for page-level protection?** See the dedicated [Page-Level Protection Guide](/guide/page-level-protection/) for complete coverage of `requireRole()` with hierarchical privilege escalation.
+
 ## Overview
 
 The role guard system provides:
@@ -223,6 +225,10 @@ canViewContentDetailed(
 ### `requireRole()`
 
 **Page-level protection** - Throws 403 error if user lacks required role.
+
+<Aside type="note">
+  For comprehensive page-level protection documentation, see the dedicated [Page-Level Protection Guide](/guide/page-level-protection/) which covers hierarchical privilege escalation, exact role matching, and security best practices.
+</Aside>
 
 ```typescript
 requireRole(
@@ -568,7 +574,9 @@ Support both Supabase and Clerk roles in same page.
 
 ### 3. Nested Protection
 
-Combine page-level and component-level guards.
+Combine page-level and component-level guards for granular control.
+
+See [Page-Level Protection Guide](/guide/page-level-protection/#pattern-3-nested-protection-page-component) for more examples and security best practices.
 
 ```astro
 ---
