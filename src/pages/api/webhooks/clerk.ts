@@ -161,6 +161,27 @@ export const POST: APIRoute = async ({ request, locals }) => {
           .single()
 
         if (userError) {
+          // Check for duplicate email constraint violation (PostgreSQL error code 23505)
+          // This should rarely occur as Clerk prevents duplicates at auth layer
+          // Defense-in-depth protection via database constraint idx_users_email_unique
+          if (userError.code === '23505' && userError.message?.includes('idx_users_email_unique')) {
+            logger.error('Duplicate email detected during user creation', {
+              userId: id,
+              email: validEmail,
+              clerkId: id,
+              errorCode: userError.code,
+            })
+            await logger.flush()
+            return new Response(
+              JSON.stringify({
+                error: 'Email already exists',
+                message: 'This email address is already registered with another account.',
+              }),
+              { status: 409, headers: { 'Content-Type': 'application/json' } }
+            )
+          }
+
+          // Re-throw other database errors
           logger.error('Failed to sync user', { userId: id, error: userError.message })
           return new Response(`Failed to sync user: ${userError.message}`, { status: 500 })
         }
@@ -223,6 +244,28 @@ export const POST: APIRoute = async ({ request, locals }) => {
         const { error } = await supabase.from('users').update(userData).eq('clerk_id', id)
 
         if (error) {
+          // Check for duplicate email constraint violation (PostgreSQL error code 23505)
+          // This should rarely occur as Clerk prevents duplicates at auth layer
+          // Defense-in-depth protection via database constraint idx_users_email_unique
+          if (error.code === '23505' && error.message?.includes('idx_users_email_unique')) {
+            logger.error('Duplicate email detected during user update', {
+              userId: id,
+              email: validEmail,
+              clerkId: id,
+              errorCode: error.code,
+            })
+            await logger.flush()
+            return new Response(
+              JSON.stringify({
+                error: 'Email already exists',
+                message:
+                  'Cannot update user: This email address is already registered with another account.',
+              }),
+              { status: 409, headers: { 'Content-Type': 'application/json' } }
+            )
+          }
+
+          // Re-throw other database errors
           logger.error('Failed to update user', { userId: id, error: error.message })
           return new Response(`Failed to update user: ${error.message}`, { status: 500 })
         }

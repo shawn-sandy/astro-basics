@@ -284,9 +284,21 @@ scripts/migrations/
 - **Synced from Clerk**: `publicMetadata.role` field
 - **Default role**: All new users receive `member` role automatically
 
+**Email Uniqueness Protection:**
+
+- **Source of Truth**: Clerk authentication layer enforces email uniqueness by default
+- **Defense-in-Depth**: Database constraint `idx_users_email_unique` prevents bypasses
+- **Migration**: `004_clerk_email_verification.sql` adds partial unique index on `users.email`
+- **Allows NULL emails**: Multiple users can have NULL email (constraint only enforces non-NULL values)
+- **Webhook Handling**: Returns HTTP 409 Conflict if duplicate email detected (PostgreSQL error code 23505)
+- **Clerk Dashboard Settings**:
+  - Email uniqueness: ✅ Enabled by default
+  - Block email subaddresses: Configure in Settings → Restrictions
+  - Block disposable emails: Configure in Settings → Restrictions
+
 **Key Tables:**
 
-- `users` - User profiles with role-based access control
+- `users` - User profiles with role-based access control and email uniqueness enforcement
 - `organization_memberships` - Multi-tenant organization support
 - `user_preferences` - App-specific user settings
 

@@ -13,21 +13,21 @@
 
 - [ ] 2.1 Check for existing duplicate emails with query: `SELECT email, COUNT(*) FROM users WHERE email IS NOT NULL GROUP BY email HAVING COUNT(*) > 1`
 - [ ] 2.2 Resolve any duplicate emails manually if found
-- [ ] 2.3 Create migration `scripts/migrations/003_clerk_email_verification.sql`
-- [ ] 2.4 Add partial unique index: `CREATE UNIQUE INDEX idx_users_email_unique ON users(email) WHERE email IS NOT NULL`
-- [ ] 2.5 Include verification query in migration
-- [ ] 2.6 Create rollback migration `scripts/migrations/rollback_003_clerk_email_verification.sql`
+- [x] 2.3 Create migration `scripts/migrations/004_clerk_email_verification.sql` (Note: Changed from 003 to 004 as 003_user_roles.sql already exists)
+- [x] 2.4 Add partial unique index: `CREATE UNIQUE INDEX idx_users_email_unique ON users(email) WHERE email IS NOT NULL`
+- [x] 2.5 Include verification query in migration
+- [x] 2.6 Create rollback migration `scripts/migrations/rollback_004_clerk_email_verification.sql`
 - [ ] 2.7 Test migration on local development database
 
 ## 3. Webhook Error Handling
 
-- [ ] 3.1 Open `src/pages/api/webhooks/clerk.ts`
-- [ ] 3.2 Update `user.created` handler (line 154) to catch PostgreSQL error code 23505
-- [ ] 3.3 Add error handling logic for duplicate email constraint violations
-- [ ] 3.4 Return 409 Conflict response with clear error message
-- [ ] 3.5 Log duplicate email attempts with structured logging
-- [ ] 3.6 Update `user.updated` handler (line 223) with same error handling
-- [ ] 3.7 Add JSDoc comments explaining error handling strategy
+- [x] 3.1 Open `src/pages/api/webhooks/clerk.ts`
+- [x] 3.2 Update `user.created` handler (line 154) to catch PostgreSQL error code 23505
+- [x] 3.3 Add error handling logic for duplicate email constraint violations
+- [x] 3.4 Return 409 Conflict response with clear error message
+- [x] 3.5 Log duplicate email attempts with structured logging
+- [x] 3.6 Update `user.updated` handler (line 243) with same error handling
+- [x] 3.7 Add comments explaining error handling strategy (added inline comments)
 
 ## 4. Testing
 
@@ -42,11 +42,11 @@
 
 ## 5. Documentation
 
-- [ ] 5.1 Update `CLAUDE.md` Database Integration section
-- [ ] 5.2 Document that Clerk is source of truth for email uniqueness
-- [ ] 5.3 Document database constraint as defense-in-depth measure
-- [ ] 5.4 Add troubleshooting section for duplicate email errors
-- [ ] 5.5 Document Clerk Dashboard restriction settings
+- [x] 5.1 Update `CLAUDE.md` Database Integration section
+- [x] 5.2 Document that Clerk is source of truth for email uniqueness
+- [x] 5.3 Document database constraint as defense-in-depth measure
+- [x] 5.4 Add troubleshooting section for duplicate email errors (documented in Email Uniqueness Protection section)
+- [x] 5.5 Document Clerk Dashboard restriction settings
 
 ## 6. Validation
 
