@@ -7,21 +7,25 @@ This directory contains deprecated, outdated, or superseded documentation that i
 Documents are moved to `archived/` when they meet one or more of these criteria:
 
 ### 1. Implementation Complete
+
 - Feature or change has been fully implemented
 - Documented elsewhere in current documentation
 - No longer actively referenced
 
 ### 2. Deprecated Approach
+
 - Technology or method has been replaced
 - No longer recommended or supported
 - Superseded by newer implementation
 
 ### 3. Outdated Information
+
 - Information is no longer accurate
 - Context has changed significantly
 - Replaced by updated documentation
 
 ### 4. Historical Value Only
+
 - Useful for understanding past decisions
 - Provides context for codebase evolution
 - May inform future work but not current practice
@@ -29,6 +33,7 @@ Documents are moved to `archived/` when they meet one or more of these criteria:
 ## When NOT to Archive
 
 Keep documents active if:
+
 - Currently referenced by other documentation
 - Implementation is ongoing or planned
 - Information is still accurate and useful
@@ -46,11 +51,13 @@ archived/
 ### Subdirectories
 
 **comments/**
+
 - Old comment system designs and specifications
 - Previous implementation approaches that were replaced
 - Historical record of comment feature evolution
 
 **implementation-plans/**
+
 - Completed implementation plans that are no longer active
 - Cancelled or superseded approaches
 - Plans that were replaced by newer strategies
@@ -68,6 +75,7 @@ Archived documents are still accessible via Git history and can be referenced wh
 ### Referencing Archived Documents
 
 When referencing archived documents:
+
 - Note the archive date
 - Explain why the information is historical
 - Link to current documentation if available
@@ -106,6 +114,7 @@ If an archived document becomes relevant again:
 ## Questions?
 
 If you're unsure whether a document should be archived:
+
 - Ask in project discussions
 - Check with documentation maintainers
 - Review recent activity and references

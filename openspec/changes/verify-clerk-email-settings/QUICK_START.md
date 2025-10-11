@@ -14,7 +14,7 @@ This guide walks you through configuring Clerk's duplicate email prevention sett
 
 ### Access Dashboard
 
-1. Go to https://dashboard.clerk.com
+1. Go to <https://dashboard.clerk.com>
 2. Select your application
 3. Navigate to: **Settings → Restrictions**
 
@@ -201,4 +201,4 @@ git checkout src/pages/api/webhooks/clerk.ts
 - Full proposal: [proposal.md](proposal.md)
 - Detailed tasks: [tasks.md](tasks.md)
 - Technical specs: [specs/user-sync/spec.md](specs/user-sync/spec.md)
-- Clerk docs: https://clerk.com/docs/guides/secure/restricting-access
+- Clerk docs: <https://clerk.com/docs/guides/secure/restricting-access>

@@ -17,23 +17,23 @@ The system SHALL enforce email address uniqueness at the database level for all 
 
 #### Scenario: Successful user creation with unique email
 
-- **GIVEN** no existing user has email "user@example.com"
-- **WHEN** a new user is created with email "user@example.com"
+- **GIVEN** no existing user has email "<user@example.com>"
+- **WHEN** a new user is created with email "<user@example.com>"
 - **THEN** the user record SHALL be created successfully
 - **AND** the email SHALL be stored in the `users` table
 
 #### Scenario: Duplicate email insert attempt fails
 
-- **GIVEN** a user exists with email "user@example.com"
-- **WHEN** attempting to insert a new user with email "user@example.com"
+- **GIVEN** a user exists with email "<user@example.com>"
+- **WHEN** attempting to insert a new user with email "<user@example.com>"
 - **THEN** the database SHALL reject the insert with error code `23505`
 - **AND** the constraint name in the error SHALL be `idx_users_email_unique`
 
 #### Scenario: Duplicate email update attempt fails
 
-- **GIVEN** user A has email "alice@example.com"
-- **AND** user B has email "bob@example.com"
-- **WHEN** attempting to update user B's email to "alice@example.com"
+- **GIVEN** user A has email "<alice@example.com>"
+- **AND** user B has email "<bob@example.com>"
+- **WHEN** attempting to update user B's email to "<alice@example.com>"
 - **THEN** the database SHALL reject the update with error code `23505`
 
 #### Scenario: Multiple NULL emails are allowed
@@ -46,10 +46,10 @@ The system SHALL enforce email address uniqueness at the database level for all 
 #### Scenario: Updating NULL to non-NULL unique email succeeds
 
 - **GIVEN** user A has email NULL
-- **AND** no user has email "newuser@example.com"
-- **WHEN** updating user A's email to "newuser@example.com"
+- **AND** no user has email "<newuser@example.com>"
+- **WHEN** updating user A's email to "<newuser@example.com>"
 - **THEN** the update SHALL succeed
-- **AND** user A's email SHALL be "newuser@example.com"
+- **AND** user A's email SHALL be "<newuser@example.com>"
 
 ### Requirement: Webhook Duplicate Email Handling
 
@@ -66,25 +66,25 @@ The Clerk webhook handler SHALL gracefully handle email uniqueness constraint vi
 
 #### Scenario: Webhook receives duplicate email for new user
 
-- **GIVEN** a user exists with email "duplicate@example.com"
-- **WHEN** Clerk webhook sends `user.created` event with email "duplicate@example.com" and different clerk_id
+- **GIVEN** a user exists with email "<duplicate@example.com>"
+- **WHEN** Clerk webhook sends `user.created` event with email "<duplicate@example.com>" and different clerk_id
 - **THEN** the webhook handler SHALL catch the unique constraint violation
 - **AND** return HTTP 409 with error message "Email already exists"
 - **AND** log the conflict event with both clerk_ids
 
 #### Scenario: Webhook receives duplicate email for user update
 
-- **GIVEN** user A has email "original@example.com"
-- **AND** user B has email "existing@example.com"
-- **WHEN** Clerk webhook sends `user.updated` event changing user A's email to "existing@example.com"
+- **GIVEN** user A has email "<original@example.com>"
+- **AND** user B has email "<existing@example.com>"
+- **WHEN** Clerk webhook sends `user.updated` event changing user A's email to "<existing@example.com>"
 - **THEN** the webhook handler SHALL catch the unique constraint violation
 - **AND** return HTTP 409 with error message "Email already exists"
-- **AND** user A's email SHALL remain "original@example.com"
+- **AND** user A's email SHALL remain "<original@example.com>"
 
 #### Scenario: Webhook with unique email succeeds normally
 
-- **GIVEN** no user has email "newuser@example.com"
-- **WHEN** Clerk webhook sends `user.created` event with email "newuser@example.com"
+- **GIVEN** no user has email "<newuser@example.com>"
+- **WHEN** Clerk webhook sends `user.created` event with email "<newuser@example.com>"
 - **THEN** the webhook SHALL process successfully
 - **AND** return HTTP 200
 - **AND** create the user record with the email
@@ -113,8 +113,8 @@ The manual user sync endpoint SHALL gracefully handle email uniqueness constrain
 
 #### Scenario: Manual sync with duplicate email fails gracefully
 
-- **GIVEN** a user exists with email "existing@example.com"
-- **AND** authenticated user attempts to sync with email "existing@example.com"
+- **GIVEN** a user exists with email "<existing@example.com>"
+- **AND** authenticated user attempts to sync with email "<existing@example.com>"
 - **WHEN** calling POST /api/user/sync
 - **THEN** the endpoint SHALL return HTTP 409
 - **AND** the response SHALL include error "Email already exists"
@@ -122,8 +122,8 @@ The manual user sync endpoint SHALL gracefully handle email uniqueness constrain
 
 #### Scenario: Manual sync with unique email succeeds
 
-- **GIVEN** no user has email "newuser@example.com"
-- **AND** authenticated user's Clerk profile has email "newuser@example.com"
+- **GIVEN** no user has email "<newuser@example.com>"
+- **AND** authenticated user's Clerk profile has email "<newuser@example.com>"
 - **WHEN** calling POST /api/user/sync
 - **THEN** the endpoint SHALL return HTTP 200
 - **AND** the user record SHALL be created/updated with the email
@@ -199,8 +199,8 @@ The system SHALL provide a safe rollback migration that removes the email unique
 #### Scenario: After rollback, duplicate emails are allowed
 
 - **GIVEN** rollback migration has been executed
-- **AND** a user exists with email "duplicate@example.com"
-- **WHEN** attempting to insert another user with email "duplicate@example.com"
+- **AND** a user exists with email "<duplicate@example.com>"
+- **WHEN** attempting to insert another user with email "<duplicate@example.com>"
 - **THEN** the insert SHALL succeed
 - **AND** two users SHALL exist with the same email
 
@@ -221,12 +221,12 @@ The system SHALL automatically log all duplicate email attempts to a dedicated `
 
 #### Scenario: Duplicate email attempt is logged to audit table
 
-- **GIVEN** a user exists with email "existing@example.com" and clerk_id "clerk_123"
-- **WHEN** attempting to insert a new user with email "existing@example.com" and clerk_id "clerk_456"
+- **GIVEN** a user exists with email "<existing@example.com>" and clerk_id "clerk_123"
+- **WHEN** attempting to insert a new user with email "<existing@example.com>" and clerk_id "clerk_456"
 - **THEN** a record SHALL be inserted into `user_sync_audit` table
 - **AND** the audit record SHALL contain event_type "duplicate_email_attempt"
 - **AND** the audit record SHALL contain clerk_id "clerk_456"
-- **AND** the audit record SHALL contain email "existing@example.com"
+- **AND** the audit record SHALL contain email "<existing@example.com>"
 - **AND** the audit record SHALL contain error_code "23505"
 
 #### Scenario: Audit log captures operation metadata
@@ -248,9 +248,9 @@ The system SHALL automatically log all duplicate email attempts to a dedicated `
 
 #### Scenario: Trigger logs update operations
 
-- **GIVEN** user A has email "alice@example.com"
-- **AND** user B has email "bob@example.com"
-- **WHEN** attempting to UPDATE user B's email to "alice@example.com"
+- **GIVEN** user A has email "<alice@example.com>"
+- **AND** user B has email "<bob@example.com>"
+- **WHEN** attempting to UPDATE user B's email to "<alice@example.com>"
 - **THEN** a record SHALL be inserted into `user_sync_audit`
 - **AND** the metadata SHALL indicate operation "UPDATE"
 

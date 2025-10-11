@@ -5,6 +5,7 @@
 ## What is astro-basics?
 
 A production-ready Astro website with:
+
 - **Server-side rendering** (SSR)
 - **Clerk authentication** with role-based access control
 - **Dual database support** (Turso LibSQL or Supabase PostgreSQL)
@@ -32,6 +33,7 @@ astro-basics/
 ## Essential Information
 
 ### Tech Stack
+
 - **Framework**: Astro 5.x with SSR
 - **Auth**: Clerk (user management, organizations, roles)
 - **Database**: Turso (LibSQL) OR Supabase (PostgreSQL) - your choice
@@ -42,22 +44,26 @@ astro-basics/
 ### Key Concepts
 
 **1. Database Abstraction**
+
 - Switch between Turso and Supabase without code changes
 - Unified API in `src/libs/database.ts`
 - Use `npm run db:wizard` for setup
 
 **2. Role-Based Access Control**
+
 - Three core roles: `member`, `admin`, `super_admin`
 - Configurable role system in `config/roles.config.ts`
 - Hierarchical permission inheritance
 
 **3. Protected Routes**
+
 - `/dashboard/*` - Requires authentication
 - `/forum/*` - Requires authentication
 - `/organization/*` - Requires authentication + organization membership
 - Public routes: `/`, `/posts`, `/docs`, `/content`
 
 **4. Content Collections**
+
 - Three identical collections: `posts`, `docs`, `content`
 - MDX support with remark/rehype plugins
 - Filter by `publish: true` for public content
@@ -83,17 +89,19 @@ npx playwright install
 npm run start
 ```
 
-Visit: http://localhost:4321
+Visit: <http://localhost:4321>
 
 ### 2. Configure Authentication (5 minutes)
 
 **Option A: Use Dummy Keys** (works for browsing, auth will fail)
+
 ```env
 PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_dummy
 CLERK_SECRET_KEY=sk_test_dummy
 ```
 
 **Option B: Get Real Keys** (recommended for development)
+
 1. Create free account at [clerk.com](https://clerk.com)
 2. Create new application
 3. Copy keys to `.env`
@@ -103,6 +111,7 @@ CLERK_SECRET_KEY=sk_test_dummy
 ### 3. Choose Your Database (10 minutes)
 
 **Option A: Turso** (recommended for simplicity)
+
 ```bash
 # Install Turso CLI
 npm run db:wizard
@@ -112,6 +121,7 @@ npm run db:wizard
 ```
 
 **Option B: Supabase** (recommended for PostgreSQL features)
+
 ```bash
 # Create project at supabase.com
 # Copy URL and keys to .env
@@ -125,6 +135,7 @@ npm run db:wizard
 ## Common Commands
 
 ### Development
+
 ```bash
 npm run start          # Dev server + SCSS watcher (recommended)
 npm run dev           # Dev server only (port 4321)
@@ -132,6 +143,7 @@ npm run sass          # SCSS watcher only
 ```
 
 ### Build & Test
+
 ```bash
 npm run build         # Production build
 npm run preview       # Preview production build
@@ -140,6 +152,7 @@ npm run test:e2e      # Run E2E tests
 ```
 
 ### Code Quality
+
 ```bash
 npm run fix:all       # Auto-fix all linting issues
 npm run type-check    # TypeScript type checking
@@ -148,6 +161,7 @@ npm run format        # Prettier formatting
 ```
 
 ### Database
+
 ```bash
 npm run db:wizard     # Interactive setup wizard
 npm run db:status     # Check configuration
@@ -159,23 +173,27 @@ npm run db:switch:supabase # Switch to Supabase
 ## Where to Find Documentation
 
 ### Getting Started
+
 - **Setup Guide**: [01-getting-started/setup-guide.md](./01-getting-started/setup-guide.md)
 - **Auth Guide**: [01-getting-started/authentication-guide.md](./01-getting-started/authentication-guide.md)
 - **Database Setup**: [01-getting-started/database-setup.md](./01-getting-started/database-setup.md)
 - **Linting**: [01-getting-started/linting-guide.md](./01-getting-started/linting-guide.md)
 
 ### How-To Guides
+
 - **All Guides**: [02-guides/](./02-guides/) directory
 - **Role Configuration**: [02-guides/configurable-roles.md](./02-guides/configurable-roles.md)
 - **Database Switching**: [02-guides/database-switching-guide.md](./02-guides/database-switching-guide.md)
 - **Clerk-Supabase Setup**: [02-guides/clerk-supabase-setup.md](./02-guides/clerk-supabase-setup.md)
 
 ### Features & Architecture
+
 - **Comment System**: [03-features/comment-system.md](./03-features/comment-system.md)
 - **Database Schemas**: [05-database/](./05-database/) directory
 - **Integration Docs**: [04-integrations/](./04-integrations/) directory
 
 ### Full Directory Map
+
 See [README.md](./README.md) for complete navigation hub.
 
 ## Project Workflow
@@ -184,16 +202,20 @@ See [README.md](./README.md) for complete navigation hub.
 
 1. **Pick up a task** from GitHub issues or create your own
 2. **Create a branch** from `primary` (main branch)
+
    ```bash
    git checkout -b feat/your-feature-name
    ```
+
 3. **Make changes** and test locally
 4. **Run quality checks** before committing
+
    ```bash
    npm run fix:all    # Auto-fix issues
    npm run type-check # Verify TypeScript
    npm test           # Run tests
    ```
+
 5. **Commit** (pre-commit hooks will run automatically)
 6. **Push and create PR** targeting `primary` branch
 
@@ -217,6 +239,7 @@ npm test -- --watch
 ## Common Issues & Solutions
 
 ### "Module not found" errors
+
 ```bash
 # Clear cache and reinstall
 rm -rf node_modules package-lock.json
@@ -224,6 +247,7 @@ npm install
 ```
 
 ### Playwright tests fail
+
 ```bash
 # Install browsers
 npx playwright install
@@ -233,6 +257,7 @@ npx playwright install chromium
 ```
 
 ### SCSS not compiling
+
 ```bash
 # Make sure SCSS watcher is running
 npm run sass
@@ -242,6 +267,7 @@ npm run start  # Runs dev + sass together
 ```
 
 ### Authentication not working
+
 ```bash
 # Check your .env file has valid Clerk keys
 # Dummy keys allow browsing but auth will fail
@@ -249,6 +275,7 @@ npm run start  # Runs dev + sass together
 ```
 
 ### Database connection fails
+
 ```bash
 # Check database configuration
 npm run db:status
@@ -263,12 +290,14 @@ cat .env | grep -E "(TURSO|SUPABASE)"
 ## Need Help?
 
 ### Documentation Resources
+
 - **This Directory**: [README.md](./README.md) - Full documentation index
 - **Project README**: [../README.md](../README.md) - Overview and quick reference
 - **CLAUDE.md**: [../CLAUDE.md](../CLAUDE.md) - AI assistant instructions
 - **Starlight Docs**: [../docs/](../docs/) - Public-facing documentation
 
 ### Getting Support
+
 1. **Search existing docs** in `project-docs/` directory
 2. **Check troubleshooting guides** in `02-guides/`
 3. **Review GitHub issues** for similar problems

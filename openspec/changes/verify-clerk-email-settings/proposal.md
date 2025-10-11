@@ -96,7 +96,7 @@ This section provides step-by-step instructions for configuring Clerk's email re
 
 ### Prerequisites
 
-- Admin access to your Clerk Dashboard at https://dashboard.clerk.com
+- Admin access to your Clerk Dashboard at <https://dashboard.clerk.com>
 - Your application must be using Clerk for authentication
 - Environment variables `PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` must be configured
 
@@ -105,7 +105,7 @@ This section provides step-by-step instructions for configuring Clerk's email re
 #### Step 1: Access Restrictions Settings
 
 1. **Log into Clerk Dashboard**
-   - Navigate to https://dashboard.clerk.com
+   - Navigate to <https://dashboard.clerk.com>
    - Select your application from the dashboard
 
 2. **Navigate to Restrictions**
@@ -264,7 +264,7 @@ CLERK_WEBHOOK_SECRET=whsec_...  # For webhook verification
 **Note:** Clerk's dashboard UI may change. If these instructions don't match your dashboard:
 
 1. Use the search bar in Clerk Dashboard: Type "restrictions" or "email blocking"
-2. Check Clerk documentation: https://clerk.com/docs/guides/secure/restricting-access
+2. Check Clerk documentation: <https://clerk.com/docs/guides/secure/restricting-access>
 3. Contact Clerk support through the dashboard help icon
 
 ### Next Steps After Configuration
@@ -279,6 +279,6 @@ Once Clerk Dashboard is configured:
 
 ### Related Documentation
 
-- Clerk Restrictions: https://clerk.com/docs/guides/secure/restricting-access
-- Clerk Email Settings: https://clerk.com/docs/guides/configure/auth-strategies/sign-up-sign-in-options
-- Troubleshooting Email Deliverability: https://clerk.com/docs/troubleshooting/email-deliverability
+- Clerk Restrictions: <https://clerk.com/docs/guides/secure/restricting-access>
+- Clerk Email Settings: <https://clerk.com/docs/guides/configure/auth-strategies/sign-up-sign-in-options>
+- Troubleshooting Email Deliverability: <https://clerk.com/docs/troubleshooting/email-deliverability>
