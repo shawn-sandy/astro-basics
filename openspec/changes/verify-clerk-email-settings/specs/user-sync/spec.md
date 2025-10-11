@@ -23,16 +23,16 @@ The system SHALL enforce email address uniqueness at the database level for all 
 
 #### Scenario: Duplicate non-NULL email insert fails
 
-- **GIVEN** a user exists with email "user@example.com"
-- **WHEN** attempting to insert another user with email "user@example.com"
+- **GIVEN** a user exists with email "<user@example.com>"
+- **WHEN** attempting to insert another user with email "<user@example.com>"
 - **THEN** the database SHALL reject the insert with PostgreSQL error code `23505`
 - **AND** the constraint name in the error SHALL be `idx_users_email_unique`
 
 #### Scenario: Duplicate non-NULL email update fails
 
-- **GIVEN** a user A with email "usera@example.com"
-- **AND** a user B with email "userb@example.com"
-- **WHEN** attempting to update user B's email to "usera@example.com"
+- **GIVEN** a user A with email "<usera@example.com>"
+- **AND** a user B with email "<userb@example.com>"
+- **WHEN** attempting to update user B's email to "<usera@example.com>"
 - **THEN** the database SHALL reject the update with error code `23505`
 
 #### Scenario: Multiple NULL emails are allowed
@@ -75,17 +75,17 @@ The Clerk webhook handler SHALL gracefully handle email uniqueness constraint vi
 
 #### Scenario: User creation with duplicate email returns 409
 
-- **GIVEN** a user exists in Supabase with email "user@example.com"
-- **WHEN** webhook receives `user.created` event with same email "user@example.com"
+- **GIVEN** a user exists in Supabase with email "<user@example.com>"
+- **WHEN** webhook receives `user.created` event with same email "<user@example.com>"
 - **THEN** the webhook SHALL return HTTP 409 Conflict
 - **AND** the response body SHALL contain error message "Email already exists"
 - **AND** the error SHALL be logged with level "error"
 
 #### Scenario: User update with duplicate email returns 409
 
-- **GIVEN** user A exists with email "usera@example.com"
-- **AND** user B exists with email "userb@example.com"
-- **WHEN** webhook receives `user.updated` event changing user B's email to "usera@example.com"
+- **GIVEN** user A exists with email "<usera@example.com>"
+- **AND** user B exists with email "<userb@example.com>"
+- **WHEN** webhook receives `user.updated` event changing user B's email to "<usera@example.com>"
 - **THEN** the webhook SHALL return HTTP 409 Conflict
 - **AND** the error SHALL be logged with both Clerk IDs
 

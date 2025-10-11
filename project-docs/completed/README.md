@@ -5,6 +5,7 @@ This directory contains documentation for implementation work that has been succ
 ## Purpose
 
 Unlike `archived/`, which contains deprecated or outdated information, `completed/` holds historical records of successful implementations that:
+
 - Are fully implemented and deployed
 - May still be referenced for understanding the system
 - Provide valuable context for future work
@@ -13,11 +14,13 @@ Unlike `archived/`, which contains deprecated or outdated information, `complete
 ## What Goes Here
 
 ### Implementation Summaries
+
 - Overall implementation completion reports
 - Phase completion summaries
 - Migration completion records
 
 ### Post-Implementation Documentation
+
 - Post-migration checklists
 - Verification reports
 - Resolution documentation for complex issues
@@ -25,6 +28,7 @@ Unlike `archived/`, which contains deprecated or outdated information, `complete
 ### Completion Criteria
 
 Move implementation documents here when:
+
 - ✅ Implementation is 100% complete
 - ✅ All tests are passing
 - ✅ Documentation is updated
@@ -34,27 +38,30 @@ Move implementation documents here when:
 ## Current Contents
 
 ### Implementation Records
+
 - [`implementation-summary.md`](./implementation-summary.md) - Overall implementation summary
 - [`implementation-complete.md`](./implementation-complete.md) - Completion reports
 
 ### Migration Documentation
+
 - [`post-migration-checklist.md`](./post-migration-checklist.md) - Migration verification checklist
 - [`phase-1-verification.md`](./phase-1-verification.md) - Phase 1 completion verification
 - [`phase-2-migration.md`](./phase-2-migration.md) - Phase 2 migration completion
 
 ### Issue Resolutions
+
 - [`role-sync-resolution.md`](./role-sync-resolution.md) - Role synchronization issue resolution
 - [`clerk-user-profile-impl.md`](./clerk-user-profile-impl.md) - User profile implementation completion
 
 ## Difference from Archives
 
-| Aspect | Completed/ | Archived/ |
-|--------|-----------|-----------|
-| **Status** | Successfully implemented | Deprecated/outdated |
-| **Value** | Historical reference, still accurate | Historical context only |
-| **Information** | Current approach | Previous approach |
-| **Use Case** | Understanding how we got here | Why we changed direction |
-| **Accuracy** | Still reflects production | May no longer be accurate |
+| Aspect          | Completed/                           | Archived/                 |
+| --------------- | ------------------------------------ | ------------------------- |
+| **Status**      | Successfully implemented             | Deprecated/outdated       |
+| **Value**       | Historical reference, still accurate | Historical context only   |
+| **Information** | Current approach                     | Previous approach         |
+| **Use Case**    | Understanding how we got here        | Why we changed direction  |
+| **Accuracy**    | Still reflects production            | May no longer be accurate |
 
 ## Using Completed Documentation
 
@@ -116,6 +123,7 @@ Before moving a document to `completed/`:
 ## Retention Policy
 
 Documents in `completed/` are kept indefinitely as they provide valuable institutional knowledge. They may be moved to `archived/` if:
+
 - The feature is entirely removed from the codebase
 - The implementation has been completely replaced
 - The information is no longer relevant to understanding the current system

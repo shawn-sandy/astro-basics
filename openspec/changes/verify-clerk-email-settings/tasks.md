@@ -2,7 +2,7 @@
 
 ## 1. Clerk Dashboard Configuration
 
-- [ ] 1.1 Log into Clerk Dashboard at https://dashboard.clerk.com
+- [ ] 1.1 Log into Clerk Dashboard at <https://dashboard.clerk.com>
 - [ ] 1.2 Navigate to Settings → Restrictions
 - [ ] 1.3 Verify email uniqueness is enforced (should be enabled by default)
 - [ ] 1.4 Enable "Block email subaddresses" to prevent `email+tag@example.com` abuse
