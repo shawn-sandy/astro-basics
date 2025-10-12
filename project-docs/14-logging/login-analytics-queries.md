@@ -25,7 +25,7 @@ This guide provides ready-to-use Axiom Processing Language (APL) queries for ana
 
 ```apl
 ['astro-basics']
-| where message contains "login"
+| where message in ("User login successful", "User login failed", "Admin login attempt", "Login error")
 | where _time > ago(24h)
 | order by _time desc
 | project _time, level, message, userId, source, endpoint, correlationId
