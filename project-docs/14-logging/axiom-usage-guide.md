@@ -396,7 +396,6 @@ export const POST: APIRoute = async ({ locals }) => {
    ```
 
 2. **Check console for Axiom initialization:**
-
    - Should see "✅ Axiom logging initialized" in development
    - Or "⚠️ Axiom not configured" if missing credentials
 
@@ -422,6 +421,101 @@ export const POST: APIRoute = async ({ locals }) => {
 
 - Ensure `src/env.d.ts` includes `correlationId` in `Locals` interface
 - Run `npm run type-check` to verify types
+
+## Authentication & Login Logging
+
+### Multi-Layer Authentication Tracking
+
+The astro-basics project implements a three-layer authentication logging strategy for comprehensive observability:
+
+**Layer 1: Clerk Webhook (Source of Truth)**
+
+```typescript
+// src/pages/api/webhooks/clerk.ts
+case 'session.created': {
+  const loginTimestamp = new Date(evt.data.created_at).toISOString()
+  await logger.info('User login successful', {
+    userId: evt.data.user_id,
+    loginTimestamp,
+    correlationId: ctx.correlationId,
+    source: 'clerk-webhook',
+    eventType: 'session.created',
+  })
+  // ... database sync ...
+}
+```
+
+**Layer 2: Middleware Protected Route Access**
+
+```typescript
+// src/middleware.ts - authMiddleware
+if (isProtectedRoute(context.request)) {
+  await logger.info('User accessing protected route', {
+    userId: locals.userId,
+    role: locals.userRole,
+    orgId: locals.orgId,
+    endpoint: context.url.pathname,
+    method: context.request.method,
+    correlationId: locals.correlationId,
+    routeType: 'protected',
+  })
+}
+```
+
+**Layer 3: Database Activity Tracking**
+
+```typescript
+// src/middleware.ts - updateUserLastSignIn
+logger.debug('Last sign in updated for user', {
+  userId,
+  dbOperation: 'update_last_sign_in',
+  requestDuration: duration,
+})
+```
+
+### Login Analytics Queries
+
+For comprehensive login analytics and monitoring, see [login-analytics-queries.md](./login-analytics-queries.md).
+
+**Quick Login Queries:**
+
+```apl
+# All successful logins (last 7 days)
+['astro-basics']
+| where message == "User login successful"
+| where _time > ago(7d)
+| order by _time desc
+
+# User activity by protected route access
+['astro-basics']
+| where message == "User accessing protected route"
+| where _time > ago(24h)
+| summarize access_count = count() by endpoint, userId
+| order by access_count desc
+
+# Authentication health check
+['astro-basics']
+| where message contains "login" or message contains "auth"
+| where _time > ago(1h)
+| summarize
+    total = count(),
+    successful = countif(message == "User login successful"),
+    failures = countif(level == "error")
+| extend success_rate = round((successful * 100.0) / total, 2)
+```
+
+### Tracing Complete Authentication Flow
+
+```typescript
+// Use correlation ID to trace entire login flow
+const correlationId = locals.correlationId
+
+// Query in Axiom:
+// ['astro-basics']
+// | where correlationId == "YOUR_CORRELATION_ID"
+// | order by _time asc
+// | project _time, message, source, endpoint, userId
+```
 
 ## Advanced Patterns
 

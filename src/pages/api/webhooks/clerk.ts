@@ -448,10 +448,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
           break
         }
 
+        // Log user login event to Axiom for analytics and monitoring
+        const loginTimestamp = new Date(evt.data.created_at).toISOString()
+        await logger.info('User login successful', {
+          userId: evt.data.user_id,
+          loginTimestamp,
+          correlationId: ctx.correlationId,
+          source: 'clerk-webhook',
+          eventType: 'session.created',
+        })
+
         const { error } = await supabase
           .from('users')
           .update({
-            last_sign_in_at: new Date(evt.data.created_at).toISOString(),
+            last_sign_in_at: loginTimestamp,
           })
           .eq('clerk_id', evt.data.user_id)
 
@@ -459,6 +469,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
           logger.warn('Failed to update last sign in', {
             userId: evt.data.user_id,
             error: error.message,
+            correlationId: ctx.correlationId,
+          })
+        } else {
+          logger.debug('Last sign in timestamp updated successfully', {
+            userId: evt.data.user_id,
+            correlationId: ctx.correlationId,
           })
         }
         break
