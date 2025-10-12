@@ -1,17 +1,15 @@
 import { createClient } from '@libsql/client'
 import type { Client, InArgs, ResultSet } from '@libsql/client'
+import { getEnvironmentConfig } from '#utils/env-config'
 
-// Memoized environment configuration
-let cachedEnv: { url: string; authToken: string } | null = null
+// Use environment configuration abstraction
+const envConfig = getEnvironmentConfig()
 
 const getTursoEnv = () => {
-  if (!cachedEnv) {
-    cachedEnv = {
-      url: import.meta.env.TURSO_DATABASE_URL || '',
-      authToken: import.meta.env.TURSO_AUTH_TOKEN || '',
-    }
+  return {
+    url: envConfig.getTursoDatabaseUrl() || '',
+    authToken: envConfig.getTursoAuthToken() || '',
   }
-  return cachedEnv
 }
 
 // Singleton client and error state
@@ -26,8 +24,7 @@ const RETRY_DELAY_MS = 1000
  * Check if Turso database is properly configured with required environment variables
  */
 export function isTursoConfigured(): boolean {
-  const env = getTursoEnv()
-  return Boolean(env.url && env.authToken)
+  return envConfig.isTursoConfigured()
 }
 
 /**

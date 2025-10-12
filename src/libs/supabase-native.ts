@@ -1,15 +1,17 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { getEnvironmentConfig } from '#utils/env-config'
 
 import type { Database } from './database.types'
 
-// Environment variables - no assertion, might be undefined
-const supabaseUrl = import.meta.env.SUPABASE_URL
-const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY
-const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY
+// Use environment configuration abstraction
+const envConfig = getEnvironmentConfig()
+const supabaseUrl = envConfig.getSupabaseUrl()
+const supabaseAnonKey = envConfig.getSupabaseAnonKey()
+const supabaseServiceKey = envConfig.getSupabaseServiceRoleKey()
 
 // Check if Supabase is configured
 export function isSupabaseConfigured(): boolean {
-  return !!(supabaseUrl && supabaseAnonKey)
+  return envConfig.isSupabaseConfigured()
 }
 
 // Lazy-initialized service role client

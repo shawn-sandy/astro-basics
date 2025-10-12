@@ -1,7 +1,10 @@
-// Environment variables - no assertion, might be undefined
-const publicClerkKey = import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY
-const clerkSecretKey = import.meta.env.CLERK_SECRET_KEY
-const clerkWebhookSecret = import.meta.env.CLERK_WEBHOOK_SECRET
+import { getEnvironmentConfig } from './env-config'
+
+// Use environment configuration abstraction
+const envConfig = getEnvironmentConfig()
+const publicClerkKey = envConfig.getClerkPublishableKey()
+const clerkSecretKey = envConfig.getClerkSecretKey()
+const clerkWebhookSecret = envConfig.getClerkWebhookSecret()
 
 /**
  * Configuration status for individual Clerk environment variables
@@ -31,19 +34,14 @@ export type ClerkConfigStatus = {
  * Similar to isSupabaseConfigured() pattern
  */
 export function isClerkConfigured(): boolean {
-  return !!(
-    publicClerkKey &&
-    publicClerkKey !== 'YOUR_CLERK_PUBLISHABLE_KEY' &&
-    clerkSecretKey &&
-    clerkSecretKey !== 'YOUR_CLERK_SECRET_KEY'
-  )
+  return envConfig.isClerkConfigured()
 }
 
 /**
  * Check if Clerk webhook is configured
  */
 export function hasValidClerkWebhook(): boolean {
-  return !!(clerkWebhookSecret && clerkWebhookSecret !== 'YOUR_CLERK_WEBHOOK_SECRET')
+  return !!clerkWebhookSecret
 }
 
 /**
@@ -51,39 +49,29 @@ export function hasValidClerkWebhook(): boolean {
  */
 export function getClerkConfigStatus(): ClerkConfigStatus {
   const publishableKeyExists = !!publicClerkKey
-  const publishableKeyValid =
-    publishableKeyExists && publicClerkKey !== 'YOUR_CLERK_PUBLISHABLE_KEY'
+  const publishableKeyValid = publishableKeyExists
 
   const secretKeyExists = !!clerkSecretKey
-  const secretKeyValid = secretKeyExists && clerkSecretKey !== 'YOUR_CLERK_SECRET_KEY'
+  const secretKeyValid = secretKeyExists
 
   const webhookSecretExists = !!clerkWebhookSecret
-  const webhookSecretValid =
-    webhookSecretExists && clerkWebhookSecret !== 'YOUR_CLERK_WEBHOOK_SECRET'
+  const webhookSecretValid = webhookSecretExists
 
   return {
     publishableKey: {
       exists: publishableKeyExists,
       isValid: publishableKeyValid,
-      value: publishableKeyExists
-        ? publishableKeyValid
-          ? publicClerkKey
-          : 'PLACEHOLDER'
-        : undefined,
+      value: publishableKeyExists ? publicClerkKey : undefined,
     },
     secretKey: {
       exists: secretKeyExists,
       isValid: secretKeyValid,
-      value: secretKeyExists ? (secretKeyValid ? '***REDACTED***' : 'PLACEHOLDER') : undefined,
+      value: secretKeyExists ? '***REDACTED***' : undefined,
     },
     webhookSecret: {
       exists: webhookSecretExists,
       isValid: webhookSecretValid,
-      value: webhookSecretExists
-        ? webhookSecretValid
-          ? '***REDACTED***'
-          : 'PLACEHOLDER'
-        : undefined,
+      value: webhookSecretExists ? '***REDACTED***' : undefined,
     },
     hasBasicConfig: publishableKeyValid && secretKeyValid,
     isFullyConfigured: publishableKeyValid && secretKeyValid && webhookSecretValid,

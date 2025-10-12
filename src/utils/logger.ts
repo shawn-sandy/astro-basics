@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { getEnvironmentConfig } from './env-config'
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
@@ -81,8 +82,9 @@ interface LogEntry {
  * @since 1.0.0
  */
 class Logger {
-  private isDev = import.meta.env.DEV
-  private isProd = import.meta.env.PROD
+  private envConfig = getEnvironmentConfig()
+  private isDev = this.envConfig.isDevelopment()
+  private isProd = this.envConfig.isProduction()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Axiom SDK types not available at compile time due to dynamic import
   private axiom: any | null = null
   private axiomEnabled = false
@@ -103,8 +105,8 @@ class Logger {
    * @private
    */
   private initializeAxiom(): void {
-    const axiomToken = import.meta.env.AXIOM_TOKEN
-    const axiomDataset = import.meta.env.AXIOM_DATASET
+    const axiomToken = this.envConfig.getAxiomToken()
+    const axiomDataset = this.envConfig.getAxiomDataset()
 
     if (!axiomToken || !axiomDataset) {
       if (this.isProd) {
@@ -117,7 +119,7 @@ class Logger {
       // Dynamic import to avoid bundling Axiom in environments that don't need it
       this._axiomInitialization = import('@axiomhq/js')
         .then(({ Axiom }) => {
-          const orgId = import.meta.env.AXIOM_ORG_ID
+          const orgId = this.envConfig.getAxiomOrgId()
           this.axiom = new Axiom({
             token: axiomToken,
             ...(orgId ? { orgId } : {}),
@@ -302,7 +304,7 @@ class Logger {
   private async logToAxiom(level: LogLevel, message: string, context?: LogContext): Promise<void> {
     if (!this.axiom || !this.axiomEnabled) return
 
-    const dataset = import.meta.env.AXIOM_DATASET
+    const dataset = this.envConfig.getAxiomDataset()
     if (!dataset) return
 
     try {

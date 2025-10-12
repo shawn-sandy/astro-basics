@@ -35,6 +35,7 @@ import type {
   MessageData,
   MessageQueryOptions,
 } from './database-types'
+import { getEnvironmentConfig } from '#utils/env-config'
 import { isSupabaseConfigured } from './supabase'
 import { getSupabaseServiceRole } from './supabase-native'
 import {
@@ -343,6 +344,7 @@ class SupabaseDatabase implements Database {
  * @since 1.0.0 - Basic detection, 2.0.0 - Added preference system
  */
 export function detectDatabaseProviders(): ProviderDetectionResult {
+  const envConfig = getEnvironmentConfig()
   const available: string[] = []
   const configured: string[] = []
 
@@ -361,8 +363,8 @@ export function detectDatabaseProviders(): ProviderDetectionResult {
   // Determine recommended provider
   let recommended: DatabaseProvider | null = null
 
-  // Check for explicit provider preference
-  const explicitProvider = import.meta.env.DATABASE_PROVIDER as DatabaseProvider
+  // Check for explicit provider preference using env config abstraction
+  const explicitProvider = envConfig.getDatabaseProvider()
   if (explicitProvider && (explicitProvider === 'turso' || explicitProvider === 'supabase')) {
     if (configured.includes(explicitProvider)) {
       recommended = explicitProvider
