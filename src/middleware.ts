@@ -86,6 +86,9 @@ async function updateUserLastSignIn(userId: string | undefined): Promise<void> {
     return
   }
 
+  // Track database operation performance
+  const startTime = Date.now()
+
   try {
     // Simply update the last_sign_in_at timestamp for existing user
     const { error } = await supabase
@@ -93,16 +96,48 @@ async function updateUserLastSignIn(userId: string | undefined): Promise<void> {
       .update({ last_sign_in_at: new Date().toISOString() })
       .eq('clerk_id', userId)
 
+    const duration = Date.now() - startTime
+
     if (error && error.code !== 'PGRST116') {
       // PGRST116 = not found, which is ok for new users
-      logger.warn('Failed to update last sign in', { userId, error: error.message })
+      logger.warn('Failed to update last sign in', {
+        userId,
+        error: error.message,
+        errorCode: error.code,
+        dbOperation: 'update_last_sign_in',
+        requestDuration: duration,
+      })
     } else if (!error) {
-      logger.debug('Last sign in updated for user', { userId })
+      logger.debug('Last sign in updated for user', {
+        userId,
+        dbOperation: 'update_last_sign_in',
+        requestDuration: duration,
+      })
+
+      // Alert on slow database operations
+      if (duration > 1000) {
+        logger.warn('Slow database operation detected', {
+          userId,
+          dbOperation: 'update_last_sign_in',
+          requestDuration: duration,
+          threshold: 1000,
+        })
+      }
+    } else if (error?.code === 'PGRST116') {
+      // User not found - expected for newly created users before webhook sync completes
+      logger.debug('User not found in database - likely awaiting webhook sync', {
+        userId,
+        errorCode: error.code,
+        requestDuration: duration,
+      })
     }
   } catch (error) {
+    const duration = Date.now() - startTime
     logger.warn('Failed to update user last sign in', {
       userId,
       error: error instanceof Error ? error.message : 'Unknown error',
+      dbOperation: 'update_last_sign_in',
+      requestDuration: duration,
     })
   }
 }
@@ -335,19 +370,34 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
     try {
       const token = await auth().getToken()
       locals.clerkToken = token
-      logger.debug('Auth middleware - User authenticated', {
+
+      // Log authenticated access with route and user context
+      const isProtected = isProtectedRoute(context.request)
+      const logContext = {
         userId: locals.userId ?? undefined,
         role: locals.userRole,
         orgId: locals.orgId,
-      })
+        endpoint: context.url.pathname,
+        method: context.request.method,
+        correlationId: locals.correlationId,
+        routeType: isProtected ? 'protected' : 'public',
+      }
+
+      // Use info level for protected route access (actual application usage)
+      if (isProtected) {
+        await logger.info('User accessing protected route', logContext)
+      } else {
+        await logger.debug('User authenticated on public route', logContext)
+      }
 
       // Update last sign in timestamp (async, don't block request)
       // Only sync on protected routes to avoid unnecessary calls
-      if (isProtectedRoute(context.request)) {
+      if (isProtected) {
         const userId = locals.userId ?? undefined
         updateUserLastSignIn(userId).catch(error => {
           logger.warn('Background user sync failed', {
             userId,
+            correlationId: locals.correlationId,
             error: error instanceof Error ? error.message : 'Unknown error',
           })
         })
@@ -355,6 +405,7 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
     } catch (error) {
       logger.error('Failed to get Clerk token', {
         userId: locals.userId ?? undefined,
+        correlationId: locals.correlationId,
         error: error instanceof Error ? error.message : 'Unknown error',
       })
     }
