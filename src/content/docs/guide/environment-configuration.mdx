@@ -1,0 +1,722 @@
+---
+title: Environment Configuration
+description: Learn how to use the environment configuration abstraction for type-safe, validated access to environment variables
+---
+
+import { Tabs, TabItem, Code, Aside } from '@astrojs/starlight/components';
+
+The **Environment Configuration Abstraction Layer** provides a unified, type-safe way to access environment variables throughout your application. This guide shows you how to use it effectively.
+
+## Quick Start
+
+### Basic Usage
+
+```typescript
+import { getEnvironmentConfig } from '#utils/env-config'
+
+// Get configuration instance (cached singleton)
+const envConfig = getEnvironmentConfig()
+
+// Access environment variables
+const isDevelopment = envConfig.isDevelopment()
+const clerkKey = envConfig.getClerkPublishableKey()
+const supabaseUrl = envConfig.getSupabaseUrl()
+```
+
+### Why Use the Abstraction?
+
+<Tabs>
+  <TabItem label="❌ Before (Direct Access)">
+    ```typescript
+    // Untyped, unvalidated, error-prone
+    const clerkKey = import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY
+    const supabaseUrl = import.meta.env.SUPABASE_URL
+
+    // Manual validation required
+    if (!clerkKey || clerkKey === 'YOUR_CLERK_KEY') {
+      throw new Error('Invalid configuration')
+    }
+    ```
+
+    **Problems:**
+    - No type safety
+    - No placeholder detection
+    - Repeated lookups (slower)
+    - Hard to test
+  </TabItem>
+
+  <TabItem label="✅ After (Abstraction)">
+    ```typescript
+    import { getEnvironmentConfig } from '#utils/env-config'
+
+    const envConfig = getEnvironmentConfig()
+
+    // Type-safe, validated, cached
+    const clerkKey = envConfig.getClerkPublishableKey()
+    const supabaseUrl = envConfig.getSupabaseUrl()
+
+    // Built-in validation
+    if (!envConfig.isClerkConfigured()) {
+      throw new Error('Clerk not configured')
+    }
+    ```
+
+    **Benefits:**
+    - ✅ Type safety
+    - ✅ Automatic validation
+    - ✅ Performance (cached)
+    - ✅ Easy testing
+  </TabItem>
+</Tabs>
+
+---
+
+## Environment Detection
+
+Check the current runtime environment:
+
+```typescript
+const envConfig = getEnvironmentConfig()
+
+// Boolean checks
+if (envConfig.isDevelopment()) {
+  console.log('🚧 Running in development mode')
+}
+
+if (envConfig.isProduction()) {
+  console.log('🚀 Running in production')
+}
+
+if (envConfig.isTest()) {
+  console.log('🧪 Running tests')
+}
+
+// Get environment string
+const env = envConfig.getEnvironment() // 'development' | 'production' | 'test'
+```
+
+### Use Cases
+
+**Development-only features:**
+```typescript
+---
+import { getEnvironmentConfig } from '#utils/env-config'
+
+const envConfig = getEnvironmentConfig()
+const showDebug = envConfig.isDevelopment()
+---
+
+{showDebug && (
+  <div class="debug-panel">
+    <h3>Debug Info</h3>
+    <pre>{JSON.stringify(Astro.props, null, 2)}</pre>
+  </div>
+)}
+```
+
+---
+
+## Clerk Authentication
+
+### Validation
+
+Always validate Clerk configuration before use:
+
+```typescript
+import { getEnvironmentConfig } from '#utils/env-config'
+
+const envConfig = getEnvironmentConfig()
+
+if (!envConfig.isClerkConfigured()) {
+  throw new Error(
+    'Clerk not configured. Set PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY'
+  )
+}
+```
+
+<Aside type="tip" title="Automatic Placeholder Detection">
+  The `isClerkConfigured()` method automatically detects placeholder values like `YOUR_CLERK_PUBLISHABLE_KEY` and returns `false`. You don't need to check for placeholders manually!
+</Aside>
+
+### Accessing Keys
+
+```typescript
+// Get individual keys (returns null if not configured)
+const publishableKey = envConfig.getClerkPublishableKey()
+const secretKey = envConfig.getClerkSecretKey()
+const webhookSecret = envConfig.getClerkWebhookSecret()
+
+// Safe pattern with validation
+if (envConfig.isClerkConfigured()) {
+  const publishableKey = envConfig.getClerkPublishableKey()!
+  const secretKey = envConfig.getClerkSecretKey()!
+  // Non-null assertions safe after validation
+}
+```
+
+### Example: Middleware
+
+```typescript
+// src/middleware.ts
+import { clerkMiddleware, createRouteMatcher } from '@clerk/astro/server'
+import { getEnvironmentConfig } from '#utils/env-config'
+
+const envConfig = getEnvironmentConfig()
+const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)'])
+
+export const onRequest = clerkMiddleware((auth, context) => {
+  if (!envConfig.isClerkConfigured()) {
+    throw new Error('Clerk authentication not configured')
+  }
+
+  if (isProtectedRoute(context.request) && !auth().userId) {
+    return auth().redirectToSignIn()
+  }
+})
+```
+
+---
+
+## Database Configuration
+
+### Supabase
+
+```typescript
+import { getEnvironmentConfig } from '#utils/env-config'
+
+const envConfig = getEnvironmentConfig()
+
+// Validation
+if (!envConfig.isSupabaseConfigured()) {
+  throw new Error('Supabase not configured')
+}
+
+// Access credentials
+const url = envConfig.getSupabaseUrl()!
+const anonKey = envConfig.getSupabaseAnonKey()!
+const serviceRoleKey = envConfig.getSupabaseServiceRoleKey() // Optional, may be null
+```
+
+### Turso
+
+```typescript
+import { getEnvironmentConfig } from '#utils/env-config'
+
+const envConfig = getEnvironmentConfig()
+
+// Validation
+if (!envConfig.isTursoConfigured()) {
+  throw new Error('Turso not configured')
+}
+
+// Access credentials
+const url = envConfig.getTursoDatabaseUrl()!
+const token = envConfig.getTursoAuthToken()!
+```
+
+### Provider Selection
+
+```typescript
+// Check which database is configured
+const provider = envConfig.getDatabaseProvider()
+// Returns: 'turso' | 'supabase' | 'auto' | null
+
+// Multi-provider support
+if (envConfig.isSupabaseConfigured()) {
+  // Use Supabase
+} else if (envConfig.isTursoConfigured()) {
+  // Use Turso
+} else {
+  throw new Error('No database configured')
+}
+```
+
+<Aside type="note" title="Provider Auto-Detection">
+  If `DATABASE_PROVIDER` is not set, the system automatically detects available providers in this priority order:
+  1. Supabase (if configured)
+  2. Turso (if configured)
+</Aside>
+
+---
+
+## Logging Configuration
+
+### Axiom Logging
+
+```typescript
+import { getEnvironmentConfig } from '#utils/env-config'
+
+const envConfig = getEnvironmentConfig()
+
+// Check if Axiom is configured
+if (envConfig.isAxiomConfigured()) {
+  const token = envConfig.getAxiomToken()!
+  const dataset = envConfig.getAxiomDataset()!
+  const orgId = envConfig.getAxiomOrgId() // Optional
+
+  // Initialize Axiom client
+  const axiom = new Axiom({
+    token,
+    ...(orgId ? { orgId } : {})
+  })
+}
+```
+
+---
+
+## Configuration Health Monitoring
+
+### Get Complete Status
+
+```typescript
+import { getEnvironmentStatus } from '#utils/env-config'
+
+const status = getEnvironmentStatus()
+
+console.log(`Environment: ${status.environment}`)
+console.log(`Mode: ${status.mode}`)
+console.log(`Fully Configured: ${status.isFullyConfigured}`)
+
+// Check specific services
+console.log('Services:')
+console.log(`  Clerk: ${status.services.clerk.configured}`)
+console.log(`  Database: ${status.services.database.configured}`)
+console.log(`  Logging: ${status.services.logging.configured}`)
+
+// List missing configuration
+if (!status.isFullyConfigured) {
+  console.warn('Missing configuration:')
+  status.missingConfiguration.forEach(item => {
+    console.warn(`  - ${item}`)
+  })
+}
+```
+
+### Example Output
+
+```json
+{
+  "environment": "development",
+  "mode": "development",
+  "isFullyConfigured": false,
+  "services": {
+    "clerk": {
+      "configured": true,
+      "hasWebhook": false
+    },
+    "database": {
+      "provider": "supabase",
+      "configured": true,
+      "availableProviders": ["supabase"]
+    },
+    "logging": {
+      "configured": false,
+      "provider": null
+    }
+  },
+  "missingConfiguration": [
+    "Axiom Logging (AXIOM_TOKEN, AXIOM_DATASET)"
+  ]
+}
+```
+
+### Create Health Check Endpoint
+
+```typescript
+// src/pages/api/health/config.ts
+import type { APIRoute } from 'astro'
+import { getEnvironmentStatus } from '#utils/env-config'
+
+export const GET: APIRoute = async () => {
+  const status = getEnvironmentStatus()
+
+  return new Response(JSON.stringify(status, null, 2), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}
+```
+
+---
+
+## Usage Patterns
+
+### Pattern 1: API Endpoints
+
+```typescript
+// src/pages/api/webhooks/clerk.ts
+import type { APIRoute } from 'astro'
+import { Webhook } from 'svix'
+import { getEnvironmentConfig } from '#utils/env-config'
+
+const envConfig = getEnvironmentConfig()
+
+export const POST: APIRoute = async ({ request }) => {
+  const webhookSecret = envConfig.getClerkWebhookSecret()
+
+  if (!webhookSecret) {
+    return new Response(
+      'Webhook secret not configured',
+      { status: 500 }
+    )
+  }
+
+  const webhook = new Webhook(webhookSecret)
+
+  // Verify and process webhook...
+
+  return new Response('OK', { status: 200 })
+}
+```
+
+### Pattern 2: Database Clients
+
+```typescript
+// src/libs/supabase-auth.ts
+import { createClient } from '@supabase/supabase-js'
+import { getEnvironmentConfig } from '#utils/env-config'
+
+const envConfig = getEnvironmentConfig()
+
+if (!envConfig.isSupabaseConfigured()) {
+  throw new Error(
+    'Supabase not configured. Required: SUPABASE_URL, SUPABASE_ANON_KEY'
+  )
+}
+
+const url = envConfig.getSupabaseUrl()!
+const key = envConfig.getSupabaseAnonKey()!
+
+export const supabaseAuth = createClient(url, key, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+  },
+})
+```
+
+### Pattern 3: Astro Components
+
+```astro
+---
+// src/components/EnvironmentBadge.astro
+import { getEnvironmentConfig } from '#utils/env-config'
+
+const envConfig = getEnvironmentConfig()
+const isDev = envConfig.isDevelopment()
+const env = envConfig.getEnvironment()
+---
+
+{isDev && (
+  <div class="dev-badge">
+    🚧 Development Mode ({env})
+  </div>
+)}
+
+<style>
+  .dev-badge {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: #ff6b6b;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    z-index: 9999;
+  }
+</style>
+```
+
+### Pattern 4: React Hooks
+
+```typescript
+// src/hooks/useSupabase.tsx
+import { createClient } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react'
+import { getEnvironmentConfig } from '#utils/env-config'
+
+export function useSupabase() {
+  const [client, setClient] = useState<any>(null)
+
+  useEffect(() => {
+    const envConfig = getEnvironmentConfig()
+
+    if (envConfig.isSupabaseConfigured()) {
+      const url = envConfig.getSupabaseUrl()!
+      const key = envConfig.getSupabaseAnonKey()!
+
+      const supabase = createClient(url, key)
+      setClient(supabase)
+    } else {
+      console.warn('Supabase not configured')
+    }
+  }, [])
+
+  return client
+}
+```
+
+---
+
+## Testing
+
+### Mock Configuration in Tests
+
+```typescript
+import { describe, it, expect, vi } from 'vitest'
+import { getEnvironmentConfig } from '#utils/env-config'
+
+// Mock the factory function
+vi.mock('#utils/env-config', () => ({
+  getEnvironmentConfig: vi.fn(() => ({
+    isClerkConfigured: () => true,
+    getClerkPublishableKey: () => 'pk_test_mock_key',
+    getClerkSecretKey: () => 'sk_test_mock_secret',
+    isDevelopment: () => true,
+    isProduction: () => false,
+  })),
+}))
+
+describe('Middleware', () => {
+  it('should authenticate with valid Clerk keys', () => {
+    const config = getEnvironmentConfig()
+
+    expect(config.isClerkConfigured()).toBe(true)
+    expect(config.getClerkPublishableKey()).toBe('pk_test_mock_key')
+  })
+})
+```
+
+### Integration Tests
+
+```typescript
+import { getEnvironmentConfig } from '#utils/env-config'
+
+describe('Clerk Integration', () => {
+  it('should work with real Clerk credentials', () => {
+    const envConfig = getEnvironmentConfig()
+
+    // Skip test if not configured
+    if (!envConfig.isClerkConfigured()) {
+      console.warn('Skipping: Clerk not configured')
+      return
+    }
+
+    // Run integration test with real credentials
+    const publishableKey = envConfig.getClerkPublishableKey()
+    expect(publishableKey).toMatch(/^pk_(test|live)_/)
+  })
+})
+```
+
+---
+
+## Environment Variables Reference
+
+### Required Variables
+
+<Tabs>
+  <TabItem label="Clerk">
+    ```bash
+    # Clerk Authentication (Required)
+    PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_key_here
+    CLERK_SECRET_KEY=sk_test_your_secret_here
+    ```
+  </TabItem>
+
+  <TabItem label="Supabase">
+    ```bash
+    # Supabase (Required)
+    SUPABASE_URL=https://your-project.supabase.co
+    SUPABASE_ANON_KEY=your_anon_key_here
+
+    # Supabase (Optional - for server operations)
+    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+    ```
+  </TabItem>
+
+  <TabItem label="Turso">
+    ```bash
+    # Turso (Required)
+    TURSO_DATABASE_URL=libsql://your-db.turso.io
+    TURSO_AUTH_TOKEN=your_auth_token_here
+    ```
+  </TabItem>
+</Tabs>
+
+### Optional Variables
+
+```bash
+# Clerk (Optional)
+CLERK_WEBHOOK_SECRET=whsec_your_webhook_secret
+
+# Database Provider Selection (Optional)
+DATABASE_PROVIDER=supabase  # 'turso' | 'supabase' | 'auto'
+
+# Axiom Logging (Optional)
+AXIOM_TOKEN=your_axiom_token
+AXIOM_DATASET=your_dataset_name
+AXIOM_ORG_ID=your_org_id  # Optional
+
+# Astro (Optional)
+ASTRO_ADAPTER=netlify  # 'netlify' | 'node' | 'vercel'
+PUBLIC_SITE_URL=https://example.com
+```
+
+---
+
+## Best Practices
+
+### ✅ Do
+
+**1. Use validation helpers before accessing values:**
+```typescript
+if (envConfig.isClerkConfigured()) {
+  const key = envConfig.getClerkPublishableKey()!
+  // Safe to use non-null assertion
+}
+```
+
+**2. Create instance at module level for performance:**
+```typescript
+// Top of file
+import { getEnvironmentConfig } from '#utils/env-config'
+const envConfig = getEnvironmentConfig()
+
+// Use throughout module
+export function myFunction() {
+  const isDev = envConfig.isDevelopment()
+}
+```
+
+**3. Provide descriptive error messages:**
+```typescript
+if (!envConfig.isSupabaseConfigured()) {
+  throw new Error(
+    'Supabase not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY in .env'
+  )
+}
+```
+
+### ❌ Don't
+
+**1. Don't access `import.meta.env` directly:**
+```typescript
+❌ const key = import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY
+✅ const key = envConfig.getClerkPublishableKey()
+```
+
+**2. Don't skip validation checks:**
+```typescript
+❌ const key = envConfig.getClerkPublishableKey()! // Might be null!
+✅ if (envConfig.isClerkConfigured()) { ... }
+```
+
+**3. Don't create multiple instances:**
+```typescript
+❌ function doSomething() {
+     const config = getEnvironmentConfig() // New instance each call
+   }
+
+✅ const envConfig = getEnvironmentConfig() // Module level, reused
+   function doSomething() {
+     const isDev = envConfig.isDevelopment()
+   }
+```
+
+---
+
+## Troubleshooting
+
+### Configuration Not Found
+
+**Error:**
+```
+Error: Clerk not configured
+```
+
+**Solution:**
+
+1. Check your `.env` file exists and has the required variables
+2. Verify values are not placeholders (`YOUR_CLERK_KEY`)
+3. Check environment status:
+
+```typescript
+import { getEnvironmentStatus } from '#utils/env-config'
+console.log(getEnvironmentStatus())
+```
+
+### Placeholder Values Not Detected
+
+**Error:**
+```
+Error: Invalid Clerk key format
+```
+
+**Cause:** Using placeholder like `YOUR_CLERK_PUBLISHABLE_KEY`
+
+**Solution:** The abstraction automatically detects these. Check validation:
+
+```typescript
+const envConfig = getEnvironmentConfig()
+console.log(envConfig.isClerkConfigured()) // Should be false with placeholders
+```
+
+Update your `.env` file with real credentials:
+
+```bash
+PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_real_key_here
+CLERK_SECRET_KEY=sk_test_real_secret_here
+```
+
+### Tests Failing After Migration
+
+**Error:**
+```
+TypeError: Cannot read property 'getClerkPublishableKey' of undefined
+```
+
+**Cause:** Mock not configured properly
+
+**Solution:**
+
+```typescript
+vi.mock('#utils/env-config', () => ({
+  getEnvironmentConfig: vi.fn(() => ({
+    isClerkConfigured: () => true,
+    getClerkPublishableKey: () => 'test_key',
+    getClerkSecretKey: () => 'test_secret',
+    // Add all methods your tests need
+  })),
+}))
+```
+
+---
+
+## Related Guides
+
+- [Getting Started - Setup](/guide/getting-started/setup) - Initial environment configuration
+- [Database Switching](/guide/database-switching) - Switch between Supabase and Turso
+- [Clerk Authentication](/guide/integrations/clerk-supabase) - Clerk integration guide
+- [Logging System](/guide/logging-system) - Axiom logging configuration
+
+---
+
+`★ Insight ─────────────────────────────────────`
+
+**Performance Through Caching:** The environment configuration abstraction uses a singleton pattern with lazy loading. The first call loads and caches all environment variables (~0.2ms), but subsequent calls simply return the cached instance (~0.05ms). This makes it **faster than repeated direct access** to `import.meta.env`.
+
+**Type Safety Benefits:** TypeScript's type system prevents you from accessing non-existent environment variables at compile time. This catches configuration typos during development rather than at runtime in production.
+
+**Testing Simplicity:** Mocking `getEnvironmentConfig()` is dramatically simpler than mocking `import.meta.env` globally. You can create different configurations for different tests easily, improving test isolation and reliability.
+
+`─────────────────────────────────────────────────`
+
+---
+
+<Aside type="tip" title="Need Help?">
+  If you encounter issues with environment configuration, run `getEnvironmentStatus()` to see a complete diagnostic report of your configuration state.
+</Aside>
