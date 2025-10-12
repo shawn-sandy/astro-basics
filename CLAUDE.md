@@ -1,3 +1,251 @@
+# CLAUDE.md
+
+**AI Development Assistant Instructions for astro-basics Project**
+
+This file serves as the entry point for AI assistants working on this codebase. For detailed patterns and validation rules, consult the specialized instruction files below.
+
+---
+
+## 🔴 CRITICAL: Read Before Starting Any Task
+
+### Required Reading (In Order)
+
+1. **[CLAUDE-VALIDATION.md](CLAUDE-VALIDATION.md)** - Pre-flight checks and decision trees (START HERE)
+2. **[CLAUDE-PATTERNS.md](CLAUDE-PATTERNS.md)** - Mandatory patterns you MUST follow
+3. **[CLAUDE-ANTI-PATTERNS.md](CLAUDE-ANTI-PATTERNS.md)** - Common mistakes to avoid
+
+### Quick Decision Guide
+
+**Before implementing anything, ask yourself:**
+
+```
+What am I creating?
+├─ Component?     → See CLAUDE-VALIDATION.md > Component Decision Tree
+├─ API Endpoint?  → See CLAUDE-VALIDATION.md > API Endpoint Decision Tree
+├─ Database Op?   → See CLAUDE-VALIDATION.md > Database Access Decision Tree
+├─ Utility?       → See CLAUDE-VALIDATION.md > Utility Function Decision Tree
+├─ Page/Route?    → See CLAUDE-VALIDATION.md > Page Creation Decision Tree
+└─ Something else? → Read CLAUDE-PATTERNS.md for relevant pattern
+```
+
+---
+
+## Project Overview
+
+**astro-basics** is a content-rich Astro website serving as both a component library and demonstration site. It uses server-side rendering, Clerk authentication, and supports multiple database backends.
+
+### Core Architecture Principles
+
+1. **Server-First Rendering**: Astro SSR with selective client hydration
+2. **Database Abstraction**: Unified interface supporting Supabase and Turso
+3. **Strict Type Safety**: TypeScript strict mode with additional safety rules
+4. **Path Alias Imports**: All internal imports use `#` prefix (MANDATORY)
+5. **Component Segregation**: Clear separation between SSR (Astro) and client (React) components
+
+---
+
+## Repository Structure (Quick Reference)
+
+```
+astro-basics/
+├── src/
+│   ├── components/
+│   │   ├── astro/       # Server-rendered components (.astro)
+│   │   ├── react/       # Client-side components (.tsx)
+│   │   └── dashboard/   # Protected components (auth required)
+│   ├── pages/           # Routes and API endpoints
+│   │   └── api/        # API endpoints (.ts files)
+│   ├── layouts/         # Page layouts
+│   ├── content/         # Content collections (posts, docs, content)
+│   ├── libs/            # Core libraries (database, clients)
+│   ├── utils/           # Utility functions
+│   ├── constants/       # Application constants
+│   ├── types/           # TypeScript type definitions
+│   └── styles/          # SCSS stylesheets
+├── scripts/
+│   └── migrations/      # Database migrations (SQL)
+├── tests/               # Vitest unit tests
+├── e2e/                 # Playwright E2E tests
+├── project-docs/        # Project documentation
+│
+├── CLAUDE.md            # This file (entry point)
+├── CLAUDE-PATTERNS.md   # Mandatory patterns
+├── CLAUDE-ANTI-PATTERNS.md  # Common violations
+└── CLAUDE-VALIDATION.md # Decision trees and checklists
+```
+
+**See detailed structure in:** [CLAUDE.md.backup](CLAUDE.md.backup) (original documentation)
+
+---
+
+## Essential Commands
+
+### Development
+
+```bash
+npm run start          # Dev server + SCSS watcher (recommended)
+npm run dev           # Astro dev server only (port 4321)
+npm run build         # Production build
+```
+
+### Code Quality (Run before commits)
+
+```bash
+npm run fix:all       # Auto-fix all issues (ESLint, StyleLint, Prettier, Markdown)
+npm run type-check    # TypeScript type checking
+```
+
+### Database
+
+```bash
+npm run db:wizard     # Interactive setup wizard (first-time setup)
+npm run db:status     # Check current configuration
+npm run db:manage     # Advanced database management
+```
+
+### Testing
+
+```bash
+npm test              # Run unit tests (Vitest)
+npm run test:e2e      # Run E2E tests (Playwright - requires: npx playwright install)
+```
+
+**For complete command reference:** See [CLAUDE.md.backup](CLAUDE.md.backup)
+
+---
+
+## Critical Stop Points
+
+### 🛑 STOP and consult specialized files when:
+
+1. **Creating ANY component**
+   → Read: [CLAUDE-VALIDATION.md > Component Decision Tree](CLAUDE-VALIDATION.md#component-decision-tree)
+
+2. **Creating ANY API endpoint**
+   → Read: [CLAUDE-VALIDATION.md > API Endpoint Decision Tree](CLAUDE-VALIDATION.md#api-endpoint-decision-tree)
+
+3. **Accessing database**
+   → Read: [CLAUDE-PATTERNS.md > Database Access Patterns](CLAUDE-PATTERNS.md#database-access-patterns)
+
+4. **Unsure about import style**
+   → Read: [CLAUDE-PATTERNS.md > Import Patterns](CLAUDE-PATTERNS.md#import-patterns)
+
+5. **Seeing an anti-pattern in existing code**
+   → Read: [CLAUDE-ANTI-PATTERNS.md](CLAUDE-ANTI-PATTERNS.md)
+
+---
+
+## Non-Negotiable Rules
+
+These rules override ALL other considerations:
+
+### Import Rules
+
+- ✅ **ALWAYS** use `#` path aliases: `import X from '#utils/x'`
+- ❌ **NEVER** use relative imports: `import X from '../utils/x'`
+
+### Database Rules
+
+- ✅ **ALWAYS** use abstraction layer: `import { getDatabase } from '#libs/database'`
+- ❌ **NEVER** access providers directly: `import { createClient } from '@supabase/supabase-js'`
+
+### Security Rules
+
+- ✅ **ALWAYS** check authentication on protected endpoints FIRST
+- ✅ **ALWAYS** validate and sanitize user input
+- ❌ **NEVER** skip authentication checks
+- ❌ **NEVER** process unvalidated input
+
+### Component Rules
+
+- ✅ **ALWAYS** export `type Props` for components
+- ✅ **ALWAYS** place components in correct directory (astro/react/dashboard)
+- ❌ **NEVER** mix component types (React in /astro/ directory)
+
+### Error Handling Rules
+
+- ✅ **ALWAYS** wrap async operations in try-catch
+- ✅ **ALWAYS** return consistent error format: `{ error: string, details?: string }`
+- ❌ **NEVER** allow unhandled errors
+
+**For complete rules:** See [CLAUDE-VALIDATION.md > Architecture Enforcement Rules](CLAUDE-VALIDATION.md#architecture-enforcement-rules)
+
+---
+
+## Quick Pattern Reference
+
+### Component Props Pattern
+
+```typescript
+// ✅ CORRECT
+export type Props = {
+  title: string
+  description: string | undefined // Explicit nullability
+  count?: number // Optional with default
+}
+```
+
+### API Endpoint Pattern
+
+```typescript
+// ✅ CORRECT
+export const POST: APIRoute = async ({ locals, request }) => {
+  // 1. Authentication check FIRST
+  if (!locals.userId) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  try {
+    // 2. Validate input
+    // 3. Database via abstraction layer
+    const db = getDatabase()
+    // 4. Business logic
+    // 5. Return success response
+  } catch (error) {
+    // 6. Consistent error handling
+  }
+}
+```
+
+### Database Access Pattern
+
+```typescript
+// ✅ CORRECT
+import { getDatabase } from '#libs/database'
+import type { MessageQueryOptions } from '#libs/database-types'
+
+const db = getDatabase()
+const messages = await db.getMessages({ limit: 10 })
+```
+
+**For complete patterns:** See [CLAUDE-PATTERNS.md](CLAUDE-PATTERNS.md)
+
+---
+
+## Task Completion Checklist
+
+Before marking ANY task as complete:
+
+- [ ] Read relevant section in CLAUDE-VALIDATION.md
+- [ ] Followed pattern from CLAUDE-PATTERNS.md
+- [ ] Avoided anti-patterns from CLAUDE-ANTI-PATTERNS.md
+- [ ] All imports use `#` path aliases
+- [ ] Components in correct directories
+- [ ] Authentication checks present (if required)
+- [ ] Database accessed via abstraction layer
+- [ ] Error handling implemented
+- [ ] JSDoc comments added
+- [ ] Code tested and working
+
+**Full checklist:** See [CLAUDE-VALIDATION.md > Task Completion Checklist](CLAUDE-VALIDATION.md#task-completion-checklist)
+
+---
+
+## OpenSpec Integration
+
 <!-- OPENSPEC:START -->
 
 # OpenSpec Instructions
@@ -20,604 +268,123 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 <!-- OPENSPEC:END -->
 
-# CLAUDE.md
+---
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Key Features Reference
 
-## Project Overview
+### Authentication & Authorization
 
-**astro-basics-website** is a content-rich Astro website that serves as both a component library and a
-demonstration site. It uses server-side rendering (`output: "server"`), integrates Clerk authentication,
-and supports multiple database backends (Supabase, Turso).
+- **Provider**: Clerk authentication
+- **Protected Routes**: `/dashboard/*`, `/forum/*`, `/organization/*`
+- **Middleware**: `src/middleware.ts` handles route protection
+- **Role System**: Configurable roles via `config/roles.config.ts`
+  - See: [project-docs/02-guides/configurable-roles.md](project-docs/02-guides/configurable-roles.md)
 
-### Repository Structure
+### Database Support
 
-```
-src/
-├── components/          # Reusable components
-│   ├── astro/          # Server-rendered Astro components
-│   ├── react/          # Client-side React components
-│   └── dashboard/      # Protected dashboard components
-├── pages/              # Route pages and API endpoints
-├── content/            # Content collections (posts, docs, content)
-├── layouts/            # Page layouts (Base, Post, etc.)
-├── styles/             # SCSS stylesheets
-│   ├── components/     # Component-specific styles
-│   └── index.scss      # Main stylesheet entry
-├── libs/               # Database clients and utilities
-├── utils/              # Helper functions and configs
-├── constants/          # Application constants
-└── middleware.ts       # Clerk authentication middleware
-
-scripts/                # Database and migration scripts
-e2e/                   # Playwright E2E tests
-tests/                 # Vitest unit tests
-docs/                  # Project documentation
-```
-
-### Key Features
-
-- **Component Library**: Exportable Astro/React components via package.json exports
-- **Content Management**: Three content collections with MDX support
-- **Authentication**: Clerk integration with protected routes
-- **Database Support**: Turso (LibSQL) and Supabase backends
-- **Comment System**: Full-featured polymorphic comment system for posts and docs
-- **PWA Ready**: Service worker and offline support
-- **Testing**: Unit (Vitest) and E2E (Playwright) test suites
-- **Performance**: Lighthouse monitoring, image optimization
-- **Developer Experience**: Hot reload, SCSS watching, comprehensive linting
-
-## Initial Setup
-
-1. **Install dependencies**: `npm install` (takes ~4 minutes, warnings are expected)
-2. **Setup environment**: `cp .env.example .env` and configure keys
-3. **Install pre-commit hooks**: `npm run prepare` (Husky setup)
-4. **Install Playwright browsers** (for E2E tests): `npx playwright install`
-5. **Start development**: `npm run start`
-
-## Essential Commands
-
-### Development
-
-```bash
-npm run start          # Recommended: dev server + SCSS watcher in parallel
-npm run dev           # Astro dev server only (port 4321)
-npm run sass          # Watch and compile SCSS (src/styles/index.scss → index.css)
-```
-
-### Build & Testing
-
-```bash
-npm run build         # Production build (10-15 seconds)
-npm run preview       # Preview production build
-npm test              # Run Vitest unit tests (excludes e2e)
-npm run test:e2e      # Run Playwright e2e tests (requires: npx playwright install)
-npm run test:e2e:report  # Show Playwright test report
-```
-
-### Code Quality (Run before commits)
-
-```bash
-npm run fix:all       # Auto-fix all issues (ESLint, StyleLint, Prettier, Markdown)
-npm run lint:all      # Check all linting without fixes
-npm run type-check    # TypeScript type checking
-npm run lint          # ESLint fix
-npm run lint:check    # ESLint check only
-npm run lint:styles:fix  # StyleLint fix
-npm run format        # Prettier formatting
-```
-
-### Single Test Execution
-
-```bash
-npm test path/to/test.test.ts       # Run specific Vitest test
-npx playwright test path/to/e2e.spec.ts  # Run specific Playwright test
-```
-
-### Database Commands
-
-```bash
-# Database Management
-npm run db:status     # Check current database configuration and status
-npm run db:wizard     # Interactive setup wizard for first-time configuration
-npm run db:manage     # Advanced database management CLI
-
-# Database Switching (with automatic backups)
-npm run db:switch:turso      # Switch to Turso database
-npm run db:switch:supabase   # Switch to Supabase database
-npm run db:backup           # Create configuration backup
-npm run db:restore          # Restore from backup
-
-# Schema and Validation
-npm run db:schema     # Validate database schema compatibility
-
-# Legacy Commands (still available)
-npm run db:setup      # Initialize database
-npm run db:reset      # Reset database
-npm run db:check      # Check database connection
-npm run db:seed:messages  # Seed messages table
-npm run db:migrate    # Run migrations up
-npm run db:migrate:status  # Check migration status
-npm run db:migrate:create  # Create new migration
-npm run db:migrate:rollback  # Rollback migration
-```
-
-### GitHub Integration
-
-```bash
-npm run ticket:validate  # Verify GitHub CLI setup
-npm run ticket:create    # Create GitHub issue (web)
-npm run ticket:list      # List open issues
-npm run ticket:labels    # List available labels
-```
-
-## Architecture
-
-### Component System
-
-The project exports components through `src/components/index.ts`:
-
-- **Astro Components** (`/astro/`): Server-rendered, use `.astro` extension
-- **React Components** (`/react/`): Client-side interactive, use `.tsx` extension
-- **Dashboard Components** (`/dashboard/`): Protected routes requiring authentication
-
-Components are consumed internally via path aliases (`#components/astro/Header.astro`).
-
-### Page Routes
-
-Key routes in the application:
-
-- `/` - Homepage
-- `/posts` - Blog posts listing
-- `/posts/[...slug]` - Individual blog post
-- `/docs` - Documentation listing
-- `/docs/[...slug]` - Individual doc page
-- `/content` - Content collection pages
-- `/dashboard/*` - Protected dashboard (requires auth)
-- `/forum/*` - Protected forum (requires auth)
-- `/organization/*` - Protected organization pages (requires auth)
-- `/api/*` - API endpoints
-
-### API Endpoints
-
-Available API routes:
-
-- `/api/posts` - Get posts collection data
-- `/api/comments` - Full CRUD comment system API
-  - `GET` - Retrieve comments for posts/docs (supports pagination, threading)
-  - `POST` - Create new comments (authentication required)
-  - `PATCH` - Update user's own comments (authentication required)
-  - `DELETE` - Soft delete user's own comments (authentication required)
-- Additional API routes can be added in `src/pages/api/`
-
-### Authentication Flow
-
-Clerk middleware (`src/middleware.ts`) protects routes:
-
-- Protected: `/dashboard/*`, `/forum/*`, `/organization/*`
-- Validation: Checks for `PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` on startup
-- Redirects unauthenticated users to sign-in
-
-### Role Configuration System
-
-The project includes a configurable role system for setup-time customization:
-
-- **Configuration**: Define roles in `config/roles.config.ts`
-- **Type Generation**: Auto-generates TypeScript types in `src/types/generated-roles.ts`
-- **Migration Generation**: Creates database migrations for PostgreSQL/SQLite
-- **Core Roles**: Three required roles (`member`, `admin`, `super_admin`)
-- **Hierarchical Privilege Escalation**: Higher-level roles automatically inherit lower-level permissions (default behavior, configurable via `useHierarchy` option in role guards)
-- **Setup Command**: `npm run setup:roles` to generate types and migrations
-- **Validation**: Zod schemas ensure safe role definitions
-- **Type Safety**: Full TypeScript support with zero runtime overhead
-
-**Quick Setup:**
-
-```bash
-# Edit configuration
-vim config/roles.config.ts
-
-# Generate types and migrations
-npm run setup:roles
-
-# Apply database migration
-npm run db:migrate
-
-# Commit generated files
-git add config/ src/types/ scripts/migrations/
-git commit -m "Configure custom roles"
-```
-
-See [project-docs/02-guides/configurable-roles.md](project-docs/02-guides/configurable-roles.md) and [project-docs/02-guides/role-guard-usage-guide.md](project-docs/02-guides/role-guard-usage-guide.md) for complete documentation.
+- **Providers**: Supabase (PostgreSQL) and Turso (LibSQL)
+- **Abstraction Layer**: `src/libs/database.ts` (MANDATORY to use)
+- **Type Definitions**: `src/libs/database-types.ts`
+- **Switching**: `npm run db:switch:turso` or `npm run db:switch:supabase`
+- **Setup**: `npm run db:wizard`
 
 ### Content Collections
 
-Three collections share identical schema (`src/content/config.ts`):
+- **Collections**: `posts`, `docs`, `content`
+- **Format**: MDX with frontmatter
+- **Schema**: `src/content/config.ts`
+- **Filtering**: Use `publish: true` for public content
 
-- `posts`, `docs`, `content`
-- Key fields: title, pubDate, description, author, tags, featured, publish, youtube
-- Filter by `publish: true` when rendering public content
+### Component Library
 
-### Database Integration
+- **Export**: Components exportable via `package.json` exports
+- **Usage**: Internal via path aliases (`#components/astro/Header.astro`)
+- **Types**: Astro (SSR), React (client), Dashboard (protected)
 
-The project features a **unified database abstraction layer** that enables seamless switching between database providers:
+### Testing
 
-- **Database Abstraction**: `src/libs/database.ts` provides unified interface for all database operations
-- **Provider Auto-Detection**: Automatically detects and uses available database based on configuration
-- **Unified Types**: `src/libs/database-types.ts` ensures consistent data structures across providers
-- **Safe Switching**: Built-in backup/restore system prevents configuration loss during database switching
+- **Unit Tests**: Vitest in `/tests` directory
+- **E2E Tests**: Playwright in `/e2e` directory
+- **Commands**: `npm test` and `npm run test:e2e`
 
-**Supported Providers:**
-
-- **Supabase**: PostgreSQL with real-time features, uses service role for server operations
-- **Turso**: LibSQL with edge distribution and low latency
-
-**Provider Selection Priority:**
-
-1. Explicit choice via `DATABASE_PROVIDER` environment variable
-2. Supabase (if configured)
-3. Turso (if configured)
-4. Error if no providers available
-
-All API endpoints and components automatically adapt to the active database provider without code changes.
-
-#### Supabase Migrations
-
-**Migration Structure (Consolidated - Updated 2025-10-12):**
-
-The project uses a streamlined 2-migration approach for Supabase:
-
-```
-scripts/migrations/
-├── 001_core_schema.sql              # All tables, indexes (including email uniqueness), triggers, functions
-├── 002_security_policies.sql        # Row Level Security policies
-├── 004_clerk_email_verification.sql # DEPRECATED: Email constraint now in 001 (safe for existing installs)
-├── rollback_001_core_schema.sql     # Rollback for migration 001
-├── rollback_002_security_policies.sql  # Rollback for migration 002
-└── archived/                        # Old fragmented migrations (6 files)
-    └── README.md                    # Why migrations were consolidated
-```
-
-**Consolidation Rationale:**
-
-- Email uniqueness constraint moved from migration 004 to 001 (2025-10-12)
-- Reduces setup from 4 migrations to 2 for fresh databases
-- Improves schema comprehension by keeping related constraints together
-- Maintains backward compatibility through idempotent design
-
-**User Role System:**
-
-- **3-tier role hierarchy**: `member` (default) → `admin` → `super_admin`
-- **Stored as ENUM type**: `user_role` in PostgreSQL
-- **Synced from Clerk**: `publicMetadata.role` field
-- **Default role**: All new users receive `member` role automatically
-
-**Email Uniqueness Protection:**
-
-- **Source of Truth**: Clerk authentication layer enforces email uniqueness by default
-- **Defense-in-Depth**: Database constraint `idx_users_email_unique` prevents bypasses
-- **Included in Core Schema**: Email uniqueness constraint is part of `001_core_schema.sql` (as of 2025-10-12)
-- **Allows NULL emails**: Multiple users can have NULL email (constraint only enforces non-NULL values)
-- **Webhook Handling**: Returns HTTP 409 Conflict if duplicate email detected (PostgreSQL error code 23505)
-- **Legacy Migration**: `004_clerk_email_verification.sql` is deprecated for new installations (consolidated into migration 001)
-- **Clerk Dashboard Settings**:
-  - Email uniqueness: ✅ Enabled by default
-  - Block email subaddresses: Configure in Settings → Restrictions
-  - Block disposable emails: Configure in Settings → Restrictions
-
-**Key Tables:**
-
-- `users` - User profiles with role-based access control and email uniqueness enforcement
-- `organization_memberships` - Multi-tenant organization support
-- `user_preferences` - App-specific user settings
-
-**Applying Migrations:**
-
-```bash
-# For fresh databases (recommended as of 2025-10-12)
-# Only 2 migrations required - email constraint included in 001
-npm run db:migrate -- 001_core_schema.sql
-npm run db:migrate -- 002_security_policies.sql
-
-# For existing databases with legacy migrations already applied
-# Migration 004 is safe to keep - idempotent design prevents conflicts
-# See: project-docs/05-database/supabase-migration-refactor-plan.md
-```
-
-**Rolling Back Migrations:**
-
-```bash
-# Rollback security policies first
-npm run db:migrate -- rollback_002_security_policies.sql
-
-# Then rollback core schema (WARNING: Deletes all data!)
-npm run db:migrate -- rollback_001_core_schema.sql
-```
-
-**Migration Best Practices:**
-
-1. **Idempotent design** - All migrations use IF NOT EXISTS/IF EXISTS
-2. **Transaction-wrapped** - Each migration runs in single BEGIN/COMMIT
-3. **Self-verifying** - Built-in verification reports success/failure
-4. **Well-documented** - Extensive COMMENT statements for AI/developer context
-5. **Rollback-ready** - Dedicated rollback scripts for safe downgrades
-
-For detailed migration information, see [project-docs/05-database/supabase-migration-refactor-plan.md](project-docs/05-database/supabase-migration-refactor-plan.md)
-
-### Deployment Adapters
-
-Configured via `ASTRO_ADAPTER` environment variable:
-
-- Default: Netlify (`@astrojs/netlify`)
-- Alternatives: `node` (standalone), `vercel`
-- Logic in `astro.config.mjs` switch statement
-
-## Development Guidelines
-
-### Import Patterns
-
-```typescript
-// Use # alias for internal imports
-import Header from '#components/astro/Header.astro'
-import { SITE_TITLE } from '#utils/site-config'
-
-// Use import type for type-only imports
-import type { APIRoute } from 'astro'
-import type { Props } from './types'
-```
-
-### Component Props Pattern
-
-```typescript
-// Astro components
-export type Props = {
-  title: string
-  description: string | undefined // Prefer explicit over optional
-}
-const { title, description } = Astro.props
-
-// React components - same pattern
-export type Props = {
-  /* ... */
-}
-export function Component({ title }: Props) {
-  /* ... */
-}
-```
-
-## Code Comments
-
-When writing code always follow these guidelines from `.prompts/comments.md` for writing comments that are clear, consistent, and helpful for future maintainers:
-
-### Styling System
-
-- SCSS compilation: `src/styles/index.scss` → compressed CSS
-- Component styles: `src/styles/components/`
-- Use `@use` instead of `@import` in SCSS
-- CSS custom properties for theming
-- @fpkit/acss utility integration
-
-### Testing Structure
-
-- **Unit tests**: `/tests` directory, Vitest config excludes e2e
-- **E2E tests**: `/e2e` directory, Playwright on port 4321
-- CI runs Chromium only, local runs Chrome/Firefox/Safari
+---
 
 ## Environment Configuration
 
-### Required for Development
+### Required Variables
 
 ```env
+# Clerk Authentication (REQUIRED)
 PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
-```
 
-### Database Configuration
+# Database (Choose one or both)
+DATABASE_PROVIDER=turso  # 'turso', 'supabase', or 'auto'
 
-**Choose one or both database providers:**
-
-```env
-# Database Provider Selection (optional - auto-detects if not specified)
-DATABASE_PROVIDER=turso           # 'turso', 'supabase', or 'auto'
-
-# Supabase (PostgreSQL)
+# Supabase
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=eyJ...         # For client-side operations
-SUPABASE_SERVICE_ROLE_KEY=eyJ... # For server-side operations (required)
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
 
-# Turso (LibSQL)
+# Turso
 TURSO_DATABASE_URL=libsql://your-db.turso.io
-TURSO_AUTH_TOKEN=eyJ...          # Authentication token
+TURSO_AUTH_TOKEN=eyJ...
 ```
 
-**Quick Setup:** Run `npm run db:wizard` for guided configuration.
+**Setup Guide**: `cp .env.example .env` or run `npm run db:wizard`
 
-## Branch Structure
+---
 
-- **Main branch**: `primary` (target for PRs)
-- **Feature branches**: `feat/[feature-name]` convention
+## Documentation Reference
 
-## Key Utilities and Libraries
+### For Implementation Details
 
-- `src/utils/site-config.ts`: Site constants, PAGINATION_COUNT=2
-- `src/libs/content.ts`: Slugify, Truncate utilities
-- `src/constants/formErrors.ts`: Form validation messages
-- `src/libs/database.ts`: Unified database abstraction layer with provider auto-detection
-- `src/libs/database-types.ts`: Shared TypeScript interfaces for consistent data structures
-- `src/libs/turso.ts`: Turso database client with retry logic and message operations
-- `src/libs/supabase.ts`: Supabase client initialization
-- `src/utils/comments-availability.ts`: Comment system availability checker
-- `src/utils/sanitize.ts`: Content sanitization utilities with DOMPurify
-- `src/utils/comment-rate-limiter.ts`: Enhanced rate limiting with spam detection
-- `src/types/comments.ts`: TypeScript interfaces for comment system
+- **Getting Started**: [project-docs/01-getting-started/](project-docs/01-getting-started/)
+- **Guides**: [project-docs/02-guides/](project-docs/02-guides/)
+- **Features**: [project-docs/03-features/](project-docs/03-features/)
+- **Integrations**: [project-docs/04-integrations/](project-docs/04-integrations/)
+- **Database**: [project-docs/05-database/](project-docs/05-database/)
 
-## Project-Specific Patterns
+### For Original Documentation
 
-### Comment System Architecture
+- **Full CLAUDE.md**: [CLAUDE.md.backup](CLAUDE.md.backup)
+- **All sections preserved with complete details**
 
-The project includes a comprehensive comment system with:
+---
 
-- **Polymorphic Design**: Supports multiple content types (`post`, `doc`) with single table
-- **Threaded Comments**: Up to 3-level nesting with parent_comment_id references
-- **Security Features**: Rate limiting (5 comments/minute), CSRF protection, content sanitization
-- **Real-time Interactivity**: Server-side rendering with client-side React components
-- **Soft Deletes**: Comments marked as 'archived' rather than hard deleted
-- **Row-Level Security**: Supabase RLS policies for secure data access
-- **Accessibility**: ARIA labels, keyboard navigation, screen reader support
+## Common Scenarios Quick Links
 
-### Turso Database Operations
+| Scenario              | Go To                                                                                                |
+| --------------------- | ---------------------------------------------------------------------------------------------------- |
+| Creating a component  | [CLAUDE-VALIDATION.md > Component Decision Tree](CLAUDE-VALIDATION.md#component-decision-tree)       |
+| Creating API endpoint | [CLAUDE-VALIDATION.md > API Endpoint Decision Tree](CLAUDE-VALIDATION.md#api-endpoint-decision-tree) |
+| Database operation    | [CLAUDE-PATTERNS.md > Database Access Patterns](CLAUDE-PATTERNS.md#database-access-patterns)         |
+| Import question       | [CLAUDE-PATTERNS.md > Import Patterns](CLAUDE-PATTERNS.md#import-patterns)                           |
+| Props typing          | [CLAUDE-PATTERNS.md > Props Typing Patterns](CLAUDE-PATTERNS.md#props-typing-patterns)               |
+| Error handling        | [CLAUDE-PATTERNS.md > Error Handling Patterns](CLAUDE-PATTERNS.md#error-handling-patterns)           |
+| Security concern      | [CLAUDE-PATTERNS.md > Security Patterns](CLAUDE-PATTERNS.md#security-patterns)                       |
+| Fixing a mistake      | [CLAUDE-ANTI-PATTERNS.md](CLAUDE-ANTI-PATTERNS.md)                                                   |
 
-The project includes comprehensive Turso integration with:
+---
 
-- Connection validation and retry logic (3 attempts with exponential backoff)
-- Message CRUD operations (insertMessage, getMessages, markMessageAsRead, archiveMessage)
-- Transaction support via executeTransaction
-- Proper error handling with descriptive messages
+## When In Doubt
 
-### PWA Configuration
+1. **Check the decision tree** in CLAUDE-VALIDATION.md
+2. **Search for the pattern** in CLAUDE-PATTERNS.md
+3. **Look for the anti-pattern** in CLAUDE-ANTI-PATTERNS.md
+4. **Review existing code** for similar implementations
+5. **Ask the user** before deviating from established patterns
 
-Progressive Web App setup with:
+**Remember**: Consistency and adherence to patterns is MORE important than speed. Take time to do it right.
 
-- Service worker auto-update strategy
-- Manifest with Astro Kit branding
-- Workbox integration for offline support
+---
 
-### Integrations
+## File Changelog
 
-Active integrations in `astro.config.mjs`:
+- **2025-01-15**: Refactored into specialized instruction files
+  - Created CLAUDE-PATTERNS.md (mandatory patterns)
+  - Created CLAUDE-ANTI-PATTERNS.md (common violations)
+  - Created CLAUDE-VALIDATION.md (decision trees & checklists)
+  - Streamlined CLAUDE.md as entry point
+  - Original preserved as CLAUDE.md.backup
 
-- Clerk authentication
-- React for interactive components
-- MDX with remark-toc and rehype-accessible-emojis
-- Sitemap generation
-- Astro Image Tools
-- PWA support via @vite-pwa/astro
-- Lighthouse performance monitoring
-
-## Dependency Management
-
-```bash
-npm run npm-update    # Update all dependencies
-npm run npm-update-i  # Interactive dependency updates
-```
-
-## Configuration Files
-
-### Key Config Files
-
-- `astro.config.mjs` - Astro configuration with integrations and adapter setup
-- `tsconfig.json` - TypeScript with strict mode and path aliases
-- `vitest.config.ts` - Unit test configuration (excludes e2e)
-- `playwright.config.ts` - E2E test configuration (port 4321)
-- `.env.example` - Environment variable template
-- `package.json` - Dependencies and scripts, includes package exports
-
-### Linting Configuration
-
-- `.eslintrc.json` - ESLint rules for JS/TS/Astro
-- `.stylelintrc.json` - StyleLint for SCSS/CSS
-- `.prettierrc` - Code formatting rules
-- `.markdownlint.json` - Markdown linting rules
-- `.husky/` - Pre-commit hooks configuration
-- `lint-staged` config in package.json
-
-## Known Considerations
-
-- TypeScript strict mode with additional safety rules (noUncheckedIndexedAccess, exactOptionalPropertyTypes)
-- Pre-commit hooks via Husky and lint-staged
-- Playwright requires browser installation: `npx playwright install`
-- Build warnings for getStaticPaths in dynamic pages are expected
-- Dummy Clerk keys allow building but cause runtime auth errors
-- npm install shows warnings but completes successfully
-- E2E tests require dev server running on port 4321
-
-- always store \*.md docs in /docs organize and place in subdirectories if necessary
-
-## Release Management
-
-This project uses a comprehensive release management system with specialized Claude agents for automation and consistency.
-
-### Release Process
-
-**Standard Process:** Follow the 4-phase release workflow documented in [/project-docs/09-releases/RELEASE-PROCESS.md](project-docs/09-releases/RELEASE-PROCESS.md)
-
-1. **Planning Phase** (T-14 days): Epic creation, team assignment, security planning
-2. **Development Phase** (T-7 days): Feature freeze, security audit, testing
-3. **Preparation Phase** (T-3 days): Version bump, build verification, final testing
-4. **Execution Phase** (Release Day): Deployment, verification, communication
-
-### Release Agent
-
-Use the **astro-basics-release-manager** agent for automated release coordination:
-
-```markdown
-Create a new release for astro-basics project. Current version is X.Y.Z.
-I need you to act as the astro-basics-release-manager agent and guide me through the complete release process.
-
-Please start by analyzing the current state and recommending the appropriate release type.
-```
-
-**Agent Documentation:** `@project-docs/13-agents/release-manager-optimized.md`
-
-### Release Types
-
-- **Major (X.0.0):** Breaking changes, architecture overhauls
-- **Minor (0.X.0):** New features, enhancements (monthly cadence)
-- **Patch (0.0.X):** Bug fixes, security patches (as needed)
-- **Hotfix:** Critical issues requiring immediate deployment
-
-### Mandatory Requirements
-
-**Security First:** Every release MUST include:
-
-- Complete security audit using `/project-docs/09-releases/vX.Y.Z-RELEASE-security-audit-checklist.md`
-- OWASP Top 10 2021 compliance verification
-- Technology-specific security checks (Astro, Clerk, Supabase, Turso)
-- Zero critical/high vulnerabilities before production deployment
-
-**File Naming:** All release documents use version-prefixed naming:
-
-- Epic: `vX.Y.Z-RELEASE-epic.md`
-- Security Audit: `vX.Y.Z-RELEASE-security-audit-checklist.md`
-- Release Notes: `vX.Y.Z-RELEASE-notes.md`
-- Migration Guide: `vX.Y.Z-RELEASE-migration-guide.md` (if applicable)
-
-### GitHub Integration
-
-**Labels:** Use these labels for release issues:
-
-- `epic` - Release coordination issues
-- `security` - Security audit requirements
-- `priority:critical` - Release blocking issues
-- `priority:high` - Security and quality issues
-
-**Issue Creation:** Generate release issues with proper cross-references and blocking relationships
-
-### Quality Gates
-
-Before any production release:
-
-- [ ] Security audit PASS result
-- [ ] Performance benchmarks met (>90 Lighthouse)
-- [ ] Zero critical bugs in testing
-- [ ] All tests passing (unit + E2E)
-- [ ] Documentation complete and accurate
-
-### Release Documentation
-
-- **Process Guide:** [/project-docs/09-releases/RELEASE-PROCESS.md](project-docs/09-releases/RELEASE-PROCESS.md)
-- **Template Generator:** [/project-docs/09-releases/release-template-generator.md](project-docs/09-releases/release-template-generator.md)
-- **Agent Instructions:** [@project-docs/13-agents/release-manager-optimized.md](project-docs/13-agents/release-manager-optimized.md)
-- **Current Releases:** [/project-docs/09-releases/](project-docs/09-releases/) (version-specific files)
-
-### Emergency Releases
-
-For critical security patches:
-
-1. **Assessment** (< 1 hour): Evaluate severity
-2. **Fast-Track Development** (< 4 hours): Minimal fix with essential testing
-3. **Emergency Deployment** (< 6 hours): Direct to production with monitoring
-
-**Rollback:** Automated triggers for authentication failures, data corruption, or performance degradation >50%
-
-- always create guides in docs/guide using the project starlight integration
+**Original documentation preserved in**: [CLAUDE.md.backup](CLAUDE.md.backup)
