@@ -1,14 +1,17 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { getEnvironmentConfig } from '#utils/env-config'
 
-const supabaseUrl = import.meta.env.SUPABASE_URL
-const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY
+// Use environment configuration abstraction
+const envConfig = getEnvironmentConfig()
+const supabaseUrl = envConfig.getSupabaseUrl()
+const supabaseAnonKey = envConfig.getSupabaseAnonKey()
 
 // Create a null-safe Supabase client
 let _supabaseClient: SupabaseClient | null = null
 
 // Check if Supabase is configured
 export function isSupabaseConfigured(): boolean {
-  return !!(supabaseUrl && supabaseAnonKey)
+  return envConfig.isSupabaseConfigured()
 }
 
 // Get Supabase client (lazy initialization)
