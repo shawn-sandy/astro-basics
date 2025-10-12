@@ -1,0 +1,648 @@
+---
+title: Logging System
+description: Production-ready logging with Axiom integration, distributed tracing, and automatic security sanitization.
+sidebar:
+  order: 7
+---
+
+import { Card, CardGrid, Code, Tabs, TabItem, Aside, Steps } from '@astrojs/starlight/components'
+
+The **astro-basics** project includes a sophisticated production-ready logging system that provides structured logging, distributed tracing, performance monitoring, and persistent log storage through Axiom integration.
+
+## Overview
+
+The logging system is designed for modern serverless architectures with automatic security features, dual-mode output (development vs production), and comprehensive observability capabilities.
+
+<CardGrid>
+  <Card title="🔒 Security First" icon="approve-check">
+    Automatic PII redaction and context sanitization prevents sensitive data leakage in logs.
+  </Card>
+  <Card title="📊 Distributed Tracing" icon="random">
+    Correlation IDs track requests across services for end-to-end debugging.
+  </Card>
+  <Card title="⚡ Performance Monitoring" icon="rocket">
+    Built-in request duration tracking with automatic slow request detection.
+  </Card>
+  <Card title="☁️ Axiom Integration" icon="external">
+    Persistent log storage with powerful querying and real-time alerting.
+  </Card>
+</CardGrid>
+
+## Quick Start
+
+### Basic Usage
+
+<Tabs>
+  <TabItem label="Simple Logging">
+    ```typescript
+    import { logger } from '#utils/logger'
+
+    // Info level - general application flow
+    await logger.info('User logged in', { userId: 'user123' })
+
+    // Warning - potential issues
+    await logger.warn('API rate limit approaching', { current: 450, limit: 500 })
+
+    // Error - failures requiring attention
+    await logger.error('Database connection failed', { error: err.message })
+    ```
+  </TabItem>
+
+  <TabItem label="API Routes">
+    ```typescript
+    import type { APIRoute } from 'astro'
+    import { logger } from '#utils/logger'
+
+    export const GET: APIRoute = async ({ locals }) => {
+      const ctx = logger.apiRequest(
+        '/api/users',
+        'GET',
+        locals.userId,
+        locals.correlationId
+      )
+
+      try {
+        const data = await fetchUsers()
+        await logger.apiComplete(ctx, 200)
+        return new Response(JSON.stringify(data))
+      } catch (error) {
+        await logger.error('Failed to fetch users', { ...ctx, error: error.message })
+        return new Response(JSON.stringify({ error: 'Server error' }), { status: 500 })
+      } finally {
+        await logger.flush() // CRITICAL for serverless!
+      }
+    }
+    ```
+  </TabItem>
+
+  <TabItem label="With Context">
+    ```typescript
+    // Include rich context for better debugging
+    await logger.info('Order processed', {
+      orderId: 'order-789',
+      userId: 'user123',
+      total: 99.99,
+      items: 3,
+      correlationId: locals.correlationId
+    })
+
+    // Sensitive data is automatically redacted
+    await logger.info('Payment processed', {
+      userId: 'user123',
+      token: 'secret-token', // Becomes [REDACTED]
+      amount: 49.99
+    })
+    ```
+  </TabItem>
+</Tabs>
+
+## Core Features
+
+### 1. Dual-Mode Logging
+
+The logger automatically adapts its output based on the environment:
+
+<Tabs>
+  <TabItem label="Development">
+    **Human-friendly console output with emojis:**
+    ```
+    ℹ️ [INFO] User authenticated { userId: 'user123', method: 'oauth' }
+    ⚠️ [WARN] Slow request detected { endpoint: '/api/data', duration: 2500 }
+    ❌ [ERROR] Database query failed { error: 'Connection timeout' }
+    ```
+
+    **Benefits:**
+    - Quick visual scanning
+    - Color-coded severity levels
+    - Full context display
+    - Stack traces for errors
+  </TabItem>
+
+  <TabItem label="Production">
+    **Structured JSON for machine parsing:**
+    ```json
+    {
+      "timestamp": "2025-10-11T12:34:56.789Z",
+      "level": "info",
+      "message": "User authenticated",
+      "context": {
+        "userId": "user123",
+        "endpoint": "/api/auth",
+        "method": "POST"
+      }
+    }
+    ```
+
+    **Benefits:**
+    - Log aggregation compatible
+    - Easy parsing by monitoring tools
+    - Consistent format
+    - Filtered output (warn/error only to console)
+  </TabItem>
+</Tabs>
+
+### 2. Security & Sanitization
+
+<Aside type="caution" title="Automatic PII Protection">
+  The logger automatically redacts sensitive fields before logging. However, always follow best practices and avoid logging sensitive data intentionally.
+</Aside>
+
+**Protected Fields:**
+- `token` → `[REDACTED]`
+- `password` → `[REDACTED]`
+- `secret` → `[REDACTED]`
+- `clerkToken` → `[REDACTED]`
+
+**Production Context Filtering:**
+
+In production, only essential debugging fields are retained:
+- `userId` (user correlation)
+- `endpoint` (API tracking)
+- `method` (HTTP method)
+
+All other fields are stripped to minimize data exposure and reduce log size.
+
+### 3. Distributed Tracing
+
+Track requests across your entire stack using correlation IDs:
+
+<Steps>
+  1. **Middleware generates** a unique correlation ID for each request
+  2. **API routes receive** the correlation ID via `locals.correlationId`
+  3. **Service layer propagates** the ID through function calls
+  4. **All logs tagged** with the same correlation ID
+  5. **Query Axiom** to trace the complete request lifecycle
+</Steps>
+
+**Example Flow:**
+
+```typescript
+// Middleware (automatic)
+context.locals.correlationId = logger.createCorrelationId()
+
+// API Route
+const ctx = logger.apiRequest('/api/orders', 'GET', userId, locals.correlationId)
+
+// Service Layer
+async function processOrder(orderId: string, correlationId: string) {
+  await logger.info('Processing order', { orderId, correlationId })
+
+  // Pass to database layer
+  const order = await db.getOrder(orderId, { correlationId })
+
+  // Pass to external services
+  await paymentService.charge(order, { correlationId })
+
+  return order
+}
+
+// Query in Axiom
+['astro-basics']
+| where correlationId == "550e8400-e29b-41d4-a716-446655440000"
+| order by _time asc
+```
+
+### 4. Performance Monitoring
+
+Automatic request timing and slow request detection:
+
+```typescript
+// Start tracking
+const ctx = logger.apiRequest('/api/data', 'GET', userId, correlationId)
+
+// Your business logic
+await processData()
+
+// Automatic duration calculation
+await logger.apiComplete(ctx, 200)
+// Logs: { requestDuration: 1250, endpoint: '/api/data', status: 200 }
+
+// If duration > 2000ms, automatically logs warning:
+// ⚠️ Slow API request detected { requestDuration: 2500, threshold: 2000 }
+```
+
+## API Reference
+
+### Log Levels
+
+<Tabs>
+  <TabItem label="debug()">
+    **Debug-level information** for detailed troubleshooting.
+
+    - **Development:** Shown in console
+    - **Production:** Filtered from console, sent to Axiom
+
+    ```typescript
+    await logger.debug('Processing data', {
+      step: 1,
+      itemCount: 42,
+      correlationId
+    })
+    ```
+  </TabItem>
+
+  <TabItem label="info()">
+    **Informational messages** about normal application flow.
+
+    - **Development:** Shown with ℹ️ icon
+    - **Production:** Filtered from console, sent to Axiom
+
+    ```typescript
+    await logger.info('User logged in', {
+      userId: 'user123',
+      method: 'oauth',
+      correlationId
+    })
+    ```
+  </TabItem>
+
+  <TabItem label="warn()">
+    **Warning conditions** that may require attention.
+
+    - **Development:** Shown with ⚠️ icon
+    - **Production:** Shown in console and sent to Axiom
+
+    ```typescript
+    await logger.warn('API rate limit approaching', {
+      current: 450,
+      limit: 500,
+      correlationId
+    })
+    ```
+  </TabItem>
+
+  <TabItem label="error()">
+    **Error conditions** requiring immediate attention.
+
+    - **Development:** Shown with ❌ icon
+    - **Production:** Shown in console and sent to Axiom
+
+    ```typescript
+    await logger.error('Database query failed', {
+      error: err.message,
+      query: 'SELECT...',
+      correlationId
+    })
+    ```
+  </TabItem>
+</Tabs>
+
+### API Helpers
+
+#### apiRequest()
+
+Creates enriched context for API request tracking with performance monitoring.
+
+**Signature:**
+```typescript
+logger.apiRequest(
+  endpoint: string,
+  method: string,
+  userId?: string,
+  correlationId?: string
+): LogContext & { startTime: number }
+```
+
+**Example:**
+```typescript
+const ctx = logger.apiRequest('/api/posts', 'GET', 'user123', correlationId)
+// Use ctx throughout the request lifecycle
+```
+
+#### apiComplete()
+
+Logs API request completion with automatic duration calculation.
+
+**Signature:**
+```typescript
+logger.apiComplete(
+  requestContext: LogContext & { startTime: number },
+  status: number
+): Promise<void>
+```
+
+**Features:**
+- Calculates request duration automatically
+- Warns if duration exceeds 2000ms (slow request threshold)
+- Logs completion with full context and status code
+
+**Example:**
+```typescript
+const ctx = logger.apiRequest('/api/posts', 'GET', 'user123', correlationId)
+// ... process request ...
+await logger.apiComplete(ctx, 200)
+```
+
+#### flush()
+
+Flushes pending logs to Axiom. **CRITICAL for serverless environments.**
+
+```typescript
+await logger.flush()
+```
+
+<Aside type="danger" title="Critical for Serverless">
+  Serverless functions terminate immediately after sending the response. Without `flush()`, batched logs may never be delivered to Axiom. Always call `flush()` in a `finally` block.
+</Aside>
+
+**Correct Pattern:**
+```typescript
+export const POST: APIRoute = async ({ request, locals }) => {
+  const ctx = logger.apiRequest('/api/endpoint', 'POST', locals.userId, locals.correlationId)
+
+  try {
+    // Business logic
+    await logger.apiComplete(ctx, 200)
+    return response
+  } catch (error) {
+    await logger.error('Request failed', { ...ctx, error: error.message })
+    return errorResponse
+  } finally {
+    await logger.flush() // ALWAYS flush before exit
+  }
+}
+```
+
+## Advanced Patterns
+
+### Error Handling
+
+```typescript
+export const POST: APIRoute = async ({ request, locals }) => {
+  const correlationId = locals.correlationId || logger.createCorrelationId()
+  const ctx = logger.apiRequest('/api/users', 'POST', locals.userId, correlationId)
+
+  try {
+    const body = await request.json()
+
+    // Validation logging
+    if (!body.email) {
+      await logger.warn('Invalid request - missing email', { ...ctx, body })
+      await logger.apiComplete(ctx, 400)
+      await logger.flush()
+      return new Response(JSON.stringify({ error: 'Missing email' }), { status: 400 })
+    }
+
+    // Success path
+    const user = await createUser(body)
+    await logger.info('User created', { ...ctx, userId: user.id })
+    await logger.apiComplete(ctx, 201)
+
+    return new Response(JSON.stringify(user), { status: 201 })
+  } catch (error) {
+    // Error logging with full context
+    await logger.error('User creation failed', {
+      ...ctx,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    })
+    await logger.apiComplete(ctx, 500)
+
+    return new Response(JSON.stringify({ error: 'Server error' }), { status: 500 })
+  } finally {
+    await logger.flush()
+  }
+}
+```
+
+### Nested Operations
+
+```typescript
+async function parentOperation(correlationId: string) {
+  await logger.info('Parent operation started', {
+    correlationId,
+    operation: 'parent'
+  })
+
+  // Pass correlation through call stack
+  const result1 = await childOperation1(correlationId)
+  const result2 = await childOperation2(correlationId)
+
+  await logger.info('Parent operation completed', {
+    correlationId,
+    operation: 'parent',
+    results: [result1, result2]
+  })
+}
+
+async function childOperation1(correlationId: string) {
+  await logger.debug('Child operation 1 started', {
+    correlationId,
+    operation: 'child1'
+  })
+
+  // Work...
+
+  await logger.debug('Child operation 1 completed', {
+    correlationId,
+    operation: 'child1'
+  })
+}
+```
+
+### Cross-Service Integration
+
+```typescript
+// Clerk operation correlation
+const clerkUser = await clerkClient.users.getUser(userId)
+await logger.info('Clerk user fetched', {
+  correlationId,
+  clerkTraceId: clerkUser.metadata?.traceId,
+  userId
+})
+
+// Supabase query correlation
+const { data, error } = await supabase.from('users').select('*')
+await logger.info('Supabase query executed', {
+  correlationId,
+  supabaseQueryId: error?.hint, // If available
+  rows: data?.length
+})
+```
+
+## Axiom Queries
+
+Query your logs in Axiom using APL (Axiom Processing Language):
+
+<Tabs>
+  <TabItem label="Find by Correlation">
+    ```apl
+    ['astro-basics']
+    | where correlationId == "550e8400-e29b-41d4-a716-446655440000"
+    | order by _time asc
+    ```
+  </TabItem>
+
+  <TabItem label="Error Analysis">
+    ```apl
+    ['astro-basics']
+    | where level == "error"
+    | where _time > ago(24h)
+    | summarize count() by endpoint, error
+    | order by count_ desc
+    ```
+  </TabItem>
+
+  <TabItem label="Slow Requests">
+    ```apl
+    ['astro-basics']
+    | where requestDuration > 2000
+    | where _time > ago(1h)
+    | order by requestDuration desc
+    | project _time, endpoint, requestDuration, correlationId
+    ```
+  </TabItem>
+
+  <TabItem label="User Activity">
+    ```apl
+    ['astro-basics']
+    | where userId == "user_2ABC123"
+    | where _time > ago(7d)
+    | order by _time desc
+    ```
+  </TabItem>
+
+  <TabItem label="Performance Stats">
+    ```apl
+    ['astro-basics']
+    | where endpoint != ""
+    | where requestDuration > 0
+    | summarize
+        avg_duration = avg(requestDuration),
+        p95_duration = percentile(requestDuration, 95),
+        request_count = count()
+      by endpoint
+    | order by avg_duration desc
+    ```
+  </TabItem>
+</Tabs>
+
+## Best Practices
+
+### ✅ DO
+
+- **Use correlation IDs** from middleware/locals
+- **Include relevant context** in every log
+- **Always flush** in serverless functions
+- **Use apiRequest/apiComplete** for automatic timing
+- **Log errors with full context** including stack traces
+- **Pass correlation IDs** through service layers
+- **Use appropriate log levels** for better filtering
+
+```typescript
+// ✅ Good
+const correlationId = locals.correlationId
+await logger.info('User action', {
+  userId,
+  action: 'login',
+  correlationId
+})
+await logger.flush()
+```
+
+### ❌ DON'T
+
+- **Don't use console.* directly** - Use logger instead
+- **Don't log sensitive data intentionally** - Even with auto-redaction
+- **Don't forget to flush** in serverless - Logs may be lost
+- **Don't skip correlation IDs** - Can't trace requests
+- **Don't use string interpolation** - Use context objects
+
+```typescript
+// ❌ Bad
+console.log('User logged in') // No correlation, not in Axiom
+await logger.info('Payment', { creditCard: '1234...' }) // Sensitive data
+// return response without flush() ❌ Logs may be lost
+```
+
+## Troubleshooting
+
+### Logs Not Appearing in Axiom
+
+<Steps>
+  1. **Check environment variables:**
+     ```bash
+     echo $AXIOM_TOKEN
+     echo $AXIOM_DATASET
+     ```
+
+  2. **Look for initialization message:**
+     - ✅ "Axiom logging initialized" (success)
+     - ⚠️ "Axiom not configured" (missing credentials)
+
+  3. **Verify flush is called:**
+     ```typescript
+     await logger.flush() // Required in serverless!
+     ```
+
+  4. **Check Axiom dashboard** for ingestion errors
+</Steps>
+
+### Missing Correlation IDs
+
+- Ensure `correlationMiddleware` is in the middleware sequence
+- Verify `src/middleware.ts` generates correlation IDs
+- Check `locals.correlationId` is available in routes
+
+### Performance Issues
+
+- Axiom logging is **fire-and-forget** (non-blocking)
+- Flush typically takes less than 100ms
+- Check Axiom service status if seeing delays
+
+## Configuration
+
+### Environment Variables
+
+```bash
+# Required for Axiom integration
+AXIOM_TOKEN=xaat-your-token-here
+AXIOM_DATASET=astro-basics
+
+# Optional: Organization ID for team accounts
+AXIOM_ORG_ID=your-org-id
+```
+
+### TypeScript Configuration
+
+Ensure `src/env.d.ts` includes:
+
+```typescript
+declare namespace App {
+  interface Locals {
+    correlationId: string
+    userId?: string
+    // ... other locals
+  }
+}
+```
+
+## Related Resources
+
+<CardGrid>
+  <Card title="Axiom Setup" icon="setting">
+    [Complete Axiom configuration guide](/project-docs/14-logging/axiom-setup-guide.md)
+  </Card>
+  <Card title="Architecture Details" icon="document">
+    [Technical implementation reference](/project-docs/14-logging/logger-architecture.md)
+  </Card>
+  <Card title="Usage Examples" icon="open-book">
+    [Comprehensive usage patterns](/project-docs/14-logging/axiom-usage-guide.md)
+  </Card>
+  <Card title="Implementation" icon="puzzle">
+    [Integration implementation details](/project-docs/14-logging/axiom-integration-implementation.md)
+  </Card>
+</CardGrid>
+
+## Summary
+
+The logging system provides:
+
+- 🔒 **Security-first design** with automatic PII redaction
+- 📊 **Distributed tracing** via correlation IDs
+- ⚡ **Performance monitoring** with automatic slow request detection
+- ☁️ **Axiom integration** for persistent, queryable logs
+- 🎯 **Dual-mode output** optimized for development and production
+- 🛡️ **Serverless-ready** with critical flush mechanism
+
+**Key Takeaway:** Always use `logger` instead of `console.*`, include correlation IDs, and flush before exiting serverless functions!
