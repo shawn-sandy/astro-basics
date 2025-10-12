@@ -263,19 +263,27 @@ All API endpoints and components automatically adapt to the active database prov
 
 #### Supabase Migrations
 
-**Migration Structure (Consolidated - Updated 2025-10-06):**
+**Migration Structure (Consolidated - Updated 2025-10-12):**
 
 The project uses a streamlined 2-migration approach for Supabase:
 
 ```
 scripts/migrations/
-├── 001_core_schema.sql              # All tables, indexes, triggers, functions
+├── 001_core_schema.sql              # All tables, indexes (including email uniqueness), triggers, functions
 ├── 002_security_policies.sql        # Row Level Security policies
+├── 004_clerk_email_verification.sql # DEPRECATED: Email constraint now in 001 (safe for existing installs)
 ├── rollback_001_core_schema.sql     # Rollback for migration 001
 ├── rollback_002_security_policies.sql  # Rollback for migration 002
 └── archived/                        # Old fragmented migrations (6 files)
     └── README.md                    # Why migrations were consolidated
 ```
+
+**Consolidation Rationale:**
+
+- Email uniqueness constraint moved from migration 004 to 001 (2025-10-12)
+- Reduces setup from 4 migrations to 2 for fresh databases
+- Improves schema comprehension by keeping related constraints together
+- Maintains backward compatibility through idempotent design
 
 **User Role System:**
 
@@ -288,9 +296,10 @@ scripts/migrations/
 
 - **Source of Truth**: Clerk authentication layer enforces email uniqueness by default
 - **Defense-in-Depth**: Database constraint `idx_users_email_unique` prevents bypasses
-- **Migration**: `004_clerk_email_verification.sql` adds partial unique index on `users.email`
+- **Included in Core Schema**: Email uniqueness constraint is part of `001_core_schema.sql` (as of 2025-10-12)
 - **Allows NULL emails**: Multiple users can have NULL email (constraint only enforces non-NULL values)
 - **Webhook Handling**: Returns HTTP 409 Conflict if duplicate email detected (PostgreSQL error code 23505)
+- **Legacy Migration**: `004_clerk_email_verification.sql` is deprecated for new installations (consolidated into migration 001)
 - **Clerk Dashboard Settings**:
   - Email uniqueness: ✅ Enabled by default
   - Block email subaddresses: Configure in Settings → Restrictions
@@ -305,11 +314,13 @@ scripts/migrations/
 **Applying Migrations:**
 
 ```bash
-# For fresh databases - apply in order
+# For fresh databases (recommended as of 2025-10-12)
+# Only 2 migrations required - email constraint included in 001
 npm run db:migrate -- 001_core_schema.sql
 npm run db:migrate -- 002_security_policies.sql
 
-# For databases with old migrations applied
+# For existing databases with legacy migrations already applied
+# Migration 004 is safe to keep - idempotent design prevents conflicts
 # See: project-docs/05-database/supabase-migration-refactor-plan.md
 ```
 

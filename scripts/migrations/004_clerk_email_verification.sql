@@ -1,12 +1,23 @@
 -- ============================================================================
 -- Migration 004: Clerk Email Uniqueness Protection
 -- ============================================================================
+-- ⚠️  DEPRECATION NOTICE (2025-10-12):
+--     For NEW INSTALLATIONS, this migration is NO LONGER REQUIRED.
+--     Email uniqueness constraint is now included in migration 001_core_schema.sql
+--
+--     For EXISTING INSTALLATIONS that already applied this migration:
+--     This migration remains safe to keep applied. The idempotent design in
+--     migration 001 prevents duplicate constraint creation.
+--
+--     Recommended setup for fresh databases: Run migrations 001 + 002 only
+-- ============================================================================
 -- Purpose: Add database-level email uniqueness constraint as defense-in-depth
 --          Clerk enforces uniqueness at auth layer; this prevents DB bypasses
 -- Created: 2025-10-11
+-- Deprecated: 2025-10-12 (consolidated into migration 001)
 -- Dependencies: Migration 001 (users table exists)
--- OpenSpec: verify-clerk-email-settings
--- Version: 1.0
+-- OpenSpec: verify-clerk-email-settings, consolidate-email-constraint-to-core
+-- Version: 1.1
 -- ============================================================================
 
 BEGIN;

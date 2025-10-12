@@ -100,8 +100,26 @@ CREATE TABLE IF NOT EXISTS user_preferences (
 
 -- Users table indexes
 CREATE INDEX IF NOT EXISTS idx_users_clerk_id ON users(clerk_id);
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+
+-- Email uniqueness constraint (partial unique index)
+-- WHY PARTIAL: Allows multiple NULL email values (users without email)
+-- WHY UNIQUE: Prevents duplicate email addresses at database level (defense-in-depth)
+-- Clerk remains the source of truth; this prevents DB-level bypasses
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_indexes
+        WHERE indexname = 'idx_users_email_unique'
+    ) THEN
+        CREATE UNIQUE INDEX idx_users_email_unique
+        ON users(email)
+        WHERE email IS NOT NULL;
+        RAISE NOTICE 'Created unique index: idx_users_email_unique';
+    ELSE
+        RAISE NOTICE 'Unique index already exists: idx_users_email_unique';
+    END IF;
+END$$;
 
 -- Organization memberships indexes
 CREATE INDEX IF NOT EXISTS idx_org_memberships_user ON organization_memberships(user_id);
@@ -164,6 +182,9 @@ COMMENT ON COLUMN users.role IS
 COMMENT ON COLUMN users.app_metadata IS
     'Application-specific metadata not stored in Clerk';
 
+COMMENT ON COLUMN users.email IS
+    'User email address cached from Clerk. Partial unique index (idx_users_email_unique) enforces uniqueness for non-NULL values as defense-in-depth measure.';
+
 COMMENT ON COLUMN organization_memberships.clerk_org_role IS
     'Clerk organization role: org:admin or org:member';
 
@@ -178,6 +199,7 @@ DO $$
 DECLARE
     v_enum_values TEXT;
     v_table_count INTEGER;
+    v_email_index_exists BOOLEAN;
 BEGIN
     -- Verify ENUM values
     SELECT string_agg(enumlabel, ', ' ORDER BY enumsortorder)
@@ -196,6 +218,17 @@ BEGIN
 
     RAISE NOTICE 'Tables created: % of 3', v_table_count;
 
+    -- Verify email uniqueness constraint exists
+    SELECT EXISTS (
+        SELECT 1 FROM pg_indexes
+        WHERE indexname = 'idx_users_email_unique'
+        AND tablename = 'users'
+    ) INTO v_email_index_exists;
+
+    IF NOT v_email_index_exists THEN
+        RAISE WARNING 'Email uniqueness constraint not found: idx_users_email_unique';
+    END IF;
+
     -- Success message
     IF v_table_count = 3 THEN
         RAISE NOTICE '';
@@ -205,8 +238,9 @@ BEGIN
         RAISE NOTICE '  - users table with 3-tier role system';
         RAISE NOTICE '  - organization_memberships table';
         RAISE NOTICE '  - user_preferences table';
-        RAISE NOTICE '  - 6 indexes for performance';
+        RAISE NOTICE '  - 7 indexes for performance (including email uniqueness)';
         RAISE NOTICE '  - 3 triggers for updated_at automation';
+        RAISE NOTICE '  - Email uniqueness constraint active (defense-in-depth)';
         RAISE NOTICE '========================================';
     ELSE
         RAISE WARNING 'Expected 3 tables but found %', v_table_count;
