@@ -35,6 +35,7 @@ export default defineConfig({
         {
           label: 'Features',
           items: [
+            { label: 'Environment Configuration', link: '/guide/environment-configuration' },
             { label: 'Database Switching', link: '/guide/database-switching' },
             { label: 'Database Troubleshooting', link: '/guide/database-troubleshooting' },
             { label: 'Logging System', link: '/guide/logging-system' },
