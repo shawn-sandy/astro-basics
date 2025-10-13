@@ -84,7 +84,6 @@ Implement a setup-time role configuration system with automated type generation 
 **Changes Summary**:
 
 1. **New Files Created**:
-
    - `config/roles.config.ts` - Role configuration (developer-maintained)
    - `src/types/generated-roles.ts` - Auto-generated types (do not edit manually)
    - `scripts/setup-roles.ts` - Interactive setup wizard
@@ -92,7 +91,6 @@ Implement a setup-time role configuration system with automated type generation 
    - `scripts/lib/role-validator.ts` - Configuration validation with Zod
 
 2. **Modified Files**:
-
    - `src/utils/role-types.ts` - Re-export generated types for backward compatibility
    - `package.json` - Add `setup:roles` script command
 
