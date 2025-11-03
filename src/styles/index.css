@@ -31,12 +31,14 @@
   --color-info: #3b82f6;
   --color-info-light: #dbeafe;
   --color-info-dark: #1d4ed8;
-  --font-family-sans: ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, 'Segoe UI',
-    roboto, 'Helvetica Neue', arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+  --font-family-sans:
+    ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, 'Segoe UI', roboto,
+    'Helvetica Neue', arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
   --font-family-serif: ui-serif, georgia, cambria, 'Times New Roman', times, serif;
-  --font-family-mono: ui-monospace, sfmono-regular, 'SF Mono', menlo, monaco, consolas,
-    'Liberation Mono', 'Courier New', monospace;
+  --font-family-mono:
+    ui-monospace, sfmono-regular, 'SF Mono', menlo, monaco, consolas, 'Liberation Mono',
+    'Courier New', monospace;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -219,6 +221,9 @@ body > section {
 }
 body > nav {
   min-height: 4rem;
+}
+body > nav > ul {
+  margin-block-end: 0;
 }
 main {
   margin: auto;
