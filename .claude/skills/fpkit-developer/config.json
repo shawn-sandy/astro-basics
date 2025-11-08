@@ -1,0 +1,15 @@
+{
+  "docsSource": "local",
+  "onlineDocsUrl": "https://raw.githubusercontent.com/shawn-sandy/acss/main/packages/fpkit/docs/guides",
+  "localDocsPath": "./references",
+  "fpkitDocsPath": "../../../packages/fpkit/docs/guides",
+  "availableGuides": [
+    "css-variables.md",
+    "composition.md",
+    "accessibility.md",
+    "architecture.md",
+    "testing.md",
+    "storybook.md"
+  ],
+  "version": "1.0.0"
+}

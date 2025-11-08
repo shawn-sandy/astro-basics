@@ -110,7 +110,57 @@ npm test              # Run unit tests (Vitest)
 npm run test:e2e      # Run E2E tests (Playwright - requires: npx playwright install)
 ```
 
+### Styling (SCSS)
+
+```bash
+npm run sass          # Watch and compile SCSS to CSS
+npm run lint:styles   # Check SCSS for style violations
+npm run lint:styles:fix  # Auto-fix SCSS style issues
+```
+
 **For complete command reference:** See [CLAUDE.md.backup](CLAUDE.md.backup)
+
+---
+
+## Development Tools & Assistants
+
+### Slash Commands
+
+Project-specific slash commands to streamline common tasks:
+
+```bash
+/code-reviewer                     # Comprehensive code review (quality, accessibility, performance)
+/refactor-css <file-or-directory> # Convert utility classes to semantic, reusable classes
+/ai-comments                       # Generate intelligent JSDoc comments for TypeScript/JavaScript
+/github-issue [type] [title]      # Create formatted GitHub issue with intelligent analysis
+/github-feature [name] [desc]     # Create feature request with user stories and acceptance criteria
+/github-bug [component] [desc]    # Create detailed bug report with reproduction steps
+/openspec:proposal                 # Scaffold new OpenSpec change proposal
+/openspec:apply                    # Implement approved OpenSpec change
+/openspec:archive                  # Archive deployed OpenSpec change
+/optimize-agents [agent-type]     # Optimize sub-agent implementations
+```
+
+**Usage Notes:**
+
+- Use `/code-reviewer` **proactively** after implementing features or making significant changes
+- Use `/openspec:*` commands for architectural changes, breaking changes, or new capabilities
+- Use `/ai-comments` for adding comprehensive JSDoc to TypeScript/JavaScript files
+
+### Claude Skills
+
+Specialized assistants available for this project:
+
+- **wcag-compliance-reviewer** - Review HTML/CSS and React/TypeScript for WCAG 2.1 Level AA compliance
+- **fpkit-developer** - Build applications with @fpkit/acss components
+- **skill-creator** - Create custom skills for project-specific workflows
+- **skill-packager** - Package skills into versioned distributable ZIP files
+
+**When to Use Skills:**
+
+- After creating UI components → Use `wcag-compliance-reviewer` for accessibility audit
+- When building with @fpkit/acss → Use `fpkit-developer` for component patterns
+- For custom workflows → Use `skill-creator` to build reusable assistants
 
 ---
 
