@@ -366,6 +366,22 @@ States represent interactive or conditional component appearances.
 --btn-disabled-cursor: not-allowed;
 ```
 
+**Note on Disabled State**: fpkit Button uses `aria-disabled` pattern and automatically applies `.is-disabled` className. Style disabled buttons using this class or the disabled-specific CSS variables:
+
+```css
+/* Using CSS variables */
+.my-button {
+  --btn-disabled-opacity: 0.5;
+  --btn-disabled-cursor: not-allowed;
+}
+
+/* Or target the .is-disabled class */
+.my-button.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+```
+
 ---
 
 ## Best Practices

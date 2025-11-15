@@ -240,6 +240,59 @@ describe('User Interactions', () => {
 })
 ```
 
+### Testing Disabled State (aria-disabled Pattern)
+
+fpkit Button uses `aria-disabled` instead of native `disabled`. Test both the attribute and prevented interactions:
+
+```typescript
+describe('Disabled Button', () => {
+  it('has aria-disabled attribute when disabled', () => {
+    render(<Button disabled>Click me</Button>)
+
+    const button = screen.getByRole('button')
+    expect(button).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('prevents onClick when disabled', async () => {
+    const handleClick = vi.fn()
+    render(<Button disabled onClick={handleClick}>Click me</Button>)
+
+    const button = screen.getByRole('button')
+    await userEvent.click(button)
+
+    // fpkit's useDisabledState hook prevents the click
+    expect(handleClick).not.toHaveBeenCalled()
+  })
+
+  it('remains in tab order when disabled', async () => {
+    render(
+      <>
+        <Button>First</Button>
+        <Button disabled>Disabled</Button>
+        <Button>Third</Button>
+      </>
+    )
+
+    // Tab through all buttons (disabled stays in tab order)
+    await userEvent.tab()
+    expect(screen.getByText('First')).toHaveFocus()
+
+    await userEvent.tab()
+    expect(screen.getByText('Disabled')).toHaveFocus() // ✅ Still focusable!
+
+    await userEvent.tab()
+    expect(screen.getByText('Third')).toHaveFocus()
+  })
+
+  it('has .is-disabled className when disabled', () => {
+    render(<Button disabled>Click me</Button>)
+
+    const button = screen.getByRole('button')
+    expect(button).toHaveClass('is-disabled')
+  })
+})
+```
+
 ### Form Interactions
 
 ```typescript
@@ -281,27 +334,7 @@ describe('Form Interactions', () => {
 
 ### Disabled State
 
-```typescript
-describe('Disabled State', () => {
-  it('has aria-disabled attribute when disabled', () => {
-    render(<Button disabled>Click me</Button>)
-    const button = screen.getByRole('button')
-    expect(button).toHaveAttribute('aria-disabled', 'true')
-  })
-
-  it('does not call onClick when disabled', async () => {
-    const handleClick = vi.fn()
-    render(<Button disabled onClick={handleClick}>Click me</Button>)
-
-    const button = screen.getByRole('button')
-    await userEvent.click(button)
-
-    // fpkit buttons with aria-disabled will call onClick
-    // but you can prevent it in your wrapper
-    // Test your specific implementation
-  })
-})
-```
+See the "Testing Disabled State (aria-disabled Pattern)" section above for comprehensive disabled state testing examples.
 
 ### Loading State
 
@@ -466,6 +499,118 @@ describe('Accessibility Violations', () => {
 
     const results = await axe(container)
     expect(results).toHaveNoViolations()
+  })
+})
+```
+
+---
+
+## Testing Link Security Features
+
+fpkit Link components automatically add security attributes for external links. Test that these security features work correctly:
+
+```typescript
+import { Link } from '@fpkit/acss'
+import { render, screen } from '@testing-library/react'
+
+describe('Link Security', () => {
+  it('automatically adds noopener noreferrer to external links', () => {
+    render(
+      <Link href="https://example.com" target="_blank">
+        External Site
+      </Link>
+    )
+
+    const link = screen.getByRole('link')
+    const rel = link.getAttribute('rel')
+
+    expect(rel).toContain('noopener')
+    expect(rel).toContain('noreferrer')
+  })
+
+  it('preserves custom rel values while adding security', () => {
+    render(
+      <Link href="https://example.com" target="_blank" rel="nofollow">
+        Sponsored Link
+      </Link>
+    )
+
+    const link = screen.getByRole('link')
+    const rel = link.getAttribute('rel')
+
+    // All three should be present
+    expect(rel).toContain('noopener')
+    expect(rel).toContain('noreferrer')
+    expect(rel).toContain('nofollow')
+  })
+
+  it('adds prefetch when enabled', () => {
+    render(
+      <Link href="https://example.com" target="_blank" prefetch>
+        Fast Link
+      </Link>
+    )
+
+    const link = screen.getByRole('link')
+    const rel = link.getAttribute('rel')
+
+    expect(rel).toContain('prefetch')
+    expect(rel).toContain('noopener')
+    expect(rel).toContain('noreferrer')
+  })
+
+  it('does not add security attrs to internal links', () => {
+    render(
+      <Link href="/internal-page">
+        Internal Link
+      </Link>
+    )
+
+    const link = screen.getByRole('link')
+    const rel = link.getAttribute('rel')
+
+    // Should be null or not contain security tokens
+    expect(rel).not.toContain('noopener')
+    expect(rel).not.toContain('noreferrer')
+  })
+})
+```
+
+### Testing Link Accessibility
+
+```typescript
+describe('Link Accessibility', () => {
+  it('supports ref forwarding for focus management', () => {
+    const ref = React.createRef<HTMLAnchorElement>()
+    render(
+      <Link ref={ref} href="/page">
+        Skip to content
+      </Link>
+    )
+
+    expect(ref.current).toBeInstanceOf(HTMLAnchorElement)
+    ref.current?.focus()
+    expect(ref.current).toHaveFocus()
+  })
+
+  it('onClick captures all activation methods', async () => {
+    const handleClick = vi.fn()
+    render(
+      <Link href="/products" onClick={handleClick}>
+        Products
+      </Link>
+    )
+
+    const link = screen.getByRole('link')
+
+    // Test mouse click
+    await userEvent.click(link)
+    expect(handleClick).toHaveBeenCalledTimes(1)
+
+    // Test keyboard activation
+    link.focus()
+    await userEvent.keyboard('{Enter}')
+    expect(handleClick).toHaveBeenCalledTimes(2) // ✅ onClick fires for keyboard!
   })
 })
 ```

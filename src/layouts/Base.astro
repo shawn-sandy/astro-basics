@@ -62,18 +62,13 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 
     <Navigation>
       <ul slot="login">
-        {
-          Astro.locals.userId && (
-            <>
-              <li>
-                <a href="/dashboard">Dashboard</a>
-              </li>
-              <li>
-                <a href="/profile">Profile</a>
-              </li>
-            </>
-          )
-        }
+        <li>
+          <a href="/dashboard">Dashboard</a>
+        </li>
+        <li>
+          <a href="/profile">Profile</a>
+        </li>
+
         <li class="clerk-user-button">
           <SignedIn isStatic={true}>
             <UserButton />
