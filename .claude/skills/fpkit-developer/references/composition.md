@@ -160,6 +160,13 @@ export const LoadingButton = ({ loading, onClick, children, ...props }) => {
 ;<LoadingButton onClick={handleSubmit}>Submit Form</LoadingButton>
 ```
 
+**Accessibility Note**: fpkit Button uses `aria-disabled` instead of native `disabled`, which means:
+
+- ✅ Disabled buttons stay in tab order (better for screen readers)
+- ✅ onClick is automatically prevented when disabled
+- ✅ Automatic `.is-disabled` className applied
+- ✅ Focus management maintained
+
 **Use Cases**: ConfirmButton, TooltipButton, LoadingButton, DebounceInput
 
 ---
@@ -591,6 +598,12 @@ export const LoadingButton = ({
   )
 }
 ```
+
+**Key Points:**
+
+- **Extend ButtonProps**: Inherits all Button props including `disabled`, `onClick`, `aria-*`, etc.
+- **Spread ...props**: Preserves fpkit's `aria-disabled` pattern and accessibility features
+- **Type safety**: TypeScript ensures you can't pass invalid props to the Button
 
 ---
 
