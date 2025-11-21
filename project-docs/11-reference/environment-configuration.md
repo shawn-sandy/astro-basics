@@ -102,6 +102,88 @@ envConfig.getEnvironment() // 'development' | 'production' | 'test'
 - Development-only debugging
 - Environment-specific behavior
 
+---
+
+## Obtaining Environment Credentials
+
+### Supabase Credentials
+
+**Dashboard Location**: Supabase Dashboard → Settings → API
+
+| Variable                    | Source                            | Key Type  | Notes                          |
+| --------------------------- | --------------------------------- | --------- | ------------------------------ |
+| `SUPABASE_URL`              | Project URL section               | Public    | Top of API settings page       |
+| `SUPABASE_ANON_KEY`         | Project API Keys → `anon`         | Public    | Safe for client-side use       |
+| `SUPABASE_SERVICE_ROLE_KEY` | Project API Keys → `service_role` | Secret ⚠️ | Server-side only, bypasses RLS |
+
+**Steps to Find Keys:**
+
+1. Navigate to: https://supabase.com/dashboard
+2. Select your project
+3. Click **Settings** (gear icon) → **API**
+4. Copy the appropriate keys
+
+**Security Notes:**
+
+- **anon key**: Respects Row Level Security (RLS) policies. Safe for client-side code.
+- **service_role key**: Bypasses all RLS policies. Never expose in client code or version control.
+
+### Clerk Credentials
+
+**Dashboard Location**: Clerk Dashboard → API Keys
+
+| Variable                       | Source                    | Format                     | Notes                              |
+| ------------------------------ | ------------------------- | -------------------------- | ---------------------------------- |
+| `PUBLIC_CLERK_PUBLISHABLE_KEY` | Publishable Key           | `pk_test_*` or `pk_live_*` | Public key for client-side         |
+| `CLERK_SECRET_KEY`             | Secret Key                | `sk_test_*` or `sk_live_*` | Server-side only                   |
+| `CLERK_WEBHOOK_SECRET`         | Webhooks → Signing Secret | `whsec_*`                  | Optional, for webhook verification |
+
+**Steps to Find Keys:**
+
+1. Navigate to: https://dashboard.clerk.com
+2. Select your application
+3. Click **API Keys** in sidebar
+4. Copy Publishable Key and Secret Key
+
+**Security Notes:**
+
+- Use `test` keys for development environments
+- Use `live` keys for production deployments
+- Never commit secret keys to version control
+
+### Turso Credentials
+
+**CLI Commands** (Turso CLI required):
+
+| Variable             | Command                            | Format                      |
+| -------------------- | ---------------------------------- | --------------------------- |
+| `TURSO_DATABASE_URL` | `turso db show [db-name] --url`    | `libsql://your-db.turso.io` |
+| `TURSO_AUTH_TOKEN`   | `turso db tokens create [db-name]` | JWT token string            |
+
+**Steps to Get Credentials:**
+
+```bash
+# 1. Install Turso CLI (if not installed)
+curl -sSfL https://get.tur.so/install.sh | bash
+
+# 2. Authenticate
+turso auth login
+
+# 3. Get database URL
+turso db show my-database --url
+
+# 4. Create auth token
+turso db tokens create my-database
+```
+
+**Security Notes:**
+
+- Auth tokens can be rotated via CLI
+- Tokens inherit database access permissions
+- Each token is scoped to a specific database
+
+---
+
 ### Astro Configuration
 
 ```typescript

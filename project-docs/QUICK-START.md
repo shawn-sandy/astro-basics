@@ -79,6 +79,11 @@ npm install
 # Copy environment template
 cp .env.example .env
 
+# Edit .env and add your credentials:
+# - Clerk keys: https://dashboard.clerk.com → API Keys
+# - Supabase keys: https://supabase.com/dashboard → [Project] → Settings → API
+# - Turso: See CLI commands in .env.example comments
+
 # Set up pre-commit hooks
 npm run prepare
 

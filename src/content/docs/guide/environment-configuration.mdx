@@ -568,6 +568,99 @@ PUBLIC_SITE_URL=https://example.com
 
 ---
 
+## Obtaining Credentials
+
+### Getting Supabase Keys
+
+To obtain your Supabase credentials, follow these steps:
+
+**1. Open Supabase Dashboard**
+- Navigate to: https://supabase.com/dashboard
+- Select your project from the list
+
+**2. Access API Settings**
+- Click **Settings** (gear icon) in the left sidebar
+- Navigate to the **API** section
+
+**3. Copy Your Credentials**
+
+| Credential | Location | Variable Name |
+|------------|----------|---------------|
+| Project URL | Top of API page | `SUPABASE_URL` |
+| anon (public) key | Project API Keys section | `SUPABASE_ANON_KEY` |
+| service_role (secret) key | Project API Keys section | `SUPABASE_SERVICE_ROLE_KEY` |
+
+:::tip[Understanding Supabase Keys]
+- **anon key**: Safe for client-side code. Respects Row Level Security (RLS) policies.
+- **service_role key**: Bypasses RLS. Use only on the server. Never expose in client code.
+:::
+
+For detailed setup instructions with screenshots, see the [Complete Setup Guide](/guide/getting-started/setup#option-b-manual-setup---supabase).
+
+### Getting Clerk Keys
+
+To obtain your Clerk credentials:
+
+**1. Open Clerk Dashboard**
+- Navigate to: https://dashboard.clerk.com
+- Select your application
+
+**2. Access API Keys**
+- Click **API Keys** in the left sidebar
+
+**3. Copy Your Credentials**
+
+| Credential | Format | Variable Name |
+|------------|--------|---------------|
+| Publishable Key | Starts with `pk_test_` or `pk_live_` | `PUBLIC_CLERK_PUBLISHABLE_KEY` |
+| Secret Key | Starts with `sk_test_` or `sk_live_` | `CLERK_SECRET_KEY` |
+
+**4. Optional: Webhook Secret**
+- Navigate to **Webhooks** → Select your endpoint
+- Copy the **Signing Secret** → `CLERK_WEBHOOK_SECRET`
+
+:::tip[Test vs Live Keys]
+Use `pk_test_` and `sk_test_` keys for development. Switch to `pk_live_` and `sk_live_` for production deployments.
+:::
+
+### Getting Turso Credentials
+
+To obtain Turso credentials using the CLI:
+
+**1. Install Turso CLI**
+```bash
+curl -sSfL https://get.tur.so/install.sh | bash
+```
+
+**2. Authenticate**
+```bash
+turso auth login
+```
+
+**3. Create or Select Database**
+```bash
+# Create new database
+turso db create my-database
+
+# Or list existing databases
+turso db list
+```
+
+**4. Get Connection Details**
+```bash
+# Get database URL → TURSO_DATABASE_URL
+turso db show my-database --url
+
+# Create auth token → TURSO_AUTH_TOKEN
+turso db tokens create my-database
+```
+
+:::note[Turso Locations]
+Turso databases are edge-distributed. Choose a primary location close to your users for optimal performance.
+:::
+
+---
+
 ## Best Practices
 
 ### ✅ Do
