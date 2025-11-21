@@ -80,12 +80,12 @@ export const roleConfig: RoleConfig = {
     },
     {
       name: 'admin',
-      level: 2,
+      level: 5,
       label: 'Administrator',
     },
     {
       name: 'super_admin',
-      level: 3,
+      level: 10,
       label: 'Super Administrator',
     },
   ],
