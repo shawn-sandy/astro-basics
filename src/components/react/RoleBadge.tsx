@@ -1,7 +1,8 @@
 /**
  * RoleBadge Component
  *
- * Displays user roles with color-coded visual indicators for the 3-tier role system.
+ * Displays user roles with color-coded visual indicators.
+ * Colors are automatically generated based on role configuration with WCAG AA compliance.
  * Provides consistent styling and accessibility for role display across the application.
  *
  * @module components/react/RoleBadge
@@ -9,74 +10,35 @@
 
 import type { CSSProperties } from 'react'
 
-/**
- * User role type definition matching Supabase user_role enum
- */
-export type UserRole = 'member' | 'admin' | 'super_admin'
+import type { UserRole } from '#utils/role-types'
+import { ROLE_COLORS } from '#utils/role-types'
 
 /**
  * Props for RoleBadge component
  */
 export type Props = {
-  /** User role from Supabase users.role column */
+  /** User role from Supabase users.role column (dynamically configured) */
   role: UserRole
   /** Optional additional CSS classes */
   className?: string
 }
 
 /**
- * Role display configuration mapping roles to visual styles
- *
- * Color scheme rationale:
- * - member: Blue - Default, welcoming, represents majority of users
- * - admin: Purple - Authority without aggression, organization-level power
- * - super_admin: Amber - Highest privilege, system-wide control, commands attention
- */
-const ROLE_CONFIG: Record<
-  UserRole,
-  {
-    label: string
-    bgColor: string
-    textColor: string
-    description: string
-  }
-> = {
-  member: {
-    label: 'Member',
-    bgColor: '#dbeafe', // blue-100
-    textColor: '#1e40af', // blue-800
-    description: 'Standard user with basic permissions',
-  },
-  admin: {
-    label: 'Administrator',
-    bgColor: '#e9d5ff', // purple-200
-    textColor: '#6b21a8', // purple-800
-    description: 'Organization administrator with elevated permissions',
-  },
-  super_admin: {
-    label: 'Super Admin',
-    bgColor: '#fef3c7', // amber-100
-    textColor: '#92400e', // amber-900
-    description: 'System administrator with full access',
-  },
-}
-
-/**
  * RoleBadge - Visual indicator for user permission level
  *
  * Displays the user's role with appropriate styling based on permission hierarchy.
- * Uses semantic colors to quickly communicate privilege levels to both users and
- * administrators monitoring the system.
+ * Colors are automatically generated from role configuration with WCAG AA compliance.
  *
  * @param {Props} props - Component properties
  * @returns {JSX.Element} Styled role badge
  *
  * @example
  * ```tsx
- * // Display user role
+ * // Display user role (works with any configured role)
  * <RoleBadge role="member" />
  * <RoleBadge role="admin" />
  * <RoleBadge role="super_admin" />
+ * <RoleBadge role="moderator" /> // If configured in roles.config.ts
  *
  * // With custom styling
  * <RoleBadge role="admin" className="custom-badge" />
@@ -84,13 +46,13 @@ const ROLE_CONFIG: Record<
  *
  * @accessibility
  * - Uses aria-label for screen reader context
- * - Sufficient color contrast ratios (WCAG AA compliant)
+ * - WCAG AA compliant contrast ratios (minimum 4.5:1)
  * - Does not rely solely on color to convey meaning (text labels provided)
  *
  * @performance Memoized inline styles, no CSS-in-JS runtime overhead
  */
 export function RoleBadge({ role, className = '' }: Props) {
-  const config = ROLE_CONFIG[role]
+  const config = ROLE_COLORS[role]
 
   const badgeStyle: CSSProperties = {
     display: 'inline-flex',
