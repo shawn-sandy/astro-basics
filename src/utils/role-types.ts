@@ -10,18 +10,24 @@
  * @module utils/role-types
  */
 
+import {
+  type UserRole,
+  USER_ROLES,
+  ROLE_HIERARCHY,
+  ROLE_LABELS as GENERATED_ROLE_LABELS,
+  ROLE_COLORS,
+} from '#types/generated-roles'
+
 /**
  * Supabase user roles (app-level permissions)
  *
  * Stored in Supabase `users` table, synced from Clerk webhooks.
  * Defines global user privileges across the entire application.
  *
- * NOTE: After running `npm run setup:roles`, these types will be sourced
- * from generated-roles.ts. Until then, the default 3-tier system is used.
- *
- * Default: 3-tier system (member, admin, super_admin)
+ * Generated from config/roles.config.ts via `npm run setup:roles`.
+ * Imported from #types/generated-roles
  */
-export type UserRole = 'member' | 'admin' | 'super_admin'
+export type { UserRole }
 
 /**
  * Clerk organization roles (org-level permissions)
@@ -106,10 +112,9 @@ export interface RoleGuardConfig {
  * Valid Supabase user roles constant
  *
  * Use for runtime validation and type guards.
- *
- * NOTE: Will be replaced by generated types when setup:roles is run.
+ * Imported from generated-roles.ts
  */
-export const USER_ROLES: UserRole[] = ['member', 'admin', 'super_admin']
+export { USER_ROLES }
 
 /**
  * Valid Clerk organization roles constant
@@ -129,13 +134,10 @@ export const ALL_ROLES: AnyRole[] = [...USER_ROLES, ...ORG_ROLES]
  * Human-readable role labels
  *
  * Maps role identifiers to display-friendly names for UI rendering.
- *
- * NOTE: Will be replaced by generated types when setup:roles is run.
+ * Combines generated user role labels with Clerk org role labels.
  */
 export const ROLE_LABELS: Record<AnyRole, string> = {
-  member: 'Member',
-  admin: 'Admin',
-  super_admin: 'Super Admin',
+  ...GENERATED_ROLE_LABELS,
   'org:admin': 'Organization Admin',
   'org:member': 'Organization Member',
 }
@@ -145,11 +147,14 @@ export const ROLE_LABELS: Record<AnyRole, string> = {
  *
  * Higher numbers = more privileges.
  * Useful for implementing "at least X role" checks.
- *
- * NOTE: Will be replaced by generated types when setup:roles is run.
+ * Imported from generated-roles.ts
  */
-export const ROLE_HIERARCHY: Record<UserRole, number> = {
-  member: 1,
-  admin: 2,
-  super_admin: 3,
-}
+export { ROLE_HIERARCHY }
+
+/**
+ * Role color configuration for UI badges
+ *
+ * Auto-generated WCAG AA compliant colors based on role hierarchy.
+ * Imported from generated-roles.ts
+ */
+export { ROLE_COLORS }
