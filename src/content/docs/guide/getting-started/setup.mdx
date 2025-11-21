@@ -149,7 +149,20 @@ The wizard will:
 
 **2. Get Credentials**
 
-Navigate to **Project Settings** → **API**:
+Navigate to **Project Settings** → **API** to find your credentials:
+
+**Steps to locate your API keys:**
+
+1. **Open Supabase Dashboard**: https://supabase.com/dashboard
+2. **Select your project** from the project list
+3. **Click "Settings"** (gear icon) in the left sidebar
+4. **Navigate to "API"** section
+5. **Find "Project API keys"** section:
+   - **`anon` (public)** - This is your `SUPABASE_ANON_KEY` ✅
+   - **`service_role` (secret)** - This is your `SUPABASE_SERVICE_ROLE_KEY` 🔒
+6. **Find "Project URL"** at the top - This is your `SUPABASE_URL`
+
+Add these to your `.env` file:
 
 ```env
 SUPABASE_URL=https://your-project.supabase.co
@@ -160,6 +173,12 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...  # Required for server operations
 PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 PUBLIC_SUPABASE_ANON_KEY=eyJ...
 ```
+
+:::tip[Understanding Supabase Keys]
+- **Anon Key**: Safe for client-side code. Respects Row Level Security (RLS) policies.
+- **Service Role Key**: Bypasses RLS. Server-side only. Never expose in client code.
+- **Project URL**: Your unique Supabase project endpoint.
+:::
 
 **3. Run Migrations**
 
