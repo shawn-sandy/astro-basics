@@ -28,6 +28,9 @@ type Props = {
 
 const showBreadcrumb = Astro.props.showBreadcrumb === undefined ? true : Astro.props.showBreadcrumb
 
+// Get authentication state from locals
+const { userId } = Astro.locals
+
 const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 ---
 
@@ -62,12 +65,18 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 
     <Navigation>
       <ul slot="login">
-        <li>
-          <a href="/dashboard">Dashboard</a>
-        </li>
-        <li>
-          <a href="/profile">Profile</a>
-        </li>
+        {
+          userId && (
+            <>
+              <li>
+                <a href="/dashboard">Dashboard</a>
+              </li>
+              <li>
+                <a href="/profile">Profile</a>
+              </li>
+            </>
+          )
+        }
 
         <li class="clerk-user-button">
           <SignedIn isStatic={true}>

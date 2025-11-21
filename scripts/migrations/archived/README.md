@@ -132,19 +132,45 @@ psql $DATABASE_URL -f scripts/migrations/rollback_001_core_schema.sql
 - **New Migrations:** `scripts/migrations/001_core_schema.sql`, `002_security_policies.sql`
 - **Rollback Scripts:** `scripts/migrations/rollback_*.sql`
 
+## Additional Deprecated Migrations (2025-10)
+
+After the initial consolidation on 2025-10-06, two additional migrations were created and later deprecated:
+
+### 003_user_roles.DEPRECATED.sql
+
+- **Created:** 2025-10-10
+- **Purpose:** Auto-generated from `config/roles.config.ts` to sync role ENUM
+- **Issues:** Redundant - duplicates work already done in 001_core_schema.sql
+- **Archive Date:** 2025-11-21
+- **Why Deprecated:** The `user_role` ENUM type was already created and populated in the consolidated 001_core_schema.sql. This migration attempted to create the same ENUM, making it completely redundant.
+
+### 004_clerk_email_verification.DEPRECATED.sql
+
+- **Created:** 2025-10-11
+- **Purpose:** Add email uniqueness constraint (defense-in-depth)
+- **Issues:** Functionality consolidated into 001_core_schema.sql on 2025-10-12
+- **Archive Date:** 2025-11-21
+- **Why Deprecated:** The partial unique index on email (allowing multiple NULLs but preventing duplicate non-NULL emails) was added directly to 001_core_schema.sql. This migration became redundant for fresh installations but remains safe for existing databases due to idempotent design.
+
+---
+
 ## Migration History
 
-| Migration                             | Status   | Notes                         |
-| ------------------------------------- | -------- | ----------------------------- |
-| 001_create_users_with_roles.sql       | ARCHIVED | Replaced by consolidated 001  |
-| 002_create_rls_policies.sql           | ARCHIVED | Replaced by consolidated 002  |
-| 003_add_user_role_column.sql          | ARCHIVED | Type mismatch - replaced      |
-| 004_add_member_to_role_enum.sql       | ARCHIVED | ENUM didn't exist - replaced  |
-| 005_replace_volunteer_with_member.sql | ARCHIVED | Complex workaround - replaced |
-| 006_complete_member_migration.sql     | ARCHIVED | Partial fix - replaced        |
+| Migration                                            | Status   | Archive Date | Notes                               |
+| ---------------------------------------------------- | -------- | ------------ | ----------------------------------- |
+| 001_create_users_with_roles.sql                      | ARCHIVED | 2025-10-06   | Replaced by consolidated 001        |
+| 002_create_rls_policies.sql                          | ARCHIVED | 2025-10-06   | Replaced by consolidated 002        |
+| 003_add_user_role_column.sql                         | ARCHIVED | 2025-10-06   | Type mismatch - replaced            |
+| 004_add_member_to_role_enum.sql                      | ARCHIVED | 2025-10-06   | ENUM didn't exist - replaced        |
+| 005_replace_volunteer_with_member.sql                | ARCHIVED | 2025-10-06   | Complex workaround - replaced       |
+| 006_complete_member_migration.sql                    | ARCHIVED | 2025-10-06   | Partial fix - replaced              |
+| 003_user_roles.DEPRECATED.sql                        | ARCHIVED | 2025-11-21   | Redundant with consolidated 001     |
+| rollback_003_user_roles.DEPRECATED.sql               | ARCHIVED | 2025-11-21   | Rollback for deprecated 003         |
+| 004_clerk_email_verification.DEPRECATED.sql          | ARCHIVED | 2025-11-21   | Consolidated into 001 on 2025-10-12 |
+| rollback_004_clerk_email_verification.DEPRECATED.sql | ARCHIVED | 2025-11-21   | Rollback for deprecated 004         |
 
 ---
 
 **Do not use these archived migrations for new setups.** They are preserved only for historical reference and understanding the evolution of the schema.
 
-For questions or issues, refer to the implementation plan document.
+For questions or issues, refer to the implementation plan document or the main migrations README at `scripts/migrations/README.md`.
