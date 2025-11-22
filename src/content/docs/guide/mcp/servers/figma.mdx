@@ -7,7 +7,6 @@ sidebar:
 
 import { Badge, Card, CardGrid, Code, Tabs, TabItem } from '@astrojs/starlight/components'
 
-
 <Badge text="Design Integration" variant="tip" /> <Badge text="Code Generation" variant="success" />
 
 The Figma MCP server enables direct integration between Figma design files and your development workflow through Claude Code. It provides automated code generation, design token extraction, and seamless design-to-development handoffs.
@@ -23,17 +22,17 @@ This MCP server allows Claude to interact directly with Figma designs, extractin
     Generate production-ready UI code from Figma components for React, Astro, and other frameworks.
   </Card>
 
-  <Card title="🎯 Design Tokens" icon="setting">
-    Extract design variables (colors, typography, spacing) and convert to CSS custom properties.
-  </Card>
+<Card title="🎯 Design Tokens" icon="setting">
+  Extract design variables (colors, typography, spacing) and convert to CSS custom properties.
+</Card>
 
-  <Card title="🔗 Code Connect" icon="link">
-    Link Figma components to existing codebase components for bidirectional synchronization.
-  </Card>
+<Card title="🔗 Code Connect" icon="link">
+  Link Figma components to existing codebase components for bidirectional synchronization.
+</Card>
 
-  <Card title="📸 Asset Export" icon="document">
-    Export high-quality images from Figma nodes in multiple formats optimized for web.
-  </Card>
+<Card title="📸 Asset Export" icon="document">
+  Export high-quality images from Figma nodes in multiple formats optimized for web.
+</Card>
 
   <Card title="📋 Design System" icon="list-format">
     Generate design system rules and comprehensive documentation automatically.
@@ -91,6 +90,19 @@ Generate comprehensive design system documentation and rules.
 1. **Figma Desktop Application** installed and running
 2. **Active Figma Project** with design components
 3. **Proper File Permissions** (owner or editor access)
+
+### Install the MCP Server and Connect to Figma Desktop
+
+Install the Figma MCP server and connect it to your local Figma Desktop instance:
+
+```bash
+claude mcp add --transport http figma-desktop http://127.0.0.1:3845/mcp
+```
+
+For more Figma installation options and configuration details, see the
+
+- Local [Figma Local MCP Setup Guide](https://developers.figma.com/docs/figma-mcp-server/local-server-installation/).
+- Remote [Figma Remote MCP Setup Guide](https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/).
 
 ### Basic Usage
 
@@ -162,6 +174,7 @@ If you don't provide a `nodeId`, the server uses the currently selected node in 
 
     **Output Location:** `src/components/astro/`
     **Styling:** Integrates with `src/styles/` architecture
+
   </TabItem>
 
   <TabItem label="React Components">
@@ -171,6 +184,7 @@ If you don't provide a `nodeId`, the server uses the currently selected node in 
 
     **Output Location:** `src/components/react/`
     **Features:** Interactive elements with proper TypeScript
+
   </TabItem>
 
   <TabItem label="SCSS Variables">
@@ -180,6 +194,7 @@ If you don't provide a `nodeId`, the server uses the currently selected node in 
 
     **Integration:** Maps to existing variable system
     **Output:** Compatible with current SCSS architecture
+
   </TabItem>
 </Tabs>
 
@@ -188,7 +203,6 @@ If you don't provide a `nodeId`, the server uses the currently selected node in 
 ### Design-to-Code Pipeline
 
 1. **Select Component in Figma**
-
    - Open design file in Figma Desktop
    - Select the component to implement
 
@@ -221,7 +235,6 @@ If you don't provide a `nodeId`, the server uses the currently selected node in 
    ```
 
 2. **Update Code Variables**
-
    - Compare with existing CSS/SCSS variables
    - Update inconsistencies
    - Add new tokens as needed
