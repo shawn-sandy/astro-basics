@@ -26,7 +26,7 @@ npm run test:axiom-simple
 
 **Solution:**
 
-1. Go to https://app.axiom.co/
+1. Go to <https://app.axiom.co/>
 2. Look for time range selector (usually top-right)
 3. Change to **"Last 1 hour"** or **"Last 24 hours"**
 4. Click "Apply" or "Refresh"
@@ -226,7 +226,7 @@ Try the "show everything" query:
 
 - Dataset is empty (no logs ever received)
 - Possible token permission issue
-- Check Axiom service status: https://status.axiom.co/
+- Check Axiom service status: <https://status.axiom.co/>
 
 **B) Shows rows but not your test:**
 
@@ -315,7 +315,7 @@ You'll know it's working when you see:
 
 If none of these solutions work:
 
-1. **Check Axiom Status:** https://status.axiom.co/
+1. **Check Axiom Status:** <https://status.axiom.co/>
 2. **Axiom Support:** Check if there are known ingestion delays
 3. **Verify Token:** Generate a new token in Axiom dashboard
 4. **Test Network:** Ensure your IP isn't blocked

@@ -284,6 +284,7 @@ const { data } = await supabase.rpc('check_email_constraint')
    ```
 
 3. **Review Audit Logs:**
+
    ```typescript
    const { data } = await supabase
      .from('user_sync_audit')

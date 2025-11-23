@@ -101,7 +101,7 @@ psql $DATABASE_URL -f scripts/migrations/005_migration_tracking.sql
 
 If you have a database that used these August 2025 migrations and need to upgrade:
 
-### ⚠️ Breaking Changes Between Old and New Systems:
+### ⚠️ Breaking Changes Between Old and New Systems
 
 1. **New users table includes:**
    - `role` column (ENUM: member, admin, super_admin)
@@ -118,7 +118,7 @@ If you have a database that used these August 2025 migrations and need to upgrad
    - More granular access control
    - Service role policies for webhooks
 
-### Upgrade Path:
+### Upgrade Path
 
 If you need to upgrade from the old system, you have two options:
 

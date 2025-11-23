@@ -15,9 +15,11 @@ This directory contains test scripts for verifying functionality and behavior of
   Verifies database connectivity and lists existing tables.
 
 - **`test-database-abstraction.js`** - Tests the unified database abstraction layer
+
   ```bash
   npm run test:db:abstraction
   ```
+
   Validates that the database abstraction layer works correctly with active provider.
 
 ### Webhook Testing

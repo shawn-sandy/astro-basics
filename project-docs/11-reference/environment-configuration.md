@@ -118,7 +118,7 @@ envConfig.getEnvironment() // 'development' | 'production' | 'test'
 
 **Steps to Find Keys:**
 
-1. Navigate to: https://supabase.com/dashboard
+1. Navigate to: <https://supabase.com/dashboard>
 2. Select your project
 3. Click **Settings** (gear icon) → **API**
 4. Copy the appropriate keys
@@ -140,7 +140,7 @@ envConfig.getEnvironment() // 'development' | 'production' | 'test'
 
 **Steps to Find Keys:**
 
-1. Navigate to: https://dashboard.clerk.com
+1. Navigate to: <https://dashboard.clerk.com>
 2. Select your application
 3. Click **API Keys** in sidebar
 4. Copy Publishable Key and Secret Key
@@ -754,6 +754,7 @@ export const db = createClient(supabaseUrl, supabaseKey)
    ```
 
 4. **Use `getEnvironmentStatus()` for debugging**:
+
    ```typescript
    const status = getEnvironmentStatus()
    console.log('Missing:', status.missingConfiguration)
@@ -785,6 +786,7 @@ export const db = createClient(supabaseUrl, supabaseKey)
    ```
 
 4. **Don't hardcode placeholder checks**:
+
    ```typescript
    ❌ if (key === 'YOUR_CLERK_KEY') { ... }
    ✅ if (!envConfig.isClerkConfigured()) { ... }

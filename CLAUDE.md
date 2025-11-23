@@ -166,7 +166,7 @@ Specialized assistants available for this project:
 
 ## Critical Stop Points
 
-### 🛑 STOP and consult specialized files when:
+### 🛑 STOP and consult specialized files when
 
 1. **Creating ANY component**
    → Read: [CLAUDE-VALIDATION.md > Component Decision Tree](CLAUDE-VALIDATION.md#component-decision-tree)

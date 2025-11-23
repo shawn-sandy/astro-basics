@@ -98,7 +98,7 @@ Your login logging to Axiom is **fully operational**! All three authentication l
 
 ### Step 1: Access Axiom
 
-Visit: **https://app.axiom.co/**
+Visit: **<https://app.axiom.co/>**
 
 ### Step 2: Select Dataset
 
@@ -158,6 +158,7 @@ You should see 3 events:
      - `🔍 [DEBUG] Last sign in updated for user` (database)
 
 4. **Check Axiom dashboard:**
+
    ```apl
    ['astro-basics']
    | where message contains "login"
@@ -183,6 +184,7 @@ You should see 3 events:
    ```
 
 4. **Verify correlation tracking:**
+
    ```apl
    ['astro-basics']
    | where userId == "YOUR_USER_ID"
@@ -289,9 +291,11 @@ Use `npm run test:axiom-simple` instead, which uses the Axiom SDK directly witho
    - Create it if missing
 
 4. **Test with simple script:**
+
    ```bash
    npm run test:axiom-simple
    ```
+
    If this passes but app logs don't appear, check middleware configuration.
 
 ---
