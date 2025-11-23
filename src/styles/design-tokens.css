@@ -1,0 +1,293 @@
+/**
+ * Design Tokens - CSS Custom Properties
+ * Generated from Component Sample - Light theme
+ * W3C Design Token Community Group compliant
+ */
+
+/* ==========================================================================
+   Cascade Layers Structure
+   ========================================================================== */
+@layer reset, tokens, components, utilities;
+
+/* ==========================================================================
+   Tokens Layer - Design System Foundation
+   ========================================================================== */
+@layer tokens {
+  :root {
+    /* ======================================================================
+       Color Tokens - Primary Palette
+       ====================================================================== */
+    --color-primary-50: #f9fafb;
+    --color-primary-100: #f3f4f6;
+    --color-primary-200: #e5e7eb;
+    --color-primary-300: #d1d5db;
+    --color-primary-400: #9ca3af;
+    --color-primary-500: #6b7280;
+    --color-primary-600: #4b5563;
+    --color-primary-700: #374151;
+    --color-primary-800: #1f2937;
+    --color-primary-900: #111827;
+
+    /* ======================================================================
+       Color Tokens - Accent Colors
+       ====================================================================== */
+
+    /* Red Accent */
+    --color-accent-red-50: #fef2f2;
+    --color-accent-red-100: #fee2e2;
+    --color-accent-red-200: #fecaca;
+    --color-accent-red-300: #fca5a5;
+    --color-accent-red-400: #f87171;
+    --color-accent-red-500: #ef4444;
+    --color-accent-red-600: #dc2626;
+    --color-accent-red-700: #b91c1c;
+    --color-accent-red-800: #991b1b;
+    --color-accent-red-900: #7f1d1d;
+
+    /* Blue Accent */
+    --color-accent-blue-50: #eff6ff;
+    --color-accent-blue-100: #dbeafe;
+    --color-accent-blue-200: #bfdbfe;
+    --color-accent-blue-300: #93c5fd;
+    --color-accent-blue-400: #60a5fa;
+    --color-accent-blue-500: #3b82f6;
+    --color-accent-blue-600: #2563eb;
+    --color-accent-blue-700: #1d4ed8;
+    --color-accent-blue-800: #1e40af;
+    --color-accent-blue-900: #1e3a8a;
+
+    /* Green Accent */
+    --color-accent-green-50: #f0fdf4;
+    --color-accent-green-100: #dcfce7;
+    --color-accent-green-200: #bbf7d0;
+    --color-accent-green-300: #86efac;
+    --color-accent-green-400: #4ade80;
+    --color-accent-green-500: #22c55e;
+    --color-accent-green-600: #16a34a;
+    --color-accent-green-700: #15803d;
+    --color-accent-green-800: #166534;
+    --color-accent-green-900: #14532d;
+
+    /* Yellow Accent */
+    --color-accent-yellow-50: #fffbeb;
+    --color-accent-yellow-100: #fef3c7;
+    --color-accent-yellow-200: #fde68a;
+    --color-accent-yellow-300: #fcd34d;
+    --color-accent-yellow-400: #fbbf24;
+    --color-accent-yellow-500: #f59e0b;
+    --color-accent-yellow-600: #d97706;
+    --color-accent-yellow-700: #b45309;
+    --color-accent-yellow-800: #92400e;
+    --color-accent-yellow-900: #78350f;
+
+    /* Pink Accent */
+    --color-accent-pink-50: #fdf2f8;
+    --color-accent-pink-100: #fce7f3;
+    --color-accent-pink-200: #fbcfe8;
+    --color-accent-pink-300: #f9a8d4;
+    --color-accent-pink-400: #f472b6;
+    --color-accent-pink-500: #ec4899;
+    --color-accent-pink-600: #db2777;
+    --color-accent-pink-700: #be185d;
+    --color-accent-pink-800: #9d174d;
+    --color-accent-pink-900: #831843;
+
+    /* Slate Accent */
+    --color-accent-slate-50: #f8fafc;
+    --color-accent-slate-100: #f1f5f9;
+    --color-accent-slate-200: #e2e8f0;
+    --color-accent-slate-300: #cbd5e1;
+    --color-accent-slate-400: #94a3b8;
+    --color-accent-slate-500: #64748b;
+    --color-accent-slate-600: #475569;
+    --color-accent-slate-700: #334155;
+    --color-accent-slate-800: #1e293b;
+    --color-accent-slate-900: #0f172a;
+
+    /* ======================================================================
+       Semantic Color Tokens
+       ====================================================================== */
+
+    /* Text Colors */
+    --color-text-primary: var(--color-primary-900);
+    --color-text-secondary: var(--color-primary-600);
+    --color-text-tertiary: var(--color-primary-500);
+    --color-text-inverse: #fff;
+
+    /* Background Colors */
+    --color-bg-primary: #fff;
+    --color-bg-secondary: var(--color-primary-50);
+    --color-bg-elevated: #fff;
+    --color-bg-overlay: rgb(17, 24, 39, 0.75);
+
+    /* Border Colors */
+    --color-border-default: var(--color-primary-200);
+    --color-border-focus: var(--color-accent-blue-500);
+    --color-border-error: var(--color-accent-red-600);
+
+    /* Alert Colors */
+    --color-alert-background: var(--color-accent-red-50);
+    --color-alert-border: var(--color-accent-red-600);
+    --color-alert-text: var(--color-accent-red-900);
+    --color-alert-icon: var(--color-accent-red-600);
+
+    /* Button Colors */
+    --color-button-primary-bg: var(--color-primary-800);
+    --color-button-primary-bg-hover: var(--color-primary-700);
+    --color-button-primary-text: var(--color-text-inverse);
+    --color-button-danger-bg: var(--color-accent-red-600);
+    --color-button-danger-bg-hover: var(--color-accent-red-700);
+
+    /* ======================================================================
+       Spacing Tokens
+       ====================================================================== */
+    --spacing-scale-3xs: 0.125rem; /* 2px */
+    --spacing-scale-2xs: 0.25rem; /* 4px */
+    --spacing-scale-xs: 0.5rem; /* 8px */
+    --spacing-scale-sm: 0.75rem; /* 12px */
+    --spacing-scale-md: 1rem; /* 16px - base */
+    --spacing-scale-lg: 1.5rem; /* 24px */
+    --spacing-scale-xl: 2rem; /* 32px */
+    --spacing-scale-2xl: 3rem; /* 48px */
+    --spacing-scale-3xl: 4rem; /* 64px */
+
+    /* Component-Specific Spacing */
+    --spacing-input-padding-x: var(--spacing-scale-sm);
+    --spacing-input-padding-y: var(--spacing-scale-sm);
+    --spacing-button-padding-x: var(--spacing-scale-md);
+    --spacing-button-padding-y: var(--spacing-scale-xs);
+    --spacing-modal-padding: var(--spacing-scale-lg);
+    --spacing-form-field-gap: var(--spacing-scale-md);
+    --spacing-tag-padding-x: var(--spacing-scale-xs);
+    --spacing-tag-padding-y: var(--spacing-scale-2xs);
+    --spacing-tag-gap: var(--spacing-scale-xs);
+
+    /* ======================================================================
+       Typography Tokens
+       ====================================================================== */
+
+    /* Font Families */
+    --font-family-sans:
+      -apple-system, blinkmacsystemfont, 'Segoe UI', 'Roboto', 'Helvetica Neue', arial, sans-serif;
+    --font-family-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+
+    /* Font Sizes */
+    --font-size-xs: 0.75rem; /* 12px */
+    --font-size-sm: 0.875rem; /* 14px */
+    --font-size-base: 1rem; /* 16px */
+    --font-size-lg: 1.125rem; /* 18px */
+    --font-size-xl: 1.25rem; /* 20px */
+    --font-size-2xl: 1.5rem; /* 24px */
+    --font-size-3xl: 1.875rem; /* 30px */
+
+    /* Font Weights */
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* Line Heights */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+
+    /* Letter Spacing */
+    --letter-spacing-tight: -0.025em;
+    --letter-spacing-normal: 0;
+    --letter-spacing-wide: 0.025em;
+
+    /* ======================================================================
+       Border Radius Tokens
+       ====================================================================== */
+    --border-radius-none: 0;
+    --border-radius-sm: 0.25rem; /* 4px */
+    --border-radius-md: 0.375rem; /* 6px */
+    --border-radius-lg: 0.5rem; /* 8px */
+    --border-radius-xl: 1rem; /* 16px */
+    --border-radius-full: 9999px; /* Pill shape */
+
+    /* ======================================================================
+       Shadow Tokens
+       ====================================================================== */
+    --shadow-sm: 0 1px 2px 0 rgb(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0, 0, 0, 0.15);
+
+    /* ======================================================================
+       Border Width Tokens
+       ====================================================================== */
+    --border-width-none: 0;
+    --border-width-thin: 1px;
+    --border-width-medium: 2px;
+    --border-width-thick: 4px;
+
+    /* ======================================================================
+       Opacity Tokens
+       ====================================================================== */
+    --opacity-0: 0;
+    --opacity-10: 0.1;
+    --opacity-25: 0.25;
+    --opacity-50: 0.5;
+    --opacity-75: 0.75;
+    --opacity-90: 0.9;
+    --opacity-100: 1;
+
+    /* ======================================================================
+       Transition Tokens
+       ====================================================================== */
+    --transition-duration-fast: 150ms;
+    --transition-duration-normal: 250ms;
+    --transition-duration-slow: 350ms;
+    --transition-easing-linear: linear;
+    --transition-easing-ease: ease;
+    --transition-easing-ease-in: ease-in;
+    --transition-easing-ease-out: ease-out;
+    --transition-easing-ease-in-out: ease-in-out;
+  }
+
+  /* ======================================================================
+     Dark Mode Support
+     ====================================================================== */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* Invert semantic colors for dark mode */
+      --color-text-primary: #f9fafb;
+      --color-text-secondary: #d1d5db;
+      --color-text-tertiary: #9ca3af;
+      --color-text-inverse: #111827;
+      --color-bg-primary: #111827;
+      --color-bg-secondary: #1f2937;
+      --color-bg-elevated: #1f2937;
+      --color-bg-overlay: rgb(249, 250, 251, 0.15);
+      --color-border-default: #374151;
+      --color-button-primary-bg: #f9fafb;
+      --color-button-primary-bg-hover: #f3f4f6;
+      --color-button-primary-text: #111827;
+    }
+  }
+
+  /* ======================================================================
+     Reduced Motion Support
+     ====================================================================== */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --transition-duration-fast: 0ms;
+      --transition-duration-normal: 0ms;
+      --transition-duration-slow: 0ms;
+    }
+  }
+
+  /* ======================================================================
+     High Contrast Mode Support
+     ====================================================================== */
+  @media (forced-colors: active) {
+    :root {
+      --color-border-focus: CanvasText;
+      --shadow-sm: none;
+      --shadow-md: none;
+      --shadow-lg: none;
+      --shadow-xl: none;
+    }
+  }
+}

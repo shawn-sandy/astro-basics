@@ -1,0 +1,853 @@
+/**
+ * Atomic Utility Classes
+ * Generated from Component Sample design tokens
+ * Tailwind-style utilities with modern CSS features
+ */
+
+/* ==========================================================================
+   Cascade Layer Structure for Utilities
+   ========================================================================== */
+@layer utilities {
+  /* ========================================================================
+     Color Utilities - Text Colors
+     ======================================================================== */
+  .text-primary-500 {
+    color: var(--color-primary-500);
+  }
+
+  .text-primary-600 {
+    color: var(--color-primary-600);
+  }
+
+  .text-primary-700 {
+    color: var(--color-primary-700);
+  }
+
+  .text-primary-800 {
+    color: var(--color-primary-800);
+  }
+
+  .text-primary-900 {
+    color: var(--color-primary-900);
+  }
+
+  .text-red-600 {
+    color: var(--color-accent-red-600);
+  }
+
+  .text-red-900 {
+    color: var(--color-accent-red-900);
+  }
+
+  .text-blue-500 {
+    color: var(--color-accent-blue-500);
+  }
+
+  .text-green-500 {
+    color: var(--color-accent-green-500);
+  }
+
+  .text-white {
+    color: #fff;
+  }
+
+  /* Semantic text colors */
+  .text-primary {
+    color: var(--color-text-primary);
+  }
+
+  .text-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  .text-tertiary {
+    color: var(--color-text-tertiary);
+  }
+
+  .text-inverse {
+    color: var(--color-text-inverse);
+  }
+
+  /* ========================================================================
+     Color Utilities - Background Colors
+     ======================================================================== */
+  .bg-white {
+    background-color: #fff;
+  }
+
+  .bg-primary-50 {
+    background-color: var(--color-primary-50);
+  }
+
+  .bg-primary-800 {
+    background-color: var(--color-primary-800);
+  }
+
+  .bg-red-50 {
+    background-color: var(--color-accent-red-50);
+  }
+
+  .bg-red-600 {
+    background-color: var(--color-accent-red-600);
+  }
+
+  .bg-blue-500 {
+    background-color: var(--color-accent-blue-500);
+  }
+
+  .bg-green-600 {
+    background-color: var(--color-accent-green-600);
+  }
+
+  .bg-yellow-600 {
+    background-color: var(--color-accent-yellow-600);
+  }
+
+  .bg-gray-500 {
+    background-color: var(--color-primary-500);
+  }
+
+  /* Semantic backgrounds */
+  .bg-primary {
+    background-color: var(--color-bg-primary);
+  }
+
+  .bg-secondary {
+    background-color: var(--color-bg-secondary);
+  }
+
+  .bg-elevated {
+    background-color: var(--color-bg-elevated);
+  }
+
+  .bg-overlay {
+    background-color: var(--color-bg-overlay);
+  }
+
+  /* ========================================================================
+     Color Utilities - Border Colors
+     ======================================================================== */
+  .border-default {
+    border-color: var(--color-border-default);
+  }
+
+  .border-focus {
+    border-color: var(--color-border-focus);
+  }
+
+  .border-error {
+    border-color: var(--color-border-error);
+  }
+
+  .border-red-600 {
+    border-color: var(--color-accent-red-600);
+  }
+
+  .border-gray-200 {
+    border-color: var(--color-primary-200);
+  }
+
+  /* ========================================================================
+     Spacing Utilities - Padding (Logical Properties)
+     ======================================================================== */
+
+  /* Padding - All sides */
+  .p-2xs {
+    padding: var(--spacing-scale-2xs);
+  }
+
+  .p-xs {
+    padding: var(--spacing-scale-xs);
+  }
+
+  .p-sm {
+    padding: var(--spacing-scale-sm);
+  }
+
+  .p-md {
+    padding: var(--spacing-scale-md);
+  }
+
+  .p-lg {
+    padding: var(--spacing-scale-lg);
+  }
+
+  .p-xl {
+    padding: var(--spacing-scale-xl);
+  }
+
+  .p-2xl {
+    padding: var(--spacing-scale-2xl);
+  }
+
+  /* Padding - Horizontal (inline) */
+  .px-xs {
+    padding-inline: var(--spacing-scale-xs);
+  }
+
+  .px-sm {
+    padding-inline: var(--spacing-scale-sm);
+  }
+
+  .px-md {
+    padding-inline: var(--spacing-scale-md);
+  }
+
+  .px-lg {
+    padding-inline: var(--spacing-scale-lg);
+  }
+
+  /* Padding - Vertical (block) */
+  .py-2xs {
+    padding-block: var(--spacing-scale-2xs);
+  }
+
+  .py-xs {
+    padding-block: var(--spacing-scale-xs);
+  }
+
+  .py-sm {
+    padding-block: var(--spacing-scale-sm);
+  }
+
+  .py-md {
+    padding-block: var(--spacing-scale-md);
+  }
+
+  /* Padding - Top (block-start) */
+  .pt-xs {
+    padding-block-start: var(--spacing-scale-xs);
+  }
+
+  .pt-sm {
+    padding-block-start: var(--spacing-scale-sm);
+  }
+
+  .pt-md {
+    padding-block-start: var(--spacing-scale-md);
+  }
+
+  /* Padding - Bottom (block-end) */
+  .pb-xs {
+    padding-block-end: var(--spacing-scale-xs);
+  }
+
+  .pb-sm {
+    padding-block-end: var(--spacing-scale-sm);
+  }
+
+  .pb-md {
+    padding-block-end: var(--spacing-scale-md);
+  }
+
+  /* ========================================================================
+     Spacing Utilities - Margin (Logical Properties)
+     ======================================================================== */
+
+  /* Margin - All sides */
+  .m-auto {
+    margin: auto;
+  }
+
+  .m-xs {
+    margin: var(--spacing-scale-xs);
+  }
+
+  .m-sm {
+    margin: var(--spacing-scale-sm);
+  }
+
+  .m-md {
+    margin: var(--spacing-scale-md);
+  }
+
+  .m-lg {
+    margin: var(--spacing-scale-lg);
+  }
+
+  /* Margin - Horizontal (inline) */
+  .mx-auto {
+    margin-inline: auto;
+  }
+
+  .mx-xs {
+    margin-inline: var(--spacing-scale-xs);
+  }
+
+  .mx-sm {
+    margin-inline: var(--spacing-scale-sm);
+  }
+
+  .mx-md {
+    margin-inline: var(--spacing-scale-md);
+  }
+
+  /* Margin - Vertical (block) */
+  .my-xs {
+    margin-block: var(--spacing-scale-xs);
+  }
+
+  .my-sm {
+    margin-block: var(--spacing-scale-sm);
+  }
+
+  .my-md {
+    margin-block: var(--spacing-scale-md);
+  }
+
+  .my-lg {
+    margin-block: var(--spacing-scale-lg);
+  }
+
+  /* Margin - Bottom (block-end) */
+  .mb-xs {
+    margin-block-end: var(--spacing-scale-xs);
+  }
+
+  .mb-sm {
+    margin-block-end: var(--spacing-scale-sm);
+  }
+
+  .mb-md {
+    margin-block-end: var(--spacing-scale-md);
+  }
+
+  .mb-lg {
+    margin-block-end: var(--spacing-scale-lg);
+  }
+
+  /* ========================================================================
+     Spacing Utilities - Gap (for Grid/Flexbox)
+     ======================================================================== */
+  .gap-xs {
+    gap: var(--spacing-scale-xs);
+  }
+
+  .gap-sm {
+    gap: var(--spacing-scale-sm);
+  }
+
+  .gap-md {
+    gap: var(--spacing-scale-md);
+  }
+
+  .gap-lg {
+    gap: var(--spacing-scale-lg);
+  }
+
+  /* Column gap */
+  .gap-x-xs {
+    column-gap: var(--spacing-scale-xs);
+  }
+
+  .gap-x-sm {
+    column-gap: var(--spacing-scale-sm);
+  }
+
+  .gap-x-md {
+    column-gap: var(--spacing-scale-md);
+  }
+
+  /* Row gap */
+  .gap-y-xs {
+    row-gap: var(--spacing-scale-xs);
+  }
+
+  .gap-y-sm {
+    row-gap: var(--spacing-scale-sm);
+  }
+
+  .gap-y-md {
+    row-gap: var(--spacing-scale-md);
+  }
+
+  /* ========================================================================
+     Typography Utilities - Font Family
+     ======================================================================== */
+  .font-sans {
+    font-family: var(--font-family-sans);
+  }
+
+  .font-mono {
+    font-family: var(--font-family-mono);
+  }
+
+  /* ========================================================================
+     Typography Utilities - Font Size
+     ======================================================================== */
+  .text-xs {
+    font-size: var(--font-size-xs);
+  }
+
+  .text-sm {
+    font-size: var(--font-size-sm);
+  }
+
+  .text-base {
+    font-size: var(--font-size-base);
+  }
+
+  .text-lg {
+    font-size: var(--font-size-lg);
+  }
+
+  .text-xl {
+    font-size: var(--font-size-xl);
+  }
+
+  .text-2xl {
+    font-size: var(--font-size-2xl);
+  }
+
+  .text-3xl {
+    font-size: var(--font-size-3xl);
+  }
+
+  /* ========================================================================
+     Typography Utilities - Font Weight
+     ======================================================================== */
+  .font-regular {
+    font-weight: var(--font-weight-regular);
+  }
+
+  .font-medium {
+    font-weight: var(--font-weight-medium);
+  }
+
+  .font-semibold {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .font-bold {
+    font-weight: var(--font-weight-bold);
+  }
+
+  /* ========================================================================
+     Typography Utilities - Line Height
+     ======================================================================== */
+  .leading-tight {
+    line-height: var(--line-height-tight);
+  }
+
+  .leading-normal {
+    line-height: var(--line-height-normal);
+  }
+
+  .leading-relaxed {
+    line-height: var(--line-height-relaxed);
+  }
+
+  /* ========================================================================
+     Layout Utilities - Border Radius
+     ======================================================================== */
+  .rounded-none {
+    border-radius: var(--border-radius-none);
+  }
+
+  .rounded-sm {
+    border-radius: var(--border-radius-sm);
+  }
+
+  .rounded-md {
+    border-radius: var(--border-radius-md);
+  }
+
+  .rounded-lg {
+    border-radius: var(--border-radius-lg);
+  }
+
+  .rounded-xl {
+    border-radius: var(--border-radius-xl);
+  }
+
+  .rounded-full {
+    border-radius: var(--border-radius-full);
+  }
+
+  /* ========================================================================
+     Layout Utilities - Shadows
+     ======================================================================== */
+  .shadow-sm {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .shadow-md {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-lg {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .shadow-xl {
+    box-shadow: var(--shadow-xl);
+  }
+
+  .shadow-none {
+    box-shadow: none;
+  }
+
+  /* ========================================================================
+     Layout Utilities - Border Width
+     ======================================================================== */
+  .border {
+    border-style: solid;
+    border-width: var(--border-width-thin);
+  }
+
+  .border-2 {
+    border-style: solid;
+    border-width: var(--border-width-medium);
+  }
+
+  .border-none {
+    border: none;
+  }
+
+  /* ========================================================================
+     Display Utilities
+     ======================================================================== */
+  .flex {
+    display: flex;
+  }
+
+  .inline-flex {
+    display: inline-flex;
+  }
+
+  .grid {
+    display: grid;
+  }
+
+  .block {
+    display: block;
+  }
+
+  .inline-block {
+    display: inline-block;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  /* ========================================================================
+     Flexbox Utilities
+     ======================================================================== */
+  .flex-row {
+    flex-direction: row;
+  }
+
+  .flex-col {
+    flex-direction: column;
+  }
+
+  .items-start {
+    align-items: flex-start;
+  }
+
+  .items-center {
+    align-items: center;
+  }
+
+  .items-end {
+    align-items: flex-end;
+  }
+
+  .justify-start {
+    justify-content: flex-start;
+  }
+
+  .justify-center {
+    justify-content: center;
+  }
+
+  .justify-end {
+    justify-content: flex-end;
+  }
+
+  .justify-between {
+    justify-content: space-between;
+  }
+
+  /* ========================================================================
+     Position Utilities
+     ======================================================================== */
+  .relative {
+    position: relative;
+  }
+
+  .absolute {
+    position: absolute;
+  }
+
+  .fixed {
+    position: fixed;
+  }
+
+  .sticky {
+    position: sticky;
+  }
+
+  /* ========================================================================
+     Opacity Utilities
+     ======================================================================== */
+  .opacity-0 {
+    opacity: var(--opacity-0);
+  }
+
+  .opacity-50 {
+    opacity: var(--opacity-50);
+  }
+
+  .opacity-75 {
+    opacity: var(--opacity-75);
+  }
+
+  .opacity-100 {
+    opacity: var(--opacity-100);
+  }
+
+  /* ========================================================================
+     Cursor Utilities
+     ======================================================================== */
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  .cursor-default {
+    cursor: default;
+  }
+
+  /* ========================================================================
+     State Variants - Hover
+     ======================================================================== */
+  .hover\:bg-primary-700:hover {
+    background-color: var(--color-primary-700);
+  }
+
+  .hover\:bg-red-700:hover {
+    background-color: var(--color-accent-red-700);
+  }
+
+  .hover\:text-primary-500:hover {
+    color: var(--color-text-primary);
+  }
+
+  /* ========================================================================
+     State Variants - Focus
+     ======================================================================== */
+  .focus\:outline-blue-500:focus {
+    outline: 2px solid var(--color-accent-blue-500);
+    outline-offset: 2px;
+  }
+
+  .focus\:border-blue-500:focus {
+    border-color: var(--color-accent-blue-500);
+  }
+
+  .focus\:ring:focus {
+    box-shadow: 0 0 0 3px rgb(59, 130, 246, 0.1);
+  }
+
+  /* ========================================================================
+     State Variants - Active
+     ======================================================================== */
+  .active\:bg-primary-900:active {
+    background-color: var(--color-primary-900);
+  }
+
+  /* ========================================================================
+     Container Query Variants - Responsive Utilities
+     ======================================================================== */
+  @container (min-width: 640px) {
+    .sm\:text-lg {
+      font-size: var(--font-size-lg);
+    }
+
+    .sm\:p-md {
+      padding: var(--spacing-scale-md);
+    }
+
+    .sm\:flex-row {
+      flex-direction: row;
+    }
+  }
+
+  @container (min-width: 768px) {
+    .md\:text-xl {
+      font-size: var(--font-size-xl);
+    }
+
+    .md\:p-lg {
+      padding: var(--spacing-scale-lg);
+    }
+
+    .md\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @container (min-width: 1024px) {
+    .lg\:text-2xl {
+      font-size: var(--font-size-2xl);
+    }
+
+    .lg\:p-xl {
+      padding: var(--spacing-scale-xl);
+    }
+
+    .lg\:grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  /* ========================================================================
+     Component-Specific Utilities from Sample
+     ======================================================================== */
+
+  /* Tag/Badge utilities */
+  .tag {
+    align-items: center;
+    border-radius: var(--border-radius-xl);
+    color: var(--color-text-inverse);
+    display: inline-flex;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    gap: var(--spacing-scale-xs);
+    padding: var(--spacing-tag-padding-y) var(--spacing-tag-padding-x);
+  }
+
+  .tag-red {
+    background-color: var(--color-accent-red-600);
+  }
+
+  .tag-green {
+    background-color: var(--color-accent-green-600);
+  }
+
+  .tag-yellow {
+    background-color: var(--color-accent-yellow-600);
+  }
+
+  .tag-gray {
+    background-color: var(--color-primary-500);
+  }
+
+  .tag-black {
+    background-color: var(--color-primary-800);
+  }
+
+  /* Button utilities */
+  .btn {
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-button-padding-y) var(--spacing-button-padding-x);
+    transition: background-color var(--transition-duration-fast) var(--transition-easing-ease);
+  }
+
+  .btn-primary {
+    background-color: var(--color-button-primary-bg);
+    color: var(--color-button-primary-text);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-button-primary-bg-hover);
+  }
+
+  .btn-danger {
+    background-color: var(--color-button-danger-bg);
+    color: var(--color-button-primary-text);
+  }
+
+  .btn-danger:hover {
+    background-color: var(--color-button-danger-bg-hover);
+  }
+
+  /* Form input utility */
+  .input {
+    background-color: var(--color-bg-primary);
+    border: var(--border-width-thin) solid var(--color-border-default);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-input-padding-y) var(--spacing-input-padding-x);
+    transition: border-color var(--transition-duration-fast) var(--transition-easing-ease);
+  }
+
+  .input:focus {
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 3px rgb(59, 130, 246, 0.1);
+    outline: none;
+  }
+
+  /* Alert utility */
+  .alert {
+    align-items: flex-start;
+    background-color: var(--color-alert-background);
+    border: var(--border-width-thin) solid var(--color-alert-border);
+    border-radius: var(--border-radius-lg);
+    color: var(--color-alert-text);
+    display: flex;
+    gap: var(--spacing-scale-sm);
+    padding: var(--spacing-scale-md);
+  }
+
+  /* Modal utilities */
+  .modal {
+    background-color: var(--color-bg-elevated);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-xl);
+    max-width: 500px;
+    padding: var(--spacing-modal-padding);
+    position: relative;
+    width: 100%;
+  }
+
+  .modal-overlay {
+    align-items: center;
+    background-color: var(--color-bg-overlay);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    position: fixed;
+    z-index: 1400;
+  }
+}
+
+/* ==========================================================================
+   Dark Mode Variants
+   ========================================================================== */
+@media (prefers-color-scheme: dark) {
+  @layer utilities {
+    .dark\:bg-primary-900 {
+      background-color: var(--color-primary-900);
+    }
+
+    .dark\:text-primary-50 {
+      color: var(--color-primary-50);
+    }
+
+    .dark\:border-primary-700 {
+      border-color: var(--color-primary-700);
+    }
+  }
+}
+
+/* ==========================================================================
+   Reduced Motion Support
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  @layer utilities {
+    .btn,
+    .input,
+    * {
+      /* stylelint-disable-next-line declaration-no-important -- Required for accessibility override */
+      animation-duration: 0ms !important;
+      /* stylelint-disable-next-line declaration-no-important -- Required for accessibility override */
+      transition-duration: 0ms !important;
+    }
+  }
+}
