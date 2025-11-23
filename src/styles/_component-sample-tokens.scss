@@ -1,0 +1,318 @@
+/**
+ * Component Sample Design Tokens - SCSS Variables
+ * Extracted from Component Sample - Light theme image
+ * Compatible with project SCSS architecture
+ *
+ * Note: This augments the existing _design-tokens.scss with additional
+ * color variants and component-specific patterns from the sample.
+ */
+
+@use "sass:map";
+
+// =============================================================================
+// Extended Color Palette from Component Sample
+// =============================================================================
+
+// Red Accent (from tabs and tags)
+$color-red-50: #fef2f2 !default;
+$color-red-600: #dc2626 !default;
+$color-red-700: #b91c1c !default;
+$color-red-900: #7f1d1d !default;
+
+// Blue Accent (from tabs)
+$color-blue-500: #3b82f6 !default;
+$color-blue-600: #2563eb !default;
+
+// Green Accent (from tabs and tags)
+$color-green-500: #22c55e !default;
+$color-green-600: #16a34a !default;
+
+// Yellow Accent (from tabs and tags)
+$color-yellow-500: #f59e0b !default;
+$color-yellow-600: #d97706 !default;
+
+// Pink Accent (from tabs)
+$color-pink-500: #ec4899 !default;
+$color-pink-600: #db2777 !default;
+
+// Slate Accent (from tabs)
+$color-slate-500: #64748b !default;
+$color-slate-600: #475569 !default;
+
+// Gray/Neutral (from text and borders)
+$color-gray-200: #e5e7eb !default;
+$color-gray-500: #6b7280 !default;
+$color-gray-600: #4b5563 !default;
+$color-gray-800: #1f2937 !default;
+$color-gray-900: #111827 !default;
+
+// =============================================================================
+// Component-Specific Tokens from Sample
+// =============================================================================
+
+// Navigation Tab Colors
+$nav-tab-red: $color-red-600 !default;
+$nav-tab-blue: $color-blue-500 !default;
+$nav-tab-green: $color-green-500 !default;
+$nav-tab-yellow: $color-yellow-500 !default;
+$nav-tab-pink: $color-pink-500 !default;
+$nav-tab-slate: $color-slate-500 !default;
+
+// Tag/Badge Colors (from the form tags)
+$tag-gray-bg: $color-gray-500 !default;
+$tag-red-bg: $color-red-600 !default;
+$tag-green-bg: $color-green-600 !default;
+$tag-yellow-bg: $color-yellow-600 !default;
+$tag-black-bg: $color-gray-800 !default;
+$tag-text-color: #fff !default;
+
+// Alert Component (from the red alert box)
+$alert-bg: $color-red-50 !default;
+$alert-border: $color-red-600 !default;
+$alert-text: $color-red-900 !default;
+$alert-icon: $color-red-600 !default;
+
+// Button Component (from primary and danger buttons)
+$btn-primary-bg: $color-gray-800 !default;
+$btn-primary-bg-hover: $color-gray-600 !default;
+$btn-primary-text: #fff !default;
+$btn-danger-bg: $color-red-600 !default;
+$btn-danger-bg-hover: $color-red-700 !default;
+$btn-danger-text: #fff !default;
+
+// Form Input Component
+$input-border: $color-gray-200 !default;
+$input-border-focus: $color-blue-500 !default;
+$input-padding-x: 0.75rem !default; // 12px
+$input-padding-y: 0.75rem !default; // 12px
+$input-radius: 0.375rem !default; // 6px
+
+// Modal Component
+$modal-bg: #fff !default;
+$modal-overlay: rgb(17, 24, 39, 0.75) !default;
+$modal-padding: 1.5rem !default; // 24px
+$modal-radius: 0.5rem !default; // 8px
+$modal-shadow: 0 20px 25px -5px rgb(0, 0, 0, 0.15) !default;
+
+// Typography from Sample
+$text-primary: $color-gray-900 !default;
+$text-secondary: $color-gray-600 !default;
+$text-tertiary: $color-gray-500 !default;
+
+// =============================================================================
+// Component Pattern Mixins
+// =============================================================================
+
+/// Primary button style from component sample
+@mixin btn-primary {
+  background-color: $btn-primary-bg;
+  border: none;
+  border-radius: 0.375rem; // 6px
+  color: $btn-primary-text;
+  cursor: pointer;
+  font-size: 0.875rem; // 14px
+  font-weight: 500;
+  padding: 0.5rem 1rem; // 8px 16px
+  transition: background-color 150ms ease;
+
+  &:hover {
+    background-color: $btn-primary-bg-hover;
+  }
+
+  &:focus {
+    outline: 2px solid $color-blue-500;
+    outline-offset: 2px;
+  }
+}
+
+/// Danger button style (red)
+@mixin btn-danger {
+  background-color: $btn-danger-bg;
+  border: none;
+  border-radius: 0.375rem;
+  color: $btn-danger-text;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: background-color 150ms ease;
+
+  &:hover {
+    background-color: $btn-danger-bg-hover;
+  }
+
+  &:focus {
+    outline: 2px solid $color-red-600;
+    outline-offset: 2px;
+  }
+}
+
+/// Form input style from sample
+@mixin form-input {
+  background-color: #fff;
+  border: 1px solid $input-border;
+  border-radius: $input-radius;
+  font-size: 0.875rem; // 14px
+  padding: $input-padding-y $input-padding-x;
+  transition: border-color 150ms ease;
+
+  &:focus {
+    border-color: $input-border-focus;
+    box-shadow: 0 0 0 3px rgb(59, 130, 246, 0.1);
+    outline: none;
+  }
+
+  &::placeholder {
+    color: $text-tertiary;
+  }
+}
+
+/// Tag/badge style from sample
+@mixin tag-base {
+  align-items: center;
+  border-radius: 1rem; // 16px - pill shape
+  color: $tag-text-color;
+  display: inline-flex;
+  font-size: 0.75rem; // 12px
+  font-weight: 500;
+  gap: 0.5rem; // 8px
+  padding: 0.25rem 0.5rem; // 4px 8px
+}
+
+@mixin tag-red {
+  @include tag-base;
+
+  background-color: $tag-red-bg;
+}
+
+@mixin tag-green {
+  @include tag-base;
+
+  background-color: $tag-green-bg;
+}
+
+@mixin tag-yellow {
+  @include tag-base;
+
+  background-color: $tag-yellow-bg;
+}
+
+@mixin tag-gray {
+  @include tag-base;
+
+  background-color: $tag-gray-bg;
+}
+
+@mixin tag-black {
+  @include tag-base;
+
+  background-color: $tag-black-bg;
+}
+
+/// Alert component style
+@mixin alert-danger {
+  align-items: flex-start;
+  background-color: $alert-bg;
+  border: 1px solid $alert-border;
+  border-radius: 0.5rem; // 8px
+  color: $alert-text;
+  display: flex;
+  gap: 0.75rem; // 12px
+  padding: 1rem; // 16px
+
+  svg {
+    color: $alert-icon;
+    flex-shrink: 0;
+  }
+}
+
+/// Modal/dialog style
+@mixin modal {
+  background-color: $modal-bg;
+  border-radius: $modal-radius;
+  box-shadow: $modal-shadow;
+  max-width: 500px;
+  padding: $modal-padding;
+  position: relative;
+  width: 100%;
+}
+
+@mixin modal-overlay {
+  align-items: center;
+  background-color: $modal-overlay;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: fixed;
+  z-index: 1400; // Modal z-index
+}
+
+// =============================================================================
+// Utility Classes Based on Component Sample
+// =============================================================================
+
+// Generate tag utility classes
+.tag {
+  @include tag-base;
+
+  &--red {
+    background-color: $tag-red-bg;
+  }
+
+  &--green {
+    background-color: $tag-green-bg;
+  }
+
+  &--yellow {
+    background-color: $tag-yellow-bg;
+  }
+
+  &--gray {
+    background-color: $tag-gray-bg;
+  }
+
+  &--black {
+    background-color: $tag-black-bg;
+  }
+}
+
+// Button utility classes
+.btn {
+  &--primary {
+    @include btn-primary;
+  }
+
+  &--danger {
+    @include btn-danger;
+  }
+}
+
+// Alert utility class
+.alert {
+  &--danger {
+    @include alert-danger;
+  }
+}
+
+// =============================================================================
+// Navigation Tab Colors Map (for dynamic generation)
+// =============================================================================
+$nav-tab-colors: (
+  "red": $nav-tab-red,
+  "blue": $nav-tab-blue,
+  "green": $nav-tab-green,
+  "yellow": $nav-tab-yellow,
+  "pink": $nav-tab-pink,
+  "slate": $nav-tab-slate,
+) !default;
+
+/// Get navigation tab color
+/// @param {String} $color - Color name (red, blue, green, yellow, pink, slate)
+/// @return {Color}
+@function get-nav-tab-color($color) {
+  @if map.has-key($nav-tab-colors, $color) {
+    @return map.get($nav-tab-colors, $color);
+  } @else {
+    @error "Invalid nav tab color: #{$color}";
+  }
+}
