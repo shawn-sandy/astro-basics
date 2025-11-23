@@ -361,9 +361,14 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
   if (auth().userId) {
     locals.userId = auth().userId
 
-    // Extract organization context from session claims
+    // Extract user and organization context from session claims
     const claims = auth().sessionClaims
-    locals.userRole = (claims?.org_role as string) ?? null
+
+    // User-level role (application-wide permissions)
+    locals.userRole = (claims?.role as string) ?? 'member'
+
+    // Organization-specific role and context
+    locals.orgRole = (claims?.org_role as string) ?? null
     locals.orgId = (claims?.org_id as string) ?? null
 
     // Get Clerk session token for Supabase native integration
@@ -375,7 +380,8 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
       const isProtected = isProtectedRoute(context.request)
       const logContext = {
         userId: locals.userId ?? undefined,
-        role: locals.userRole,
+        userRole: locals.userRole,
+        orgRole: locals.orgRole,
         orgId: locals.orgId,
         endpoint: context.url.pathname,
         method: context.request.method,
