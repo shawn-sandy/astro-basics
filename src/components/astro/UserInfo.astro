@@ -7,7 +7,7 @@ import RoleBadge from '#components/react/RoleBadge.tsx'
 import type { UserRole } from '#components/react/RoleBadge.tsx'
 
 // Get the current user's auth info
-const auth = Astro.locals.auth()
+const auth = Astro.locals
 const { userId } = auth
 
 let user: User | null = null
