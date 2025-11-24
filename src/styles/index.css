@@ -225,6 +225,9 @@ body > nav {
 body > nav > ul {
   margin-block-end: 0;
 }
+body > nav > ul li:hover:has(img, button) {
+  background-color: rgba(0, 0, 0, 0);
+}
 main {
   margin: auto;
   padding-block: 2rem;
