@@ -1,0 +1,484 @@
+---
+title: Layouts
+description: Learn how to use and customize page layouts, including custom headers with slot-based composition.
+---
+
+# Layouts
+
+The astro-basics project provides flexible layout components that support both standard page structures and advanced customization through Astro's slot pattern.
+
+## Available Layouts
+
+### Base Layout
+
+The foundational layout that all other layouts extend. Includes navigation, header area, and footer.
+
+**Location:** `src/layouts/Base.astro`
+
+**Features:**
+- Customizable header via slots
+- Optional header visibility control
+- SEO meta tags
+- Authentication integration
+
+```astro
+---
+import Base from '#layouts/Base.astro'
+---
+
+<Base
+  pageTitle="Page Title"
+  pageDescription="Page description"
+  pageImageUrl="/images/hero.jpg"
+  hideHeader={false}
+>
+  <!-- Page content -->
+</Base>
+```
+
+### Main Layout
+
+Extends Base with a main content area and sidebar.
+
+**Location:** `src/layouts/Layout.astro`
+
+**Use cases:** Blog posts, documentation pages, content-rich pages
+
+```astro
+---
+import Layout from '#layouts/Layout.astro'
+---
+
+<Layout pageTitle="Blog Post" showBreadcrumb={true}>
+  <!-- Main content -->
+
+  <aside slot="sidebar">
+    <!-- Sidebar content -->
+  </aside>
+</Layout>
+```
+
+### Auth Layout
+
+Simplified layout for authentication pages.
+
+**Location:** `src/layouts/Auth.astro`
+
+**Use cases:** Login, register, password reset pages
+
+```astro
+---
+import Auth from '#layouts/Auth.astro'
+---
+
+<Auth pageTitle="Sign In" hideHeader={true}>
+  <!-- Auth form content -->
+</Auth>
+```
+
+## Custom Headers
+
+One of the most powerful features is the ability to customize page headers using Astro's named slot pattern.
+
+### Using the Default Header
+
+The default header automatically uses `pageTitle` and `pageDescription` props:
+
+```astro
+<Base
+  pageTitle="Welcome to My Site"
+  pageDescription="Discover amazing content"
+>
+  <!-- Content -->
+</Base>
+```
+
+### Providing a Custom Header
+
+Use the `header` slot to provide any custom component:
+
+```astro
+---
+import Base from '#layouts/Base.astro'
+import CustomHero from '#components/astro/CustomHero.astro'
+---
+
+<Base pageTitle="Landing Page">
+  <CustomHero
+    slot="header"
+    title="Big Announcement"
+    subtitle="Something exciting is coming"
+    backgroundImage="/hero-bg.jpg"
+  />
+
+  <!-- Page content -->
+</Base>
+```
+
+### Hiding the Header
+
+For pages that don't need a header (like authentication pages):
+
+```astro
+<Base hideHeader={true}>
+  <!-- Content without header -->
+</Base>
+```
+
+:::note
+The `hideHeader` prop takes priority over the header slot. If `hideHeader={true}`, no header will render, even if you provide a slot.
+:::
+
+## Common Patterns
+
+### Landing Page with Custom Hero
+
+```astro
+---
+import Base from '#layouts/Base.astro'
+import HeroSection from '#components/astro/HeroSection.astro'
+---
+
+<Base pageTitle="Product Launch">
+  <HeroSection
+    slot="header"
+    headline="Transform Your Workflow"
+    subheadline="The tools you need to succeed"
+    ctaText="Get Started"
+    ctaLink="/signup"
+    backgroundImage="/hero.jpg"
+  />
+
+  <section>
+    <!-- Feature sections -->
+  </section>
+</Base>
+```
+
+### Marketing Page with Promo Header
+
+```astro
+---
+import Base from '#layouts/Base.astro'
+import PromoHeader from '#components/astro/PromoHeader.astro'
+
+const promoActive = true
+---
+
+<Base pageTitle="Special Offer">
+  {promoActive && (
+    <PromoHeader
+      slot="header"
+      message="Limited Time: 50% Off All Plans"
+      ctaText="Claim Offer"
+      expiresAt="2025-12-31"
+    />
+  )}
+
+  <!-- Marketing content -->
+</Base>
+```
+
+### Blog Post with Featured Image Header
+
+```astro
+---
+import Layout from '#layouts/Layout.astro'
+import FeaturedImageHeader from '#components/astro/FeaturedImageHeader.astro'
+
+const post = Astro.props.post
+---
+
+<Layout pageTitle={post.title}>
+  <FeaturedImageHeader
+    slot="header"
+    image={post.heroImage}
+    title={post.title}
+    author={post.author}
+    publishDate={post.pubDate}
+    readingTime={post.readingTime}
+  />
+
+  <article>
+    <!-- Blog post content -->
+  </article>
+</Layout>
+```
+
+### Dashboard with Minimal Header
+
+```astro
+---
+import Auth from '#layouts/Auth.astro'
+import DashboardHeader from '#components/dashboard/DashboardHeader.astro'
+
+const user = Astro.locals.user
+---
+
+<Auth pageTitle="Dashboard">
+  <DashboardHeader
+    slot="header"
+    userName={user.name}
+    lastLogin={user.lastLogin}
+    notifications={5}
+  />
+
+  <!-- Dashboard content -->
+</Auth>
+```
+
+## Layout Props Reference
+
+### Base Layout Props
+
+```typescript
+type Props = {
+  pageTitle?: string              // Page title for <title> and default header
+  pageDescription?: string         // Meta description and header subtitle
+  pageImageUrl?: string           // OG image and header background
+  showBreadcrumb?: boolean        // Show/hide breadcrumb navigation
+  breadcrumbRoutes?: Array<{      // Custom breadcrumb items
+    name: string
+    url: string
+    path?: string
+  }>
+  hideHeader?: boolean            // Hide header completely
+}
+```
+
+### Named Slots
+
+All layouts support these named slots:
+
+| Slot Name | Purpose | Available In |
+|-----------|---------|--------------|
+| `header` | Custom header component | Base, Layout, Auth |
+| `sidebar` | Sidebar content | Layout |
+| `featured` | Featured content area | Layout |
+| Default slot | Main page content | All layouts |
+
+## Best Practices
+
+### 1. Choose the Right Layout
+
+```astro
+<!-- Content pages with sidebar -->
+<Layout pageTitle="Article">...</Layout>
+
+<!-- Landing pages, marketing -->
+<Base pageTitle="Home">...</Base>
+
+<!-- Auth pages, dashboards -->
+<Auth pageTitle="Login">...</Auth>
+```
+
+### 2. Use Path Aliases
+
+Always use the `#` alias for imports:
+
+```astro
+// ✅ Correct
+import Base from '#layouts/Base.astro'
+import Header from '#components/astro/Header.astro'
+
+// ❌ Avoid
+import Base from '../layouts/Base.astro'
+import Header from '../components/astro/Header.astro'
+```
+
+### 3. Consistent SEO Props
+
+Always provide title and description for better SEO:
+
+```astro
+<Base
+  pageTitle="Unique Page Title - Site Name"
+  pageDescription="Descriptive text for search engines and social media"
+  pageImageUrl="/og-images/page-specific.jpg"
+>
+  <!-- Content -->
+</Base>
+```
+
+### 4. Accessibility in Custom Headers
+
+Ensure custom headers maintain semantic structure:
+
+```astro
+---
+export type Props = {
+  title: string
+  subtitle?: string
+}
+
+const { title, subtitle } = Astro.props
+---
+
+<header role="banner" aria-label="Page header">
+  <div class="header-container">
+    <h1 id="page-title">{title}</h1>
+    {subtitle && (
+      <p class="header-subtitle">{subtitle}</p>
+    )}
+  </div>
+</header>
+```
+
+### 5. Performance with Client Components
+
+If using React components as custom headers, choose appropriate hydration:
+
+```astro
+<!-- Static: No JS needed -->
+<StaticHeader slot="header" />
+
+<!-- Interactive: Load immediately -->
+<InteractiveHeader slot="header" client:load />
+
+<!-- Interactive: Load when visible -->
+<InteractiveHeader slot="header" client:visible />
+
+<!-- Interactive: Load when browser idle -->
+<InteractiveHeader slot="header" client:idle />
+```
+
+## Creating Custom Layouts
+
+To create a new layout that extends Base:
+
+```astro
+---
+// src/layouts/CustomLayout.astro
+import Base from './Base.astro'
+
+export type Props = {
+  pageTitle?: string
+  customProp?: string
+  hideHeader?: boolean
+}
+
+const { pageTitle, customProp, hideHeader } = Astro.props
+---
+
+<Base pageTitle={pageTitle} hideHeader={hideHeader}>
+  {/* Forward header slot to Base */}
+  {Astro.slots.has('header') && (
+    <slot name="header" slot="header" />
+  )}
+
+  <div class="custom-layout">
+    {/* Custom layout structure */}
+    <slot />
+  </div>
+</Base>
+
+<style>
+  .custom-layout {
+    /* Custom styling */
+  }
+</style>
+```
+
+## Examples
+
+### Simple Content Page
+
+```astro
+---
+import Base from '#layouts/Base.astro'
+---
+
+<Base
+  pageTitle="About Us"
+  pageDescription="Learn about our story"
+>
+  <section>
+    <h2>Our Story</h2>
+    <p>Content...</p>
+  </section>
+</Base>
+```
+
+### Blog Post with Sidebar
+
+```astro
+---
+import Layout from '#layouts/Layout.astro'
+import TableOfContents from '#components/astro/TableOfContents.astro'
+
+const post = Astro.props
+---
+
+<Layout
+  pageTitle={post.title}
+  pageDescription={post.excerpt}
+  showBreadcrumb={true}
+>
+  <article>
+    {/* Post content */}
+  </article>
+
+  <TableOfContents slot="sidebar" headings={post.headings} />
+</Layout>
+```
+
+### Authentication Page
+
+```astro
+---
+import Auth from '#layouts/Auth.astro'
+import { SignIn } from '@clerk/astro/components'
+---
+
+<Auth pageTitle="Sign In" hideHeader={true}>
+  <section class="auth-container">
+    <h2>Welcome Back</h2>
+    <SignIn />
+  </section>
+</Auth>
+```
+
+## Related Documentation
+
+- **[Components](/guide/components/)** - Available header components
+- **[Styling](/guide/styling/)** - Layout styling and theming
+- **[Custom Header Slots](/guide/custom-header-slots/)** - Detailed header customization guide (project-docs)
+
+## Migration Notes
+
+### From Previous Versions
+
+The slot-based header feature is fully backward compatible. No changes needed for existing pages:
+
+```astro
+<!-- ✅ Works: Existing code -->
+<Base pageTitle="Old Page">
+  <p>Content</p>
+</Base>
+
+<!-- ✅ Works: New feature, opt-in -->
+<Base pageTitle="New Page">
+  <CustomHeader slot="header" />
+  <p>Content</p>
+</Base>
+```
+
+### Upgrading from Static Headers
+
+If you were working around header limitations:
+
+```astro
+<!-- Before: Workaround with hideHeader -->
+<Base hideHeader={true}>
+  <CustomHeader />  {/* Not in slot */}
+  <main>
+    <p>Content</p>
+  </main>
+</Base>
+
+<!-- After: Proper slot usage -->
+<Base>
+  <CustomHeader slot="header" />
+  <p>Content</p>
+</Base>
+```
