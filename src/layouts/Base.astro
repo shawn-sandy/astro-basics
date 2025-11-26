@@ -91,12 +91,18 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 
     {
       !hideHeader && (
-        <Header
-          headerTitle={pageTitle || ''}
-          headerDescription={pageDescription || ''}
-          headerImageUrl={pageImageUrl || ''}
-          headerImageAlt={pageTitle || ''}
-        />
+        <>
+          {Astro.slots.has('header') ? (
+            <slot name="header" />
+          ) : (
+            <Header
+              headerTitle={pageTitle || ''}
+              headerDescription={pageDescription || ''}
+              headerImageUrl={pageImageUrl || ''}
+              headerImageAlt={pageTitle || ''}
+            />
+          )}
+        </>
       )
     }
     <slot />
