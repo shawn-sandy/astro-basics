@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **User Sync Utility** (`src/utils/user-sync.ts`): Consolidated utility for fetching user data from Clerk and syncing with Supabase
+  - `fetchUserWithRole()` function reduces component code by 80% (1 line vs 40+ lines)
+  - Automatic user creation when users don't exist in database (handles PGRST116 errors)
+  - Race condition safety with upsert operations (prevents duplicate user creation)
+  - Graceful error handling with structured error fields (`error` for critical, `roleError` for warnings)
+  - Non-throwing design allows components to display appropriate error messages
+  - Default role assignment (`'member'`) for new users
+  - Re-exported through `#utils/user-sync` and `#utils` for convenient importing
+  - Comprehensive JSDoc documentation with usage examples
+  - Full documentation: [User Sync Utility Guide](/guide/utilities/user-sync)
+- **Component Updates**: Refactored `UserInfo.astro` to use new User Sync Utility
+  - Eliminated duplicate user fetching and role sync code
+  - Consistent error handling across user-facing components
+  - Improved maintainability with centralized sync logic
 - **Comment System**: Full-featured comment system for blog posts and documentation pages
   - Polymorphic database design supporting multiple content types (`post`, `doc`)
   - Threaded comments with 3-level nesting support

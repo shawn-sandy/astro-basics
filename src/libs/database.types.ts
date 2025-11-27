@@ -10,6 +10,7 @@ export type Database = {
           username: string | null
           full_name: string | null
           avatar_url: string | null
+          role: string
           metadata: Record<string, unknown>
           created_at: string
           updated_at: string

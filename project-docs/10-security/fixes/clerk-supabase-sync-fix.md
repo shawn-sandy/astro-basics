@@ -60,12 +60,10 @@ WHERE clerk_id = 'user_3064gM5fPfTgXeJ7RPMiqzDbXnE';
 To complete the integration, you need to configure webhooks in the Clerk Dashboard:
 
 1. **Access Clerk Dashboard**
-
    - Go to your Clerk project dashboard
    - Navigate to "Webhooks" section
 
 2. **Create Webhook Endpoint**
-
    - URL: `https://your-domain.com/api/webhooks/clerk` (or for development: use ngrok/similar)
    - Events to subscribe to:
      - `user.created`
@@ -74,7 +72,6 @@ To complete the integration, you need to configure webhooks in the Clerk Dashboa
      - `session.created`
 
 3. **Copy Webhook Secret**
-
    - Copy the webhook secret from Clerk Dashboard
    - Update `.env` file:
 
@@ -111,13 +108,11 @@ ngrok http 4321
 ## Testing
 
 1. **Test Automatic Sync**:
-
    - Sign in to your application
    - Visit a protected route like `/dashboard/messages`
    - Check database: `last_sign_in_at` should be updated
 
 2. **Test Manual Sync**:
-
    - Call `/api/user/sync` POST endpoint (requires authentication)
    - User data should be synced from Clerk to Supabase
 
@@ -133,3 +128,50 @@ ngrok http 4321
 - `src/pages/api/webhooks/clerk.ts` - Existing webhook handler (ready for use)
 
 The integration is now working for basic user tracking, with webhooks remaining as the final step for complete real-time synchronization.
+
+## Related Utilities (Added 2025-01-27)
+
+### User Sync Utility
+
+For component-level user fetching and syncing, use the **User Sync Utility** which consolidates the pattern of fetching user data from Clerk and syncing with Supabase:
+
+**File**: `src/utils/user-sync.ts`
+
+**Quick Example**:
+
+```astro
+---
+import { fetchUserWithRole } from '#utils/user-sync'
+
+const { userId } = Astro.locals
+const { user, userRole, error, roleError } = await fetchUserWithRole(userId, Astro)
+---
+```
+
+**Benefits over manual sync**:
+
+- ✅ 80% less code (1 line vs 40+ lines)
+- ✅ Automatic user creation on PGRST116 error
+- ✅ Consistent error handling
+- ✅ Race condition safety with upsert
+
+**Documentation**:
+
+- Utility Reference: [project-docs/12-utilities/user-sync-utility.md](../12-utilities/user-sync-utility.md)
+- Developer Guide: [User Sync Guide](/guide/utilities/user-sync)
+
+### When to Use Each Approach
+
+| Approach                               | Use Case                                           | Timing                  |
+| -------------------------------------- | -------------------------------------------------- | ----------------------- |
+| **Middleware Sync** (this doc)         | Update `last_sign_in_at` on protected route access | Automatic, background   |
+| **User Sync Utility**                  | Fetch user + role in components                    | On-demand, foreground   |
+| **Manual Sync API** (`/api/user/sync`) | Client-side data fetching, manual triggers         | On-demand, API call     |
+| **Webhooks**                           | Proactive sync on Clerk events                     | Real-time, event-driven |
+
+**Best Practice**: Use all four approaches together for complete coverage:
+
+- Webhooks: Proactive user creation and updates
+- Middleware: Automatic timestamp tracking
+- User Sync Utility: Component-level data fetching with safety nets
+- Manual API: Client-side operations and troubleshooting

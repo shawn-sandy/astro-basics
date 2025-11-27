@@ -1,10 +1,9 @@
 ---
-import { clerkClient } from '@clerk/astro/server'
 import type { User } from '@clerk/backend'
 import { formatMetadataForDisplay } from '#utils/sanitize'
-import { getSupabaseServiceRole, isSupabaseConfigured } from '#libs/supabase-native'
+import { fetchUserWithRole } from '#utils/user-sync'
 import RoleBadge from '#components/react/RoleBadge.tsx'
-import type { UserRole } from '#components/react/RoleBadge.tsx'
+import type { UserRole } from '#utils/role-types'
 
 // Get the current user's auth info
 const auth = Astro.locals
@@ -15,77 +14,13 @@ let error: string | null = null
 let userRole: UserRole | null = null
 let roleError: string | null = null
 
+// Fetch user data and role using reusable utility
 if (userId) {
-  try {
-    // Fetch full user data from Clerk - pass Astro context
-    const client = clerkClient(Astro)
-    user = await client.users.getUser(userId)
-  } catch (err) {
-    console.error('Failed to fetch user data:', err)
-    error = `Failed to load user information: ${err instanceof Error ? err.message : 'Unknown error'}`
-  }
-
-  // Fetch user role from Supabase
-  if (isSupabaseConfigured()) {
-    try {
-      const supabase = getSupabaseServiceRole()
-      if (supabase) {
-        const { data, error: roleQueryError } = await supabase
-          .from('users')
-          .select('role')
-          .eq('clerk_id', userId)
-          .single()
-
-        if (roleQueryError) {
-          // PGRST116 means no user found - try to create it automatically
-          if (roleQueryError.code === 'PGRST116' && user) {
-            // Create user record with data from Clerk and default "member" role
-            const primaryEmail = user.emailAddresses?.find(
-              email => email.id === user?.primaryEmailAddressId
-            )
-            const newUser = {
-              clerk_id: userId,
-              email: primaryEmail?.emailAddress || user.emailAddresses?.[0]?.emailAddress,
-              username: user.username,
-              full_name: user.fullName || `${user.firstName} ${user.lastName}`.trim() || null,
-              avatar_url: user.imageUrl,
-              role: 'member' as UserRole, // Default role for new users
-            }
-
-            // Use upsert with onConflict to handle race condition with webhook
-            // If webhook already created user, this will update instead of failing
-            const { data: upsertedUser, error: upsertError } = await supabase
-              .from('users')
-              .upsert(newUser, {
-                onConflict: 'clerk_id',
-                ignoreDuplicates: false,
-              })
-              .select('role')
-              .single()
-
-            if (upsertError) {
-              console.error('Failed to create/update user in Supabase:', upsertError.message)
-              roleError = 'Role information unavailable'
-            } else if (upsertedUser) {
-              userRole = upsertedUser.role as UserRole
-            }
-          } else {
-            console.warn('Failed to fetch user role:', roleQueryError.message)
-            roleError = 'Role information unavailable'
-          }
-        } else if (data) {
-          userRole = data.role as UserRole
-        } else {
-          roleError = 'Role information unavailable'
-        }
-      } else {
-        roleError = 'Database connection unavailable'
-      }
-    } catch (err) {
-      console.error('Error fetching user role:', err)
-      roleError = 'Role information unavailable'
-    }
-  }
+  const result = await fetchUserWithRole(userId, Astro)
+  user = result.user
+  userRole = result.userRole
+  error = result.error
+  roleError = result.roleError
 }
 
 // Add error boundary for metadata display
