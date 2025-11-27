@@ -438,3 +438,5 @@ TURSO_AUTH_TOKEN=eyJ...
   - Original preserved as CLAUDE.md.backup
 
 **Original documentation preserved in**: [CLAUDE.md.backup](CLAUDE.md.backup)
+
+- when asked to document a feature, method, utility or otherwise it should be documented in project docs and the starlight guide

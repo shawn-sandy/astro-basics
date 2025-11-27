@@ -44,6 +44,12 @@ export default defineConfig({
             { label: 'Page Level Guards', link: '/guide/page-level-protection/' },
           ],
         },
+        {
+          label: 'Utilities',
+          items: [
+            { label: 'User Sync', link: '/guide/utilities/user-sync' },
+          ],
+        },
         { label: 'API Reference', autogenerate: { directory: 'guide/api' } },
         {
           label: 'MCP Servers',

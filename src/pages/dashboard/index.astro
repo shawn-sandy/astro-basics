@@ -88,12 +88,10 @@ const posts = [
   <SignedIn>
     <div class="dashboard-container">
       <DashboardLayout columns="1fr 1fr" gap="2rem" className="dashboard-grid">
-        <UserInfo />
         <div class="stats-section">
-          <h2>Overview</h2>
           <StatsCards stats={stats} />
         </div>
-
+        <UserInfo />
         <DashboardCard title="Recent Activity">
           <ActivityFeed activities={activities} />
         </DashboardCard>
