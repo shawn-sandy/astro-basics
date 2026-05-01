@@ -1,12 +1,12 @@
 ---
 import Auth from '#/layouts/Auth.astro'
-import { SignedIn, SignedOut } from '@clerk/astro/components'
+import { Show } from '@clerk/astro/components'
 import UserInfo from '#/components/astro/UserInfo.astro'
 import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
 ---
 
 <Auth pageTitle="My Profile - Astro Kit" pageDescription="User profile and account settings">
-  <SignedIn>
+  <Show when="signed-in">
     <div class="profile-page">
       <div class="profile-content">
         <div class="profile-main">
@@ -47,11 +47,11 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
         </div>
       </div>
     </div>
-  </SignedIn>
+  </Show>
 
-  <SignedOut>
+  <Show when="signed-out">
     <SignedOutMessage />
-  </SignedOut>
+  </Show>
 </Auth>
 
 <style>

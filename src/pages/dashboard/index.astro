@@ -1,6 +1,6 @@
 ---
 import Auth from '#/layouts/Auth.astro'
-import { SignedIn, SignedOut, UserButton } from '@clerk/astro/components'
+import { Show } from '@clerk/astro/components'
 import {
   DashboardCard,
   DashboardLayout,
@@ -85,7 +85,7 @@ const posts = [
 ---
 
 <Auth pageTitle="Dashboard - Astro Kit" pageDescription="">
-  <SignedIn>
+  <Show when="signed-in">
     <div class="dashboard-container">
       <DashboardLayout columns="1fr 1fr" gap="2rem" className="dashboard-grid">
         <div class="stats-section">
@@ -122,11 +122,11 @@ const posts = [
         </DashboardCard>
       </RoleGuard>
     </div>
-  </SignedIn>
+  </Show>
 
-  <SignedOut>
+  <Show when="signed-out">
     <SignedOutMessage />
-  </SignedOut>
+  </Show>
 </Auth>
 
 <style>
