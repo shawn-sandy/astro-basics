@@ -106,12 +106,12 @@ export default defineConfig({
     }),
   ],
   output: 'server',
+  legacy: { collections: true },
   vite: {
     server: {
       host: process.env.EXPOSE_DEV_SERVER === 'true' ? true : 'localhost',
       allowedHosts: ['476cd5383d8f.ngrok-free.app'],
     },
-    ssr: { noExternal: ['astro-imagetools'] },
   },
   // Choose adapter based on deployment target
   adapter: (() => {
