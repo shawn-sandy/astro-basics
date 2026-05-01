@@ -1,11 +1,6 @@
 ---
 import Auth from '#layouts/Auth.astro'
-import {
-  SignedIn,
-  SignedOut,
-  OrganizationSwitcher,
-  OrganizationProfile,
-} from '@clerk/astro/components'
+import { Show, OrganizationSwitcher, OrganizationProfile } from '@clerk/astro/components'
 import { formatRoleLabel, hasPermission } from '#utils/clerk-roles'
 
 const auth = Astro.locals.auth()
@@ -27,7 +22,7 @@ const roleLabel = formatRoleLabel(userRole)
 
 <Auth title="Organization - Astro Basics">
   <main class="container organization-page">
-    <SignedIn client:load>
+    <Show when="signed-in">
       <div class="org-header">
         <div class="org-title">
           <h1>Organization Management</h1>
@@ -100,14 +95,14 @@ const roleLabel = formatRoleLabel(userRole)
           </div>
         )
       }
-    </SignedIn>
+    </Show>
 
-    <SignedOut client:load>
+    <Show when="signed-out">
       <div class="signed-out-message">
         <p>Please sign in to access organization features.</p>
         <a href="/sign-in" class="btn btn-primary">Sign In</a>
       </div>
-    </SignedOut>
+    </Show>
   </main>
 </Auth>
 
