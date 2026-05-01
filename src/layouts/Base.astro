@@ -9,7 +9,7 @@ import Header from '#components/astro/Header.astro'
 import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config'
 import '@fpkit/acss/styles'
 import '../styles/index.css'
-import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/astro/components'
+import { Show, UserButton, SignInButton } from '@clerk/astro/components'
 const isPWAEnabled = import.meta.env.PWA_ENABLED === 'true' || false
 // types
 type routeItem = {
@@ -78,12 +78,12 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
         }
 
         <li class="clerk-user-button">
-          <SignedIn isStatic={true}>
+          <Show when="signed-in">
             <UserButton />
-          </SignedIn>
-          <SignedOut isStatic={true}>
+          </Show>
+          <Show when="signed-out">
             <SignInButton mode="modal" />
-          </SignedOut>
+          </Show>
         </li>
       </ul>
     </Navigation>

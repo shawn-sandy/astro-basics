@@ -1,6 +1,6 @@
 ---
-import { getCollection, type CollectionEntry } from 'astro:content'
-import MarkdownPostLayout from '../../layouts/MarkdownPostLayout.astro'
+import { getCollection, render, type CollectionEntry } from 'astro:content'
+import MarkdownPostLayout from '#layouts/MarkdownPostLayout.astro'
 
 // Enable prerendering since comments are removed
 export const prerender = true
@@ -8,7 +8,7 @@ export const prerender = true
 export async function getStaticPaths() {
   const docs = await getCollection('docs')
   return docs.map((entry: CollectionEntry<'docs'>) => ({
-    params: { slug: entry.slug },
+    params: { slug: entry.id },
     props: { entry },
   }))
 }
@@ -25,14 +25,14 @@ if (Astro.props.entry) {
 } else {
   // Server-rendered context - get entry from params
   const docs = await getCollection('docs')
-  const foundEntry = docs.find(doc => doc.slug === Astro.params.slug)
+  const foundEntry = docs.find(doc => doc.id === Astro.params.slug)
   if (!foundEntry) {
     return Astro.redirect('/404')
   }
   entry = foundEntry
 }
 
-const { Content, headings } = await entry.render()
+const { Content, headings } = await render(entry)
 ---
 
 <MarkdownPostLayout frontmatter={entry.data} headings={headings}>

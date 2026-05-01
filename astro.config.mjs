@@ -5,8 +5,6 @@ import netlify from '@astrojs/netlify'
 import vercel from '@astrojs/vercel'
 import sitemap from '@astrojs/sitemap'
 import embeds from 'astro-embed/integration'
-import AstroPWA from '@vite-pwa/astro'
-
 import node from '@astrojs/node'
 import clerk from '@clerk/astro'
 
@@ -84,29 +82,8 @@ export default defineConfig({
     }),
     mdx(),
     clerk(),
-    AstroPWA({
-      registerType: 'autoUpdate',
-      workbox: { globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2,ttf,eot}'] },
-      manifest: {
-        name: 'Astro Kit - Component Library & Demo',
-        short_name: 'AstroKit',
-        description:
-          'A collection of reusable Astro components and utilities for building content-rich websites',
-        theme_color: '#1e293b',
-        background_color: '#ffffff',
-        display: 'standalone',
-        orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
-        icons: [
-          { src: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
-        ],
-      },
-    }),
   ],
   output: 'server',
-  legacy: { collections: true },
   vite: {
     server: {
       host: process.env.EXPOSE_DEV_SERVER === 'true' ? true : 'localhost',
