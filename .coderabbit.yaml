@@ -1,0 +1,154 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "en-US"
+tone_instructions: "Be direct, pragmatic, and concise. Prioritize correctness, security, type safety, maintainability, and actionable fixes over style-only feedback."
+early_access: false
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  review_status: true
+  review_details: true
+  commit_status: true
+  fail_commit_status: true
+  collapse_walkthrough: true
+  changed_files_summary: true
+  sequence_diagrams: false
+  estimate_code_review_effort: true
+  assess_linked_issues: true
+  related_issues: true
+  related_prs: true
+  suggested_labels: true
+  auto_apply_labels: false
+  suggested_reviewers: true
+  auto_assign_reviewers: false
+  in_progress_fortune: false
+  poem: false
+  enable_prompt_for_ai_agents: true
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    auto_pause_after_reviewed_commits: 5
+    drafts: false
+    ignore_title_keywords:
+      - "wip"
+      - "draft"
+
+  path_filters:
+    - "!dist/**"
+    - "!node_modules/**"
+    - "!.astro/**"
+    - "!playwright-report/**"
+    - "!test-results/**"
+    - "!blob-report/**"
+    - "!.netlify/**"
+    - "!.vercel/**"
+    - "!coverage/**"
+    - "!src/styles/index.css"
+    - "!src/styles/index.css.map"
+
+  path_instructions:
+    - path: "src/**"
+      instructions: |
+        Enforce this repository's conventions from AGENTS.md and the CLAUDE instruction files. Internal imports must use the `#` alias instead of relative paths. Prefer strict TypeScript types, explicit return types for exported functions, and `import type` for type-only imports.
+    - path: "src/pages/api/**"
+      instructions: |
+        Treat API routes as security-sensitive. Protected endpoints must authenticate before parsing input or doing side effects, validate and sanitize all request data, use `getDatabase()` from `#libs/database` for database work, and return JSON errors as `{ error: string, details?: string }`.
+    - path: "src/components/**"
+      instructions: |
+        Check component placement and contracts. Astro server components belong in `src/components/astro`, client React components in `src/components/react`, and protected dashboard components in `src/components/dashboard`. Components must export `type Props` and use project path aliases.
+    - path: "src/libs/**"
+      instructions: |
+        Preserve the database abstraction boundary. New application code should depend on `#libs/database` and shared types, not direct Supabase or Turso clients, except inside provider adapter modules.
+    - path: "src/styles/**"
+      instructions: |
+        SCSS/CSS changes should follow the existing token and partial structure. Avoid editing generated `src/styles/index.css`; source changes should generally be made in SCSS partials or design token files.
+    - path: "db/**/*.sql"
+      instructions: |
+        Review migrations for reversibility, idempotency where practical, least-privilege security policies, and compatibility with the configured Supabase/Turso abstraction.
+    - path: "scripts/migrations/**/*.sql"
+      instructions: |
+        Review migrations for reversibility, idempotency where practical, least-privilege security policies, and compatibility with the configured Supabase/Turso abstraction.
+    - path: "tests/**"
+      instructions: |
+        Tests should cover happy paths, edge cases, and failure behavior. Prefer assertions that prove user-visible behavior or integration contracts rather than implementation details.
+    - path: "e2e/**"
+      instructions: |
+        Playwright coverage should exercise real user flows and accessibility-relevant states without depending on brittle timing or implementation-only selectors.
+
+  labeling_instructions:
+    - label: "frontend"
+      instructions: "Suggest for changes to Astro pages, layouts, React components, styles, or client-side behavior."
+    - label: "backend"
+      instructions: "Suggest for API routes, middleware, database abstraction, migrations, authentication, or server-side scripts."
+    - label: "security"
+      instructions: "Suggest when changes affect authentication, authorization, CSRF, input sanitization, rate limiting, secrets, or database policies."
+    - label: "tests"
+      instructions: "Suggest for unit, integration, or Playwright test changes."
+    - label: "docs"
+      instructions: "Suggest for Markdown, MDX, project documentation, or content-only changes."
+
+  pre_merge_checks:
+    title:
+      mode: "warning"
+      requirements: "Use Conventional Commits when practical, such as feat:, fix:, docs:, refactor:, test:, or chore:."
+    description:
+      mode: "warning"
+    issue_assessment:
+      mode: "warning"
+    custom_checks:
+      - mode: "warning"
+        name: "Project conventions"
+        instructions: "Pass only if changed application code follows the repository conventions: internal imports use `#` aliases, type-only imports use `import type`, components export `type Props`, protected endpoints authenticate first, and database access goes through `#libs/database` unless inside a provider adapter."
+
+  tools:
+    eslint:
+      enabled: true
+    stylelint:
+      enabled: true
+    markdownlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 900000
+    gitleaks:
+      enabled: true
+    trufflehog:
+      enabled: true
+    osvScanner:
+      enabled: true
+    semgrep:
+      enabled: true
+    oxc:
+      enabled: true
+    biome:
+      enabled: false
+
+chat:
+  auto_reply: true
+  art: false
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: true
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - "CLAUDE-VALIDATION.md"
+      - "CLAUDE-PATTERNS.md"
+      - "CLAUDE-ANTI-PATTERNS.md"
+      - ".github/copilot-instructions.md"
+      - ".github/instructions/*.instructions.md"
+  learnings:
+    scope: "local"
+  issues:
+    scope: "local"
+  pull_requests:
+    scope: "local"
