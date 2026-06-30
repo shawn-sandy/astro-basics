@@ -1323,7 +1323,7 @@ img, video { max-width: 100%; height: auto; }
         <svg class="icon" aria-hidden="true"><use href="#ic-document-text"/></svg>
         Context
       </h2>
-      <p>astro-basics currently runs on <code>astro ^6.0.0</code> with SSR (<code>output: 'server'</code>) and a full adapter stack — <code>@astrojs/netlify</code>, <code>@astrojs/node</code>, <code>@astrojs/vercel</code> — selected at deploy time by the <code>ASTRO_ADAPTER</code> env var, plus integrations <code>@astrojs/react</code>, <code>@astrojs/mdx</code>, <code>@astrojs/sitemap</code>, <code>@astrojs/rss</code>, and <code>@astrojs/starlight</code>. The <a href="https://docs.astro.build/en/guides/upgrade-to/v7/">official v6→v7 upgrade guide</a> lists eight breaking changes, but a scan of this codebase shows only <strong>two</strong> actually apply: the new default <strong>Rust compiler</strong> (stricter HTML — unclosed non-void tags now error, and invalid markup is no longer auto-corrected) which recompiles all <strong>~69 <code>.astro</code> files</strong> (35 components, 4 layouts, 30 pages), and the <strong><code>compressHTML</code> default flipping from <code>true</code> to <code>'jsx'</code></strong>, which strips inter-element whitespace and can silently drop spaces between inline elements.</p>
+      <p>astro-basics currently runs on <code>astro ^6.0.0</code> with SSR (<code>output: 'server'</code>) and a full adapter stack — <code>@astrojs/netlify</code>, <code>@astrojs/node</code>, <code>@astrojs/vercel</code> — selected at deploy time by the <code>ASTRO_ADAPTER</code> env var, plus integrations <code>@astrojs/react</code>, <code>@astrojs/mdx</code>, <code>@astrojs/sitemap</code>, <code>@astrojs/rss</code>, and <code>@astrojs/starlight</code>. The <a href="https://docs.astro.build/en/guides/upgrade-to/v7/">official v6→v7 upgrade guide</a> lists eight breaking changes, but a scan of this codebase shows only <strong>two</strong> actually apply: the new default <strong>Rust compiler</strong> (stricter HTML — unclosed non-void tags now error, and invalid markup is no longer auto-corrected) which recompiles all <strong>80 <code>.astro</code> files</strong> (46 components across <code>components/astro</code>, <code>components/dashboard</code>, and <code>components/views</code>; 4 layouts; 30 pages), and the <strong><code>compressHTML</code> default flipping from <code>true</code> to <code>'jsx'</code></strong>, which strips inter-element whitespace and can silently drop spaces between inline elements.</p>
       <p>The other six guide items are confirmed absent: no <code>src/fetch.ts</code>, no <code>getContainerRenderer()</code> usage, no <code>astro:transitions</code> internals, no <code>@astrojs/db</code>, no <code>experimental</code> config block, and no wired remark/rehype plugins (so the Sätteri markdown-processor default is a no-op here). The remaining work is the routine but mandatory part of any major bump: moving <code>astro</code> and every <code>@astrojs/*</code> package to v7-compatible versions in lockstep, reconciling third-party Astro integrations (Clerk, astro-embed, Spotlight) that <code>@astrojs/upgrade</code> does not touch, and absorbing the Vite 8 dependency bump that ships with v7. Node is already well ahead of any requirement (<code>v26</code> local, <code>engines: ">=22.12.0"</code>).</p>
       <p><strong>Rollback:</strong> The three-PR structure provides a natural rollback boundary. If PR2 fails after merge, revert the PR on GitHub to restore v6 — the v6 baseline established in step 1 is the recovery target. If individual <code>.astro</code> files develop regressions post-merge, git blame the step-6 fix commits to identify which closing-tag additions to back out.</p>
     </section>
@@ -1350,6 +1350,8 @@ img, video { max-width: 100%; height: auto; }
           <li class="file-dir"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> src/</li>
           <ul class="file-list">
             <li><code>components/astro/*.astro</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR2 — close tags flagged by the Rust compiler (35 files)</span></li>
+            <li><code>components/dashboard/*.astro</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR2 — same audit; protected dashboard UI (7 files)</span></li>
+            <li><code>components/views/*.astro</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR2 — same audit; view components (4 files)</span></li>
             <li><code>layouts/*.astro</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR2 — close unclosed tags if flagged (4 files)</span></li>
             <li><code>pages/**/*.astro</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR2 — close unclosed tags if flagged (30 files)</span></li>
             <li><code>content/config.ts</code> <span class="file-badge file-badge-deleted">deleted</span> <span class="file-note">PR1 — remove legacy duplicate (pending unresolved check)</span></li>
@@ -1392,9 +1394,9 @@ img, video { max-width: 100%; height: auto; }
       <div class="pipeline">
         <div class="pipeline-node"><div class="pipeline-label">PR1 · merges on v6</div><code>Readiness</code><div class="pipeline-sub">test safety-net + content-config cleanup (steps 1–3)</div></div>
         <div class="pipeline-arrow" aria-hidden="true">↓</div>
-        <div class="pipeline-node"><div class="pipeline-label">PR2 · atomic bump</div><code>Core v7 upgrade</code><div class="pipeline-sub">@astrojs/upgrade + 3rd-party + compiler fixes + whitespace + Vite 8 (steps 4–8)</div></div>
+        <div class="pipeline-node"><div class="pipeline-label">PR2 · atomic bump</div><code>Core v7 upgrade</code><div class="pipeline-sub">@astrojs/upgrade + 3rd-party + compiler fixes + whitespace + Vite 8 + all-3-adapter builds (steps 4–8)</div></div>
         <div class="pipeline-arrow" aria-hidden="true">↓</div>
-        <div class="pipeline-node"><div class="pipeline-label">PR3 · on v7</div><code>Verify + document</code><div class="pipeline-sub">3-adapter CI matrix + docs + dedupe/pin (steps 9–11)</div></div>
+        <div class="pipeline-node"><div class="pipeline-label">PR3 · on v7</div><code>Verify + document</code><div class="pipeline-sub">codify 3-adapter CI matrix + docs + dedupe/pin (steps 9–11)</div></div>
       </div>
 
       <!-- Data table: breaking change → applies here? → action -->
@@ -1521,12 +1523,12 @@ img, video { max-width: 100%; height: auto; }
             <div class="step-body">
               <div class="step-action">
                 <span class="step-chip">todo</span>
-                <span class="step-chip-text"><strong>PR2 ·</strong> Build and fix every Rust-compiler HTML error in the ~69 .astro files.</span>
+                <span class="step-chip-text"><strong>PR2 ·</strong> Build and fix every Rust-compiler HTML error across all 80 .astro files.</span>
               </div>
-              <div class="step-why">The new default Rust compiler errors on unclosed non-void tags and no longer auto-corrects invalid markup — all 35 components, 4 layouts, and 30 pages recompile under stricter rules. The build is the source of truth for which files need a fix.</div>
+              <div class="step-why">The new default Rust compiler errors on unclosed non-void tags and no longer auto-corrects invalid markup — all 46 components (under <code>components/astro</code>, <code>components/dashboard</code>, and <code>components/views</code>), 4 layouts, and 30 pages recompile under stricter rules. The build is the source of truth for which files need a fix; do not scope the audit to <code>components/astro</code> alone.</div>
               <details class="step-verify-toggle">
                 <summary>Verify</summary>
-                <div class="verify-body"><code>ASTRO_ADAPTER=netlify npm run build</code> completes with zero compiler errors; each fix only adds a closing tag without changing intended markup.</div>
+                <div class="verify-body"><code>ASTRO_ADAPTER=netlify npm run build</code> completes with zero compiler errors, and a spot build of <code>=vercel</code> and <code>=node</code> shows no adapter-specific compiler failures; each fix only adds a closing tag without changing intended markup.</div>
               </details>
             </div>
           </div>
@@ -1560,7 +1562,7 @@ img, video { max-width: 100%; height: auto; }
               <div class="step-why">Astro v7 ships Vite 8 and reserves <code>src/fetch.ts</code> for advanced routing. Confirm that file is still absent, that <code>astro.config.mjs</code> has no stale <code>experimental</code> block, and review the <code>vite: {}</code> server config against the Vite 8 migration guide.</div>
               <details class="step-verify-toggle">
                 <summary>Verify</summary>
-                <div class="verify-body">Run <code>ls src/fetch.ts 2&gt;&amp;1</code> — the file must not exist. <code>npm run dev</code> starts cleanly with the dev server reachable and <code>npm run type-check</code> passes; no Vite deprecation errors at startup. Confirm <code>astro.config.mjs</code> contains no <code>experimental:</code> key. PR2 is the atomic cut — it merges only when steps 4–8 are all green.</div>
+                <div class="verify-body">Run <code>ls src/fetch.ts 2&gt;&amp;1</code> — the file must not exist. <code>npm run dev</code> starts cleanly with the dev server reachable and <code>npm run type-check</code> passes; no Vite deprecation errors at startup. Confirm <code>astro.config.mjs</code> contains no <code>experimental:</code> key. <strong>PR2 is the atomic cut — it merges only when all of steps 4–8 are green AND all three adapter builds (<code>ASTRO_ADAPTER=netlify</code>, <code>=vercel</code>, <code>=node npm run build</code>) succeed.</strong> Because <code>astro.config.mjs</code> selects the adapter at deploy time, validating only Netlify would leave <code>primary</code> broken for the Vercel and Node deploy contexts the moment PR2 lands — so the full matrix gates this PR, not PR3.</div>
               </details>
             </div>
           </div>
@@ -1572,12 +1574,12 @@ img, video { max-width: 100%; height: auto; }
             <div class="step-body">
               <div class="step-action">
                 <span class="step-chip">todo</span>
-                <span class="step-chip-text"><strong>PR3 ·</strong> Add a 3-adapter build matrix and run the full quality gate on v7.</span>
+                <span class="step-chip-text"><strong>PR3 ·</strong> Codify the 3-adapter build matrix in CI so it stays green on every future PR.</span>
               </div>
-              <div class="step-why">The app picks its adapter from <code>ASTRO_ADAPTER</code> at deploy time, so a v7 build green on Netlify can still break on Vercel or Node. Wire the matrix into CI so the deploy targets are proven, not assumed.</div>
+              <div class="step-why">PR2 already proved all three adapters build at merge time; PR3 makes that durable by wiring the matrix into <code>.github/workflows/</code> so the deploy targets are enforced automatically, not re-checked by hand. This prevents a future change from silently breaking Vercel or Node.</div>
               <details class="step-verify-toggle">
                 <summary>Verify</summary>
-                <div class="verify-body"><code>npm run type-check</code>, <code>npm test</code>, and <code>npm run test:e2e</code> pass, and <code>ASTRO_ADAPTER=netlify npm run build</code>, <code>ASTRO_ADAPTER=vercel npm run build</code>, and <code>ASTRO_ADAPTER=node npm run build</code> each succeed. The CI matrix job exists in <code>.github/workflows/</code> and all three adapter jobs pass on the PR before merge — this is a hard requirement, not a best-effort goal.</div>
+                <div class="verify-body">A CI matrix job in <code>.github/workflows/</code> runs <code>ASTRO_ADAPTER=netlify npm run build</code>, <code>=vercel</code>, and <code>=node</code> on every PR, plus <code>npm run type-check</code>, <code>npm test</code>, and <code>npm run test:e2e</code>; all jobs pass on this PR and are required for merge — a hard gate, not a best-effort goal.</div>
               </details>
             </div>
           </div>
@@ -1710,11 +1712,11 @@ img, video { max-width: 100%; height: auto; }
         </li>
         <li>
           <input type="checkbox" id="ac6">
-          <label for="ac6"><strong>PR2:</strong> <code>npm run type-check</code>, <code>npm test</code>, and <code>npm run test:e2e</code> pass on v7; PR2 merges as one atomic cut.</label>
+          <label for="ac6"><strong>PR2:</strong> <code>npm run type-check</code>, <code>npm test</code>, and <code>npm run test:e2e</code> pass on v7, <strong>and all three adapter builds (netlify, vercel, node) succeed</strong>; PR2 merges as one atomic cut.</label>
         </li>
         <li>
           <input type="checkbox" id="ac7">
-          <label for="ac7"><strong>PR3:</strong> all three adapter builds (netlify, vercel, node) succeed and are enforced by a CI matrix job.</label>
+          <label for="ac7"><strong>PR3:</strong> the 3-adapter build matrix is codified as a CI job in <code>.github/workflows/</code> and required on every PR.</label>
         </li>
         <li>
           <input type="checkbox" id="ac8">
@@ -1737,8 +1739,8 @@ img, video { max-width: 100%; height: auto; }
       </h2>
       <p>Verify per PR, in order:</p>
       <p><strong>PR1 (on v6):</strong> the three readiness tests pass under the current v6 build (<code>npm test</code> and <code>npm run test:e2e -- astro-v7-upgrade</code>), exactly one content-config file remains, and the branch merges to <code>primary</code> green. This proves the safety net is real before the bump.</p>
-      <p><strong>PR2 (the atomic bump):</strong> <code>npm install</code> resolves with no peer warnings against <code>astro@7</code> and <code>npm ls astro</code> shows one version; <code>ASTRO_ADAPTER=netlify npm run build</code> exits 0 with zero Rust-compiler errors; <code>npm run dev</code> starts on Vite 8; and the same PR1 test suite — now running on v7 — stays green, including the whitespace unit test. PR2 merges only as one cut.</p>
-      <p><strong>PR3 (on v7):</strong> all three deploy targets build — <code>ASTRO_ADAPTER=netlify</code>, <code>=vercel</code>, <code>=node npm run build</code> — enforced by a CI matrix; <code>project-docs/astro-v7-upgrade.md</code> exists; and <code>npm dedupe</code> leaves a clean tree.</p>
+      <p><strong>PR2 (the atomic bump):</strong> <code>npm install</code> resolves with no peer warnings against <code>astro@7</code> and <code>npm ls astro</code> shows one version; <strong>all three deploy targets build — <code>ASTRO_ADAPTER=netlify</code>, <code>=vercel</code>, and <code>=node npm run build</code> each exit 0 with zero Rust-compiler errors</strong> (so <code>primary</code> is never broken for any adapter once PR2 lands); <code>npm run dev</code> starts on Vite 8; and the same PR1 test suite — now running on v7 — stays green, including the whitespace unit test. PR2 merges only as one cut.</p>
+      <p><strong>PR3 (on v7):</strong> the three-adapter build is codified as a CI matrix job in <code>.github/workflows/</code> and required on every PR; <code>project-docs/astro-v7-upgrade.md</code> exists; and <code>npm dedupe</code> leaves a clean tree.</p>
       <p>The upgrade is complete when all three PRs are merged, the objective smoke test passes against the v7 production build, every adapter compiles in CI, and the rendered output is visually indistinguishable from v6 except for changes made intentionally.</p>
     </section>
 
