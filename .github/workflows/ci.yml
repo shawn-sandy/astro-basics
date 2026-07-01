@@ -69,4 +69,7 @@ jobs:
       - run: npm run build
       - run: npm run preview &
       - run: npx wait-on http://localhost:4321 --timeout 60000
-      - run: npm run test:e2e -- --project=chromium
+      # Hard gate: only the spec that verifies this upgrade. The rest of
+      # e2e/ (logging-correlation.spec.ts, etc.) needs webhook secrets and
+      # other env this workflow doesn't have — pre-existing, unrelated.
+      - run: npm run test:e2e -- astro-v7-upgrade --project=chromium
