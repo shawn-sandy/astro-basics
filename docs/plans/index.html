@@ -30,6 +30,33 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
 
+    .skip-link {
+      position: absolute;
+      left: -9999px; top: auto;
+      width: 1px; height: 1px;
+      overflow: hidden;
+    }
+    .skip-link:focus {
+      position: fixed;
+      left: 1rem; top: 1rem;
+      width: auto; height: auto;
+      overflow: visible;
+      background: var(--accent);
+      color: #fff;
+      padding: .5rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 700;
+      z-index: 9999;
+      text-decoration: none;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      left: -9999px; top: auto;
+      width: 1px; height: 1px;
+      overflow: hidden;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       .gallery-card,
@@ -319,49 +346,54 @@
 </head>
 <body>
 
-  <div class="gallery-header">
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <header class="gallery-header">
     <h1>Plans Library</h1>
     <p>1 plan &mdash; click any card to open it</p>
-  </div>
+  </header>
+
+  <main id="main">
 
   <div class="toolbar">
+    <label class="visually-hidden" for="searchBox">Search plans by title</label>
     <input type="text" class="search-box" id="searchBox"
            placeholder="Search by title..." aria-label="Search plans by title">
     <div class="view-toggle">
-      <button class="view-btn active" id="gridBtn" title="Grid view" aria-label="Grid view" aria-pressed="true">&#9638;</button>
-      <button class="view-btn" id="listBtn" title="List view" aria-label="List view" aria-pressed="false">&#9776;</button>
+      <button type="button" class="view-btn active" id="gridBtn" title="Grid view" aria-label="Grid view" aria-pressed="true">&#9638;</button>
+      <button type="button" class="view-btn" id="listBtn" title="List view" aria-label="List view" aria-pressed="false">&#9776;</button>
     </div>
   </div>
 
   <div class="filter-row" id="statusRow">
     <span class="filter-row-label">Status</span>
     <div class="filter-chips" id="statusChips">
-      <button class="filter-chip active" data-status="all" aria-pressed="true">All</button>
-      <button class="filter-chip" data-status="todo" aria-pressed="false">Todo</button>
-      <button class="filter-chip" data-status="in-progress" aria-pressed="false">In Progress</button>
-      <button class="filter-chip" data-status="completed" aria-pressed="false">Completed</button>
+      <button type="button" class="filter-chip active" data-status="all" aria-pressed="true">All</button>
+      <button type="button" class="filter-chip" data-status="todo" aria-pressed="false">Todo</button>
+      <button type="button" class="filter-chip" data-status="in-progress" aria-pressed="false">In Progress</button>
+      <button type="button" class="filter-chip" data-status="completed" aria-pressed="false">Completed</button>
     </div>
   </div>
 
   <div class="filter-row" id="typeRow">
     <span class="filter-row-label">Type</span>
     <div class="filter-chips" id="typeChips">
-      <button class="filter-chip active" data-type="all" aria-pressed="true">All</button>
-      <button class="filter-chip" data-type="feature" aria-pressed="false">Feature</button>
-      <button class="filter-chip" data-type="fix" aria-pressed="false">Fix</button>
-      <button class="filter-chip" data-type="refactor" aria-pressed="false">Refactor</button>
-      <button class="filter-chip" data-type="docs" aria-pressed="false">Docs</button>
-      <button class="filter-chip" data-type="chore" aria-pressed="false">Chore</button>
+      <button type="button" class="filter-chip active" data-type="all" aria-pressed="true">All</button>
+      <button type="button" class="filter-chip" data-type="feature" aria-pressed="false">Feature</button>
+      <button type="button" class="filter-chip" data-type="fix" aria-pressed="false">Fix</button>
+      <button type="button" class="filter-chip" data-type="refactor" aria-pressed="false">Refactor</button>
+      <button type="button" class="filter-chip" data-type="docs" aria-pressed="false">Docs</button>
+      <button type="button" class="filter-chip" data-type="chore" aria-pressed="false">Chore</button>
     </div>
   </div>
 
   <div class="filter-row" id="effortRow">
     <span class="filter-row-label">Effort</span>
     <div class="filter-chips" id="effortChips">
-      <button class="filter-chip active" data-effort="all" aria-pressed="true">All</button>
-      <button class="filter-chip" data-effort="low" aria-pressed="false">Low</button>
-      <button class="filter-chip" data-effort="medium" aria-pressed="false">Medium</button>
-      <button class="filter-chip" data-effort="high" aria-pressed="false">High</button>
+      <button type="button" class="filter-chip active" data-effort="all" aria-pressed="true">All</button>
+      <button type="button" class="filter-chip" data-effort="low" aria-pressed="false">Low</button>
+      <button type="button" class="filter-chip" data-effort="medium" aria-pressed="false">Medium</button>
+      <button type="button" class="filter-chip" data-effort="high" aria-pressed="false">High</button>
     </div>
   </div>
 
@@ -383,6 +415,8 @@
   </div>
 
   <div class="no-results" id="noResults">No plans match your search.</div>
+
+  </main>
 
   <div class="gallery-footer">
     <span>1 plan</span>
@@ -429,7 +463,7 @@
       var chips = document.getElementById(containerId).querySelectorAll('.filter-chip');
       for (var i = 0; i < chips.length; i++) {
         chips[i].addEventListener('click', function () {
-          var siblings = document.getElementById(this.parentElement.id).querySelectorAll('.filter-chip');
+          var siblings = this.parentElement.querySelectorAll('.filter-chip');
           for (var j = 0; j < siblings.length; j++) {
             siblings[j].classList.remove('active');
             siblings[j].setAttribute('aria-pressed', 'false');

@@ -15,14 +15,19 @@ if [ ! -d "$DOCS_DIR" ]; then
   exit 1
 fi
 
+if [ ! -f "$DOCS_DIR/.nojekyll" ]; then
+  echo "Error: docs/.nojekyll is missing at $DOCS_DIR/.nojekyll" >&2
+  exit 1
+fi
+
 if [ "$PORT" = "0" ]; then
   PORT=$(python3 -c "import socket; s=socket.socket(); s.bind(('',0)); print(s.getsockname()[1]); s.close()")
 fi
 
 echo ""
-echo "Serving docs at http://localhost:$PORT/"
-[ -f "$DOCS_DIR/plans/index.html" ]        && echo "  Plans gallery:  http://localhost:$PORT/plans/"
-[ -f "$DOCS_DIR/media/social/index.html" ] && echo "  Media library:  http://localhost:$PORT/media/social/"
+echo "Serving docs at http://127.0.0.1:$PORT/"
+[ -f "$DOCS_DIR/plans/index.html" ]        && echo "  Plans gallery:  http://127.0.0.1:$PORT/plans/"
+[ -f "$DOCS_DIR/media/social/index.html" ] && echo "  Media library:  http://127.0.0.1:$PORT/media/social/"
 echo ""
 echo "Press Ctrl+C to stop."
 echo ""

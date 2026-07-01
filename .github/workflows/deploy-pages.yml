@@ -9,8 +9,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  pages: write
-  id-token: write
   contents: read
 
 concurrency:
@@ -24,6 +22,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Assert .nojekyll exists
         run: test -f docs/.nojekyll || { echo "::error::docs/.nojekyll is missing — Jekyll will mangle the site"; exit 1; }
@@ -40,6 +40,9 @@ jobs:
     name: Deploy to Pages
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write # required to publish the artifact to GitHub Pages
+      id-token: write # required for OIDC verification of the deployment
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
