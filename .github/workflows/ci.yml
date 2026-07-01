@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [primary]
+
+jobs:
+  build:
+    name: Build (${{ matrix.adapter }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        adapter: [netlify, vercel, node]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          ASTRO_ADAPTER: ${{ matrix.adapter }}
+
+  test:
+    name: Type-check, unit, and e2e tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run type-check
+      - run: npm test -- run
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+        env:
+          ASTRO_ADAPTER: netlify
+      - run: npm run test:e2e -- --project=chromium

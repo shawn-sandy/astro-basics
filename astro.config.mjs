@@ -28,8 +28,8 @@ export default defineConfig({
       // Sidebar configuration for src/content/docs/guide structure
       sidebar: [
         { label: 'Guide', items: [{ label: 'Welcome', link: '/guide/' }] },
-        { label: 'Getting Started', autogenerate: { directory: 'guide/getting-started' } },
-        { label: 'Components', autogenerate: { directory: 'guide/components' } },
+        { label: 'Getting Started', items: [{ autogenerate: { directory: 'guide/getting-started' } }] },
+        { label: 'Components', items: [{ autogenerate: { directory: 'guide/components' } }] },
         {
           label: 'Features',
           items: [
@@ -48,7 +48,7 @@ export default defineConfig({
             { label: 'User Sync', link: '/guide/utilities/user-sync' },
           ],
         },
-        { label: 'API Reference', autogenerate: { directory: 'guide/api' } },
+        { label: 'API Reference', items: [{ autogenerate: { directory: 'guide/api' } }] },
         {
           label: 'MCP Servers',
           items: [
@@ -89,6 +89,7 @@ export default defineConfig({
       host: process.env.EXPOSE_DEV_SERVER === 'true' ? true : 'localhost',
       allowedHosts: ['476cd5383d8f.ngrok-free.app'],
     },
+    build: { cssMinify: false },
   },
   // Choose adapter based on deployment target
   adapter: (() => {

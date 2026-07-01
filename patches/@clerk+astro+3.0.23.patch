@@ -1,0 +1,109 @@
+diff --git a/node_modules/@clerk/astro/components/interactive/UserButton/MenuItemRenderer.astro b/node_modules/@clerk/astro/components/interactive/UserButton/MenuItemRenderer.astro
+index f86f5d1..a1fd951 100644
+--- a/node_modules/@clerk/astro/components/interactive/UserButton/MenuItemRenderer.astro
++++ b/node_modules/@clerk/astro/components/interactive/UserButton/MenuItemRenderer.astro
+@@ -23,60 +23,59 @@ const isDevMode = import.meta.env.DEV;
+ 
+   // We used a web component in the `<UserButton.MenuItems>` component.
+   const hasParentMenuItem = parentElement.tagName.toLowerCase() === 'clerk-user-button-menu-items';
+-  if (!hasParentMenuItem) {
+-    if (isDevMode) {
+-      throw new Error(
+-        `Clerk: <UserButton.MenuItems /> component can only accept <UserButton.Action /> and <UserButton.Link /> as its children. Any other provided component will be ignored.`,
+-      );
+-    }
+-    return;
++  if (!hasParentMenuItem && isDevMode) {
++    throw new Error(
++      `Clerk: <UserButton.MenuItems /> component can only accept <UserButton.Action /> and <UserButton.Link /> as its children. Any other provided component will be ignored.`,
++    );
+   }
+ 
+-  // Get the user button map from window that we set in the `<InternalUIComponentRenderer />`.
+-  const userButtonComponentMap = window.__astro_clerk_component_props.get('user-button');
+-
+-  let userButton;
+-  if (parent) {
+-    userButton = document.querySelector(`[data-clerk-id="clerk-user-button-${parent}"]`);
+-  } else {
+-    userButton = document.querySelector('[data-clerk-id^="clerk-user-button"]');
+-  }
++  if (hasParentMenuItem) {
++    // Get the user button map from window that we set in the `<InternalUIComponentRenderer />`.
++    const userButtonComponentMap = window.__astro_clerk_component_props.get('user-button');
+ 
+-  const safeId = userButton.getAttribute('data-clerk-id');
+-  const currentOptions = userButtonComponentMap.get(safeId);
++    let userButton;
++    if (parent) {
++      userButton = document.querySelector(`[data-clerk-id="clerk-user-button-${parent}"]`);
++    } else {
++      userButton = document.querySelector('[data-clerk-id^="clerk-user-button"]');
++    }
+ 
+-  const reorderItemsLabels = ['manageAccount', 'signOut'];
+-  const isReorderItem = reorderItemsLabels.includes(label);
++    const safeId = userButton.getAttribute('data-clerk-id');
++    const currentOptions = userButtonComponentMap.get(safeId);
+ 
+-  let newMenuItem = {
+-    label,
+-  };
++    const reorderItemsLabels = ['manageAccount', 'signOut'];
++    const isReorderItem = reorderItemsLabels.includes(label);
+ 
+-  if (!isReorderItem) {
+-    newMenuItem = {
+-      ...newMenuItem,
+-      mountIcon: el => {
+-        el.innerHTML = labelIcon;
+-      },
+-      unmountIcon: () => {
+-        /* What to clean up? */
+-      },
++    let newMenuItem = {
++      label,
+     };
+ 
+-    if (href) {
+-      newMenuItem.href = href;
+-    } else if (open) {
+-      newMenuItem.open = open.startsWith('/') ? open : `/${open}`;
+-    } else if (clickIdentifier) {
+-      const clickEvent = new CustomEvent('clerk:menu-item-click', { detail: clickIdentifier });
+-      newMenuItem.onClick = () => {
+-        document.dispatchEvent(clickEvent);
++    if (!isReorderItem) {
++      newMenuItem = {
++        ...newMenuItem,
++        mountIcon: el => {
++          el.innerHTML = labelIcon;
++        },
++        unmountIcon: () => {
++          /* What to clean up? */
++        },
+       };
++
++      if (href) {
++        newMenuItem.href = href;
++      } else if (open) {
++        newMenuItem.open = open.startsWith('/') ? open : `/${open}`;
++      } else if (clickIdentifier) {
++        const clickEvent = new CustomEvent('clerk:menu-item-click', { detail: clickIdentifier });
++        newMenuItem.onClick = () => {
++          document.dispatchEvent(clickEvent);
++        };
++      }
+     }
+-  }
+ 
+-  userButtonComponentMap.set(safeId, {
+-    ...currentOptions,
+-    customMenuItems: [...(currentOptions?.customMenuItems ?? []), newMenuItem],
+-  });
++    userButtonComponentMap.set(safeId, {
++      ...currentOptions,
++      customMenuItems: [...(currentOptions?.customMenuItems ?? []), newMenuItem],
++    });
++  }
+ </script>
