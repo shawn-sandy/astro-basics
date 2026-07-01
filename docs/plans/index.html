@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<!--
+  plans-gallery.html — Plans library index for plan-agent.
+
+  Static variables (substituted by the plans-library skill):
+    GALLERY_ENTRIES  — Repeated <a> blocks, one per plan file
+    PLAN_COUNT       — Total number of plans displayed
+    GENERATED_AT     — Date and time of gallery generation
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plans Library</title>
+  <style>
+    :root {
+      --bg:         #ffffff;
+      --surface:    #f9fafb;
+      --border:     #e5e7eb;
+      --border-mid: #d1d5db;
+      --text:       #111827;
+      --muted:      #6b7280;
+      --subtle:     #9ca3af;
+      --accent:     #2563eb;
+      --accent-bg:  #eff6ff;
+      --radius:     4px;
+      --shadow:     0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px;
+      min-height: 100vh;
+      padding: 32px;
+    }
+
+    /* ── Header ──────────────────────────────────────────────────── */
+    .gallery-header {
+      max-width: 1200px;
+      margin: 0 auto 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+    }
+    .gallery-header::before {
+      content: "";
+      display: block;
+      height: 3px;
+      background: var(--accent);
+      margin-bottom: 20px;
+      border-radius: 2px;
+    }
+    .gallery-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      margin-bottom: 4px;
+    }
+    .gallery-header p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── Toolbar ─────────────────────────────────────────────────── */
+    .toolbar {
+      max-width: 1200px;
+      margin: 0 auto 8px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      max-width: 320px;
+      padding: 7px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border-mid);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .search-box:focus { border-color: var(--accent); }
+    .search-box::placeholder { color: var(--subtle); }
+
+    .view-toggle {
+      margin-left: auto;
+      display: flex;
+      gap: 4px;
+    }
+    .view-btn {
+      padding: 6px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border-mid);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all .15s;
+      font-family: inherit;
+    }
+    .view-btn:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+    .view-btn:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
+    .view-btn.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+
+    /* ── Filter chip rows ────────────────────────────────────────── */
+    .filter-row {
+      max-width: 1200px;
+      margin: 0 auto 6px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-row-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--subtle);
+      min-width: 44px;
+      flex-shrink: 0;
+    }
+    .filter-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .filter-chip {
+      padding: 3px 11px;
+      border-radius: 999px;
+      border: 1px solid var(--border-mid);
+      background: var(--bg);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .filter-chip:hover { border-color: var(--accent); color: var(--text); }
+
+    /* Status chip active states */
+    .filter-chip[data-status="all"].active,
+    .filter-chip[data-type="all"].active  { background: var(--text); border-color: var(--text); color: #fff; }
+    .filter-chip[data-status="todo"].active        { background: #6b7280; border-color: #6b7280; color: #fff; }
+    .filter-chip[data-status="in-progress"].active { background: #d97706; border-color: #d97706; color: #fff; }
+    .filter-chip[data-status="completed"].active   { background: #16a34a; border-color: #16a34a; color: #fff; }
+    .filter-chip[data-type="feature"].active   { background: #2563eb; border-color: #2563eb; color: #fff; }
+    .filter-chip[data-type="fix"].active       { background: #dc2626; border-color: #dc2626; color: #fff; }
+    .filter-chip[data-type="refactor"].active  { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+    .filter-chip[data-type="docs"].active      { background: #ea580c; border-color: #ea580c; color: #fff; }
+    .filter-chip[data-type="chore"].active     { background: #0d9488; border-color: #0d9488; color: #fff; }
+    .filter-chip[data-effort="all"].active     { background: var(--text); border-color: var(--text); color: #fff; }
+    .filter-chip[data-effort="low"].active     { background: #16a34a; border-color: #16a34a; color: #fff; }
+    .filter-chip[data-effort="medium"].active  { background: #d97706; border-color: #d97706; color: #fff; }
+    .filter-chip[data-effort="high"].active    { background: #dc2626; border-color: #dc2626; color: #fff; }
+
+    /* ── Visible count ───────────────────────────────────────────── */
+    .visible-count {
+      font-size: 12px;
+      color: var(--muted);
+      max-width: 1200px;
+      margin: 8px auto 14px;
+      min-height: 16px;
+    }
+
+    /* ── Grid ────────────────────────────────────────────────────── */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .gallery-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: var(--shadow);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .gallery-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(37,99,235,.1);
+    }
+
+    .card-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .status-chip, .type-chip, .effort-chip {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+
+    /* Status colours */
+    .status-todo        { background: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; }
+    .status-in-progress { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+    .status-completed   { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+    /* Type colours */
+    .type-feature  { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+    .type-fix      { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .type-refactor { background: #faf5ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+    .type-docs     { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; }
+    .type-chore    { background: #f0fdfa; color: #0d9488; border: 1px solid #99f6e4; }
+    .type-untyped  { background: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; }
+
+    /* Effort colours — mirror the plan template's effort badge */
+    .effort-low    { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+    .effort-medium { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+    .effort-high   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .effort-chip::before { content: "\2022\00a0"; opacity: .6; }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-top: auto;
+    }
+    .card-date {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .card-file {
+      font-size: 11px;
+      color: var(--subtle);
+      font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+      word-break: break-all;
+    }
+
+    /* ── List view ───────────────────────────────────────────────── */
+    .gallery-grid.list-view {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .list-view .gallery-card {
+      flex-direction: row;
+      align-items: center;
+      padding: 12px 16px;
+      gap: 16px;
+    }
+    .list-view .card-badges { flex-shrink: 0; }
+    .list-view .card-title  { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .list-view .card-meta   { flex-direction: row; align-items: center; gap: 12px; flex-shrink: 0; margin-top: 0; }
+    .list-view .card-file   { display: none; }
+
+    /* ── No results ──────────────────────────────────────────────── */
+    .no-results {
+      max-width: 1200px;
+      margin: 48px auto;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      display: none;
+    }
+
+    /* ── Footer ──────────────────────────────────────────────────── */
+    .gallery-footer {
+      max-width: 1200px;
+      margin: 32px auto 0;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 16px; }
+      .toolbar { gap: 8px; }
+      .search-box { max-width: none; }
+      .list-view .card-meta { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="gallery-header">
+    <h1>Plans Library</h1>
+    <p>1 plans &mdash; click any card to open it</p>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" class="search-box" id="searchBox"
+           placeholder="Search by title..." aria-label="Search plans by title">
+    <div class="view-toggle">
+      <button class="view-btn active" id="gridBtn" title="Grid view" aria-label="Grid view" aria-pressed="true">&#9638;</button>
+      <button class="view-btn" id="listBtn" title="List view" aria-label="List view" aria-pressed="false">&#9776;</button>
+    </div>
+  </div>
+
+  <div class="filter-row" id="statusRow">
+    <span class="filter-row-label">Status</span>
+    <div class="filter-chips" id="statusChips">
+      <button class="filter-chip active" data-status="all" aria-pressed="true">All</button>
+      <button class="filter-chip" data-status="todo" aria-pressed="false">Todo</button>
+      <button class="filter-chip" data-status="in-progress" aria-pressed="false">In Progress</button>
+      <button class="filter-chip" data-status="completed" aria-pressed="false">Completed</button>
+    </div>
+  </div>
+
+  <div class="filter-row" id="typeRow">
+    <span class="filter-row-label">Type</span>
+    <div class="filter-chips" id="typeChips">
+      <button class="filter-chip active" data-type="all" aria-pressed="true">All</button>
+      <button class="filter-chip" data-type="feature" aria-pressed="false">Feature</button>
+      <button class="filter-chip" data-type="fix" aria-pressed="false">Fix</button>
+      <button class="filter-chip" data-type="refactor" aria-pressed="false">Refactor</button>
+      <button class="filter-chip" data-type="docs" aria-pressed="false">Docs</button>
+      <button class="filter-chip" data-type="chore" aria-pressed="false">Chore</button>
+    </div>
+  </div>
+
+  <div class="filter-row" id="effortRow">
+    <span class="filter-row-label">Effort</span>
+    <div class="filter-chips" id="effortChips">
+      <button class="filter-chip active" data-effort="all" aria-pressed="true">All</button>
+      <button class="filter-chip" data-effort="low" aria-pressed="false">Low</button>
+      <button class="filter-chip" data-effort="medium" aria-pressed="false">Medium</button>
+      <button class="filter-chip" data-effort="high" aria-pressed="false">High</button>
+    </div>
+  </div>
+
+  <div class="visible-count" id="visibleCount"></div>
+
+  <div class="gallery-grid" id="galleryGrid">
+    <a class="gallery-card" href="upgrade-astro-to-v7.html"
+       data-status="todo" data-type="chore" data-effort="" data-title="upgrade astro to v7">
+      <div class="card-badges">
+        <span class="status-chip status-todo">todo</span>
+        <span class="type-chip type-chore">chore</span>
+      </div>
+      <div class="card-title">Upgrade Astro to v7</div>
+      <div class="card-meta">
+        <span class="card-date">2026-06-30</span>
+        <span class="card-file">upgrade-astro-to-v7.html</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="no-results" id="noResults">No plans match your search.</div>
+
+  <div class="gallery-footer">
+    <span>1 plans</span>
+    <span>Generated 2026-06-30 20:50</span>
+  </div>
+
+  <script>
+    var activeStatus = 'all';
+    var activeType   = 'all';
+    var activeEffort = 'all';
+    var searchText   = '';
+    var grid         = document.getElementById('galleryGrid');
+    var cards        = grid.querySelectorAll('.gallery-card');
+    var noResults    = document.getElementById('noResults');
+    var visibleCount = document.getElementById('visibleCount');
+
+    function applyFilters() {
+      var shown = 0;
+      for (var i = 0; i < cards.length; i++) {
+        var card   = cards[i];
+        var status = card.getAttribute('data-status') || '';
+        var type   = card.getAttribute('data-type')   || '';
+        var effort = card.getAttribute('data-effort') || '';
+        var title  = card.getAttribute('data-title')  || '';
+        var matchStatus = activeStatus === 'all' || status === activeStatus;
+        var matchType   = activeType   === 'all' || type   === activeType;
+        // Plans with no effort tag pass every effort filter.
+        var matchEffort = activeEffort === 'all' || effort === '' || effort === activeEffort;
+        var matchSearch = !searchText  || title.indexOf(searchText) !== -1;
+        if (matchStatus && matchType && matchEffort && matchSearch) {
+          card.style.display = '';
+          shown++;
+        } else {
+          card.style.display = 'none';
+        }
+      }
+      noResults.style.display = shown === 0 ? 'block' : 'none';
+      visibleCount.textContent = shown === cards.length
+        ? ''
+        : 'Showing ' + shown + ' of ' + cards.length + ' plans';
+    }
+
+    function wireChips(containerId, prop) {
+      var chips = document.getElementById(containerId).querySelectorAll('.filter-chip');
+      for (var i = 0; i < chips.length; i++) {
+        chips[i].addEventListener('click', function () {
+          var siblings = document.getElementById(this.parentElement.id).querySelectorAll('.filter-chip');
+          for (var j = 0; j < siblings.length; j++) {
+            siblings[j].classList.remove('active');
+            siblings[j].setAttribute('aria-pressed', 'false');
+          }
+          this.classList.add('active');
+          this.setAttribute('aria-pressed', 'true');
+          var val = this.getAttribute('data-' + prop);
+          if      (prop === 'status') activeStatus = val;
+          else if (prop === 'type')   activeType   = val;
+          else                        activeEffort = val;
+          applyFilters();
+        });
+      }
+    }
+
+    wireChips('statusChips', 'status');
+    wireChips('typeChips',   'type');
+    wireChips('effortChips', 'effort');
+
+    document.getElementById('searchBox').addEventListener('input', function () {
+      searchText = this.value.trim().toLowerCase();
+      applyFilters();
+    });
+
+    var gridBtn = document.getElementById('gridBtn');
+    var listBtn = document.getElementById('listBtn');
+    gridBtn.addEventListener('click', function () {
+      grid.classList.remove('list-view');
+      gridBtn.classList.add('active');  gridBtn.setAttribute('aria-pressed', 'true');
+      listBtn.classList.remove('active'); listBtn.setAttribute('aria-pressed', 'false');
+    });
+    listBtn.addEventListener('click', function () {
+      grid.classList.add('list-view');
+      listBtn.classList.add('active');  listBtn.setAttribute('aria-pressed', 'true');
+      gridBtn.classList.remove('active'); gridBtn.setAttribute('aria-pressed', 'false');
+    });
+  </script>
+</body>
+</html>
