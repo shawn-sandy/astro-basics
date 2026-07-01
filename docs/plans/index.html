@@ -30,6 +30,16 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
 
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .gallery-card,
+      .view-btn,
+      .filter-chip,
+      .search-box {
+        transition: none;
+      }
+    }
+
     body {
       background: var(--bg);
       color: var(--text);
@@ -311,7 +321,7 @@
 
   <div class="gallery-header">
     <h1>Plans Library</h1>
-    <p>1 plans &mdash; click any card to open it</p>
+    <p>1 plan &mdash; click any card to open it</p>
   </div>
 
   <div class="toolbar">
@@ -375,7 +385,7 @@
   <div class="no-results" id="noResults">No plans match your search.</div>
 
   <div class="gallery-footer">
-    <span>1 plans</span>
+    <span>1 plan</span>
     <span>Generated 2026-06-30 20:50</span>
   </div>
 
