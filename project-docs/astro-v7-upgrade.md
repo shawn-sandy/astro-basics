@@ -47,6 +47,19 @@ deploy targets green going forward.
    not isolated to a specific stylesheet. Worked around with
    `vite.build.cssMinify: false` in `astro.config.mjs` — CSS ships unminified
    for now. Revisit once a lightningcss patch release fixes the crash.
+6. **Missing `nanostores` direct dependency.** `@nanostores/react` declares
+   `nanostores` as a peer, but it was never listed in `package.json` — it only
+   worked because npm happened to hoist a transitive copy from
+   `@clerk/astro`'s dependency tree. Astro v7's Rolldown bundler fails outright
+   (`Rolldown failed to resolve import "nanostores"`) instead of tolerating an
+   un-hoisted nested copy. Fixed by adding `nanostores` as a direct dependency.
+   Reproduced and verified with a clean `npm ci`, matching CI exactly.
+7. **`post.slug` no longer exists on content-layer entries** (replaced by
+   `post.id` since the v5 content-layer migration this repo already did on
+   v6). `src/pages/rss.xml.js` and `src/pages/blog.astro` were both still
+   using `post.slug`, silently rendering `/posts/undefined/` links — a
+   pre-existing bug independent of this upgrade, caught while adding the RSS
+   readiness test. Fixed both to `post.id`.
 
 ## Content-layer test setup
 
@@ -61,6 +74,22 @@ available.
 
 `.github/workflows/ci.yml` added: a build matrix across all three adapters,
 plus a job running type-check, unit tests, and the e2e smoke suite.
+
+Two steps are `continue-on-error: true` (informational, not merge-blocking)
+because they carry pre-existing debt independent of this upgrade:
+
+- **`type-check`** — the repo has ~127 pre-existing TypeScript errors
+  (Supabase type strictness, `exactOptionalPropertyTypes`, etc.), confirmed
+  via a git-stash comparison to predate this upgrade entirely. Fixing them is
+  a separate, much larger effort.
+- **The broader `vitest run --exclude tests/integration/**`\*\* — beyond the
+  DB-credential-dependent integration tests (excluded outright, no secrets
+  belong in a public PR workflow), ~49 more tests fail for unrelated
+  pre-existing reasons (role-validator, csrf, ip-validation, etc.).
+
+The tests that actually verify this Astro upgrade
+(`tests/content-collections.test.ts`, `tests/compress-html-whitespace.test.ts`)
+run as a separate, hard-blocking step ahead of the informational full suite.
 
 ## Dedupe and pinning decision
 
