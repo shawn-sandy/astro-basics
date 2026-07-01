@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+
 import { getEnvironmentConfig } from './env-config'
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'

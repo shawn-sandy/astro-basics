@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+
 import { getEnvironmentConfig } from '#utils/env-config'
 
 import type { Database } from './database.types'

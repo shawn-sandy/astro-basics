@@ -232,6 +232,7 @@ export default [
       'node_modules/**',
       '.astro/**',
       '.vercel/**',
+      '.claude/**',
       'playwright-report/**',
       'test-results/**',
       '*.d.ts',
