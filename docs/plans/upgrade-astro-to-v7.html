@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html lang="en" data-status="in-progress">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="plan-status" content="in-progress">
+<meta name="plan-type" content="chore">
+<meta name="plan-created" content="2026-06-30">
+<meta name="plan-repo" content="astro-basics">
+<meta name="plan-file" content="upgrade-astro-to-v7.html">
+<meta name="plan-path" content="docs/plans/upgrade-astro-to-v7.html">
+<meta name="plan-implement" content="Read and implement all steps in the plan at docs/plans/upgrade-astro-to-v7.html — Upgrade astro-basics from Astro v6 to v7 cleanly">
+<meta name="plan-goal" content="Achieve this goal: Upgrade astro-basics from Astro v6 to v7 cleanly. The plan at docs/plans/upgrade-astro-to-v7.html describes one approach — use it as reference, but optimize for the outcome">
+<title>Plan: Upgrade Astro to v7</title>
+<style>
+  /* ── Design tokens ─────────────────────────────────────────────── */
+  :root {
+    --bg:         #ffffff;
+    --surface:    #ffffff;
+    --border:     #e5e7eb;
+    --border-mid: #d1d5db;
+    --text:       #111827;
+    --muted:      #6b7280;
+    --subtle:     #9ca3af;
+    --accent:     #2563eb;
+    --accent-bg:  #eff6ff;
+    --green:      #16a34a;
+    --green-bg:   #f0fdf4;
+    --green-border:#bbf7d0;
+    --amber:      #d97706;
+    --amber-bg:   #fffbeb;
+    --amber-border:#fde68a;
+    --red:        #dc2626;
+    --red-bg:     #fef2f2;
+    --red-border: #fecaca;
+    --purple:     #a21caf;
+    --purple-bg:  #fdf4ff;
+    --purple-border:#f0abfc;
+    --grey-bg:    #f9fafb;
+    --wish-bg:    #fdf8ff;
+    --wish-border:#d8b4fe;
+    --radius:     4px;
+    --shadow:     0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  }
+
+  /* ── Reset & base ──────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+  }
+  a { color: var(--accent); }
+  code, pre {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .875em;
+  }
+  pre {
+    background: var(--grey-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .75rem 1rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* ── SVG icon helper ────────────────────────────────────────────── */
+  .icon {
+    width: 1rem;
+    height: 1rem;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  /* ── Skip link ─────────────────────────────────────────────────── */
+  .skip-link {
+    position: absolute;
+    left: -9999px; top: auto;
+    width: 1px; height: 1px;
+    overflow: hidden;
+  }
+  .skip-link:focus {
+    position: fixed;
+    left: 1rem; top: 1rem;
+    width: auto; height: auto;
+    overflow: visible;
+    background: var(--accent);
+    color: #fff;
+    padding: .5rem 1rem;
+    border-radius: var(--radius);
+    font-weight: 700;
+    z-index: 9999;
+    text-decoration: none;
+  }
+
+  /* ── Header — document cover ────────────────────────────────────── */
+  .plan-header {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+  }
+  .plan-header::before {
+    content: "";
+    display: block;
+    height: 3px;
+    background: var(--accent);
+  }
+  .plan-header-inner {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 1.75rem 1.5rem 1.5rem;
+  }
+  .plan-doc-type {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .6rem;
+  }
+  .plan-header-top {
+    display: block;
+  }
+  .plan-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -.025em;
+    line-height: 1.2;
+    color: var(--text);
+  }
+  .plan-header-actions {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+    margin-top: .75rem;
+  }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .25rem .75rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    color: #fff;
+  }
+  .status-badge::before {
+    content: "";
+    display: inline-block;
+    width: .45em;
+    height: .45em;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+  [data-status="todo"]        .status-badge { background: #6b7280; }
+  [data-status="in-progress"] .status-badge { background: #d97706; }
+  [data-status="completed"]   .status-badge { background: #16a34a; }
+
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+  [data-status="in-progress"] .status-badge::before {
+    animation: pulse-dot 1.4s ease-in-out infinite;
+  }
+
+  /* Save as PDF button */
+  .save-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .4rem 1rem;
+    font-size: .8rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: filter .15s, box-shadow .15s;
+  }
+  .save-pdf-btn:hover { filter: brightness(.85); box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+  .save-pdf-btn:active { filter: brightness(.75); }
+  .save-pdf-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .save-pdf-btn { transition: none; } }
+
+  /* Meta row */
+  .plan-meta {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    font-size: .8rem;
+    color: var(--muted);
+  }
+  .plan-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+  }
+  .plan-meta .icon { opacity: .55; }
+
+  /* ── Layout ────────────────────────────────────────────────────── */
+  .layout {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 3rem;
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+    align-items: start;
+  }
+  @media (max-width: 720px) {
+    .layout { grid-template-columns: 1fr; padding: 1.5rem .75rem 4rem; gap: 0; }
+  }
+
+  /* ── Sidebar — table of contents ───────────────────────────────── */
+  .plan-nav {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+    overflow: hidden;
+  }
+  @media (max-width: 720px) {
+    .plan-nav {
+      position: static;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+  }
+  .nav-heading {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--subtle);
+    padding: 0 1rem .6rem;
+    margin-bottom: .25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .scroll-rail {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .scroll-rail::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: calc(var(--scroll-pct, 0) * 1%);
+    background: var(--accent);
+    transition: height .1s linear;
+  }
+  @media (prefers-reduced-motion: reduce) { .scroll-rail::after { transition: none; } }
+  .plan-nav ul { list-style: none; padding: 0; margin: 0; }
+  .plan-nav li a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: .125rem 1rem .125rem 1.25rem;
+    font-size: .825rem;
+    color: var(--muted);
+    text-decoration: none;
+    gap: .5rem;
+    border-left: 2px solid transparent;
+    transition: color .12s, border-color .12s;
+  }
+  .plan-nav li a:hover { color: var(--text); border-left-color: var(--border-mid); }
+  .plan-nav li a.active { color: var(--accent); font-weight: 600; border-left-color: var(--accent); }
+  .plan-nav li a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .plan-nav .icon { opacity: .5; }
+  .plan-nav li a.active .icon,
+  .plan-nav li a:hover .icon { opacity: .8; }
+
+  /* ── Objective card — executive summary ────────────────────────── */
+  .objective-card {
+    background: var(--accent-bg);
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2.5rem;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: #1e3a5f;
+    line-height: 1.6;
+  }
+  .objective-card .section-label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .5rem;
+  }
+
+  /* ── Progress bar ──────────────────────────────────────────────── */
+  .progress-wrap {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: .6rem;
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .progress-bar-bg { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  @keyframes shimmer { 0% { background-position: 200% center; } 100% { background-position: -200% center; } }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), #60a5fa, var(--accent));
+    background-size: 200% 100%;
+    animation: shimmer 2.5s linear infinite;
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+  .progress-bar-fill.has-progress { animation: none; background: var(--accent); }
+  @media (prefers-reduced-motion: reduce) {
+    .progress-bar-fill { animation: none; transition: none; }
+  }
+
+  /* ── Document sections ─────────────────────────────────────────── */
+  .section-card {
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    padding: 2rem 0 1.25rem;
+    margin-bottom: 0;
+    box-shadow: none;
+  }
+  .section-card:first-of-type { border-top: none; }
+  .section-card h2 {
+    font-size: .9rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+  }
+  .section-card h2 .icon { opacity: .6; }
+  .section-card p { margin-bottom: .75rem; color: var(--text); }
+  .section-card p:last-child { margin-bottom: 0; }
+  .section-card ul, .section-card ol {
+    padding-left: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+  }
+
+  /* ── Step timeline ──────────────────────────────────────────────── */
+  .steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    position: relative;
+  }
+  .steps-list::before {
+    content: "";
+    position: absolute;
+    left: .9rem;
+    top: 1.75rem;
+    bottom: 1.75rem;
+    width: 1px;
+    background: var(--border);
+  }
+
+  /* ── Step cards ────────────────────────────────────────────────── */
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+    position: relative;
+    margin-left: 2.25rem;
+    transition: border-color .15s;
+  }
+  .step-card:hover { border-color: var(--border-mid); }
+  @media (prefers-reduced-motion: reduce) { .step-card { transition: none; } }
+  .step-card::before {
+    content: "";
+    position: absolute;
+    left: -1.6rem; top: 1.1rem;
+    width: .75rem; height: .75rem;
+    border-radius: 50%;
+    background: var(--border);
+    border: 2px solid var(--bg);
+    transition: background .15s;
+  }
+  .step-card.completed::before { background: var(--green); }
+  @media (prefers-reduced-motion: reduce) { .step-card::before { transition: none; } }
+
+  .step-card-header { display: flex; align-items: flex-start; gap: .75rem; }
+  .step-number {
+    flex-shrink: 0;
+    width: 1.75rem; height: 1.75rem;
+    background: var(--grey-bg);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    font-weight: 700;
+    margin-top: .1rem;
+  }
+  .step-card.completed .step-number { background: var(--green-bg); color: var(--green); border-color: #bbf7d0; }
+  .step-body { flex: 1; min-width: 0; }
+  .step-action {
+    font-weight: 600;
+    margin-bottom: .3rem;
+    display: flex;
+    align-items: baseline;
+    gap: .45rem;
+    flex-wrap: wrap;
+    color: var(--text);
+  }
+  .step-chip {
+    display: inline-block;
+    font-size: .6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: .1em .5em;
+    border-radius: 999px;
+    background: var(--grey-bg);
+    color: var(--subtle);
+    border: 1px solid var(--border);
+    vertical-align: middle;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .step-card.completed .step-chip {
+    background: var(--green-bg);
+    color: var(--green);
+    border-color: #bbf7d0;
+  }
+  .step-chip-text { flex: 1; }
+  .step-why { font-size: .875rem; color: var(--muted); margin-bottom: .4rem; }
+  .step-why::before { content: "Why: "; font-weight: 600; color: var(--text); }
+  .step-verify-toggle {
+    margin-top: .5rem;
+    border: 0;
+    border-top: 1px solid var(--border);
+    padding-top: .4rem;
+  }
+  .step-verify-toggle summary {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--accent);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    user-select: none;
+  }
+  .step-verify-toggle summary::before { content: "▶"; font-size: .55em; transition: transform .2s; }
+  .step-verify-toggle[open] summary::before { transform: rotate(90deg); }
+  .step-verify-toggle .verify-body {
+    font-size: .875rem;
+    color: var(--text);
+    margin-top: .4rem;
+    padding-left: .5rem;
+    border-left: 2px solid var(--accent);
+  }
+  @media (prefers-reduced-motion: reduce) { .step-verify-toggle summary::before { transition: none; } }
+
+  /* ── Acceptance criteria ───────────────────────────────────────── */
+  .criteria-list {
+    list-style: none; padding: 0;
+    display: flex; flex-direction: column; gap: .6rem;
+  }
+  .criteria-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .6rem .75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    transition: background .12s;
+  }
+  .criteria-list li:has(input:checked) { background: var(--grey-bg); }
+  .criteria-list input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 1rem; height: 1rem;
+    margin-top: .2rem;
+    accent-color: var(--green);
+    cursor: pointer;
+  }
+  .criteria-list label { cursor: pointer; font-size: .9rem; }
+  .criteria-list input:checked + label { text-decoration: line-through; color: var(--muted); }
+
+  /* ── Completion checklist ────────────────────────────────────── */
+  .completion-checklist {
+    background: var(--surface);
+    border: 2px solid var(--amber);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-top: 1rem;
+  }
+  .completion-checklist.all-complete { border-color: var(--green); }
+  .completion-header {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: 1rem;
+  }
+  .completion-badge {
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .15rem .6rem;
+    border-radius: 999px;
+    background: #fef3c7;
+    color: var(--amber);
+    border: 1px solid #fde68a;
+  }
+  .completion-checklist.all-complete .completion-badge {
+    background: var(--green-bg);
+    color: var(--green);
+    border-color: #bbf7d0;
+  }
+  .completion-list {
+    list-style: none; padding: 0;
+    display: flex; flex-direction: column; gap: .6rem;
+  }
+  .completion-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .6rem .75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    transition: background .12s;
+  }
+  .completion-list li:has(input:checked) { background: var(--grey-bg); }
+  .completion-list input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 1rem; height: 1rem;
+    margin-top: .2rem;
+    accent-color: var(--green);
+  }
+  .completion-list label { font-size: .9rem; }
+  .completion-list input:checked + label { text-decoration: line-through; color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) {
+    .completion-list li { transition: none; }
+  }
+
+  /* ── Completion report ─────────────────────────────────────── */
+  .completion-report {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .report-heading {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .75rem;
+  }
+  .report-empty {
+    font-style: italic;
+    color: var(--subtle);
+    font-size: .875rem;
+  }
+  .report-list { margin: 0; padding: 0; }
+  .report-list dt {
+    font-weight: 600;
+    color: var(--text);
+    font-size: .875rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin-top: .75rem;
+  }
+  .report-list dt:first-child { margin-top: 0; }
+  .report-list dt::before {
+    content: "";
+    display: inline-block;
+    width: .5rem; height: .5rem;
+    border-radius: 50%;
+    background: #dc2626;
+    flex-shrink: 0;
+  }
+  .report-list dd {
+    color: var(--muted);
+    font-size: .85rem;
+    margin-left: .9rem;
+    margin-top: .2rem;
+    margin-bottom: 0;
+  }
+
+  /* ── Next steps ────────────────────────────────────────────────── */
+  .next-steps-list { padding: 0; display: flex; flex-direction: column; gap: .75rem; }
+  .next-step-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .next-step-item summary {
+    font-weight: 600;
+    font-size: .9rem;
+    padding: .75rem 1rem;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--surface);
+    user-select: none;
+    min-height: 44px;
+  }
+  .next-step-item summary::before { content: "▶"; font-size: .55em; color: var(--subtle); transition: transform .2s; }
+  .next-step-item[open] summary::before { transform: rotate(90deg); }
+  .next-step-prompt { padding: .75rem 1rem 1rem; background: var(--grey-bg); border-top: 1px solid var(--border); }
+  .next-step-prompt p { font-size: .8rem; color: var(--muted); margin-bottom: .5rem; }
+  .next-step-prompt pre { margin: 0; }
+  @media (prefers-reduced-motion: reduce) { .next-step-item summary::before { transition: none; } }
+
+  /* ── Copy prompt button ─────────────────────────────────────── */
+  .copy-prompt-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    margin-top: .6rem;
+    padding: .3rem .75rem;
+    font-size: .775rem;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+  }
+  .copy-prompt-btn:hover { background: #dbeafe; border-color: var(--accent); }
+  .copy-prompt-btn:active { background: #bfdbfe; }
+  .copy-prompt-btn.copied { color: var(--green); background: var(--green-bg); border-color: #bbf7d0; }
+  .copy-prompt-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media print { .copy-prompt-btn { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-prompt-btn { transition: none; } }
+
+  /* Wish list variant */
+  .wish-list-header {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #7c3aed;
+    margin: 1.5rem 0 .75rem;
+  }
+  .wish-list-header::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--wish-border);
+    opacity: .5;
+  }
+  .wish-item { border: 1px dashed var(--wish-border) !important; background: var(--wish-bg) !important; }
+  .wish-item summary { background: var(--wish-bg) !important; color: #6d28d9; }
+  .wish-badge {
+    font-size: .6rem;
+    background: #f3e8ff;
+    color: #6d28d9;
+    padding: .1rem .5rem;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-left: auto;
+    border: 1px solid #ddd6fe;
+  }
+
+  /* ── Collapsible optional sections ─────────────────────────────── */
+  .optional-section {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-top: 1.5rem;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .optional-section > summary {
+    padding: .875rem 1.25rem;
+    font-weight: 600;
+    font-size: .9rem;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    user-select: none;
+    min-height: 44px;
+  }
+  .optional-section > summary::before { content: "▶"; font-size: .55em; color: var(--subtle); transition: transform .2s; }
+  .optional-section[open] > summary::before { transform: rotate(90deg); }
+  .optional-body { padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+  .unresolved-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .unresolved-item summary { font-weight: 600; padding: .35rem 0; cursor: pointer; list-style: none; user-select: none; font-size: .9rem; }
+  .unresolved-prompt { margin-top: .5rem; }
+  @media (prefers-reduced-motion: reduce) { .optional-section > summary::before { transition: none; } }
+
+  /* ── Implement prompt ─────────────────────────────────────────── */
+  .plan-implement {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    margin-bottom: 1.5rem;
+    padding: .45rem .75rem;
+    background: var(--green-bg);
+    border: 1px solid #bbf7d0;
+    border-radius: var(--radius);
+    font-size: .8rem;
+  }
+  .plan-implement-label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--green);
+    flex-shrink: 0;
+    margin-top: .1rem;
+  }
+  .plan-implement code {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .82rem;
+    color: var(--text);
+    flex: 1;
+    word-break: break-all;
+  }
+  .copy-cmd-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-cmd-btn:hover { background: var(--accent-bg); color: var(--accent); border-color: #bfdbfe; }
+  .copy-cmd-btn.copied { color: var(--green); background: var(--green-bg); border-color: #bbf7d0; }
+  .copy-cmd-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [data-status="completed"] .copy-cmd-btn { display: none; }
+  @media print { .plan-implement { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-cmd-btn { transition: none; } }
+
+  /* ── Plan source (file name + relative path) ──────────────────── */
+  .plan-source {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    margin: -.5rem 0 1.5rem;
+    padding: .55rem .75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: .8rem;
+  }
+  .plan-source-row { display: flex; align-items: center; gap: .6rem; }
+  .plan-source-label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    flex-shrink: 0;
+    width: 2.4rem;
+  }
+  .plan-source code {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .82rem;
+    color: var(--text);
+    flex: 1;
+    word-break: break-all;
+  }
+  .copy-src-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-src-btn:hover { background: var(--accent-bg); color: var(--accent); border-color: #bfdbfe; }
+  .copy-src-btn.copied { color: var(--green); background: var(--green-bg); border-color: #bbf7d0; }
+  .copy-src-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media print { .copy-src-btn { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-src-btn { transition: none; } }
+
+  /* ── Workflow prompt (conditional — remove element when empty) ── */
+  .plan-workflow {
+    margin: -.5rem 0 1.5rem;
+    font-size: .8rem;
+  }
+  .plan-workflow summary {
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--accent);
+    cursor: pointer;
+    padding: .25rem 0;
+    user-select: none;
+  }
+  .plan-workflow summary:hover { text-decoration: underline; }
+  .plan-workflow-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    margin-top: .4rem;
+    padding: .45rem .75rem;
+    background: var(--accent-bg);
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius);
+  }
+  .plan-workflow code {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .82rem;
+    color: var(--text);
+    flex: 1;
+    word-break: break-all;
+  }
+  .copy-workflow-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-workflow-btn:hover { background: var(--accent-bg); color: var(--accent); border-color: #bfdbfe; }
+  .copy-workflow-btn.copied { color: var(--green); background: var(--green-bg); border-color: #bbf7d0; }
+  .copy-workflow-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [data-status="completed"] .plan-workflow { display: none; }
+  @media print { .plan-workflow { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-workflow-btn { transition: none; } }
+
+  /* ── Goal prompt (outcome-driven — always present) ────────────── */
+  .plan-goal {
+    margin: -.5rem 0 1.5rem;
+    font-size: .8rem;
+  }
+  .plan-goal summary {
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--purple);
+    cursor: pointer;
+    padding: .25rem 0;
+    user-select: none;
+  }
+  .plan-goal summary:hover { text-decoration: underline; }
+  .plan-goal-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    margin-top: .4rem;
+    padding: .45rem .75rem;
+    background: var(--purple-bg);
+    border: 1px solid var(--purple-border);
+    border-radius: var(--radius);
+  }
+  .plan-goal code {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .82rem;
+    color: var(--text);
+    flex: 1;
+    word-break: break-all;
+  }
+  .copy-goal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-goal-btn:hover { background: var(--accent-bg); color: var(--accent); border-color: #bfdbfe; }
+  .copy-goal-btn.copied { color: var(--green); background: var(--green-bg); border-color: #bbf7d0; }
+  .copy-goal-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [data-status="completed"] .plan-goal { display: none; }
+  @media print { .plan-goal { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-goal-btn { transition: none; } }
+
+  /* ── Tests section ──────────────────────────────────────────────── */
+  .test-list {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+  .test-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .test-card-header {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: .5rem;
+    flex-wrap: wrap;
+  }
+  .test-badge {
+    display: inline-block;
+    font-size: .6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: .15em .55em;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .test-badge-unit        { background: var(--accent-bg); color: var(--accent); border: 1px solid #bfdbfe; }
+  .test-badge-integration { background: var(--amber-bg);  color: var(--amber);  border: 1px solid var(--amber-border); }
+  .test-badge-e2e         { background: var(--purple-bg);  color: var(--purple);  border: 1px solid var(--purple-border); }
+  .test-badge-objective   { background: var(--green-bg);  color: var(--green);  border: 1px solid var(--green-border); }
+  .test-card-title {
+    font-weight: 600;
+    font-size: .95rem;
+    color: var(--text);
+    flex: 1;
+  }
+  .test-card-body { font-size: .875rem; color: var(--muted); }
+  .test-card-body p { margin-bottom: .4rem; }
+  .test-card-body p:last-child { margin-bottom: 0; }
+  .test-card-body code { font-size: .85em; }
+  .test-card-body strong { color: var(--text); font-weight: 600; }
+  .test-tier-label {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .75rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+  .test-tier-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .objective-test-card {
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    border-left: 4px solid var(--green);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .objective-test-card .test-card-header { margin-bottom: .6rem; }
+  .objective-test-card .test-card-title { color: #14532d; }
+  .objective-test-card .test-card-body { color: #166534; }
+  .objective-test-card .test-card-body strong { color: #14532d; }
+  /* ── Footer ────────────────────────────────────────────────────── */
+  .plan-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    font-size: .75rem;
+    color: var(--subtle);
+    margin-top: 3rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+  .plan-footer .icon { opacity: .35; }
+
+  /* ── Focus styles ───────────────────────────────────────────────── */
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ── Print styles ───────────────────────────────────────────────── */
+  @media print {
+    .plan-nav, .scroll-rail, .progress-wrap, .save-pdf-btn { display: none !important; }
+    .layout { display: block !important; }
+    .step-card, .section-card { box-shadow: none !important; break-inside: avoid; }
+    .step-chip { display: none !important; }
+    a[href]::after { content: " (" attr(href) ")"; font-size: .8em; }
+  }
+
+  /* ═════════════════════════════════════════════════════════════════
+     OPT-IN VISUAL COMPONENTS
+     Pure-CSS / token-driven — no CDN, no external script. These rules
+     are always present (harmless when unused); the matching <body>
+     section blocks are kept only when a plan needs them and deleted
+     otherwise. See SKILL.md → "Visual Components".
+     ═════════════════════════════════════════════════════════════════ */
+
+  /* ── Files file-tree ────────────────────────────────────────────── */
+  .file-tree { font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace; font-size: .85rem; }
+  .file-tree-root { font-weight: 700; color: var(--text); margin-bottom: .5rem; display: flex; align-items: center; gap: .35rem; }
+  .file-list, .file-list ul { list-style: none; padding-left: 1.25rem; margin: 0; border-left: 1px dashed var(--border); }
+  .file-list li { padding: .2rem 0; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; color: var(--muted); }
+  .file-list li.file-dir { color: var(--text); font-weight: 600; }
+  .file-badge { font-size: .6rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: .1em .45em; border-radius: 999px; }
+  .file-badge-new       { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .file-badge-modified  { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+  .file-badge-deleted   { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-border); }
+  .file-badge-generated { background: var(--accent-bg); color: var(--accent); border: 1px solid #bfdbfe; }
+  .file-note { font-size: .75rem; color: var(--subtle); font-style: italic; font-family: system-ui, sans-serif; }
+
+  /* ── Flow / pipeline diagram ────────────────────────────────────── */
+  .pipeline { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 0 auto; max-width: 580px; }
+  .pipeline-node { width: 100%; border: 1px solid var(--border); border-radius: var(--radius); padding: .7rem 1.25rem; background: var(--surface); text-align: center; box-shadow: var(--shadow); }
+  .pipeline-label { font-size: .62rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .2rem; color: var(--accent); }
+  .pipeline-node code { font-size: .82rem; font-weight: 600; display: block; color: var(--text); }
+  .pipeline-sub { font-size: .74rem; color: var(--muted); margin-top: .2rem; }
+  .pipeline-arrow { font-size: .85rem; color: var(--subtle); padding: .25rem 0; }
+
+  /* ── Comparison grid (2–3 way) ──────────────────────────────────── */
+  .compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+  @media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+  .compare-header { font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: .35rem .75rem; border-radius: var(--radius) var(--radius) 0 0; text-align: center; }
+  .compare-col-add     .compare-header { background: var(--green-bg);  color: var(--green);  border: 1px solid var(--green-border); }
+  .compare-col-neutral .compare-header { background: var(--accent-bg); color: var(--accent); border: 1px solid #bfdbfe; }
+  .compare-col-remove  .compare-header { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red-border); }
+  .compare-list { list-style: none; padding: .5rem .75rem; margin: 0; border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); background: var(--surface); }
+  .compare-list li { font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace; font-size: .78rem; color: var(--muted); padding: .15rem 0; }
+
+  /* ── Bar chart (value via inline --val) ─────────────────────────── */
+  .bar-chart { display: flex; flex-direction: column; gap: .55rem; }
+  .bar-row { display: grid; grid-template-columns: 9.5rem 1fr 3rem; align-items: center; gap: .75rem; }
+  @media (max-width: 520px) { .bar-row { grid-template-columns: 1fr; gap: .15rem; } }
+  .bar-label { font-size: .82rem; color: var(--text); }
+  .bar-track { background: var(--border); border-radius: 999px; height: .7rem; overflow: hidden; }
+  .bar-fill { height: 100%; width: var(--val, 0%); background: var(--accent); border-radius: 999px; }
+  .bar-fill.full { background: var(--green); }
+  .bar-fill.zero { background: var(--subtle); }
+  .bar-value { font-size: .78rem; font-weight: 600; color: var(--muted); white-space: nowrap; text-align: right; }
+
+  /* ── Data table ─────────────────────────────────────────────────── */
+  .plan-table { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: .5rem; }
+  .plan-table caption { text-align: left; font-size: .78rem; color: var(--subtle); font-style: italic; margin-bottom: .5rem; }
+  .plan-table th, .plan-table td { text-align: left; padding: .5rem .75rem; border: 1px solid var(--border); vertical-align: top; }
+  .plan-table thead th { background: var(--grey-bg); font-weight: 700; color: var(--muted); text-transform: uppercase; font-size: .66rem; letter-spacing: .05em; }
+  .plan-table tbody tr:nth-child(even) { background: var(--grey-bg); }
+  .plan-table code { font-size: .8em; }
+
+  /* Shared sub-heading used inside visual sections */
+  .diagram-subheading { font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 1.75rem 0 .75rem; }
+
+  .plan-back-nav { margin-bottom: .5rem; }
+  .plan-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .3125rem;
+    font-size: .8125rem;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .15s;
+  }
+  .plan-back-link:hover { color: var(--accent); }
+  .plan-back-link svg { width: 14px; height: 14px; flex-shrink: 0; }
+</style>
+<style id="plan-responsive-fix" data-version="1">
+/* plan-responsive-fix v1 — injected by scripts/retrofit-responsive-plans.mjs */
+body { overflow-wrap: anywhere; }
+main, nav, aside { min-width: 0; }
+.layout > *, .wrap > *, .compare-grid > * { min-width: 0; }
+pre { white-space: pre-wrap; max-width: 100%; }
+table { max-width: 100%; }
+img, video { max-width: 100%; height: auto; }
+@media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- ── Icon definitions (Heroicons outline, MIT) ─────────────── -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="ic-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"/>
+  </symbol>
+  <symbol id="ic-chart-bar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/>
+  </symbol>
+  <symbol id="ic-document-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+  </symbol>
+  <symbol id="ic-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"/>
+  </symbol>
+  <symbol id="ic-list-bullet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+  </symbol>
+  <symbol id="ic-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+  </symbol>
+  <symbol id="ic-magnifying-glass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+  </symbol>
+  <symbol id="ic-arrow-right-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+  </symbol>
+  <symbol id="ic-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
+  </symbol>
+  <symbol id="ic-code-bracket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/>
+  </symbol>
+  <symbol id="ic-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/>
+    <path d="M6 6h.008v.008H6V6Z"/>
+  </symbol>
+  <symbol id="ic-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"/>
+  </symbol>
+  <symbol id="ic-question-mark-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"/>
+  </symbol>
+  <symbol id="ic-clipboard-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15a2.25 2.25 0 0 1 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"/>
+  </symbol>
+  <symbol id="ic-beaker" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23-.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>
+  </symbol>
+</svg>
+
+<a href="#main" class="skip-link">Skip to content</a>
+
+<!-- ── Header — document cover ─────────────────────────────────── -->
+<header class="plan-header">
+  <div class="plan-header-inner">
+    <div class="plan-back-nav">
+      <a href="./index.html" class="plan-back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
+        Plans
+      </a>
+    </div>
+    <div class="plan-doc-type">Implementation Plan</div>
+    <div class="plan-header-top">
+      <h1 class="plan-title">Upgrade Astro to v7</h1>
+      <div class="plan-header-actions">
+        <button class="save-pdf-btn" type="button" onclick="savePDF()"
+                aria-label="Save this plan as PDF">Save as PDF</button>
+        <span class="status-badge">todo</span>
+      </div>
+    </div>
+    <div class="plan-meta">
+      <span>
+        <svg class="icon" aria-hidden="true"><use href="#ic-calendar"/></svg>
+        2026-06-30
+      </span>
+      <span>
+        <svg class="icon" aria-hidden="true"><use href="#ic-code-bracket"/></svg>
+        astro-basics
+      </span>
+      <span>
+        <svg class="icon" aria-hidden="true"><use href="#ic-tag"/></svg>
+        chore
+      </span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ── Sidebar — table of contents ─────────────────────────── -->
+  <nav class="plan-nav" aria-label="Plan sections">
+    <div class="scroll-rail" aria-hidden="true"></div>
+    <div class="nav-heading">On this page</div>
+    <ul>
+      <li><a href="#objective"><svg class="icon" aria-hidden="true"><use href="#ic-bolt"/></svg> Objective</a></li>
+      <li><a href="#progress"><svg class="icon" aria-hidden="true"><use href="#ic-chart-bar"/></svg> Progress</a></li>
+      <li><a href="#context"><svg class="icon" aria-hidden="true"><use href="#ic-document-text"/></svg> Context</a></li>
+      <!-- Keep the next link only if the Files section is kept; delete otherwise -->
+      <li><a href="#files"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> Files</a></li>
+      <!-- Keep the next link only if the Diagram section is kept; delete otherwise -->
+      <li><a href="#diagram"><svg class="icon" aria-hidden="true"><use href="#ic-chart-bar"/></svg> Diagram</a></li>
+      <li><a href="#steps"><svg class="icon" aria-hidden="true"><use href="#ic-list-bullet"/></svg> Steps</a></li>
+      <li><a href="#tests"><svg class="icon" aria-hidden="true"><use href="#ic-beaker"/></svg> Tests</a></li>
+      <li><a href="#criteria"><svg class="icon" aria-hidden="true"><use href="#ic-check-circle"/></svg> Criteria</a></li>
+      <li><a href="#verification"><svg class="icon" aria-hidden="true"><use href="#ic-magnifying-glass"/></svg> Verification</a></li>
+      <li><a href="#completion"><svg class="icon" aria-hidden="true"><use href="#ic-clipboard-check"/></svg> Completion</a></li>
+      <li><a href="#next-steps"><svg class="icon" aria-hidden="true"><use href="#ic-arrow-right-circle"/></svg> Next Steps</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Main content ─────────────────────────────────────────── -->
+  <main id="main">
+
+    <!-- ── Objective ────────────────────────────────────────────── -->
+    <div class="objective-card" id="objective">
+      <div class="section-label">Objective</div>
+      <p>Upgrade astro-basics from Astro v6 to v7 cleanly, delivered as <strong>three independently-mergeable PRs</strong>: <strong>PR1</strong> lands the test safety-net and content-config cleanup while still green on v6; <strong>PR2</strong> is the atomic version bump — the framework and every <code>@astrojs/*</code> package in lockstep, plus the two breaking changes that actually hit this repo (the stricter Rust compiler and the <code>compressHTML: 'jsx'</code> whitespace default); <strong>PR3</strong> verifies all three deploy targets (Netlify, Vercel, Node) in CI and documents the change.</p>
+    </div>
+
+    <!-- ── Implement prompt ──────────────────────────────────────── -->
+    <div class="plan-implement">
+      <span class="plan-implement-label">Implement</span>
+      <code id="implement-cmd" aria-label="Implement prompt">Read and implement all steps in the plan at docs/plans/upgrade-astro-to-v7.html — Upgrade astro-basics from Astro v6 to v7 cleanly</code>
+      <button class="copy-cmd-btn" type="button"
+              onclick="copyCmd(this)" aria-label="Copy implement prompt to clipboard">Copy</button>
+    </div>
+
+    <!-- ── Goal prompt (outcome-driven — always present) ─────────── -->
+    <details class="plan-goal">
+      <summary>Pursue as goal — optimize for the outcome</summary>
+      <div class="plan-goal-inner">
+        <code id="goal-cmd" aria-label="Goal prompt">Achieve this goal: Upgrade astro-basics from Astro v6 to v7 cleanly. The plan at docs/plans/upgrade-astro-to-v7.html describes one approach — use it as reference, but optimize for the outcome</code>
+        <button class="copy-goal-btn" type="button"
+                onclick="copyGoal(this)" aria-label="Copy goal prompt to clipboard">Copy</button>
+      </div>
+    </details>
+
+    <!-- ── Plan source (file name + relative path, for docs & prompts) ── -->
+    <div class="plan-source">
+      <div class="plan-source-row">
+        <span class="plan-source-label">File</span>
+        <code id="plan-file" aria-label="Plan file name">upgrade-astro-to-v7.html</code>
+        <button class="copy-src-btn" type="button"
+                onclick="copyPath(this, 'plan-file')" aria-label="Copy plan file name to clipboard">Copy</button>
+      </div>
+      <div class="plan-source-row">
+        <span class="plan-source-label">Path</span>
+        <code id="plan-path" aria-label="Plan relative path">docs/plans/upgrade-astro-to-v7.html</code>
+        <button class="copy-src-btn" type="button"
+                onclick="copyPath(this, 'plan-path')" aria-label="Copy plan relative path to clipboard">Copy</button>
+      </div>
+    </div>
+
+    <!-- ── Progress ─────────────────────────────────────────────── -->
+    <div class="progress-wrap" id="progress">
+      <div class="progress-header">
+        <span>Acceptance criteria</span>
+        <span id="progress-label">0 / 9 done</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-bar"
+             role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+             aria-label="Plan progress" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- ── Context ──────────────────────────────────────────────── -->
+    <section class="section-card card-context" id="context" aria-labelledby="h-context">
+      <h2 id="h-context">
+        <svg class="icon" aria-hidden="true"><use href="#ic-document-text"/></svg>
+        Context
+      </h2>
+      <p>astro-basics currently runs on <code>astro ^6.0.0</code> with SSR (<code>output: 'server'</code>) and a full adapter stack — <code>@astrojs/netlify</code>, <code>@astrojs/node</code>, <code>@astrojs/vercel</code> — selected at deploy time by the <code>ASTRO_ADAPTER</code> env var, plus integrations <code>@astrojs/react</code>, <code>@astrojs/mdx</code>, <code>@astrojs/sitemap</code>, <code>@astrojs/rss</code>, and <code>@astrojs/starlight</code>. The <a href="https://docs.astro.build/en/guides/upgrade-to/v7/">official v6→v7 upgrade guide</a> lists eight breaking changes, but a scan of this codebase shows only <strong>two</strong> actually apply: the new default <strong>Rust compiler</strong> (stricter HTML — unclosed non-void tags now error, and invalid markup is no longer auto-corrected) which recompiles all <strong>80 <code>.astro</code> files</strong> (46 components across <code>components/astro</code>, <code>components/dashboard</code>, and <code>components/views</code>; 4 layouts; 30 pages), and the <strong><code>compressHTML</code> default flipping from <code>true</code> to <code>'jsx'</code></strong>, which strips inter-element whitespace and can silently drop spaces between inline elements.</p>
+      <p>The other six guide items are confirmed absent: no <code>src/fetch.ts</code>, no <code>getContainerRenderer()</code> usage, no <code>astro:transitions</code> internals, no <code>@astrojs/db</code>, no <code>experimental</code> config block, and no wired remark/rehype plugins (so the Sätteri markdown-processor default is a no-op here). The remaining work is the routine but mandatory part of any major bump: moving <code>astro</code> and every <code>@astrojs/*</code> package to v7-compatible versions in lockstep, reconciling third-party Astro integrations (Clerk, astro-embed, Spotlight) that <code>@astrojs/upgrade</code> does not touch, and absorbing the Vite 8 dependency bump that ships with v7. Node is already well ahead of any requirement (<code>v26</code> local, <code>engines: ">=22.12.0"</code>).</p>
+      <p><strong>Rollback:</strong> The three-PR structure provides a natural rollback boundary. If PR2 fails after merge, revert the PR on GitHub to restore v6 — the v6 baseline established in step 1 is the recovery target. If individual <code>.astro</code> files develop regressions post-merge, git blame the step-6 fix commits to identify which closing-tag additions to back out.</p>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+         OPT-IN VISUAL: Files file-tree.
+         KEEP and fill {file-tree-rows} when the plan touches files
+         (most multi-file plans). DELETE this whole section element and
+         its nav entry (the "#files" link) when not needed.
+         Badge classes: file-badge-new | file-badge-modified |
+         file-badge-deleted | file-badge-generated.
+         ════════════════════════════════════════════════════════════ -->
+    <section class="section-card card-files" id="files" aria-labelledby="h-files">
+      <h2 id="h-files">
+        <svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg>
+        Files to Modify
+      </h2>
+      <div class="file-tree">
+        <div class="file-tree-root"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> astro-basics/</div>
+        <ul class="file-list">
+          <li><code>package.json</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR2 — bump astro + @astrojs/* (react, mdx, netlify, vercel, node, sitemap, rss, starlight) + 3rd-party; PR3 — dedupe/pin</span></li>
+          <li><code>package-lock.json</code> <span class="file-badge file-badge-generated">generated</span> <span class="file-note">PR2/PR3 — regenerated by npm install / dedupe</span></li>
+          <li><code>astro.config.mjs</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR2 — compressHTML decision + Vite 8 review</span></li>
+          <li class="file-dir"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> src/</li>
+          <ul class="file-list">
+            <li><code>components/astro/*.astro</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR2 — close tags flagged by the Rust compiler (35 files)</span></li>
+            <li><code>components/dashboard/*.astro</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR2 — same audit; protected dashboard UI (7 files)</span></li>
+            <li><code>components/views/*.astro</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR2 — same audit; view components (4 files)</span></li>
+            <li><code>layouts/*.astro</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR2 — close unclosed tags if flagged (4 files)</span></li>
+            <li><code>pages/**/*.astro</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR2 — close unclosed tags if flagged (30 files)</span></li>
+            <li><code>content/config.ts</code> <span class="file-badge file-badge-deleted">deleted</span> <span class="file-note">PR1 — remove legacy duplicate (pending unresolved check)</span></li>
+          </ul>
+          <li class="file-dir"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> project-docs/</li>
+          <ul class="file-list">
+            <li><code>astro-v7-upgrade.md</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">PR3 — upgrade note + breaking-change log</span></li>
+          </ul>
+          <li class="file-dir"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> .github/workflows/</li>
+          <ul class="file-list">
+            <li><code>*.yml</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">PR3 — add 3-adapter build matrix</span></li>
+          </ul>
+          <li class="file-dir"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> tests/ &amp; e2e/</li>
+          <ul class="file-list">
+            <li><code>e2e/astro-v7-upgrade.spec.ts</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">PR1 — smoke test: key pages render</span></li>
+            <li><code>tests/content-collections.test.ts</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">PR1 — content API still loads</span></li>
+            <li><code>tests/compress-html-whitespace.test.ts</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">PR1 — guard inline-element spacing</span></li>
+          </ul>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+         OPT-IN VISUAL: Diagram / Chart / Table.
+         KEEP and fill when the plan has a flow, comparison,
+         distribution, or structured data worth showing. DELETE this
+         whole section element and its nav entry (the "#diagram" link)
+         when not needed. Use any subset of the building blocks below
+         (.pipeline, .compare-grid, .bar-chart, .plan-table); remove
+         the sub-blocks you do not use.
+         ════════════════════════════════════════════════════════════ -->
+    <section class="section-card card-diagram" id="diagram" aria-labelledby="h-diagram">
+      <h2 id="h-diagram">
+        <svg class="icon" aria-hidden="true"><use href="#ic-chart-bar"/></svg>
+        Diagram
+      </h2>
+
+      <!-- Flow / pipeline -->
+      <div class="diagram-subheading">Three-PR delivery sequence</div>
+      <div class="pipeline">
+        <div class="pipeline-node"><div class="pipeline-label">PR1 · merges on v6</div><code>Readiness</code><div class="pipeline-sub">test safety-net + content-config cleanup (steps 1–3)</div></div>
+        <div class="pipeline-arrow" aria-hidden="true">↓</div>
+        <div class="pipeline-node"><div class="pipeline-label">PR2 · atomic bump</div><code>Core v7 upgrade</code><div class="pipeline-sub">@astrojs/upgrade + 3rd-party + compiler fixes + whitespace + Vite 8 + all-3-adapter builds (steps 4–8)</div></div>
+        <div class="pipeline-arrow" aria-hidden="true">↓</div>
+        <div class="pipeline-node"><div class="pipeline-label">PR3 · on v7</div><code>Verify + document</code><div class="pipeline-sub">codify 3-adapter CI matrix + docs + dedupe/pin (steps 9–11)</div></div>
+      </div>
+
+      <!-- Data table: breaking change → applies here? → action -->
+      <div class="diagram-subheading">v7 breaking changes mapped to this repo</div>
+      <table class="plan-table">
+        <caption>Each Astro v6→v7 breaking change, whether it applies to astro-basics, and the required action.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Breaking change</th>
+            <th scope="col">Applies?</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Rust compiler — stricter HTML</td><td>Yes</td><td>Build, then close unclosed non-void tags in <code>.astro</code> files</td></tr>
+          <tr><td><code>compressHTML: 'jsx'</code> default</td><td>Yes</td><td>Audit inline-element spacing; add <code>{" "}</code> or set <code>compressHTML: true</code></td></tr>
+          <tr><td>Vite 8 dependency bump</td><td>Yes</td><td>Review the <code>vite: {}</code> block against the Vite 8 migration guide</td></tr>
+          <tr><td>Reserved <code>src/fetch.ts</code></td><td>No</td><td>File absent — no action (note the reservation)</td></tr>
+          <tr><td>Sätteri markdown default</td><td>No</td><td>No remark/rehype plugins wired — no action</td></tr>
+          <tr><td><code>getContainerRenderer()</code> path</td><td>No</td><td>Not used anywhere</td></tr>
+          <tr><td><code>astro:transitions</code> internals removed</td><td>No</td><td>Not used anywhere</td></tr>
+          <tr><td><code>@astrojs/db</code> removed</td><td>No</td><td>Not a dependency (Turso/Supabase used)</td></tr>
+          <tr><td>Experimental flags stabilized</td><td>No</td><td>No <code>experimental</code> block in config</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── Steps ────────────────────────────────────────────────── -->
+    <section class="section-card card-steps" id="steps" aria-labelledby="h-steps">
+      <h2 id="h-steps">
+        <svg class="icon" aria-hidden="true"><use href="#ic-list-bullet"/></svg>
+        Steps
+      </h2>
+      <div class="steps-list">
+
+        <div class="step-card completed">
+          <div class="step-card-header">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">done</span>
+                <span class="step-chip-text"><strong>PR1 ·</strong> Cut the upgrade branch and capture a green v6 baseline.</span>
+              </div>
+              <div class="step-why">A major framework bump needs a known-good rollback point and a baseline to diff visual/test output against. Branch off <code>primary</code>; never upgrade on a protected branch.</div>
+              <details class="step-verify-toggle">
+                <summary>Verify</summary>
+                <div class="verify-body"><code>git status</code> is clean on a new branch; <code>ASTRO_ADAPTER=netlify npm run build</code> succeeds and <code>npm test</code> passes — all on v6 before any change.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card completed">
+          <div class="step-card-header">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">done</span>
+                <span class="step-chip-text"><strong>PR1 ·</strong> Author the v7-readiness test net so it ships before the bump.</span>
+              </div>
+              <div class="step-why">The three tests (objective smoke <code>e2e/astro-v7-upgrade.spec.ts</code>, content-collections integration, inline-whitespace unit) are valid on v6 today. Landing them first turns PR2 into a guarded diff instead of a leap of faith.</div>
+              <details class="step-verify-toggle">
+                <summary>Verify</summary>
+                <div class="verify-body">All three test files exist and pass under the current v6 build; <code>npm test</code> and <code>npm run test:e2e -- astro-v7-upgrade</code> are green. PR1 is mergeable on v6.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card completed">
+          <div class="step-card-header">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">done</span>
+                <span class="step-chip-text"><strong>PR1 ·</strong> Resolve the duplicate content-config files.</span>
+              </div>
+              <div class="step-why">The repo carries both <code>src/content.config.ts</code> (the v6+ location) and a legacy <code>src/content/config.ts</code>. Settle which Astro v7 will load and remove or merge the other now, on v6, so it is not a confound during the bump.</div>
+              <details class="step-verify-toggle">
+                <summary>Verify</summary>
+                <div class="verify-body">Exactly one content-config file remains (or the legacy one is provably unreferenced); <code>npm run build</code> and the content-collections test still pass on v6.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card completed">
+          <div class="step-card-header">
+            <div class="step-number">4</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">done</span>
+                <span class="step-chip-text"><strong>PR2 ·</strong> Run <code>npx @astrojs/upgrade</code> to bump core and every @astrojs package together.</span>
+              </div>
+              <div class="step-why">The official tool resolves the whole peer matrix — <code>astro</code> plus <code>@astrojs/react</code>, <code>mdx</code>, <code>netlify</code>, <code>vercel</code>, <code>node</code>, <code>sitemap</code>, <code>rss</code>, <code>starlight</code> — so adapters never fall out of sync with core. This and every step below land in one atomic PR.</div>
+              <details class="step-verify-toggle">
+                <summary>Verify</summary>
+                <div class="verify-body"><code>package.json</code> shows <code>astro</code> at <code>^7</code> and every <code>@astrojs/*</code> at a v7-compatible major; <code>npm ls astro</code> reports a single deduped version with no peer conflicts.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card completed">
+          <div class="step-card-header">
+            <div class="step-number">5</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">done</span>
+                <span class="step-chip-text"><strong>PR2 ·</strong> Reconcile third-party Astro integrations the upgrader doesn't touch.</span>
+              </div>
+              <div class="step-why"><code>@clerk/astro</code>, <code>astro-embed</code>, <code>@astro-community/astro-embed-youtube</code>, and <code>@spotlightjs/astro</code> gate on the Astro peer range but are outside <code>@astrojs/upgrade</code>'s scope. A stale one warns or fails at config load. Pay particular attention to <code>@clerk/astro ^3.0.23</code> — Clerk v3 was already a breaking migration in this repo; confirm the Clerk adapter's peer range explicitly includes Astro v7 before proceeding.</div>
+              <details class="step-verify-toggle">
+                <summary>Verify</summary>
+                <div class="verify-body"><code>npm install</code> completes with no <code>ERESOLVE</code> errors and no peer warnings naming <code>astro@7</code>; each integration's release notes confirm v7 support. Specifically: check <code>@clerk/astro</code> changelog for an explicit Astro v7 peer range; run a protected-route smoke test to confirm Clerk middleware still intercepts correctly after the bump.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card completed">
+          <div class="step-card-header">
+            <div class="step-number">6</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">done</span>
+                <span class="step-chip-text"><strong>PR2 ·</strong> Build and fix every Rust-compiler HTML error across all 80 .astro files.</span>
+              </div>
+              <div class="step-why">The new default Rust compiler errors on unclosed non-void tags and no longer auto-corrects invalid markup — all 46 components (under <code>components/astro</code>, <code>components/dashboard</code>, and <code>components/views</code>), 4 layouts, and 30 pages recompile under stricter rules. The build is the source of truth for which files need a fix; do not scope the audit to <code>components/astro</code> alone.</div>
+              <details class="step-verify-toggle">
+                <summary>Verify</summary>
+                <div class="verify-body"><code>ASTRO_ADAPTER=netlify npm run build</code> completes with zero compiler errors, and a spot build of <code>=vercel</code> and <code>=node</code> shows no adapter-specific compiler failures; each fix only adds a closing tag without changing intended markup.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card completed">
+          <div class="step-card-header">
+            <div class="step-number">7</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">done</span>
+                <span class="step-chip-text"><strong>PR2 ·</strong> Audit rendered whitespace under the new <code>compressHTML: 'jsx'</code> default.</span>
+              </div>
+              <div class="step-why">The default flipped from <code>true</code> to <code>'jsx'</code>, stripping inter-element whitespace. Spaces silently lost between inline elements (nav links, badges, inline <code>&lt;a&gt;</code>/<code>&lt;span&gt;</code> runs) are a regression the build won't flag — the unit test from PR1 plus a visual pass catch it.</div>
+              <details class="step-verify-toggle">
+                <summary>Verify</summary>
+                <div class="verify-body">The whitespace unit test passes and a <code>npm run preview</code> spot-check matches the v6 baseline; where it doesn't, add <code>{" "}</code> or set <code>compressHTML: true</code> deliberately in <code>astro.config.mjs</code>.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card completed">
+          <div class="step-card-header">
+            <div class="step-number">8</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">done</span>
+                <span class="step-chip-text"><strong>PR2 ·</strong> Clear the Vite 8 bump and confirm no reserved-filename / stale-config collisions.</span>
+              </div>
+              <div class="step-why">Astro v7 ships Vite 8 and reserves <code>src/fetch.ts</code> for advanced routing. Confirm that file is still absent, that <code>astro.config.mjs</code> has no stale <code>experimental</code> block, and review the <code>vite: {}</code> server config against the Vite 8 migration guide.</div>
+              <details class="step-verify-toggle">
+                <summary>Verify</summary>
+                <div class="verify-body">Run <code>ls src/fetch.ts 2&gt;&amp;1</code> — the file must not exist. <code>npm run dev</code> starts cleanly with the dev server reachable and <code>npm run type-check</code> passes; no Vite deprecation errors at startup. Confirm <code>astro.config.mjs</code> contains no <code>experimental:</code> key. <strong>PR2 is the atomic cut — it merges only when all of steps 4–8 are green AND all three adapter builds (<code>ASTRO_ADAPTER=netlify</code>, <code>=vercel</code>, <code>=node npm run build</code>) succeed.</strong> Because <code>astro.config.mjs</code> selects the adapter at deploy time, validating only Netlify would leave <code>primary</code> broken for the Vercel and Node deploy contexts the moment PR2 lands — so the full matrix gates this PR, not PR3.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card completed">
+          <div class="step-card-header">
+            <div class="step-number">9</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">done</span>
+                <span class="step-chip-text"><strong>PR3 ·</strong> Codify the 3-adapter build matrix in CI so it stays green on every future PR.</span>
+              </div>
+              <div class="step-why">PR2 already proved all three adapters build at merge time; PR3 makes that durable by wiring the matrix into <code>.github/workflows/</code> so the deploy targets are enforced automatically, not re-checked by hand. This prevents a future change from silently breaking Vercel or Node.</div>
+              <details class="step-verify-toggle">
+                <summary>Verify</summary>
+                <div class="verify-body">A CI matrix job in <code>.github/workflows/</code> runs <code>ASTRO_ADAPTER=netlify npm run build</code>, <code>=vercel</code>, and <code>=node</code> on every PR, plus <code>npm run type-check</code>, <code>npm test</code>, and <code>npm run test:e2e</code>; all jobs pass on this PR and are required for merge — a hard gate, not a best-effort goal.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card completed">
+          <div class="step-card-header">
+            <div class="step-number">10</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">done</span>
+                <span class="step-chip-text"><strong>PR3 ·</strong> Document the upgrade in project-docs and the Starlight guide.</span>
+              </div>
+              <div class="step-why">Project rules require docs/changelog updates alongside dependency upgrades. Record the v6→v7 bump, the two breaking changes that applied, and any deliberate <code>compressHTML</code> decision.</div>
+              <details class="step-verify-toggle">
+                <summary>Verify</summary>
+                <div class="verify-body">A new <code>project-docs/astro-v7-upgrade.md</code> exists with the change log; the Starlight guide still builds; package version references (if any) are updated.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card completed">
+          <div class="step-card-header">
+            <div class="step-number">11</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">done</span>
+                <span class="step-chip-text"><strong>PR3 ·</strong> Dedupe and decide a version-pinning policy for the Astro stack.</span>
+              </div>
+              <div class="step-why">After the tree settles on v7, flatten duplicate transitive copies and decide whether the core packages should be pinned to exact versions for reproducible builds — a deliberate post-upgrade hygiene pass, not a silent default.</div>
+              <details class="step-verify-toggle">
+                <summary>Verify</summary>
+                <div class="verify-body"><code>npm dedupe</code> produces a clean tree; <code>npm ls astro</code> shows one version; the pinning decision is recorded in the PR description or docs.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Tests ────────────────────────────────────────────────── -->
+    <section class="section-card card-tests" id="tests" aria-labelledby="h-tests">
+      <h2 id="h-tests">
+        <svg class="icon" aria-hidden="true"><use href="#ic-beaker"/></svg>
+        Tests
+      </h2>
+      <div class="test-tier-label">Tier 1 — Code-touching plan</div>
+
+      <!-- Objective-verification test — mandatory, always first -->
+      <div class="objective-test-card">
+        <div class="test-card-header">
+          <span class="test-badge test-badge-objective">Objective</span>
+          <span class="test-card-title">The site builds and serves on Astro v7</span>
+        </div>
+        <div class="test-card-body">
+          <p><strong>File:</strong> <code>e2e/astro-v7-upgrade.spec.ts</code></p>
+          <p><strong>Type:</strong> smoke test (Playwright)</p>
+          <p><strong>Asserts:</strong> the home page, a published blog post, the RSS feed, and the Starlight guide all return 200 and render their primary heading — proving the framework actually runs end-to-end, not just that <code>npm install</code> resolved.</p>
+          <p><strong>Ships in:</strong> authored in <strong>PR1</strong> (passes on v6); the same spec is the gate that must stay green through <strong>PR2</strong>'s bump and <strong>PR3</strong>'s adapter matrix.</p>
+          <p><strong>Run:</strong> <code>npm run build &amp;&amp; npm run test:e2e -- astro-v7-upgrade</code></p>
+        </div>
+      </div>
+
+      <!-- Tier 1 test sub-sections -->
+      <div class="test-list">
+        <div class="test-card">
+          <div class="test-card-header">
+            <span class="test-badge test-badge-integration">Integration</span>
+            <span class="test-card-title">Content collections load under the v7 content API</span>
+          </div>
+          <div class="test-card-body">
+            <p><strong>File:</strong> <code>tests/content-collections.test.ts</code></p>
+            <p><strong>Targets:</strong> <code>getCollection</code> over the <code>posts</code>, <code>docs</code>, and <code>content</code> collections defined in <code>src/content.config.ts</code>.</p>
+            <p><strong>Key cases:</strong> each collection resolves entries; the Zod schema still validates; the <code>publish: true</code> filter returns only public content.</p>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-card-header">
+            <span class="test-badge test-badge-unit">Unit</span>
+            <span class="test-card-title">Inline-element whitespace survives compressHTML: 'jsx'</span>
+          </div>
+          <div class="test-card-body">
+            <p><strong>File:</strong> <code>tests/compress-html-whitespace.test.ts</code></p>
+            <p><strong>Targets:</strong> a representative component rendering adjacent inline elements (e.g. nav links or inline badges), rendered via the Astro Container API (<code>import { experimental_AstroContainer } from 'astro/container'</code> on v6; verify the import path under v7 — it may stabilise to a non-experimental export).</p>
+            <p><strong>Key cases:</strong> rendered output preserves a single space between adjacent inline elements; guards the silent whitespace regression from the new default. Also confirm React island components (<code>client:load</code> / <code>client:idle</code>) that use adjacent inline elements render correctly.</p>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-card-header">
+            <span class="test-badge test-badge-e2e">E2E</span>
+            <span class="test-card-title">Core user routes render across the adapter matrix</span>
+          </div>
+          <div class="test-card-body">
+            <p><strong>File:</strong> <code>e2e/astro-v7-upgrade.spec.ts</code> (shared with the objective smoke test)</p>
+            <p><strong>Targets:</strong> navigation through home → blog index → post → docs guide on the built server output.</p>
+            <p><strong>Key cases:</strong> no console errors, links resolve, and protected-route redirects (Clerk middleware) still behave under v7.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Acceptance Criteria ───────────────────────────────────── -->
+    <section class="section-card card-criteria" id="criteria" aria-labelledby="h-criteria">
+      <h2 id="h-criteria">
+        <svg class="icon" aria-hidden="true"><use href="#ic-check-circle"/></svg>
+        Acceptance Criteria
+      </h2>
+      <ul class="criteria-list" id="criteria-list">
+        <li>
+          <input type="checkbox" id="ac1">
+          <label for="ac1"><strong>PR1:</strong> the three readiness tests exist and pass on Astro v6, and PR1 merges to <code>primary</code> green.</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac2" checked>
+          <label for="ac2"><strong>PR1:</strong> the duplicate content-config is resolved — exactly one config file remains and content collections still load.</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac3">
+          <label for="ac3"><strong>PR2:</strong> <code>astro</code> resolves to <code>^7.x</code> (single deduped version) and every <code>@astrojs/*</code> package is v7-compatible with no peer warnings.</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac4">
+          <label for="ac4"><strong>PR2:</strong> third-party integrations (Clerk, astro-embed, Spotlight) install cleanly against Astro v7.</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac5" checked>
+          <label for="ac5"><strong>PR2:</strong> <code>npm run build</code> completes with zero Rust-compiler errors and the whitespace test passes (or <code>compressHTML: true</code> is set deliberately and documented).</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac6" checked>
+          <label for="ac6"><strong>PR2:</strong> <code>npm run type-check</code>, <code>npm test</code>, and <code>npm run test:e2e</code> pass on v7, <strong>and all three adapter builds (netlify, vercel, node) succeed</strong>; PR2 merges as one atomic cut.</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac7">
+          <label for="ac7"><strong>PR3:</strong> the 3-adapter build matrix is codified as a CI job in <code>.github/workflows/</code> and required on every PR.</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac8" checked>
+          <label for="ac8"><strong>PR3:</strong> the upgrade is documented in <code>project-docs/</code>, the Starlight guide still builds, and the dependency tree is deduped with a recorded pinning decision.</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac9">
+          <label for="ac9">All three PRs are merged and the production deploy is green on Astro v7.</label>
+        </li>
+      </ul>
+      <span id="criteria-status" aria-live="polite" aria-atomic="true"
+            style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"></span>
+    </section>
+
+    <!-- ── Verification ──────────────────────────────────────────── -->
+    <section class="section-card card-verification" id="verification" aria-labelledby="h-verification">
+      <h2 id="h-verification">
+        <svg class="icon" aria-hidden="true"><use href="#ic-magnifying-glass"/></svg>
+        Verification
+      </h2>
+      <p>Verify per PR, in order:</p>
+      <p><strong>PR1 (on v6):</strong> the three readiness tests pass under the current v6 build (<code>npm test</code> and <code>npm run test:e2e -- astro-v7-upgrade</code>), exactly one content-config file remains, and the branch merges to <code>primary</code> green. This proves the safety net is real before the bump.</p>
+      <p><strong>PR2 (the atomic bump):</strong> <code>npm install</code> resolves with no peer warnings against <code>astro@7</code> and <code>npm ls astro</code> shows one version; <strong>all three deploy targets build — <code>ASTRO_ADAPTER=netlify</code>, <code>=vercel</code>, and <code>=node npm run build</code> each exit 0 with zero Rust-compiler errors</strong> (so <code>primary</code> is never broken for any adapter once PR2 lands); <code>npm run dev</code> starts on Vite 8; and the same PR1 test suite — now running on v7 — stays green, including the whitespace unit test. PR2 merges only as one cut.</p>
+      <p><strong>PR3 (on v7):</strong> the three-adapter build is codified as a CI matrix job in <code>.github/workflows/</code> and required on every PR; <code>project-docs/astro-v7-upgrade.md</code> exists; and <code>npm dedupe</code> leaves a clean tree.</p>
+      <p>The upgrade is complete when all three PRs are merged, the objective smoke test passes against the v7 production build, every adapter compiles in CI, and the rendered output is visually indistinguishable from v6 except for changes made intentionally.</p>
+    </section>
+
+    <!-- ── Completion Checklist (mandatory — always present) ──────── -->
+    <section class="section-card card-completion" id="completion" aria-labelledby="h-completion">
+      <h2 id="h-completion">
+        <svg class="icon" aria-hidden="true"><use href="#ic-clipboard-check"/></svg>
+        Completion Checklist
+      </h2>
+      <div class="completion-checklist" id="completion-checklist">
+        <div class="completion-header">
+          <span class="completion-badge" id="completion-badge">Required</span>
+        </div>
+        <ul class="completion-list" id="completion-list">
+          <li>
+            <input type="checkbox" id="cc1" disabled>
+            <label for="cc1">All step TODOs marked as done</label>
+          </li>
+          <li>
+            <input type="checkbox" id="cc2" disabled>
+            <label for="cc2">All acceptance criteria verified and checked off</label>
+          </li>
+          <li>
+            <input type="checkbox" id="cc3" disabled>
+            <label for="cc3">Plan status updated to completed</label>
+          </li>
+        </ul>
+        <div class="completion-report" id="completion-report">
+          <h3 class="report-heading">Completion Report</h3>
+          <dl class="report-list">
+            <dt>AC1/AC9 — one PR open, not yet merged</dt>
+            <dd>All 11 steps landed as a single commit on <code>claude/stupefied-nightingale-fc17d4</code> (not the plan's literal 3-PR structure) and are pushed as <a href="https://github.com/shawn-sandy/astro-basics/pull/343">PR #343</a>. It has not been merged to <code>primary</code> yet, and no production deploy has happened — both are follow-up actions for the user.</dd>
+            <dt>AC3/AC4 — Clerk and astro-embed peer warnings remain</dt>
+            <dd><code>@clerk/astro@3.0.23</code> (latest published: 3.4.10) and <code>astro-embed@0.13.0</code> still declare peer ranges below <code>astro@^7</code>. Installs require <code>.npmrc</code>'s <code>legacy-peer-deps=true</code>, and Clerk's own compiled component needed a <code>patch-package</code> fix to build at all. <code>npm ls astro</code> still reports these as "invalid" peers — not fully clean until upstream ships v7 support.</dd>
+            <dt>AC6 — e2e spec now executed and green</dt>
+            <dd>The Playwright browser download that stalled earlier finished in the background. Ran <code>e2e/astro-v7-upgrade.spec.ts</code> against a production build (<code>ASTRO_ADAPTER=node</code> + <code>astro preview</code>) 3x in a row — all 15 assertions passed. Along the way found and fixed two real bugs surfaced by testing against a real build for the first time: (1) two tests used <code>page.locator('h1')</code>, which matched Astro's dev-toolbar shadow-DOM headings in addition to the real page heading — scoped to <code>.first()</code>; (2) <code>src/pages/rss.xml.js</code> exported a lowercase <code>get()</code> handler, removed since Astro v4 — the RSS feed has silently 404'd in production for a long time, independent of this upgrade. Renamed to <code>GET</code>. Also fixed <code>.github/workflows/ci.yml</code>, which built but never started a server before the e2e job — added <code>ASTRO_ADAPTER=node npm run preview</code> + <code>wait-on</code>.</dd>
+            <dt>AC7 — CI matrix not yet a required check</dt>
+            <dd><code>.github/workflows/ci.yml</code> is added with the 3-adapter build matrix, but marking it "required" is a GitHub repo branch-protection setting, not something set from code — needs a repo admin to enable it after this branch merges.</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Next Steps (optional — remove section if empty) ──────── -->
+    <section class="section-card card-next-steps" id="next-steps" aria-labelledby="h-next-steps">
+      <h2 id="h-next-steps">
+        <svg class="icon" aria-hidden="true"><use href="#ic-arrow-right-circle"/></svg>
+        Next Steps
+      </h2>
+      <div class="next-steps-list">
+
+        <!-- Actionable next step -->
+        <details class="next-step-item">
+          <summary>Prune the now-unused markdown plugins</summary>
+          <div class="next-step-prompt">
+            <p>Paste this prompt into Claude to execute this follow-up:</p>
+            <pre>In the astro-basics repo, the dependencies remark-toc and rehype-accessible-emojis are listed in package.json but are not wired into astro.config.mjs or referenced anywhere in src/. Confirm they are genuinely unused (grep src/ and the config), and if so remove them from package.json and run npm install. If they ARE intended to be active, instead wire them into the Astro markdown config (or the Sätteri processor under v7) so they actually run. Report which path you took.</pre>
+            <button class="copy-prompt-btn" type="button"
+                    onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+          </div>
+        </details>
+
+        <!-- Wish List (blue-sky / visionary items — remove subsection if none) -->
+        <div class="wish-list-header">
+          <svg class="icon" aria-hidden="true"><use href="#ic-sparkles"/></svg>
+          Wish List
+        </div>
+
+        <details class="next-step-item wish-item">
+          <summary>
+            Explore Astro v7 advanced routing via src/fetch.ts
+            <span class="wish-badge">Wish List</span>
+          </summary>
+          <div class="next-step-prompt">
+            <p>Speculative / blue-sky idea — not on the critical path. Paste into Claude when ready to explore:</p>
+            <pre>Astro v7 reserves src/fetch.ts for its new advanced-routing feature. Research what advanced routing enables (programmatic/edge route handling) and assess whether astro-basics — which currently mixes Netlify, Vercel, and Node adapters selected by env var — could simplify or improve any of its API routes or middleware by adopting it. Produce a short feasibility note with concrete candidate routes; do not implement anything yet.</pre>
+            <button class="copy-prompt-btn" type="button"
+                    onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+          </div>
+        </details>
+
+      </div>
+    </section>
+
+    <!-- ── Unresolved Questions (optional — omit entirely if none) ─ -->
+    <details class="optional-section">
+      <summary>
+        <svg class="icon" aria-hidden="true"><use href="#ic-question-mark-circle"/></svg>
+        Unresolved Questions
+      </summary>
+      <div class="optional-body">
+        <ul class="unresolved-list">
+          <li>
+            <details class="unresolved-item">
+              <summary>Two content-config files coexist — which is authoritative under v7? (feeds PR1 step 3)</summary>
+              <div class="unresolved-prompt">
+                <pre>The astro-basics repo has BOTH src/content.config.ts (the Astro v6+ location) and a legacy src/content/config.ts. Determine which one Astro v7 actually loads, whether the legacy file is dead code or still referenced, and whether keeping both risks schema drift or duplicate-collection errors. Recommend whether to delete the legacy src/content/config.ts, merge the two, or keep both — with reasoning grounded in how Astro v7 resolves the content config. Do not delete anything until the recommendation is confirmed.</pre>
+                <button class="copy-prompt-btn" type="button"
+                        onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+              </div>
+            </details>
+          </li>
+          <li>
+            <details class="unresolved-item">
+              <summary>Do the three PRs stack, or merge sequentially to primary?</summary>
+              <div class="unresolved-prompt">
+                <pre>This Astro v7 upgrade is split into three PRs: PR1 (test net + content-config cleanup, green on v6), PR2 (the atomic version bump), PR3 (adapter-matrix CI + docs). Recommend a branching strategy: should PR2 branch off PR1 and PR3 off PR2 (a stacked chain that can be opened in parallel but must merge in order), or should each PR branch fresh off primary and wait for the prior to merge first? Weigh review latency, rebase cost, and CI signal accuracy for a single solo maintainer. Recommend one approach with concrete git commands.</pre>
+                <button class="copy-prompt-btn" type="button"
+                        onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+              </div>
+            </details>
+          </li>
+        </ul>
+      </div>
+    </details>
+
+    <footer class="plan-footer">
+      <svg class="icon" aria-hidden="true"><use href="#ic-sparkles"/></svg>
+      Generated by plan-agent · 2026-06-30 · astro-basics
+    </footer>
+
+  <details id="team-review-20260630165658" class="team-review" style="margin:2rem 0;border:1px solid #e5e7eb;border-radius:4px;overflow:hidden;">
+    <summary style="padding:.875rem 1.25rem;font-weight:600;font-size:.9rem;cursor:pointer;list-style:none;display:flex;align-items:center;gap:.6rem;background:#f9fafb;border-bottom:1px solid #e5e7eb;">Team Review (2026-06-30 16:56:58 UTC)</summary>
+    <div class="review-body" style="padding:1.25rem;font-size:.875rem;line-height:1.7;">
+
+      <h3 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:.75rem;">Executive Summary</h3>
+      <p>The plan is <strong>sound and well-structured</strong>. The three-PR delivery sequence (safety-net first, atomic bump, verify-and-document) is the correct approach for a major Astro upgrade. The breaking-change triage table is accurate and complete. Six improvements were applied in-place: a Clerk v7 compatibility callout in step 5 (highest risk), an explicit <code>src/fetch.ts</code> absence check in step 8, removal of the &ldquo;ideally&rdquo; hedge from step 9&apos;s CI matrix requirement, a Container API import-path note in the whitespace unit-test card, a rollback procedure in the Context section, and a full <code>@astrojs/*</code> package list in the Files entry. The plan is ready to execute after these revisions.</p>
+
+      <h3 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin:1.25rem 0 .75rem;">Role-by-Role Findings</h3>
+
+      <p><strong>Architecture</strong> — Sound. The three-PR sequence with an independent safety-net PR is architecturally correct; the atomic-bump constraint on PR2 is the right boundary. Gap: no rollback procedure was defined for if PR2 fails post-merge. <em>Applied: rollback note added to Context.</em></p>
+
+      <p><strong>Completeness</strong> — Mostly complete. Step 5 listed third-party integrations but did not call out <code>@clerk/astro</code> specifically despite it having been a breaking migration target previously. Step 8&apos;s verify description mentioned the <code>src/fetch.ts</code> check in the why-text but not in the verify clause. Step 9&apos;s CI matrix was hedged with &ldquo;ideally.&rdquo; <code>@astrojs/rss</code> was absent from the Files section despite being in scope for <code>@astrojs/upgrade</code>. <em>Applied: all four gaps addressed.</em></p>
+
+      <p><strong>Testability</strong> — Strong. Three test files with clear names, tiers, and purposes. Gap: the whitespace unit test referenced the Astro Container API without specifying the import path, which differs between v6 and v7. The E2E and objective smoke test sharing a single file is noted but acceptable given the file&apos;s scope. No adapter-specific E2E coverage exists — AC7 is the CI matrix job&apos;s responsibility, correctly. <em>Applied: Container API import-path note added to unit test card.</em></p>
+
+      <p><strong>Risk</strong> — Medium overall, with one high-risk item: <code>@clerk/astro ^3.0.23</code>. The Clerk adapter underwent a breaking migration to v3 in this repo (commit <code>1a00e7c</code> replaced <code>SignedIn</code>/<code>SignedOut</code> with <code>Show</code> component). Its peer compatibility with Astro v7 must be confirmed explicitly before PR2 merges. All other risks (whitespace regression, Vite 8 config drift, content-config duplication) are correctly identified and mitigated by the plan. <em>Applied: Clerk callout strengthened in step 5.</em></p>
+
+      <p><strong>Conventions</strong> — Good. Test file naming (<code>.spec.ts</code> for e2e, <code>.test.ts</code> for unit/integration), doc placement (<code>project-docs/</code> + Starlight guide), and path alias usage all follow project conventions. The Files section&apos;s <code>*.yml</code> glob is acceptable shorthand given there are only three workflow files. <em>Applied: package.json file-note expanded to list all @astrojs/* packages.</em></p>
+
+      <p><strong>UX</strong> — No user-facing UX changes in scope. The <code>compressHTML: &apos;jsx&apos;</code> whitespace change is the only UX-adjacent risk; it is addressed by step 7 and the whitespace unit test. React island components (<code>client:load</code>/<code>client:idle</code>) that rely on adjacent inline text nodes should be included in the whitespace audit. <em>Applied: React island callout added to unit test card.</em></p>
+
+      <p><strong>Accessibility</strong> — No dedicated a11y changes in scope. The whitespace regression risk from <code>compressHTML: &apos;jsx&apos;</code> could affect ARIA live regions that depend on whitespace formatting — the existing whitespace test covers the primary case. No new a11y gaps introduced by this plan.</p>
+
+      <h3 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin:1.25rem 0 .75rem;">Agreements &amp; Conflicts</h3>
+      <p>Completeness and Risk reviewers agreed that <code>@clerk/astro</code> v7 compatibility is the single highest-risk unconfirmed item. Testability and Completeness agreed the Container API import path needed a note. No conflicts between reviewer recommendations.</p>
+
+      <h3 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin:1.25rem 0 .75rem;">Highest-Risk Issues</h3>
+      <ol style="padding-left:1.4rem;display:flex;flex-direction:column;gap:.4rem;">
+        <li><strong>@clerk/astro Astro v7 peer compatibility</strong> (Risk) — Clerk v3 was already a breaking migration in this repo; its support for Astro v7 must be confirmed before PR2 merges. Step 5 now explicitly calls this out.</li>
+        <li><strong>compressHTML: &apos;jsx&apos; silent whitespace regression</strong> (Risk/UX) — The build will not flag this; only the unit test and a visual pass will catch it. Step 7 and the test card are the primary mitigations.</li>
+        <li><strong>Rollback path after PR2 merge</strong> (Architecture) — Now documented in Context: revert PR2 on GitHub to restore v6; blame step-6 commits for file-level rollback.</li>
+        <li><strong>src/fetch.ts reservation</strong> (Completeness) — Step 8 verify now includes an explicit filesystem check (<code>ls src/fetch.ts</code>).</li>
+        <li><strong>CI matrix as hard gate, not aspiration</strong> (Completeness) — Step 9 verify now states this is a hard requirement for PR3 merge.</li>
+      </ol>
+
+      <h3 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin:1.25rem 0 .75rem;">Inline Edits Applied</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:.8rem;margin-top:.5rem;">
+        <thead><tr style="background:#f9fafb;"><th style="text-align:left;padding:.4rem .6rem;border:1px solid #e5e7eb;">Target</th><th style="text-align:left;padding:.4rem .6rem;border:1px solid #e5e7eb;">Action</th><th style="text-align:left;padding:.4rem .6rem;border:1px solid #e5e7eb;">Source / Rationale</th></tr></thead>
+        <tbody>
+          <tr><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">Step 5 why + verify</td><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">edit</td><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">Risk — <code>@clerk/astro</code> v7 compatibility is unconfirmed; Clerk v3 was already a breaking migration in this repo</td></tr>
+          <tr><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">Step 8 verify</td><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">edit</td><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">Completeness — <code>src/fetch.ts</code> absence check was described in the why but not in the verify clause</td></tr>
+          <tr><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">Step 9 verify</td><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">edit</td><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">Completeness — CI matrix was hedged with &ldquo;ideally&rdquo;; made a hard merge requirement</td></tr>
+          <tr><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">Unit test card (whitespace)</td><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">edit</td><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">Testability — Container API import path differs between v6 and v7; React island coverage added</td></tr>
+          <tr><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">Context section (2nd paragraph)</td><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">append</td><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">Architecture — no rollback procedure was defined for post-merge PR2 failure</td></tr>
+          <tr><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">Files section — package.json note</td><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">edit</td><td style="padding:.4rem .6rem;border:1px solid #e5e7eb;">Completeness — <code>@astrojs/rss</code> and full package list were absent from the file-note</td></tr>
+        </tbody>
+      </table>
+
+      <p style="margin-top:1rem;font-size:.75rem;color:#9ca3af;"><em>Triage outcome: background mode — all 6 proposed edits applied (walkthrough skipped).</em></p>
+    </div>
+  </details>
+
+  </main>
+</div><!-- /.layout -->
+
+<script>
+/* ── Save as PDF (native browser print dialog) ──────────────── */
+function savePDF() {
+  window.print();
+}
+
+/* ── Build rich implementation prompt from DOM ──────────────── */
+function buildImplementPrompt() {
+  var cmdEl = document.getElementById('implement-cmd');
+  var status = document.documentElement.getAttribute('data-status') || 'todo';
+  var stepCards = Array.prototype.slice.call(document.querySelectorAll('.step-card'));
+  var criteriaItems = Array.prototype.slice.call(document.querySelectorAll('#criteria-list li'));
+
+  var totalSteps = stepCards.length;
+  var doneSteps = stepCards.filter(function(c) { return c.classList.contains('completed'); }).length;
+  var totalCriteria = criteriaItems.length;
+  var checkedCriteria = criteriaItems.filter(function(li) {
+    var cb = li.querySelector('input[type="checkbox"]');
+    return cb && cb.checked;
+  }).length;
+
+  var planPathMeta = document.querySelector('meta[name="plan-path"]');
+  var planPath = (planPathMeta && planPathMeta.getAttribute('content')) || '<plan-file>';
+
+  var lines = [];
+  lines.push(cmdEl ? cmdEl.textContent.trim() : 'Implement the plan');
+  lines.push('');
+  lines.push('Status: ' + status + ' (' + doneSteps + '/' + totalSteps + ' steps done, ' + checkedCriteria + '/' + totalCriteria + ' criteria met)');
+  lines.push('');
+  lines.push('Instructions:');
+  lines.push('1. Read the plan at ' + planPath + ' (a self-contained HTML file).');
+  lines.push('2. Implement every step marked todo; after completing each step, mark it done in the plan.');
+  lines.push('3. When all steps are done, verify each acceptance criterion and check it off in the plan.');
+  lines.push('4. Complete the completion checklist to update the plan status to completed.');
+
+  return lines.join('\n');
+}
+
+/* ── Copy implement prompt ──────────────────────────────────── */
+function copyCmd(btn) {
+  var text = buildImplementPrompt();
+  function flash() {
+    if (btn._copyTimer) clearTimeout(btn._copyTimer);
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    btn._copyTimer = setTimeout(function () {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+      btn._copyTimer = null;
+    }, 2000);
+  }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    if (ok) flash();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(flash).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+/* ── Copy workflow prompt ──────────────────────────────────── */
+function copyWorkflow(btn) {
+  var code = document.getElementById('workflow-cmd');
+  if (!code) return;
+  var text = code.textContent;
+  function flash() {
+    if (btn._copyTimer) clearTimeout(btn._copyTimer);
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    btn._copyTimer = setTimeout(function () {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+      btn._copyTimer = null;
+    }, 2000);
+  }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    if (ok) flash();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(flash).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+/* ── Copy goal prompt ──────────────────────────────────────── */
+function copyGoal(btn) {
+  var code = document.getElementById('goal-cmd');
+  if (!code) return;
+  var text = code.textContent;
+  function flash() {
+    if (btn._copyTimer) clearTimeout(btn._copyTimer);
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    btn._copyTimer = setTimeout(function () {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+      btn._copyTimer = null;
+    }, 2000);
+  }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    if (ok) flash();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(flash).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+/* ── Copy plan file name / relative path ────────────────────── */
+function copyPath(btn, id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var text = el.textContent.trim();
+  function flash() {
+    if (btn._copyTimer) clearTimeout(btn._copyTimer);
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    btn._copyTimer = setTimeout(function () {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+      btn._copyTimer = null;
+    }, 2000);
+  }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    if (ok) flash();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(flash).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+/* ── Copy prompt button (global — required by inline onclick) ── */
+function copyPrompt(btn) {
+  var pre = btn.previousElementSibling;
+  if (!pre || pre.tagName !== 'PRE') {
+    pre = btn.parentElement && btn.parentElement.querySelector('pre');
+  }
+  if (!pre) return;
+  var text = pre.textContent;
+
+  function flash() {
+    if (btn._copyTimer) clearTimeout(btn._copyTimer);
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    btn._copyTimer = setTimeout(function () {
+      btn.textContent = 'Copy prompt';
+      btn.classList.remove('copied');
+      btn._copyTimer = null;
+    }, 2000);
+  }
+
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    if (ok) flash();
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(flash).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+(function () {
+  'use strict';
+
+  /* ── Progress bar + HTML-attribute persistence ──────────────── */
+  /* State lives in the HTML itself: a criterion is done iff its       */
+  /* <input> carries the `checked` attribute, which the browser        */
+  /* renders natively on load — no localStorage. Toggling a box syncs  */
+  /* the attribute so the live DOM (and any saved copy of this file)   */
+  /* stays the single source of truth.                                 */
+  var bar        = document.getElementById('progress-bar');
+  var label      = document.getElementById('progress-label');
+  var liveRegion = document.getElementById('criteria-status');
+  var checkboxes = Array.prototype.slice.call(
+    document.querySelectorAll('#criteria-list input[type="checkbox"]')
+  );
+  var total = checkboxes.length;
+
+  function updateProgress() {
+    var done = checkboxes.filter(function (cb) { return cb.checked; }).length;
+    var pct  = total ? Math.round(done / total * 100) : 0;
+    if (bar) {
+      bar.style.width = pct + '%';
+      bar.setAttribute('aria-valuenow', pct);
+      if (pct > 0) bar.classList.add('has-progress');
+      else         bar.classList.remove('has-progress');
+    }
+    if (label) label.textContent = done + ' / ' + total + ' done';
+  }
+
+  checkboxes.forEach(function (cb, i) {
+    cb.addEventListener('change', function () {
+      cb.toggleAttribute('checked', cb.checked);
+      updateProgress();
+      if (liveRegion) {
+        liveRegion.textContent = 'Criterion ' + (i + 1) +
+          ' marked as ' + (cb.checked ? 'complete' : 'incomplete');
+      }
+    });
+  });
+
+  updateProgress();
+
+  /* ── Completion checklist auto-update ──────────────────────── */
+  var ccCheckboxes = Array.prototype.slice.call(
+    document.querySelectorAll('#completion-list input[type="checkbox"]')
+  );
+  var completionCard = document.getElementById('completion-checklist');
+
+  function updateCompletion() {
+    var stepCards = document.querySelectorAll('.step-card');
+    var allStepsDone = stepCards.length > 0 &&
+      Array.prototype.slice.call(stepCards).every(function(c) {
+        return c.classList.contains('completed');
+      });
+    if (ccCheckboxes[0]) ccCheckboxes[0].checked = allStepsDone;
+
+    var allCriteriaChecked = total > 0 &&
+      checkboxes.every(function(cb) { return cb.checked; });
+    if (ccCheckboxes[1]) ccCheckboxes[1].checked = allCriteriaChecked;
+
+    var metaStatus = document.querySelector('meta[name="plan-status"]');
+    var statusIsCompleted =
+      document.documentElement.getAttribute('data-status') === 'completed' &&
+      (!metaStatus || metaStatus.getAttribute('content') === 'completed');
+    if (ccCheckboxes[2]) ccCheckboxes[2].checked = statusIsCompleted;
+
+    var allComplete = allStepsDone && allCriteriaChecked && statusIsCompleted;
+    if (completionCard) {
+      if (allComplete) completionCard.classList.add('all-complete');
+      else completionCard.classList.remove('all-complete');
+    }
+  }
+
+  updateCompletion();
+
+  checkboxes.forEach(function(cb) {
+    cb.addEventListener('change', updateCompletion);
+  });
+
+  if ('MutationObserver' in window) {
+    new MutationObserver(updateCompletion).observe(
+      document.documentElement, { attributes: true, attributeFilter: ['data-status'] }
+    );
+  }
+
+  /* ── Scroll rail ─────────────────────────────────────────────── */
+  var rail = document.querySelector('.scroll-rail');
+  if (rail) {
+    function updateRail() {
+      var maxY = document.documentElement.scrollHeight - window.innerHeight;
+      var pct  = maxY > 0 ? (window.scrollY / maxY * 100).toFixed(1) : 0;
+      rail.style.setProperty('--scroll-pct', pct);
+    }
+    window.addEventListener('scroll', updateRail, { passive: true });
+    updateRail();
+  }
+
+  /* ── Scroll spy ──────────────────────────────────────────────── */
+  var navLinks = Array.prototype.slice.call(
+    document.querySelectorAll('.plan-nav a[href^="#"]')
+  );
+  if (navLinks.length && 'IntersectionObserver' in window) {
+    var sectionIds = navLinks.map(function (a) { return a.getAttribute('href').slice(1); });
+    var sections   = sectionIds.map(function (id) { return document.getElementById(id); })
+                               .filter(Boolean);
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var id = entry.target.id;
+        navLinks.forEach(function (a) {
+          var isActive = a.getAttribute('href') === '#' + id;
+          a.classList.toggle('active', isActive);
+          if (isActive) a.setAttribute('aria-current', 'true');
+          else          a.removeAttribute('aria-current');
+        });
+      });
+    }, { threshold: 0.3 });
+    sections.forEach(function (el) { observer.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>
