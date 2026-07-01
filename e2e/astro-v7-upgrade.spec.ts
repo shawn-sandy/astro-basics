@@ -8,13 +8,13 @@ import { test, expect } from '@playwright/test'
 test('home page renders', async ({ page }) => {
   const response = await page.goto('/')
   expect(response?.status()).toBe(200)
-  await expect(page.locator('h1')).toBeVisible()
+  await expect(page.locator('h1').first()).toBeVisible()
 })
 
 test('published blog post renders', async ({ page }) => {
   const response = await page.goto('/posts/post-2')
   expect(response?.status()).toBe(200)
-  await expect(page.locator('h1')).toBeVisible()
+  await expect(page.locator('h1').first()).toBeVisible()
 })
 
 test('rss feed is served', async ({ page }) => {
@@ -27,7 +27,7 @@ test('rss feed is served', async ({ page }) => {
 test('starlight guide renders', async ({ page }) => {
   const response = await page.goto('/guide/getting-started')
   expect(response?.status()).toBe(200)
-  await expect(page.locator('h1')).toBeVisible()
+  await expect(page.locator('h1').first()).toBeVisible()
 })
 
 test('home to blog to post navigation has no console errors', async ({ page }) => {

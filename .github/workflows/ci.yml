@@ -38,5 +38,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build
         env:
-          ASTRO_ADAPTER: netlify
+          ASTRO_ADAPTER: node
+      - run: npm run preview &
+      - run: npx wait-on http://localhost:4321 --timeout 60000
       - run: npm run test:e2e -- --project=chromium
