@@ -35,6 +35,11 @@ jobs:
   test:
     name: Type-check, unit, and e2e tests
     runs-on: ubuntu-latest
+    env:
+      # astro.config.mjs re-reads this env var per-command, so it must be
+      # set job-wide — a build-step-only env var left `astro preview`
+      # falling back to the netlify adapter, which doesn't support preview.
+      ASTRO_ADAPTER: node
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,8 +67,6 @@ jobs:
         continue-on-error: true
       - run: npx playwright install --with-deps chromium
       - run: npm run build
-        env:
-          ASTRO_ADAPTER: node
       - run: npm run preview &
       - run: npx wait-on http://localhost:4321 --timeout 60000
       - run: npm run test:e2e -- --project=chromium
