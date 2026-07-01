@@ -18,6 +18,7 @@ describe('content collections', () => {
   it('validates the base schema on posts entries', async () => {
     const posts = await getCollection('posts')
     for (const post of posts) {
+      expect(typeof post.id).toBe('string')
       expect(typeof post.data.title).toBe('string')
       expect(post.data.pubDate).toBeInstanceOf(Date)
       expect(typeof post.data.publish).toBe('boolean')

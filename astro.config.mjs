@@ -89,6 +89,9 @@ export default defineConfig({
       host: process.env.EXPOSE_DEV_SERVER === 'true' ? true : 'localhost',
       allowedHosts: ['476cd5383d8f.ngrok-free.app'],
     },
+    // TODO(shawn-sandy, 2026-07-01): lightningcss@1.32.0 crashes with
+    // "[lightningcss minify] Invalid state" under Astro v7's Vite 8 build.
+    // Remove once a patched lightningcss release fixes it.
     build: { cssMinify: false },
   },
   // Choose adapter based on deployment target
