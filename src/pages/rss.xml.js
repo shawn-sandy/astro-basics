@@ -1,7 +1,7 @@
 import rss from '@astrojs/rss'
 import { getCollection } from 'astro:content'
 
-export async function get() {
+export async function GET() {
   const posts = await getCollection('posts')
   return rss({
     title: 'Astro Learner | Blog',
@@ -11,7 +11,7 @@ export async function get() {
       title: post.data.title,
       pubDate: post.data.pubDate,
       description: post.data.description,
-      link: `/posts/${post.slug}/`,
+      link: `/posts/${post.id}/`,
     })),
     customData: `<language>en-us</language>`,
   })

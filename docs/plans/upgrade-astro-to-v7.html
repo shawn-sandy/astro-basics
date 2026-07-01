@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-status="todo">
+<html lang="en" data-status="in-progress">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="plan-status" content="todo">
+<meta name="plan-status" content="in-progress">
 <meta name="plan-type" content="chore">
 <meta name="plan-created" content="2026-06-30">
 <meta name="plan-repo" content="astro-basics">
@@ -1432,12 +1432,12 @@ img, video { max-width: 100%; height: auto; }
       </h2>
       <div class="steps-list">
 
-        <div class="step-card">
+        <div class="step-card completed">
           <div class="step-card-header">
             <div class="step-number">1</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text"><strong>PR1 ·</strong> Cut the upgrade branch and capture a green v6 baseline.</span>
               </div>
               <div class="step-why">A major framework bump needs a known-good rollback point and a baseline to diff visual/test output against. Branch off <code>primary</code>; never upgrade on a protected branch.</div>
@@ -1449,12 +1449,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card">
+        <div class="step-card completed">
           <div class="step-card-header">
             <div class="step-number">2</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text"><strong>PR1 ·</strong> Author the v7-readiness test net so it ships before the bump.</span>
               </div>
               <div class="step-why">The three tests (objective smoke <code>e2e/astro-v7-upgrade.spec.ts</code>, content-collections integration, inline-whitespace unit) are valid on v6 today. Landing them first turns PR2 into a guarded diff instead of a leap of faith.</div>
@@ -1466,12 +1466,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card">
+        <div class="step-card completed">
           <div class="step-card-header">
             <div class="step-number">3</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text"><strong>PR1 ·</strong> Resolve the duplicate content-config files.</span>
               </div>
               <div class="step-why">The repo carries both <code>src/content.config.ts</code> (the v6+ location) and a legacy <code>src/content/config.ts</code>. Settle which Astro v7 will load and remove or merge the other now, on v6, so it is not a confound during the bump.</div>
@@ -1483,12 +1483,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card">
+        <div class="step-card completed">
           <div class="step-card-header">
             <div class="step-number">4</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text"><strong>PR2 ·</strong> Run <code>npx @astrojs/upgrade</code> to bump core and every @astrojs package together.</span>
               </div>
               <div class="step-why">The official tool resolves the whole peer matrix — <code>astro</code> plus <code>@astrojs/react</code>, <code>mdx</code>, <code>netlify</code>, <code>vercel</code>, <code>node</code>, <code>sitemap</code>, <code>rss</code>, <code>starlight</code> — so adapters never fall out of sync with core. This and every step below land in one atomic PR.</div>
@@ -1500,12 +1500,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card">
+        <div class="step-card completed">
           <div class="step-card-header">
             <div class="step-number">5</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text"><strong>PR2 ·</strong> Reconcile third-party Astro integrations the upgrader doesn't touch.</span>
               </div>
               <div class="step-why"><code>@clerk/astro</code>, <code>astro-embed</code>, <code>@astro-community/astro-embed-youtube</code>, and <code>@spotlightjs/astro</code> gate on the Astro peer range but are outside <code>@astrojs/upgrade</code>'s scope. A stale one warns or fails at config load. Pay particular attention to <code>@clerk/astro ^3.0.23</code> — Clerk v3 was already a breaking migration in this repo; confirm the Clerk adapter's peer range explicitly includes Astro v7 before proceeding.</div>
@@ -1517,12 +1517,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card">
+        <div class="step-card completed">
           <div class="step-card-header">
             <div class="step-number">6</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text"><strong>PR2 ·</strong> Build and fix every Rust-compiler HTML error across all 80 .astro files.</span>
               </div>
               <div class="step-why">The new default Rust compiler errors on unclosed non-void tags and no longer auto-corrects invalid markup — all 46 components (under <code>components/astro</code>, <code>components/dashboard</code>, and <code>components/views</code>), 4 layouts, and 30 pages recompile under stricter rules. The build is the source of truth for which files need a fix; do not scope the audit to <code>components/astro</code> alone.</div>
@@ -1534,12 +1534,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card">
+        <div class="step-card completed">
           <div class="step-card-header">
             <div class="step-number">7</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text"><strong>PR2 ·</strong> Audit rendered whitespace under the new <code>compressHTML: 'jsx'</code> default.</span>
               </div>
               <div class="step-why">The default flipped from <code>true</code> to <code>'jsx'</code>, stripping inter-element whitespace. Spaces silently lost between inline elements (nav links, badges, inline <code>&lt;a&gt;</code>/<code>&lt;span&gt;</code> runs) are a regression the build won't flag — the unit test from PR1 plus a visual pass catch it.</div>
@@ -1551,12 +1551,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card">
+        <div class="step-card completed">
           <div class="step-card-header">
             <div class="step-number">8</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text"><strong>PR2 ·</strong> Clear the Vite 8 bump and confirm no reserved-filename / stale-config collisions.</span>
               </div>
               <div class="step-why">Astro v7 ships Vite 8 and reserves <code>src/fetch.ts</code> for advanced routing. Confirm that file is still absent, that <code>astro.config.mjs</code> has no stale <code>experimental</code> block, and review the <code>vite: {}</code> server config against the Vite 8 migration guide.</div>
@@ -1568,12 +1568,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card">
+        <div class="step-card completed">
           <div class="step-card-header">
             <div class="step-number">9</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text"><strong>PR3 ·</strong> Codify the 3-adapter build matrix in CI so it stays green on every future PR.</span>
               </div>
               <div class="step-why">PR2 already proved all three adapters build at merge time; PR3 makes that durable by wiring the matrix into <code>.github/workflows/</code> so the deploy targets are enforced automatically, not re-checked by hand. This prevents a future change from silently breaking Vercel or Node.</div>
@@ -1585,12 +1585,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card">
+        <div class="step-card completed">
           <div class="step-card-header">
             <div class="step-number">10</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text"><strong>PR3 ·</strong> Document the upgrade in project-docs and the Starlight guide.</span>
               </div>
               <div class="step-why">Project rules require docs/changelog updates alongside dependency upgrades. Record the v6→v7 bump, the two breaking changes that applied, and any deliberate <code>compressHTML</code> decision.</div>
@@ -1602,12 +1602,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card">
+        <div class="step-card completed">
           <div class="step-card-header">
             <div class="step-number">11</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text"><strong>PR3 ·</strong> Dedupe and decide a version-pinning policy for the Astro stack.</span>
               </div>
               <div class="step-why">After the tree settles on v7, flatten duplicate transitive copies and decide whether the core packages should be pinned to exact versions for reproducible builds — a deliberate post-upgrade hygiene pass, not a silent default.</div>
@@ -1695,7 +1695,7 @@ img, video { max-width: 100%; height: auto; }
           <label for="ac1"><strong>PR1:</strong> the three readiness tests exist and pass on Astro v6, and PR1 merges to <code>primary</code> green.</label>
         </li>
         <li>
-          <input type="checkbox" id="ac2">
+          <input type="checkbox" id="ac2" checked>
           <label for="ac2"><strong>PR1:</strong> the duplicate content-config is resolved — exactly one config file remains and content collections still load.</label>
         </li>
         <li>
@@ -1707,11 +1707,11 @@ img, video { max-width: 100%; height: auto; }
           <label for="ac4"><strong>PR2:</strong> third-party integrations (Clerk, astro-embed, Spotlight) install cleanly against Astro v7.</label>
         </li>
         <li>
-          <input type="checkbox" id="ac5">
+          <input type="checkbox" id="ac5" checked>
           <label for="ac5"><strong>PR2:</strong> <code>npm run build</code> completes with zero Rust-compiler errors and the whitespace test passes (or <code>compressHTML: true</code> is set deliberately and documented).</label>
         </li>
         <li>
-          <input type="checkbox" id="ac6">
+          <input type="checkbox" id="ac6" checked>
           <label for="ac6"><strong>PR2:</strong> <code>npm run type-check</code>, <code>npm test</code>, and <code>npm run test:e2e</code> pass on v7, <strong>and all three adapter builds (netlify, vercel, node) succeed</strong>; PR2 merges as one atomic cut.</label>
         </li>
         <li>
@@ -1719,7 +1719,7 @@ img, video { max-width: 100%; height: auto; }
           <label for="ac7"><strong>PR3:</strong> the 3-adapter build matrix is codified as a CI job in <code>.github/workflows/</code> and required on every PR.</label>
         </li>
         <li>
-          <input type="checkbox" id="ac8">
+          <input type="checkbox" id="ac8" checked>
           <label for="ac8"><strong>PR3:</strong> the upgrade is documented in <code>project-docs/</code>, the Starlight guide still builds, and the dependency tree is deduped with a recorded pinning decision.</label>
         </li>
         <li>
@@ -1770,7 +1770,16 @@ img, video { max-width: 100%; height: auto; }
         </ul>
         <div class="completion-report" id="completion-report">
           <h3 class="report-heading">Completion Report</h3>
-          <p class="report-empty">No items to report — all requirements met.</p>
+          <dl class="report-list">
+            <dt>AC1/AC9 — one PR open, not yet merged</dt>
+            <dd>All 11 steps landed as a single commit on <code>claude/stupefied-nightingale-fc17d4</code> (not the plan's literal 3-PR structure) and are pushed as <a href="https://github.com/shawn-sandy/astro-basics/pull/343">PR #343</a>. It has not been merged to <code>primary</code> yet, and no production deploy has happened — both are follow-up actions for the user.</dd>
+            <dt>AC3/AC4 — Clerk and astro-embed peer warnings remain</dt>
+            <dd><code>@clerk/astro@3.0.23</code> (latest published: 3.4.10) and <code>astro-embed@0.13.0</code> still declare peer ranges below <code>astro@^7</code>. Installs require <code>.npmrc</code>'s <code>legacy-peer-deps=true</code>, and Clerk's own compiled component needed a <code>patch-package</code> fix to build at all. <code>npm ls astro</code> still reports these as "invalid" peers — not fully clean until upstream ships v7 support.</dd>
+            <dt>AC6 — e2e spec now executed and green</dt>
+            <dd>The Playwright browser download that stalled earlier finished in the background. Ran <code>e2e/astro-v7-upgrade.spec.ts</code> against a production build (<code>ASTRO_ADAPTER=node</code> + <code>astro preview</code>) 3x in a row — all 15 assertions passed. Along the way found and fixed two real bugs surfaced by testing against a real build for the first time: (1) two tests used <code>page.locator('h1')</code>, which matched Astro's dev-toolbar shadow-DOM headings in addition to the real page heading — scoped to <code>.first()</code>; (2) <code>src/pages/rss.xml.js</code> exported a lowercase <code>get()</code> handler, removed since Astro v4 — the RSS feed has silently 404'd in production for a long time, independent of this upgrade. Renamed to <code>GET</code>. Also fixed <code>.github/workflows/ci.yml</code>, which built but never started a server before the e2e job — added <code>ASTRO_ADAPTER=node npm run preview</code> + <code>wait-on</code>.</dd>
+            <dt>AC7 — CI matrix not yet a required check</dt>
+            <dd><code>.github/workflows/ci.yml</code> is added with the 3-adapter build matrix, but marking it "required" is a GitHub repo branch-protection setting, not something set from code — needs a repo admin to enable it after this branch merges.</dd>
+          </dl>
         </div>
       </div>
     </section>

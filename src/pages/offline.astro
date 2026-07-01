@@ -53,7 +53,9 @@ import Base from '#layouts/Base.astro'
   </section>
 
   <script type="module" src="/scripts/init.js"></script>
-  <script type="module">
+  <!-- is:inline keeps Astro from bundling this import: /scripts/features is
+       a public/ path resolved by the browser at runtime, not by Vite. -->
+  <script type="module" is:inline>
     import { handleRefresh } from '/scripts/features/connection-status.js'
     document.getElementById('refresh-button')?.addEventListener('click', handleRefresh)
   </script>
