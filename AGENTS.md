@@ -1,27 +1,3 @@
-<!-- OPENSPEC:START -->
-
-# OpenSpec Instructions
-
-These instructions are for AI assistants working in this project.
-
-Always open `@/openspec/AGENTS.md` when the request:
-
-- Mentions planning or proposals (words like proposal, spec, change, plan)
-- Introduces new capabilities, breaking changes, architecture shifts, or big performance/security work
-- Sounds ambiguous and you need the authoritative spec before coding
-
-Use `@/openspec/AGENTS.md` to learn:
-
-- How to create and apply change proposals
-- Spec format and conventions
-- Project structure and guidelines
-
-Keep this managed block so 'openspec update' can refresh the instructions.
-
-<!-- OPENSPEC:END -->
-
----
-
 ## 🔴 MANDATORY: AI Assistant Instructions
 
 **Before implementing ANY code changes, consult the specialized CLAUDE instruction files:**
@@ -33,11 +9,9 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 3. **[CLAUDE-PATTERNS.md](CLAUDE-PATTERNS.md)** - Mandatory architectural patterns you MUST follow
 4. **[CLAUDE-ANTI-PATTERNS.md](CLAUDE-ANTI-PATTERNS.md)** - Common violations and how to fix them
 
-### Integration with OpenSpec Workflows
+### Workflow Phases
 
-When working on OpenSpec proposals or implementations:
-
-1. **Planning Phase** → Follow OpenSpec process, reference CLAUDE-PATTERNS.md for pattern compliance
+1. **Planning Phase** → Reference CLAUDE-PATTERNS.md for pattern compliance
 2. **Implementation Phase** → Use CLAUDE-VALIDATION.md decision trees to ensure correct approach
 3. **Review Phase** → Check CLAUDE-ANTI-PATTERNS.md to avoid common mistakes
 4. **Completion Phase** → Use CLAUDE-VALIDATION.md completion checklist before marking done
