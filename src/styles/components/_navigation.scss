@@ -35,9 +35,11 @@ nav:has(> [popover]) {
     align-items: center;
     background-color: transparent;
 
+    // Transparent by default so the button reads as a bare icon; the border
+    // is kept (not removed) so revealing it on hover costs no layout shift.
     // Derived from the inherited text colour rather than a palette token, so
     // the control cannot drift from the surface it sits on.
-    border: 1px solid color-mix(in srgb, currentcolor 30%, transparent);
+    border: 1px solid transparent;
     border-radius: var(--card-radius);
     color: inherit;
     cursor: pointer;
@@ -48,6 +50,13 @@ nav:has(> [popover]) {
     min-height: var(--space-11);
     min-width: var(--space-11);
     padding: 0;
+
+    // Keyboard users get the same affordance the mouse gets; the outline
+    // remains the actual focus indicator.
+    &:hover,
+    &:focus-visible {
+      border-color: color-mix(in srgb, currentcolor 30%, transparent);
+    }
   }
 
   > [data-nav-brand] {

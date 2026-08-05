@@ -404,7 +404,7 @@ nav:has(> [popover]) > ul {
 nav:has(> [popover]) > button[popovertarget] {
   align-items: center;
   background-color: rgba(0, 0, 0, 0);
-  border: 1px solid color-mix(in srgb, currentcolor 30%, transparent);
+  border: 1px solid rgba(0, 0, 0, 0);
   border-radius: var(--card-radius);
   color: inherit;
   cursor: pointer;
@@ -413,6 +413,10 @@ nav:has(> [popover]) > button[popovertarget] {
   min-height: var(--space-11);
   min-width: var(--space-11);
   padding: 0;
+}
+nav:has(> [popover]) > button[popovertarget]:hover,
+nav:has(> [popover]) > button[popovertarget]:focus-visible {
+  border-color: color-mix(in srgb, currentcolor 30%, transparent);
 }
 nav:has(> [popover]) > [data-nav-brand] {
   font-weight: 600;
