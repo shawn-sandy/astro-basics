@@ -393,6 +393,7 @@ form select:user-valid:not(:focus) + p {
   display: none;
 }
 nav:has(> [popover]) {
+  background-color: inherit;
   flex-direction: row;
   gap: var(--space-4);
   justify-content: flex-end;
@@ -405,7 +406,7 @@ nav:has(> [popover]) > [data-nav-brand] {
 nav:has(> [popover]) > button[popovertarget] {
   align-items: center;
   background-color: rgba(0, 0, 0, 0);
-  border: 1px solid var(--card-border);
+  border: 1px solid color-mix(in srgb, currentcolor 30%, transparent);
   border-radius: var(--card-radius);
   color: inherit;
   cursor: pointer;
@@ -416,8 +417,8 @@ nav:has(> [popover]) > button[popovertarget] {
   padding: 0;
 }
 nav:has(> [popover]) > [popover] {
-  background-color: var(--card-background);
-  border: 1px solid var(--card-border);
+  background-color: inherit;
+  border: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
   inset: auto;
@@ -441,7 +442,7 @@ nav:has(> [popover]) > [popover] ul {
   width: 100%;
 }
 nav:has(> [popover]) > [popover] ul + ul {
-  border-block-start: 1px solid var(--card-border);
+  border-block-start: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
   margin-block-start: var(--space-2);
   padding-block-start: var(--space-2);
 }
@@ -457,7 +458,7 @@ nav:has(> [popover]) > [popover] a {
   width: 100%;
 }
 nav:has(> [popover]:popover-open) button[popovertarget] {
-  background-color: var(--card-background);
+  background-color: color-mix(in srgb, currentcolor 12%, transparent);
   border-color: currentcolor;
 }
 @media (prefers-reduced-motion: no-preference) {

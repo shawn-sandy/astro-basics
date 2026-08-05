@@ -7,6 +7,12 @@
 // attribute, so it never matches.
 
 nav:has(> [popover]) {
+  // Neither the bar nor the panel picks its own colour: both follow whatever
+  // the page sets. The `--card-*` tokens flip under `prefers-color-scheme:
+  // dark` while `body` does not, which produced a dark panel on a white page.
+  // Inheriting keeps the chain body -> nav -> panel consistent by definition.
+  background-color: inherit;
+
   // acss stacks `body > nav` into a column below 580px. The bar stays a
   // single row at every width now that the links live in the panel.
   flex-direction: row;
@@ -27,7 +33,10 @@ nav:has(> [popover]) {
   > button[popovertarget] {
     align-items: center;
     background-color: transparent;
-    border: 1px solid var(--card-border);
+
+    // Derived from the inherited text colour rather than a palette token, so
+    // the control cannot drift from the surface it sits on.
+    border: 1px solid color-mix(in srgb, currentcolor 30%, transparent);
     border-radius: var(--card-radius);
     color: inherit;
     cursor: pointer;
@@ -41,8 +50,11 @@ nav:has(> [popover]) {
   }
 
   > [popover] {
-    background-color: var(--card-background);
-    border: 1px solid var(--card-border);
+    // Inherits the page surface through `nav` above. The popover renders in
+    // the top layer but inheritance still follows the DOM tree, so this
+    // resolves against `body` rather than the UA's `Canvas` system colour.
+    background-color: inherit;
+    border: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
     border-radius: var(--card-radius);
     box-shadow: var(--card-shadow);
 
@@ -81,7 +93,7 @@ nav:has(> [popover]) {
   // A second list in the panel is the authenticated-account group from
   // Base.astro; separate it so the two do not read as one list.
   > [popover] ul + ul {
-    border-block-start: 1px solid var(--card-border);
+    border-block-start: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
     margin-block-start: var(--space-2);
     padding-block-start: var(--space-2);
   }
@@ -104,7 +116,9 @@ nav:has(> [popover]) {
 
 // Open-state affordance on the invoker.
 nav:has(> [popover]:popover-open) button[popovertarget] {
-  background-color: var(--card-background);
+  // Tinted from the inherited text colour, not a palette token, so the open
+  // affordance stays visible on whatever surface the page provides.
+  background-color: color-mix(in srgb, currentcolor 12%, transparent);
   border-color: currentcolor;
 }
 
