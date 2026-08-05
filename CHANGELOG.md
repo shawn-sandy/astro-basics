@@ -9,6 +9,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Popover Navigation** (`src/components/astro/Navigation.astro`): site navigation moved into a
+  native HTML popover panel opened by a hamburger button, at every viewport width
+  - Zero JavaScript: open, close, Esc-to-close and outside-click dismissal all come from the
+    `popover="auto"` and `popovertarget` attributes
+  - `popover="auto"` is written explicitly. The attribute's invalid-value default is `manual`,
+    which silently has no light dismiss and no Esc close
+  - Exported `Props` type: `brandTitle`, `brandHref`, `menuId`, `showBrand`
+  - Site-title brand link on the left; the Clerk auth control stays in the bar
+  - `userId`-gated dashboard and profile links render into the panel through the default slot,
+    so signed-in users get the same decluttered bar
+  - 44x44px hit area (WCAG 2.2 SC 2.5.8), `aria-label="Primary"` landmark, reduced-motion-safe fade
+  - `@supports not selector(:popover-open)` fallback renders the links as a static inline row and
+    hides the hamburger in engines without the Popover API
+  - New `sass:build` script for one-shot SCSS compilation (`npm run sass` is a watcher that never
+    terminates, so it cannot be used as a verification command)
+  - Coverage: `tests/components/Navigation.astro.test.ts` (8 cases) and
+    `e2e/navigation-popover.spec.ts` (10 cases, passing on Chromium)
+  - The popover is presentational and never an access-control mechanism; authenticated-only
+    markup stays behind the server-side `userId` check
+  - Full documentation: [Navigation Popover guide](/guide/components/navigation-popover)
+- **Breaking (library consumers)**: `Navigation.astro`'s default slot now renders inside the
+  popover panel rather than in the bar
+- **Skip to main content link** (`src/layouts/Base.astro`): first focusable element on every page,
+  letting keyboard users bypass the nav bar. Matters more now that the hamburger button, not the
+  brand link, owns first focus
+  - Styling comes from `@fpkit/acss`'s existing `body > a[href^="#"]` rule rather than a
+    reimplementation, so it keeps that rule's slide-in transition and `--color-skip-link-bg` token
+  - Target is the `<main id="main" tabindex="-1">` landmark in
+    `src/components/astro/MainSection.astro`; `tabindex="-1"` is what moves focus rather than only
+    the scroll position
+  - `src/pages/offline.astro` and `src/pages/supabase-test.astro` bypass `MainSection`, so both
+    gained their own `<main>` landmark (neither had one before)
+  - Coverage: `e2e/skip-link.spec.ts`
 - **User Sync Utility** (`src/utils/user-sync.ts`): Consolidated utility for fetching user data from Clerk and syncing with Supabase
   - `fetchUserWithRole()` function reduces component code by 80% (1 line vs 40+ lines)
   - Automatic user creation when users don't exist in database (handles PGRST116 errors)
@@ -38,21 +71,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Page background**: `body` now sets an explicit `background-color: #fff` in
+  `src/styles/_base.scss`. Nothing previously painted the body, so pages fell back to the
+  browser's default canvas, which renders dark under `prefers-color-scheme: dark`. The value is
+  literal rather than tokenised, so the page stays white in both colour schemes
 - Minor updates and refinements
 
 ### Fixed
 
 - **Horizontal overflow at 320px viewports** (WCAG 2.1 SC 1.4.10 Reflow): every page
-  scrolled horizontally on narrow screens
+  scrolled horizontally by 5px on a 320px-wide screen
   - Overrode `@fpkit/acss`'s `body { min-width: 20.3125rem }` (325px) floor with
-    `min-width: 0`
-  - Allowed the primary nav list to wrap instead of overflowing at its 384px
-    `min-content` width (previously overflowed at 320px, 360px, and 375px)
-  - Unset the acss `nav ul > li { min-height: 100% }` pin below 580px, which pushed
-    the wrapped second row outside the list and under `<header>`, leaving the
-    "About" and "Contact" links invisible and unclickable
-  - Layout at 581px and wider is unchanged
-  - Added two regression tests to `e2e/home-responsive.spec.ts`
+    `min-width: 0` in `src/styles/_base.scss`. The floor was wider than the viewport
+    it had to fit, so the overflow was present with the whole `<nav>` hidden and on
+    every page including 404
+  - `e2e/navigation-popover.spec.ts`'s 320px reflow test now asserts
+    `scrollWidth <= clientWidth` outright, both panel-shut and panel-open. It
+    previously had to measure against its own closed-panel baseline because the
+    framework floor made an absolute check impossible
+  - Added a page-level `no horizontal scrolling at 320px` case to
+    `e2e/home-responsive.spec.ts`
+- **Flaky axe-core scan in `e2e/navigation-popover.spec.ts`**: `:popover-open` flips at
+  the start of the panel's 150ms opacity fade, so the WCAG scan could sample a
+  still-transparent panel and report a colour-contrast violation that no user ever
+  sees. The scan now waits for the fade to settle before running
 
 ## [0.2.0] - 2025-08-15
 

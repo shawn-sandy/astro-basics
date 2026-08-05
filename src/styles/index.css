@@ -213,6 +213,7 @@
   }
 }
 body {
+  background-color: #fff;
   min-width: 0;
 }
 body > section {
@@ -222,18 +223,11 @@ body > section {
 body > nav {
   min-height: 4rem;
 }
-body > nav > ul {
-  flex-wrap: wrap;
-  justify-content: center;
+body > nav ul {
   margin-block-end: 0;
 }
-body > nav > ul li:hover:has(img, button) {
+body > nav ul li:hover:has(img, button) {
   background-color: rgba(0, 0, 0, 0);
-}
-@media (width <= 580px) {
-  body > nav > ul > li {
-    min-height: unset;
-  }
 }
 main {
   margin: auto;
@@ -397,6 +391,116 @@ form input:user-valid:not(:focus) + p,
 form textarea:user-valid:not(:focus) + p,
 form select:user-valid:not(:focus) + p {
   display: none;
+}
+nav:has(> [popover]) {
+  background-color: inherit;
+  flex-direction: row;
+  gap: var(--space-4);
+  justify-content: flex-start;
+}
+nav:has(> [popover]) > ul {
+  margin-inline-start: auto;
+}
+nav:has(> [popover]) > button[popovertarget] {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0);
+  border: 1px solid color-mix(in srgb, currentcolor 30%, transparent);
+  border-radius: var(--card-radius);
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  min-height: var(--space-11);
+  min-width: var(--space-11);
+  padding: 0;
+}
+nav:has(> [popover]) > [data-nav-brand] {
+  font-weight: 600;
+  text-decoration: none;
+}
+nav:has(> [popover]) > [popover] {
+  background-color: inherit;
+  border: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
+  border-radius: 0 var(--card-radius) var(--card-radius) 0;
+  box-shadow: var(--card-shadow);
+  inset: auto;
+  left: 0;
+  margin: 0;
+  max-height: calc(100dvh - 5rem);
+  max-width: calc(100vw - 2rem);
+  min-width: min(16rem, 100vw - 2rem);
+  overflow-y: auto;
+  padding: var(--space-2);
+  position: fixed;
+  top: 4rem;
+  z-index: var(--z-index-popover);
+}
+nav:has(> [popover]) > [popover] ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+nav:has(> [popover]) > [popover] ul + ul {
+  border-block-start: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
+  margin-block-start: var(--space-2);
+  padding-block-start: var(--space-2);
+}
+nav:has(> [popover]) > [popover] li {
+  min-height: auto;
+  padding-inline: 0;
+  width: 100%;
+}
+nav:has(> [popover]) > [popover] a {
+  border-radius: var(--radius-md);
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  width: 100%;
+}
+nav:has(> [popover]) > [popover] li:hover {
+  background-color: rgba(0, 0, 0, 0);
+}
+nav:has(> [popover]) > [popover] a:hover {
+  background-color: color-mix(in srgb, currentcolor 8%, transparent);
+}
+nav:has(> [popover]:popover-open) button[popovertarget] {
+  background-color: color-mix(in srgb, currentcolor 12%, transparent);
+  border-color: currentcolor;
+}
+@media (prefers-reduced-motion: no-preference) {
+  nav > [popover]:popover-open {
+    opacity: 1;
+    transition: opacity var(--transition-duration-150) ease-out;
+  }
+  @starting-style {
+    nav > [popover]:popover-open {
+      opacity: 0;
+    }
+  }
+}
+@supports not selector(:popover-open) {
+  nav > button[popovertarget],
+  nav:has(> [popover]) > button[popovertarget] {
+    display: none;
+  }
+  nav > [popover],
+  nav:has(> [popover]) > [popover] {
+    background-color: rgba(0, 0, 0, 0);
+    border: 0;
+    box-shadow: none;
+    max-height: none;
+    max-width: none;
+    min-width: 0;
+    overflow: visible;
+    padding: 0;
+    position: static;
+  }
+  nav > [popover] ul,
+  nav:has(> [popover]) > [popover] ul {
+    flex-direction: row;
+  }
 }
 .alert {
   border-radius: 0.25rem;

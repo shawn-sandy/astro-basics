@@ -2,6 +2,8 @@
 // Legacy tokens are maintained for backward compatibility
 
 body {
+  background-color: #fff;
+
   // Overrides @fpkit/acss's 20.3125rem (325px) floor, which forced 5px of
   // horizontal scroll at a 320px viewport (WCAG 2.1 SC 1.4.10 Reflow).
   min-width: 0;
@@ -14,27 +16,14 @@ body {
   > nav {
     min-height: 4rem;
 
-    > ul {
-      // acss leaves nav ul at flex-wrap: nowrap, so its 384px min-content
-      // width overflows any viewport narrower than that (WCAG 2.1 SC 1.4.10).
-      flex-wrap: wrap;
-      justify-content: center;
+    // Descendant, not direct child: the primary link list now sits inside
+    // the navigation popover panel, so `> ul` no longer reaches it.
+    ul {
       margin-block-end: 0;
 
       li {
         &:hover:has(img, button) {
           background-color: transparent;
-        }
-      }
-
-      // acss pins nav li to min-height: 100%. Once the list wraps, that
-      // forces every row to the ul's full height, so the second row lands
-      // outside the ul and is painted under <header> — invisible and
-      // unclickable. Scoped to acss's own mobile nav breakpoint so the
-      // full-height links (and their hover targets) are unchanged above it.
-      @media (width <= 580px) {
-        > li {
-          min-height: unset;
         }
       }
     }
