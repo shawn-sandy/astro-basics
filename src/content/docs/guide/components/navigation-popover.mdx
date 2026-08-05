@@ -187,21 +187,23 @@ answers it with an `is:inline` style block:
 
 ```astro
 <style is:inline>
-  nav > button[popovertarget] {
-    align-items: center;
-    appearance: none;
-    background: transparent;
-    border: 1px solid transparent;
-    display: inline-flex;
-    justify-content: center;
-    min-height: 44px;
-    min-width: 44px;
-    padding: 0;
+  @supports selector(:popover-open) {
+    nav > button[popovertarget] {
+      align-items: center;
+      appearance: none;
+      background: transparent;
+      border: 1px solid transparent;
+      display: inline-flex;
+      justify-content: center;
+      min-height: 44px;
+      min-width: 44px;
+      padding: 0;
+    }
   }
 </style>
 ```
 
-Three things make this work:
+Four things make this work:
 
 - **`is:inline` is the only style directive Astro leaves in the HTML.** A plain `<style>` block in a component is
   collected into the bundle and, in dev, injected by JavaScript like every other stylesheet - so it would arrive too
@@ -214,6 +216,12 @@ Three things make this work:
 - **Only declarations that change the painted box are repeated.** `border-radius` is deliberately absent: with a
   transparent background and a transparent border there is nothing for a radius to round, so `--card-radius` needs no
   stand-in at first paint. `44px` is hard-coded because `--space-11` is itself defined in the late stylesheet.
+- **The `@supports` guard keeps the block out of the fallback's way.** Without a popover the button is inert and
+  [the fallback](#fallback-without-the-popover-api) hides it with `display: none`. That rule currently wins on
+  specificity alone - its `:has()` variant is (0,2,2) against this block's (0,1,2) - but relying on that is fragile:
+  splitting the fallback's selector list into separate rules would leave the bare (0,1,2) selector losing to this
+  block's `display: inline-flex`, and the inert button would reappear. Scoping the block to engines that actually
+  get a popover states the intent instead of depending on the race.
 
 A CSS fade-in cannot solve this. The animation would have to be declared in the same stylesheet whose arrival is
 late, so it could only begin after the flash had already been painted. Anything that fixes a first-paint problem has
