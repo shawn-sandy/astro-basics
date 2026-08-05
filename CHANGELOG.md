@@ -71,6 +71,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Navigation styles scoped to `[data-site-nav]`**: every selector in
+  `src/styles/components/_navigation.scss` and in `Navigation.astro`'s `is:inline` first-paint
+  block previously matched bare `nav`, `nav:has(> [popover])` and `nav > button[popovertarget]`.
+  `Navigation` is exported from `src/components/index.ts` and the package's `./astro` entry, so a
+  consumer page with its own popover navigation inherited the site's 44x44 button, transparent
+  border and fixed-position panel
+  - The root `nav` now carries `data-site-nav` and all 22 selectors are prefixed with it
+  - The marker adds `(0,1,0)` uniformly, so every precedence relationship is preserved: the
+    inline block moves `(0,1,2)` -> `(0,2,2)` and the stylesheet rules `(0,2,2)` -> `(0,3,2)`
+  - **Breaking (library consumers)**: hand-written popover nav markup that relied on these styles
+    leaking out of the package must add `data-site-nav` to its root `nav`. Consumers rendering the
+    exported `Navigation` component are unaffected — it carries the marker itself
+
+### Fixed
+
+- **Popover fallback was silently inert in engines without `:has()`**: the
+  `@supports not selector(:popover-open)` block in `src/styles/components/_navigation.scss` listed
+  its bare and `:has()` selectors as one comma-separated list. A selector list is unforgiving, so a
+  parser that cannot understand `:has()` discards the whole rule — including the bare selector that
+  existed specifically to serve those engines. Each block is now written as two separate rules
+
 - **Page background**: `body` now sets an explicit `background-color: #fff` in
   `src/styles/_base.scss`. Nothing previously painted the body, so pages fell back to the
   browser's default canvas, which renders dark under `prefers-color-scheme: dark`. The value is
