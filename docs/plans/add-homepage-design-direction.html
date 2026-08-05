@@ -1,0 +1,2346 @@
+<!DOCTYPE html>
+<html lang="en" data-status="todo" data-effort="high">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+/* Runs in <head> before the first paint, on purpose: a plan opened from
+   file:// has no server to stamp the attribute, and a flash of the wrong
+   theme on every load is worse than having no dark mode at all. Storage
+   throws in some sandboxed file:// contexts — fall through to
+   prefers-color-scheme rather than blocking the render. */
+try {
+  var t = localStorage.getItem('plan-theme');
+  if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+} catch (e) { /* no storage — prefers-color-scheme decides */ }
+</script>
+<meta name="plan-status" content="todo">
+<meta name="plan-effort" content="high">
+<meta name="plan-type" content="feature">
+<meta name="plan-created" content="2026-08-05">
+<meta name="plan-repo" content="astro-basics">
+<meta name="plan-file" content="add-homepage-design-direction.html">
+<meta name="plan-path" content="docs/plans/add-homepage-design-direction.html">
+<meta name="plan-md" content="docs/plans/add-homepage-design-direction.md">
+<meta name="plan-implement" content="Read and implement all steps in the plan at docs/plans/add-homepage-design-direction.md — Show the components instead of describing them. Verify against the plan&#39;s Tests, Verification, and Acceptance Criteria before reporting done. If everything passed, mark completion in docs/plans/add-homepage-design-direction.md — tick each step&#39;s [x] marker and each criterion&#39;s - [x], set status: completed — and re-render the HTML from the spec. If any check failed, leave status: in-progress and say which.">
+<meta name="plan-goal" content="Achieve this goal: Show the components instead of describing them. The plan at docs/plans/add-homepage-design-direction.md describes one approach — use it as reference, but optimize for the outcome. Fan out across parallel subagents where that serves the outcome. Verify against the plan&#39;s Tests, Verification, and Acceptance Criteria before reporting done. If everything passed, mark completion in docs/plans/add-homepage-design-direction.md — tick each step&#39;s [x] marker and each criterion&#39;s - [x], set status: completed — and re-render the HTML from the spec. If any check failed, leave status: in-progress and say which.">
+<meta name="plan-workflow" content="Run a workflow to implement the plan at docs/plans/add-homepage-design-direction.md — Show the components instead of describing them. Brief subagents with the plan file at docs/plans/add-homepage-design-direction.md. Reserve a final verification phase for the lead agent, not a subagent. Verify against the plan&#39;s Tests, Verification, and Acceptance Criteria before reporting done. If everything passed, mark completion in docs/plans/add-homepage-design-direction.md — tick each step&#39;s [x] marker and each criterion&#39;s - [x], set status: completed — and re-render the HTML from the spec. If any check failed, leave status: in-progress and say which.">
+<title>Plan: Show the components instead of describing them</title>
+<style>
+/* ── Design tokens ─────────────────────────────────────────────────
+     Indigo-violet lead on warm-neutral paper. Status is carried by form
+     (soft fill + rule) rather than a second colour scale, so every status
+     chip inherits the theme instead of pinning white text onto a hue that
+     only works on one background. Type has three roles: --mono for every
+     structural label, --ui for chrome, --prose for reading text.
+     Contrast is a hard constraint, not a preference — every text token
+     below clears 4.5:1 on the surfaces it is used against in BOTH
+     palettes, and tests/plugins/test-plan-redesign.mjs measures it. ── */
+  :root {
+    --paper:      #fcfcfa;
+    --panel:      #ffffff;
+    --sunk:       #f5f4f1;
+    --ink:        #16151c;
+    --ink-2:      #4b4858;
+    --ink-3:      #6e6a80;
+    --rule:       #e6e3ec;
+    --rule-soft:  #f0eef4;
+    --accent:     #4a2fe0;
+    --accent-soft:#efebfe;
+    --accent-line:#c9befb;
+    --on-accent:  #ffffff;
+    --moss:       #2f6b45;
+    --moss-soft:  #edf5ef;
+    --moss-line:  #c3ddcd;
+    --signal:     #a8420c;
+    --signal-soft:#fbf0e9;
+    --signal-line:#e8c9b4;
+    --red:        #b42318;
+    --red-bg:     #fdf1f0;
+    --red-border: #edc4bf;
+    --purple:     #7b2d9e;
+    --purple-bg:  #f9f0fd;
+    --purple-border:#dcb8ee;
+    --wish-bg:    #fbf5fe;
+    --wish-border:#dcb8ee;
+    --radius:     4px;
+    --shadow:     0 1px 2px rgba(22,21,28,.05);
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    --ui:   system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --prose: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  }
+
+  /* Dark palette. Written twice on purpose: an explicit choice
+     ([data-theme]) has to beat the OS preference, and plain CSS has no way
+     to share one declaration block between an attribute selector and a
+     media query. Keep the two lists in sync — the redesign test asserts
+     both selectors define the same token names. */
+  :root[data-theme="dark"] {
+    --paper:      #121118;
+    --panel:      #1a1922;
+    --sunk:       #201f29;
+    --ink:        #edebf3;
+    --ink-2:      #b3afc4;
+    --ink-3:      #8b87a0;
+    --rule:       #2c2a38;
+    --rule-soft:  #24232e;
+    --accent:     #a594ff;
+    --accent-soft:#221f36;
+    --accent-line:#4a4270;
+    --on-accent:  #16151c;
+    --moss:       #7bc098;
+    --moss-soft:  #1b2a21;
+    --moss-line:  #2f4a39;
+    --signal:     #e8a278;
+    --signal-soft:#2b2019;
+    --signal-line:#4d3826;
+    --red:        #f4998f;
+    --red-bg:     #2b1a19;
+    --red-border: #4d2b27;
+    --purple:     #d9a6f0;
+    --purple-bg:  #251b2d;
+    --purple-border:#4a3557;
+    --wish-bg:    #251b2d;
+    --wish-border:#4a3557;
+    --shadow:     0 1px 2px rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #121118;
+      --panel:      #1a1922;
+      --sunk:       #201f29;
+      --ink:        #edebf3;
+      --ink-2:      #b3afc4;
+      --ink-3:      #8b87a0;
+      --rule:       #2c2a38;
+      --rule-soft:  #24232e;
+      --accent:     #a594ff;
+      --accent-soft:#221f36;
+      --accent-line:#4a4270;
+      --on-accent:  #16151c;
+      --moss:       #7bc098;
+      --moss-soft:  #1b2a21;
+      --moss-line:  #2f4a39;
+      --signal:     #e8a278;
+      --signal-soft:#2b2019;
+      --signal-line:#4d3826;
+      --red:        #f4998f;
+      --red-bg:     #2b1a19;
+      --red-border: #4d2b27;
+      --purple:     #d9a6f0;
+      --purple-bg:  #251b2d;
+      --purple-border:#4a3557;
+      --wish-bg:    #251b2d;
+      --wish-border:#4a3557;
+      --shadow:     0 1px 2px rgba(0,0,0,.4);
+    }
+  }
+  /* Native controls (checkboxes, scrollbars) follow the resolved theme. */
+  :root { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { color-scheme: dark; }
+  }
+
+  /* ── Reset & base ──────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--ui);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    color: var(--ink);
+    background: var(--paper);
+  }
+  a { color: var(--accent); }
+  code, pre {
+    font-family: var(--mono);
+    font-size: .875em;
+  }
+  /* Inline spans rendered from backtick markers in plan prose. Scoped to .md
+     so the bare <code> carrying file paths and copyable prompts keeps its own
+     layout — those live inside chips and rows that already style themselves.
+     No backticks in this comment: the whole stylesheet is a JS template. */
+  code.md {
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: .08em .35em;
+    /* Long paths must wrap rather than force the card into a sideways scroll. */
+    overflow-wrap: anywhere;
+  }
+  strong.md { font-weight: 650; color: var(--ink); }
+  em.md { font-style: italic; }
+  pre {
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: .75rem 1rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* ── SVG icon helper ────────────────────────────────────────────── */
+  .icon {
+    width: 1rem;
+    height: 1rem;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  /* ── Skip link ─────────────────────────────────────────────────── */
+  .skip-link {
+    position: absolute;
+    left: -9999px; top: auto;
+    width: 1px; height: 1px;
+    overflow: hidden;
+  }
+  .skip-link:focus {
+    position: fixed;
+    left: 1rem; top: 1rem;
+    width: auto; height: auto;
+    overflow: visible;
+    background: var(--accent);
+    color: var(--on-accent);
+    padding: .5rem 1rem;
+    border-radius: var(--radius);
+    font-weight: 700;
+    z-index: 9999;
+    text-decoration: none;
+  }
+
+  /* ── Header — document cover ────────────────────────────────────── */
+  .plan-header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    padding: 0;
+  }
+  .plan-header::before {
+    content: "";
+    display: block;
+    height: 3px;
+    background: var(--accent);
+  }
+  .plan-header-inner {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 1.75rem 1.5rem 1.5rem;
+  }
+  .plan-doc-type {
+    font-family: var(--mono);
+    font-size: .65rem;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .6rem;
+  }
+  .plan-header-top {
+    display: block;
+  }
+  .plan-title {
+    font-family: var(--mono);
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 600;
+    letter-spacing: -.035em;
+    line-height: 1.14;
+    color: var(--ink);
+    max-width: 26ch;
+    text-wrap: balance;
+  }
+  .plan-header-actions {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+    margin-top: .75rem;
+  }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .25rem .75rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-family: var(--mono);
+    color: var(--ink-3);
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+  }
+  .status-badge::before {
+    content: "";
+    display: inline-block;
+    width: .45em;
+    height: .45em;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+  [data-status="in-progress"] .status-badge { color: var(--signal); background: var(--signal-soft); border-color: var(--signal-line); }
+  [data-status="completed"]   .status-badge { color: var(--moss);   background: var(--moss-soft);   border-color: var(--moss-line); }
+
+  /* Effort badge — color tracks the data-effort attribute, mirroring .status-badge */
+  .effort-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .25rem .75rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-family: var(--mono);
+    color: var(--ink-3);
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+  }
+  .effort-badge::before { content: "Effort "; opacity: .7; }
+  [data-effort="low"]    .effort-badge { color: var(--moss);   border-color: var(--moss-line); }
+  [data-effort="medium"] .effort-badge { color: var(--signal); border-color: var(--signal-line); }
+  [data-effort="high"]   .effort-badge { color: var(--red);    border-color: var(--red-border); }
+
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+  [data-status="in-progress"] .status-badge::before {
+    animation: pulse-dot 1.4s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    [data-status="in-progress"] .status-badge::before { animation: none; }
+  }
+
+  /* Save as PDF button */
+  .save-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .4rem 1rem;
+    font-size: .75rem;
+    font-weight: 600;
+    font-family: var(--mono);
+    color: var(--on-accent);
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    cursor: pointer;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: filter .15s, box-shadow .15s;
+  }
+  .save-pdf-btn:hover { filter: brightness(.85); box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+  .save-pdf-btn:active { filter: brightness(.75); }
+  .save-pdf-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .save-pdf-btn { transition: none; } }
+
+  /* Theme toggle — same shape as Save as PDF, quieter fill. */
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-width: 44px;
+    min-height: 44px;
+    padding: .4rem .9rem;
+    font-family: var(--mono);
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .theme-toggle:hover { color: var(--accent); border-color: var(--accent-line); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Meta row */
+  .plan-meta {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--ink-2);
+  }
+  .plan-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+  }
+  .plan-meta .icon { opacity: .55; }
+
+  /* ── Layout ────────────────────────────────────────────────────── */
+  .layout {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: 3.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+    align-items: start;
+  }
+  /* 900, not 720: the sidebar now carries a step rail and is 15rem wide, so
+     between those two widths the main column was narrow enough to break a
+     copyable path across four lines. Collapse to one column sooner. */
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; padding: 1.5rem .75rem 4rem; gap: 0; }
+  }
+
+  /* ── Sidebar — table of contents ───────────────────────────────── */
+  .plan-nav {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+    overflow: hidden;
+  }
+  @media (max-width: 900px) {
+    .plan-nav {
+      position: static;
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+  }
+  .nav-heading {
+    font-family: var(--mono);
+    font-size: .625rem;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 0 1rem .6rem;
+    margin-bottom: .25rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .scroll-rail {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--rule);
+    border-radius: 1px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .scroll-rail::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: calc(var(--scroll-pct, 0) * 1%);
+    background: var(--accent);
+    transition: height .1s linear;
+  }
+  @media (prefers-reduced-motion: reduce) { .scroll-rail::after { transition: none; } }
+  .plan-nav ul { list-style: none; padding: 0; margin: 0; }
+  .plan-nav > ul > li > a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: .125rem 1rem .125rem 1.25rem;
+    font-size: .825rem;
+    color: var(--ink-2);
+    text-decoration: none;
+    gap: .5rem;
+    border-left: 2px solid transparent;
+    transition: color .12s, border-color .12s;
+  }
+  .plan-nav a:hover { color: var(--ink); border-left-color: var(--accent-line); }
+  .plan-nav a.active { color: var(--accent); font-weight: 600; border-left-color: var(--accent); }
+  .plan-nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .plan-nav .icon { opacity: .65; }
+  .plan-nav a.active .icon,
+  .plan-nav a:hover .icon { opacity: 1; }
+
+  /* ── Step rail — one link per step, the plan's real structure ───── */
+  .rail-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--rule);
+    padding-top: .5rem;
+    margin-top: .75rem;
+  }
+  .rail-heading {
+    font-family: var(--mono);
+    font-size: .625rem;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 0 1rem .45rem 1.25rem;
+  }
+  a.rail-step {
+    display: grid;
+    grid-template-columns: 1.6rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: .35rem;
+    min-height: 30px;
+    padding: .3rem 1rem .3rem 1.25rem;
+    font-size: .78rem;
+    line-height: 1.35;
+    color: var(--ink-2);
+    text-decoration: none;
+    border-left: 2px solid var(--rule-soft);
+    transition: color .12s, border-color .12s;
+  }
+  @media (prefers-reduced-motion: reduce) { a.rail-step { transition: none; } }
+  a.rail-step .rail-no {
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--ink-3);
+  }
+  a.rail-step .rail-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  a.rail-step.done .rail-no { color: var(--moss); }
+  a.rail-step.done .rail-text { color: var(--ink-3); }
+  a.rail-step.active {
+    color: var(--ink);
+    font-weight: 600;
+    border-left-color: var(--accent);
+    background: linear-gradient(90deg, var(--accent-soft), transparent 75%);
+  }
+  a.rail-step.active .rail-no { color: var(--accent); }
+  /* Visually-hidden step state — the tick glyph alone tells a screen reader
+     nothing, so every rail link carries "step N of M[, done]" in text. */
+  .rail-state {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* Once the sidebar stops being a sidebar the step list collapses into a
+     disclosure rather than disappearing — a phone reader keeps every jump
+     target. The element ships OPEN and the inline script closes it below the
+     breakpoint: a closed-by-default <details> would hide the whole rail on
+     desktop when scripting is off, and no-JS-on-mobile only costs some
+     scrolling. */
+  .rail-disclosure { margin-top: .75rem; }
+  .rail-disclosure > summary {
+    display: none;
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    cursor: pointer;
+    list-style: none;
+    align-items: center;
+    gap: .4rem;
+    min-height: 44px;
+    padding: 0 1rem 0 1.25rem;
+  }
+  .rail-disclosure > summary::-webkit-details-marker { display: none; }
+  .rail-disclosure > summary::before { content: "▶"; font-size: .55em; }
+  .rail-disclosure[open] > summary::before { content: "▼"; }
+  @media (max-width: 900px) {
+    .rail-disclosure > summary { display: flex; }
+  }
+
+  /* ── Objective card — executive summary ────────────────────────── */
+  .objective-card {
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 1.35rem 1.5rem;
+    margin-bottom: 2.5rem;
+    color: var(--ink);
+  }
+  .objective-card > p {
+    font-family: var(--prose);
+    font-size: 1.1rem;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .objective-card .section-label,
+  .plan-glance-label {
+    font-family: var(--mono);
+    font-size: .625rem;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .5rem;
+  }
+
+  /* ── At a glance — the plain-language register of the same goal, nested
+        inside #objective so the reader meets one summary, not two. ────── */
+  .plan-glance {
+    margin-top: 1.1rem;
+    padding-top: .9rem;
+    border-top: 1px solid var(--accent-line);
+  }
+  .plan-glance p { margin: 0; color: var(--ink-2); font-size: .9rem; line-height: 1.65; }
+
+  /* ── Progress bar ──────────────────────────────────────────────── */
+  .progress-wrap {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: .6rem;
+    font-family: var(--mono);
+    font-size: .65rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    letter-spacing: .16em;
+  }
+  .progress-bar-bg { height: 4px; background: var(--rule); border-radius: 999px; overflow: hidden; }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--accent);
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .progress-bar-fill { transition: none; }
+  }
+
+  /* ── Document sections ─────────────────────────────────────────── */
+  .section-card {
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--rule);
+    border-radius: 0;
+    padding: 2rem 0 1.25rem;
+    margin-bottom: 0;
+    box-shadow: none;
+  }
+  .section-card:first-of-type { border-top: none; }
+  .section-card h2 {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    color: var(--ink);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .section-card h2::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  .section-card h2 .icon { opacity: .75; }
+  .section-card .section-intro {
+    font-size: .85rem;
+    color: var(--ink-2);
+    margin: -1rem 0 1.25rem;
+  }
+  .section-card p {
+    margin-bottom: .75rem;
+    color: var(--ink-2);
+    font-family: var(--prose);
+    font-size: 1.02rem;
+    line-height: 1.7;
+    max-width: 68ch;
+  }
+  .section-card p.section-intro { font-family: var(--ui); font-size: .85rem; }
+  .section-card p strong.md { color: var(--ink); }
+  .section-card p:last-child { margin-bottom: 0; }
+  .section-card ul, .section-card ol {
+    padding-left: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+  }
+
+  /* ── Steps ──────────────────────────────────────────────────────── */
+  .steps-list { display: flex; flex-direction: column; }
+
+  /* Records, not cards: a rule between steps, no box and no dotted
+     timeline. The sidebar rail is the page's one progress device now. */
+  .step-card {
+    background: transparent;
+    border: 0;
+    border-top: 1px solid var(--rule-soft);
+    border-radius: 0;
+    padding: 1.05rem 0;
+    box-shadow: none;
+    position: relative;
+    scroll-margin-top: 1.5rem;
+  }
+  .step-card:first-child { border-top: 0; }
+
+  .step-card-header { display: flex; align-items: flex-start; gap: .75rem; }
+  .step-number {
+    flex-shrink: 0;
+    width: 2rem;
+    font-family: var(--mono);
+    color: var(--ink-3);
+    font-size: .8rem;
+    font-weight: 600;
+    padding-top: .12rem;
+  }
+  .step-card.completed .step-number { color: var(--moss); }
+  .step-body { flex: 1; min-width: 0; }
+  .step-action {
+    font-weight: 600;
+    margin-bottom: .3rem;
+    display: flex;
+    align-items: baseline;
+    gap: .45rem;
+    flex-wrap: wrap;
+    color: var(--ink);
+  }
+  .step-chip {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .58rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    padding: .12em .5em;
+    border-radius: 3px;
+    background: var(--sunk);
+    color: var(--ink-3);
+    border: 1px solid var(--rule);
+    vertical-align: middle;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .step-card.completed .step-chip {
+    background: var(--moss-soft);
+    color: var(--moss);
+    border-color: var(--moss-line);
+  }
+  .step-chip-text { flex: 1; }
+
+  /* Why and Verify are both always visible. Verify is the line a reader
+     needs WHILE executing the step — putting it behind a disclosure was the
+     single worst call in the previous shell. */
+  .step-note {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr);
+    gap: .1rem .75rem;
+    margin-top: .5rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+  .step-note > .step-note-label {
+    font-family: var(--mono);
+    font-size: .6rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding-top: .25rem;
+  }
+  .step-verify > .step-note-label { color: var(--accent); }
+  @media (max-width: 560px) {
+    .step-note { grid-template-columns: 1fr; gap: .1rem; }
+  }
+
+  /* ── Acceptance criteria ───────────────────────────────────────── */
+  .criteria-list {
+    list-style: none; padding: 0;
+    display: flex; flex-direction: column; gap: .6rem;
+  }
+  .criteria-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .6rem .75rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--panel);
+    transition: background .12s;
+  }
+  .criteria-list li:has(input:checked) { background: var(--sunk); }
+  .criteria-list input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 1rem; height: 1rem;
+    margin-top: .2rem;
+    accent-color: var(--moss);
+    cursor: pointer;
+  }
+  .criteria-list label { cursor: pointer; font-size: .9rem; }
+  .criteria-list input:checked + label { text-decoration: line-through; color: var(--ink-2); }
+
+  /* ── Completion checklist ────────────────────────────────────── */
+  .completion-checklist {
+    background: var(--panel);
+    border: 2px solid var(--signal);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-top: 1rem;
+  }
+  .completion-checklist.all-complete { border-color: var(--moss); }
+  .completion-header {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: 1rem;
+  }
+  .completion-badge {
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .15rem .6rem;
+    border-radius: 999px;
+    background: var(--signal-soft);
+    color: var(--signal);
+    border: 1px solid var(--signal-line);
+  }
+  .completion-checklist.all-complete .completion-badge {
+    background: var(--moss-soft);
+    color: var(--moss);
+    border-color: var(--moss-line);
+  }
+  .completion-list {
+    list-style: none; padding: 0;
+    display: flex; flex-direction: column; gap: .6rem;
+  }
+  .completion-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .6rem .75rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--panel);
+    transition: background .12s;
+  }
+  .completion-list li:has(input:checked) { background: var(--sunk); }
+  .completion-list input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 1rem; height: 1rem;
+    margin-top: .2rem;
+    accent-color: var(--moss);
+  }
+  .completion-list label { font-size: .9rem; }
+  .completion-list input:checked + label { text-decoration: line-through; color: var(--ink-2); }
+  @media (prefers-reduced-motion: reduce) {
+    .completion-list li { transition: none; }
+  }
+
+  /* ── Completion report ─────────────────────────────────────── */
+  .completion-report {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+  }
+  .report-heading {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-bottom: .75rem;
+  }
+  .report-empty {
+    font-style: italic;
+    color: var(--ink-3);
+    font-size: .875rem;
+  }
+  .report-list { margin: 0; padding: 0; }
+  .report-list dt {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: .875rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin-top: .75rem;
+  }
+  .report-list dt:first-child { margin-top: 0; }
+  .report-list dt::before {
+    content: "";
+    display: inline-block;
+    width: .5rem; height: .5rem;
+    border-radius: 50%;
+    background: var(--red);
+    flex-shrink: 0;
+  }
+  .report-list dd {
+    color: var(--ink-2);
+    font-size: .85rem;
+    margin-left: .9rem;
+    margin-top: .2rem;
+    margin-bottom: 0;
+  }
+
+  /* ── Next steps ────────────────────────────────────────────────── */
+  .next-steps-list { padding: 0; display: flex; flex-direction: column; gap: .75rem; }
+  .next-step-item {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .next-step-item summary {
+    font-weight: 600;
+    font-size: .9rem;
+    padding: .75rem 1rem;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--panel);
+    user-select: none;
+    min-height: 44px;
+  }
+  .next-step-item summary::before { content: "▶"; font-size: .55em; color: var(--ink-3); transition: transform .2s; }
+  .next-step-item[open] summary::before { transform: rotate(90deg); }
+  .next-step-prompt { padding: .75rem 1rem 1rem; background: var(--sunk); border-top: 1px solid var(--rule); }
+  .next-step-prompt p { font-size: .8rem; color: var(--ink-2); margin-bottom: .5rem; }
+  .next-step-prompt pre { margin: 0; }
+  @media (prefers-reduced-motion: reduce) { .next-step-item summary::before { transition: none; } }
+
+  /* ── Copy prompt button ─────────────────────────────────────── */
+  .copy-prompt-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    margin-top: .6rem;
+    padding: .3rem .75rem;
+    font-size: .775rem;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+  }
+  .copy-prompt-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .copy-prompt-btn:active { background: var(--accent-line); }
+  .copy-prompt-btn.copied { color: var(--moss); background: var(--moss-soft); border-color: var(--moss-line); }
+  .copy-prompt-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media print { .copy-prompt-btn { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-prompt-btn { transition: none; } }
+  /* Shared clipboard-failure state for every copy button */
+  .copy-failed { color: var(--red) !important; background: var(--red-bg) !important; border-color: var(--red-border) !important; white-space: normal; }
+
+  /* Wish list variant */
+  .wish-list-header {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin: 1.5rem 0 .75rem;
+  }
+  .wish-list-header::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--wish-border);
+    opacity: .5;
+  }
+  .wish-item { border: 1px dashed var(--wish-border) !important; background: var(--wish-bg) !important; }
+  .wish-item summary { background: var(--wish-bg) !important; color: var(--purple); }
+  .wish-badge {
+    font-size: .6rem;
+    background: var(--purple-bg);
+    color: var(--purple);
+    padding: .1rem .5rem;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-left: auto;
+    border: 1px solid var(--purple-border);
+  }
+
+  /* ── Collapsible optional sections ─────────────────────────────── */
+  .optional-section {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    margin-top: 1.5rem;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .optional-section > summary {
+    padding: .875rem 1.25rem;
+    font-weight: 600;
+    font-size: .9rem;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    user-select: none;
+    min-height: 44px;
+  }
+  .optional-section > summary::before,
+  .plan-more-ways > summary::before { content: "▶"; font-size: .55em; color: var(--ink-3); transition: transform .2s; }
+  .optional-section[open] > summary::before,
+  .plan-more-ways[open] > summary::before { transform: rotate(90deg); }
+  .optional-body { padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+  .unresolved-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .unresolved-item summary { font-weight: 600; padding: .35rem 0; cursor: pointer; list-style: none; user-select: none; font-size: .9rem; }
+  .unresolved-prompt { margin-top: .5rem; }
+  @media (prefers-reduced-motion: reduce) { .optional-section > summary::before, .plan-more-ways > summary::before { transition: none; } }
+
+  /* ── More-ways drawer (goal / workflow / plan-source rows) ─────── */
+  .plan-more-ways {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--panel);
+    margin: -.5rem 0 1.5rem;
+    font-size: .8rem;
+    overflow: hidden;
+  }
+  .plan-more-ways > summary {
+    padding: .55rem 1rem;
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    user-select: none;
+    min-height: 44px;
+  }
+  .plan-more-ways > summary:hover { color: var(--accent); }
+  .more-ways-hint { font-weight: 400; color: var(--ink-2); }
+  .plan-more-ways-body {
+    padding: .75rem 1rem 1rem;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+  @media print { .plan-more-ways { display: none !important; } }
+
+  /* ── Implement prompt ─────────────────────────────────────────── */
+  .plan-implement {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    margin-bottom: 1.5rem;
+    padding: .45rem .75rem;
+    background: var(--moss-soft);
+    border: 1px solid var(--moss-line);
+    border-radius: var(--radius);
+    font-size: .8rem;
+  }
+  .plan-implement-label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--moss);
+    flex-shrink: 0;
+    margin-top: .1rem;
+  }
+  .plan-implement code {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .82rem;
+    color: var(--ink);
+    flex: 1;
+    word-break: break-all;
+  }
+  .copy-cmd-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-cmd-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .copy-cmd-btn.copied { color: var(--moss); background: var(--moss-soft); border-color: var(--moss-line); }
+  .copy-cmd-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [data-status="completed"] .copy-cmd-btn { display: none; }
+  @media print { .plan-implement { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-cmd-btn { transition: none; } }
+
+  /* ── Plan source (file name + relative path — lives in the drawer) ── */
+  /* Borderless like its sibling drawer rows — the drawer body supplies the frame */
+  .plan-source {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    margin: 0;
+    padding: .55rem .75rem;
+    font-size: .8rem;
+  }
+  .plan-source-row { display: flex; align-items: center; gap: .6rem; }
+  .plan-source-label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    flex-shrink: 0;
+    width: 2.4rem;
+  }
+  .plan-source code {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .82rem;
+    color: var(--ink);
+    flex: 1;
+    word-break: break-all;
+  }
+  .copy-src-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-src-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .copy-src-btn.copied { color: var(--moss); background: var(--moss-soft); border-color: var(--moss-line); }
+  .copy-src-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media print { .copy-src-btn { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-src-btn { transition: none; } }
+
+  /* ── Workflow prompt row (conditional — remove row when empty; lives in the drawer) ── */
+  .plan-workflow {
+    margin: 0;
+    font-size: .8rem;
+  }
+  .plan-workflow-label {
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--accent);
+    padding: .1rem 0;
+  }
+  .plan-workflow-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    margin-top: .4rem;
+    padding: .45rem .75rem;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius);
+  }
+  .plan-workflow code {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .82rem;
+    color: var(--ink);
+    flex: 1;
+    word-break: break-all;
+  }
+  .copy-workflow-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-workflow-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .copy-workflow-btn.copied { color: var(--moss); background: var(--moss-soft); border-color: var(--moss-line); }
+  .copy-workflow-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [data-status="completed"] .plan-workflow { display: none; }
+  /* Redundant under .plan-more-ways' print hide; kept to mirror the test-pinned .plan-goal print rule */
+  @media print { .plan-workflow { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-workflow-btn { transition: none; } }
+
+  /* ── Goal prompt row (outcome-driven — always present; lives in the drawer) ── */
+  .plan-goal {
+    margin: 0;
+    font-size: .8rem;
+  }
+  .plan-goal-label {
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--purple);
+    padding: .1rem 0;
+  }
+  .plan-goal-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    margin-top: .4rem;
+    padding: .45rem .75rem;
+    background: var(--purple-bg);
+    border: 1px solid var(--purple-border);
+    border-radius: var(--radius);
+  }
+  .plan-goal code {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .82rem;
+    color: var(--ink);
+    flex: 1;
+    word-break: break-all;
+  }
+  .copy-goal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-goal-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .copy-goal-btn.copied { color: var(--moss); background: var(--moss-soft); border-color: var(--moss-line); }
+  .copy-goal-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [data-status="completed"] .plan-goal { display: none; }
+  /* Redundant under .plan-more-ways' print hide, but pinned byte-for-byte by test-goal-prompt.sh check 4 */
+  @media print { .plan-goal { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-goal-btn { transition: none; } }
+
+  /* ── Tests section ──────────────────────────────────────────────── */
+  .test-list {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+  .test-card {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .test-card-header {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: .5rem;
+    flex-wrap: wrap;
+  }
+  .test-badge {
+    display: inline-block;
+    font-size: .6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: .15em .55em;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .test-badge-unit        { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
+  .test-badge-integration { background: var(--signal-soft);  color: var(--signal);  border: 1px solid var(--signal-line); }
+  .test-badge-e2e         { background: var(--purple-bg);  color: var(--purple);  border: 1px solid var(--purple-border); }
+  .test-badge-objective   { background: var(--moss-soft);  color: var(--moss);  border: 1px solid var(--moss-line); }
+  .test-card-title {
+    font-weight: 600;
+    font-size: .95rem;
+    color: var(--ink);
+    flex: 1;
+  }
+  .test-card-body { font-size: .875rem; color: var(--ink-2); }
+  .test-card-body p { margin-bottom: .4rem; }
+  .test-card-body p:last-child { margin-bottom: 0; }
+  .test-card-body code { font-size: .85em; }
+  .test-card-body strong { color: var(--ink); font-weight: 600; }
+  .test-tier-label {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-bottom: .75rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+  .test-tier-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+  .objective-test-card {
+    background: var(--moss-soft);
+    border: 1px solid var(--moss-line);
+    border-left: 4px solid var(--moss);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .objective-test-card .test-card-header { margin-bottom: .6rem; }
+  .objective-test-card .test-card-title { color: var(--moss); }
+  .objective-test-card .test-card-body { color: var(--moss); }
+  .objective-test-card .test-card-body strong { color: var(--moss); }
+  /* ── Footer ────────────────────────────────────────────────────── */
+  .plan-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    font-size: .75rem;
+    color: var(--ink-3);
+    margin-top: 3rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+  }
+  .plan-footer .icon { opacity: .35; }
+
+  /* ── Focus styles ───────────────────────────────────────────────── */
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ── Print styles ───────────────────────────────────────────────── */
+  @media print {
+    .plan-nav, .scroll-rail, .progress-wrap, .save-pdf-btn, .theme-toggle { display: none !important; }
+    .layout { display: block !important; }
+    .step-card, .section-card { box-shadow: none !important; break-inside: avoid; }
+    .step-chip { display: none !important; }
+    a[href]::after { content: " (" attr(href) ")"; font-size: .8em; }
+  }
+
+  /* ═════════════════════════════════════════════════════════════════
+     OPT-IN VISUAL COMPONENTS
+     Pure-CSS / token-driven — no CDN, no external script. These rules
+     are always present (harmless when unused); the matching <body>
+     section blocks are kept only when a plan needs them and deleted
+     otherwise. See SKILL.md → "Visual Components".
+     ═════════════════════════════════════════════════════════════════ */
+
+  /* ── Files file-tree ────────────────────────────────────────────── */
+  .file-tree { font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace; font-size: .85rem; }
+  .file-tree-root { font-weight: 700; color: var(--ink); margin-bottom: .5rem; display: flex; align-items: center; gap: .35rem; }
+  .file-list, .file-list ul { list-style: none; padding-left: 1.25rem; margin: 0; border-left: 1px dashed var(--rule); }
+  .file-list li { padding: .2rem 0; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; color: var(--ink-2); }
+  .file-list li.file-dir { color: var(--ink); font-weight: 600; }
+  .file-list li.file-dir > ul { flex-basis: 100%; } /* nested dir list takes its own row inside the flex li */
+  .file-badge { font-size: .6rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: .1em .45em; border-radius: 999px; }
+  .file-badge-new       { background: var(--moss-soft); color: var(--moss); border: 1px solid var(--moss-line); }
+  .file-badge-modified  { background: var(--signal-soft); color: var(--signal); border: 1px solid var(--signal-line); }
+  .file-badge-deleted   { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-border); }
+  .file-badge-generated { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
+  .file-note { font-size: .75rem; color: var(--ink-3); font-style: italic; font-family: system-ui, sans-serif; }
+
+  /* ── Flow / pipeline diagram ────────────────────────────────────── */
+  .pipeline { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 0 auto; max-width: 580px; }
+  .pipeline-node { width: 100%; border: 1px solid var(--rule); border-radius: var(--radius); padding: .7rem 1.25rem; background: var(--panel); text-align: center; box-shadow: var(--shadow); }
+  .pipeline-label { font-size: .62rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .2rem; color: var(--accent); }
+  .pipeline-node code { font-size: .82rem; font-weight: 600; display: block; color: var(--ink); }
+  .pipeline-sub { font-size: .74rem; color: var(--ink-2); margin-top: .2rem; }
+  .pipeline-arrow { font-size: .85rem; color: var(--ink-3); padding: .25rem 0; }
+
+  /* ── Comparison grid (2–3 way) ──────────────────────────────────── */
+  .compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+  @media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+  .compare-header { font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: .35rem .75rem; border-radius: var(--radius) var(--radius) 0 0; text-align: center; }
+  .compare-col-add     .compare-header { background: var(--moss-soft);  color: var(--moss);  border: 1px solid var(--moss-line); }
+  .compare-col-neutral .compare-header { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
+  .compare-col-remove  .compare-header { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red-border); }
+  .compare-list { list-style: none; padding: .5rem .75rem; margin: 0; border: 1px solid var(--rule); border-top: none; border-radius: 0 0 var(--radius) var(--radius); background: var(--panel); }
+  .compare-list li { font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace; font-size: .78rem; color: var(--ink-2); padding: .15rem 0; }
+
+  /* ── Bar chart (value via inline --val) ─────────────────────────── */
+  .bar-chart { display: flex; flex-direction: column; gap: .55rem; }
+  .bar-row { display: grid; grid-template-columns: 9.5rem 1fr 3rem; align-items: center; gap: .75rem; }
+  @media (max-width: 520px) { .bar-row { grid-template-columns: 1fr; gap: .15rem; } }
+  .bar-label { font-size: .82rem; color: var(--ink); }
+  .bar-track { background: var(--rule); border-radius: 999px; height: .7rem; overflow: hidden; }
+  .bar-fill { height: 100%; width: var(--val, 0%); background: var(--accent); border-radius: 999px; }
+  .bar-fill.full { background: var(--moss); }
+  .bar-fill.zero { background: var(--ink-3); }
+  .bar-value { font-size: .78rem; font-weight: 600; color: var(--ink-2); white-space: nowrap; text-align: right; }
+
+  /* ── Data table ─────────────────────────────────────────────────── */
+  .plan-table { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: .5rem; }
+  .plan-table caption { text-align: left; font-size: .78rem; color: var(--ink-3); font-style: italic; margin-bottom: .5rem; }
+  .plan-table th, .plan-table td { text-align: left; padding: .5rem .75rem; border: 1px solid var(--rule); vertical-align: top; }
+  .plan-table thead th { background: var(--sunk); font-weight: 700; color: var(--ink-2); text-transform: uppercase; font-size: .66rem; letter-spacing: .05em; }
+  .plan-table tbody tr:nth-child(even) { background: var(--sunk); }
+  .plan-table code { font-size: .8em; }
+
+  /* Shared sub-heading used inside visual sections */
+  .diagram-subheading { font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin: 1.75rem 0 .75rem; }
+
+  /* ── Resources (images, screenshots & reference links) ──────────── */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+  .resource-figure { margin: 0; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; background: var(--panel); box-shadow: var(--shadow); }
+  .resource-figure > a { display: block; line-height: 0; }
+  .resource-figure img { display: block; width: 100%; height: auto; background: var(--sunk); }
+  .resource-figure figcaption { font-size: .74rem; line-height: 1.5; color: var(--ink-2); padding: .5rem .75rem; border-top: 1px solid var(--rule); }
+  .resource-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .1rem; }
+  .resource-links li { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; padding: .4rem 0; border-bottom: 1px solid var(--rule); }
+  .resource-links li:last-child { border-bottom: none; }
+  .resource-links a { font-weight: 600; word-break: break-word; }
+  .resource-note { font-size: .78rem; color: var(--ink-3); font-style: italic; }
+
+  .plan-back-nav { margin-bottom: .5rem; }
+  .plan-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .3125rem;
+    font-size: .8125rem;
+    color: var(--ink-2);
+    text-decoration: none;
+    transition: color .15s;
+  }
+  .plan-back-link:hover { color: var(--accent); }
+  .plan-back-link svg { width: 14px; height: 14px; flex-shrink: 0; }
+</style>
+<style id="plan-responsive-fix" data-version="1">
+/* plan-responsive-fix v1 — injected by scripts/retrofit-responsive-plans.mjs */
+body { overflow-wrap: anywhere; }
+main, nav, aside { min-width: 0; }
+.layout > *, .wrap > *, .compare-grid > * { min-width: 0; }
+pre { white-space: pre-wrap; max-width: 100%; }
+table { max-width: 100%; }
+img, video { max-width: 100%; height: auto; }
+@media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="ic-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"/>
+  </symbol>
+  <symbol id="ic-chart-bar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/>
+  </symbol>
+  <symbol id="ic-document-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+  </symbol>
+  <symbol id="ic-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"/>
+  </symbol>
+  <symbol id="ic-list-bullet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+  </symbol>
+  <symbol id="ic-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+  </symbol>
+  <symbol id="ic-magnifying-glass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+  </symbol>
+  <symbol id="ic-arrow-right-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+  </symbol>
+  <symbol id="ic-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
+  </symbol>
+  <symbol id="ic-code-bracket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/>
+  </symbol>
+  <symbol id="ic-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/>
+    <path d="M6 6h.008v.008H6V6Z"/>
+  </symbol>
+  <symbol id="ic-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"/>
+  </symbol>
+  <symbol id="ic-question-mark-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"/>
+  </symbol>
+  <symbol id="ic-clipboard-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15a2.25 2.25 0 0 1 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"/>
+  </symbol>
+  <symbol id="ic-beaker" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23-.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>
+  </symbol>
+  <symbol id="ic-photo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+  </symbol>
+</svg>
+
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header class="plan-header">
+  <div class="plan-header-inner">
+    <div class="plan-back-nav">
+      <a href="./index.html" class="plan-back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
+        Plans
+      </a>
+    </div>
+    <div class="plan-doc-type">Implementation Plan</div>
+    <div class="plan-header-top">
+      <h1 class="plan-title">Show the components instead of describing them</h1>
+      <div class="plan-header-actions">
+        <button class="save-pdf-btn" type="button" onclick="savePDF()"
+                aria-label="Save this plan as PDF">Save as PDF</button>
+        <button class="theme-toggle" type="button" id="theme-toggle" onclick="toggleTheme(this)"
+                aria-pressed="false" aria-label="Use dark theme">Dark</button>
+        <span class="effort-badge" aria-label="Effort level">High</span>
+        <span class="status-badge">todo</span>
+      </div>
+    </div>
+    <div class="plan-meta">
+      <span><svg class="icon" aria-hidden="true"><use href="#ic-calendar"/></svg> 2026-08-05</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#ic-code-bracket"/></svg> astro-basics</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#ic-tag"/></svg> feature</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#ic-bolt"/></svg> High effort</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <nav class="plan-nav" aria-label="Plan sections">
+    <div class="scroll-rail" aria-hidden="true"></div>
+    <div class="nav-heading">On this page</div>
+    <ul>
+      <li><a href="#objective"><svg class="icon" aria-hidden="true"><use href="#ic-bolt"/></svg> Objective</a></li>
+      <li><a href="#progress"><svg class="icon" aria-hidden="true"><use href="#ic-chart-bar"/></svg> Progress</a></li>
+      <li><a href="#context"><svg class="icon" aria-hidden="true"><use href="#ic-document-text"/></svg> Context</a></li>
+      <li><a href="#files"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> Files that change</a></li>
+      <li><a href="#steps"><svg class="icon" aria-hidden="true"><use href="#ic-list-bullet"/></svg> Steps</a></li>
+      <li><a href="#tests"><svg class="icon" aria-hidden="true"><use href="#ic-beaker"/></svg> Tests</a></li>
+      <li><a href="#criteria"><svg class="icon" aria-hidden="true"><use href="#ic-check-circle"/></svg> Definition of done</a></li>
+      <li><a href="#verification"><svg class="icon" aria-hidden="true"><use href="#ic-magnifying-glass"/></svg> Final check</a></li>
+      <li><a href="#completion"><svg class="icon" aria-hidden="true"><use href="#ic-clipboard-check"/></svg> Wrapping up</a></li>
+      <li><a href="#next-steps"><svg class="icon" aria-hidden="true"><use href="#ic-arrow-right-circle"/></svg> Next steps</a></li>
+    </ul>
+    <details class="rail-disclosure" open>
+      <summary>9 steps</summary>
+      <div class="rail-heading">Steps</div>
+      <ul class="rail-steps">
+        <li><a class="rail-step" href="#step-1"><span class="rail-no">1</span><span class="rail-text">Capture a baseline before touching anything by running <code class="md">npm test</code>, <code class="md">npm run type-check</code> and <code class="md">npm run test:e2e</code>, recording the pass/fail count per runner to <code class="md">docs/plans/baseline-add-homepage-design-direction.txt</code></span><span class="rail-state">step 1 of 9</span></a></li>
+        <li><a class="rail-step" href="#step-2"><span class="rail-no">2</span><span class="rail-text">Self-host the display face by adding a latin-subset, single-weight <code class="md">space-grotesk-600.woff2</code> to <code class="md">public/fonts/</code>, declaring <code class="md">@font-face</code> with <code class="md">font-display: swap</code> and a <code class="md">--font-family-display</code> token in <code class="md">src/styles/_design-tokens.scss</code>, and preloading it from <code class="md">src/layouts/Base.astro</code></span><span class="rail-state">step 2 of 9</span></a></li>
+        <li><a class="rail-step" href="#step-3"><span class="rail-no">3</span><span class="rail-text">Assign three type roles sitewide in <code class="md">src/styles/_base.scss</code> — headings to <code class="md">--font-family-display</code> with negative tracking, body copy to the system sans, and eyebrows, labels, captions and code to <code class="md">--font-family-mono</code> — and settle the override that makes <code class="md">header &gt; section &gt; p</code> compute to 48px when line 64 declares <code class="md">2rem</code></span><span class="rail-state">step 3 of 9</span></a></li>
+        <li><a class="rail-step" href="#step-4"><span class="rail-no">4</span><span class="rail-text">Define the seven direction tokens in <code class="md">src/styles/_design-tokens.scss</code>, replace the hardcoded <code class="md">background-color: #fff</code> at <code class="md">src/styles/_base.scss:4</code> with <code class="md">var(--paper)</code>, set <code class="md">color: var(--ink)</code>, and point the already-declared <code class="md">--card-background</code> and <code class="md">--header-background</code> aliases at the new surface tokens</span><span class="rail-state">step 4 of 9</span></a></li>
+        <li><a class="rail-step" href="#step-5"><span class="rail-no">5</span><span class="rail-text">Extend the <code class="md">@media (prefers-color-scheme: dark)</code> block at <code class="md">src/styles/_design-tokens.scss:236</code> to flip the new surface tokens and add a <code class="md">:root[data-theme=&quot;dark&quot;]</code> override path so an explicit toggle can win over the media query</span><span class="rail-state">step 5 of 9</span></a></li>
+        <li><a class="rail-step" href="#step-6"><span class="rail-no">6</span><span class="rail-text">Create <code class="md">src/components/astro/HomeHero.astro</code> with a mono eyebrow, a left-aligned display headline, a deck at roughly a third of the headline size, two calls to action and a specimen figure pairing a rendered <code class="md">Card</code> with the import line that produces it, then render it from <code class="md">src/pages/index.astro</code> into the <code class="md">header</code> slot that <code class="md">src/layouts/Base.astro:102</code> already branches on</span><span class="rail-state">step 6 of 9</span></a></li>
+        <li><a class="rail-step" href="#step-7"><span class="rail-no">7</span><span class="rail-text">In <code class="md">src/components/astro/FeatureCards.astro</code> render the <code class="md">sectionTitle</code> prop that line 27 destructures and the template never uses, add an optional <code class="md">promoted</code> count defaulting to current behaviour that splits output into promoted specimens and compact rows, delete the <code class="md">&lt;style&gt;</code> block at lines 51-61 whose <code class="md">border-radius: 0</code> never applies, and add an additive <code class="md">&lt;slot name=&quot;code&quot; /&gt;</code> to <code class="md">src/components/astro/Card.astro</code></span><span class="rail-state">step 7 of 9</span></a></li>
+        <li><a class="rail-step" href="#step-8"><span class="rail-no">8</span><span class="rail-text">Load <code class="md">/</code>, <code class="md">/posts/1</code>, <code class="md">/content/1</code>, <code class="md">/docs</code>, <code class="md">/tags</code> and <code class="md">/about</code> at 320, 390, 768 and 1280 in both light and dark, checking horizontal overflow and contrast on each</span><span class="rail-state">step 8 of 9</span></a></li>
+        <li><a class="rail-step" href="#step-9"><span class="rail-no">9</span><span class="rail-text">Document the direction with a features page under <code class="md">project-docs/</code> and a matching Starlight docs entry covering the token names, the colour-marks-interactivity rule, the three type roles and how a consumer overrides them</span><span class="rail-state">step 9 of 9</span></a></li>
+      </ul>
+    </details>
+  </nav>
+
+  <main id="main">
+
+    <div class="objective-card" id="objective">
+      <div class="section-label">Objective</div>
+      <p>Connect the existing design-token layer to the surfaces that paint, give the kit three distinct type roles instead of one, and rebuild the homepage hero and feature grid so a developer sees components rendered next to the code that produces them.</p>
+      <section class="plan-glance" aria-labelledby="plan-glance-label">
+        <div class="plan-glance-label" id="plan-glance-label">At a glance</div>
+        <p>The site ships a full design-token layer that nothing actually reads, so the homepage paints @fpkit/acss defaults in a single typeface and dark mode cannot change a pixel. Wiring those tokens to real surfaces and rebuilding the hero around a live component specimen turns a page that describes components into one that shows them. Done means three type roles render, both dead token aliases have consumers, flipping to dark repaints every surface, and no route scrolls horizontally at 320px.</p>
+      </section>
+    </div>
+
+    <div class="plan-implement">
+      <span class="plan-implement-label">Implement</span>
+      <code id="implement-cmd" aria-label="Implement prompt">Read and implement all steps in the plan at docs/plans/add-homepage-design-direction.md — Show the components instead of describing them. Verify against the plan&#39;s Tests, Verification, and Acceptance Criteria before reporting done. If everything passed, mark completion in docs/plans/add-homepage-design-direction.md — tick each step&#39;s [x] marker and each criterion&#39;s - [x], set status: completed — and re-render the HTML from the spec. If any check failed, leave status: in-progress and say which.</code>
+      <button class="copy-cmd-btn" type="button"
+              onclick="copyCmd(this)" aria-label="Copy implement prompt to clipboard">Copy</button>
+    </div>
+
+    <details class="plan-more-ways">
+      <summary>More ways to run this plan <span class="more-ways-hint">— goal &amp; workflow prompts, file path</span></summary>
+      <div class="plan-more-ways-body">
+
+        <div class="plan-goal">
+          <div class="plan-goal-label">Pursue as goal — optimize for the outcome, in parallel</div>
+          <div class="plan-goal-inner">
+            <code id="goal-cmd" aria-label="Goal prompt">Achieve this goal: Show the components instead of describing them. The plan at docs/plans/add-homepage-design-direction.md describes one approach — use it as reference, but optimize for the outcome. Fan out across parallel subagents where that serves the outcome. Verify against the plan&#39;s Tests, Verification, and Acceptance Criteria before reporting done. If everything passed, mark completion in docs/plans/add-homepage-design-direction.md — tick each step&#39;s [x] marker and each criterion&#39;s - [x], set status: completed — and re-render the HTML from the spec. If any check failed, leave status: in-progress and say which.</code>
+            <button class="copy-goal-btn" type="button"
+                    onclick="copyGoal(this)" aria-label="Copy goal prompt to clipboard">Copy</button>
+          </div>
+        </div>
+
+        <div class="plan-workflow">
+          <div class="plan-workflow-label">Run as workflow — launch parallel subagents</div>
+          <div class="plan-workflow-inner">
+            <code id="workflow-cmd" aria-label="Workflow prompt">Run a workflow to implement the plan at docs/plans/add-homepage-design-direction.md — Show the components instead of describing them. Brief subagents with the plan file at docs/plans/add-homepage-design-direction.md. Reserve a final verification phase for the lead agent, not a subagent. Verify against the plan&#39;s Tests, Verification, and Acceptance Criteria before reporting done. If everything passed, mark completion in docs/plans/add-homepage-design-direction.md — tick each step&#39;s [x] marker and each criterion&#39;s - [x], set status: completed — and re-render the HTML from the spec. If any check failed, leave status: in-progress and say which.</code>
+            <button class="copy-workflow-btn" type="button"
+                    onclick="copyWorkflow(this)" aria-label="Copy workflow prompt to clipboard">Copy</button>
+          </div>
+        </div>
+
+        <div class="plan-source">
+          <div class="plan-source-row">
+            <span class="plan-source-label">File</span>
+            <code id="plan-file" aria-label="Plan file name">add-homepage-design-direction.html</code>
+            <button class="copy-src-btn" type="button"
+                    onclick="copyPath(this, 'plan-file')" aria-label="Copy plan file name to clipboard">Copy</button>
+          </div>
+          <div class="plan-source-row">
+            <span class="plan-source-label">Path</span>
+            <code id="plan-path" aria-label="Plan relative path">docs/plans/add-homepage-design-direction.html</code>
+            <button class="copy-src-btn" type="button"
+                    onclick="copyPath(this, 'plan-path')" aria-label="Copy plan relative path to clipboard">Copy</button>
+          </div>
+          <div class="plan-source-row">
+            <span class="plan-source-label">Spec</span>
+            <code id="plan-md" aria-label="Plan spec markdown path">docs/plans/add-homepage-design-direction.md</code>
+            <button class="copy-src-btn" type="button"
+                    onclick="copyPath(this, 'plan-md')" aria-label="Copy plan spec path to clipboard">Copy</button>
+          </div>
+        </div>
+
+      </div>
+    </details>
+
+    <div class="progress-wrap" id="progress">
+      <div class="progress-header">
+        <span>Definition of done</span>
+        <span id="progress-label">0 / 11 done</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-bar"
+             role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+             aria-label="Plan progress" style="width:0%"></div>
+      </div>
+    </div>
+
+    <section class="section-card card-context" id="context" aria-labelledby="h-context">
+      <h2 id="h-context">
+        <svg class="icon" aria-hidden="true"><use href="#ic-document-text"/></svg>
+        Context
+      </h2>
+      <p class="section-intro">The story behind this plan — what prompted the work and why it matters now.</p>
+      <p>A design review measured the running site in-browser at 1280px and 390px. The findings were not subjective: exactly <strong class="md">one</strong> typeface (<code class="md">-apple-system</code>) renders across every h1, h2, h3, p, a and button; the homepage paints 7 colours, none of them the project&#39;s own <code class="md">--color-primary-500</code> (<code class="md">#0ea5e9</code>); <code class="md">--card-background</code> and <code class="md">--header-background</code> have <strong class="md">zero</strong> consumers; the loaded CSS contains <strong class="md">one</strong> dark-mode rule and it only redefines <code class="md">:root</code> variables, so <strong class="md">zero</strong> painted surfaces respond; the hero h1/deck ratio is <strong class="md">1.63</strong> (78.4px over 48px); and the six feature cards have byte-identical computed styles.</p>
+      <p>The design system is real but disconnected. <code class="md">src/styles/_design-tokens.scss</code> defines a full alias layer at lines 203-232 and none of it resolves to a consumer, while <code class="md">src/styles/_base.scss:4</code> hardcodes <code class="md">background-color: #fff</code>. The two blues on screen (<code class="md">#1d4ed8</code>, <code class="md">#2563eb</code>) are @fpkit/acss link defaults, not design decisions.</p>
+      <p>The headline problem is editorial rather than technical: this is a component library whose homepage shows no components. Six boxes of prose describe components a developer never sees rendered.</p>
+      <p>The direction is one idea specific to Astro rather than to websites in general — <strong class="md">colour marks hydration</strong>. Astro ships static HTML and withholds JavaScript, so static content is ink and the accent appears only where something is interactive. That is a structural rule and machine-checkable, not decoration. The palette is <code class="md">--ink: #101418</code>, <code class="md">--ink-soft: #5a6472</code>, <code class="md">--paper: #fcfcfd</code>, <code class="md">--paper-sunk: #f1f3f5</code>, <code class="md">--island: #5b2cf5</code>, <code class="md">--island-bg: #f0ebff</code>, <code class="md">--rule: #dde1e6</code> — deliberately not sky-500 (Tailwind stock) and not indigo-600. All pairs clear WCAG AA: ink on paper ~18:1, ink-soft ~6.4:1, island ~6.7:1, and the dark variants 6.1:1 or better.</p>
+      <p>Three decisions are already settled: self-host one subset woff2 rather than a CDN or system-stack-only; apply the token layer sitewide (unavoidable, since body background and text colour are global) but confine the hero rebuild and card tiering to the homepage; and keep the <code class="md">Card</code> and <code class="md">FeatureCards</code> prop signatures stable, since both are package exports via <code class="md">src/components/index.ts</code> — new props are optional with defaults and new slots are additive.</p>
+      <p>Risk: step 4 repaints every route, including templates this review never measured, which step 8 exists to catch. Mitigation is the baseline captured in step 1 plus a route-by-route sweep at four widths in both themes.</p>
+      <p>A clickable prototype of the target state, with a Current/Proposed toggle and a working theme switch, is at <code class="md">docs/prototypes/restyle-astro-kit-homepage.html</code>.</p>
+    </section>
+
+    <section class="section-card card-files" id="files" aria-labelledby="h-files">
+      <h2 id="h-files">
+        <svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg>
+        Files that change
+      </h2>
+      <p class="section-intro">Every file this plan touches, and what happens to each one.</p>
+      <div class="file-tree">
+        <div class="file-tree-root"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> astro-basics/</div>
+        <ul class="file-list">
+          <li><code>`public/fonts/space-grotesk-600.woff2`</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">latin-subset display face, single weight</span></li>
+          <li class="file-dir"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> `src/styles/
+            <ul class="file-list">
+            <li><code>_design-tokens.scss`</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">direction tokens, <code class="md">@font-face</code>, display role, dark-mode surface flips</span></li>
+            <li><code>_base.scss`</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">consume <code class="md">--paper</code>/<code class="md">--ink</code>, assign the three type roles, settle the deck override</span></li>
+            </ul>
+          </li>
+          <li><code>`src/layouts/Base.astro`</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">preload the display face</span></li>
+          <li><code>`src/components/astro/HomeHero.astro`</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">homepage hero with the live component specimen</span></li>
+          <li><code>`src/pages/index.astro`</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">render <code class="md">HomeHero</code> into the layout&#39;s <code class="md">header</code> slot</span></li>
+          <li class="file-dir"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> `src/components/astro/
+            <ul class="file-list">
+            <li><code>FeatureCards.astro`</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">render <code class="md">sectionTitle</code>, add promoted tiering, drop the dead style block</span></li>
+            <li><code>Card.astro`</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">additive <code class="md">code</code> slot for the promoted tier</span></li>
+            </ul>
+          </li>
+          <li><code>`e2e/homepage-design-direction.spec.ts`</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">objective-verification smoke test</span></li>
+          <li><code>`tests/components/FeatureCards.astro.test.ts`</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">unit coverage for the previously-dead prop</span></li>
+          <li><code>`tests/integration/design-tokens.test.ts`</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">guard against tokens losing their consumers again</span></li>
+          <li><code>`project-docs/03-features/design-direction.md`</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">the styling contract for package consumers</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section-card card-steps" id="steps" aria-labelledby="h-steps">
+      <h2 id="h-steps">
+        <svg class="icon" aria-hidden="true"><use href="#ic-list-bullet"/></svg>
+        Steps
+      </h2>
+      <p class="section-intro">The step-by-step work, in order — each step says what to do, why it matters, and how to check it worked.</p>
+      <div class="steps-list">
+
+        <div class="step-card" id="step-1">
+          <div class="step-card-header">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Capture a baseline before touching anything by running <code class="md">npm test</code>, <code class="md">npm run type-check</code> and <code class="md">npm run test:e2e</code>, recording the pass/fail count per runner to <code class="md">docs/plans/baseline-add-homepage-design-direction.txt</code></span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">this repo&#39;s suite already fails on a clean checkout, so a non-zero exit code after the work proves nothing and only the delta between the baseline and the post-change run carries information</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body">the file exists and lists a pass/fail count for each of the three runners rather than just an exit code.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-2">
+          <div class="step-card-header">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Self-host the display face by adding a latin-subset, single-weight <code class="md">space-grotesk-600.woff2</code> to <code class="md">public/fonts/</code>, declaring <code class="md">@font-face</code> with <code class="md">font-display: swap</code> and a <code class="md">--font-family-display</code> token in <code class="md">src/styles/_design-tokens.scss</code>, and preloading it from <code class="md">src/layouts/Base.astro</code></span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">exactly one family renders across every heading, paragraph, link and button today, so headings and body differ only by size and the page reads as undesigned rather than deliberate</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body"><code class="md">getComputedStyle(document.querySelector(&#39;h1&#39;)).fontFamily</code> resolves to Space Grotesk and the network panel shows exactly one font request.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-3">
+          <div class="step-card-header">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Assign three type roles sitewide in <code class="md">src/styles/_base.scss</code> — headings to <code class="md">--font-family-display</code> with negative tracking, body copy to the system sans, and eyebrows, labels, captions and code to <code class="md">--font-family-mono</code> — and settle the override that makes <code class="md">header &gt; section &gt; p</code> compute to 48px when line 64 declares <code class="md">2rem</code></span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">three roles is the smallest set that reads as deliberate, the mono role carries the technical character of a component kit at zero byte cost, and the deck currently competes with the headline at a 1.63 size ratio</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body">a distinct-font-family count across heading, body and label elements on the homepage returns 3, and the global header deck computes to its declared size.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-4">
+          <div class="step-card-header">
+            <div class="step-number">4</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Define the seven direction tokens in <code class="md">src/styles/_design-tokens.scss</code>, replace the hardcoded <code class="md">background-color: #fff</code> at <code class="md">src/styles/_base.scss:4</code> with <code class="md">var(--paper)</code>, set <code class="md">color: var(--ink)</code>, and point the already-declared <code class="md">--card-background</code> and <code class="md">--header-background</code> aliases at the new surface tokens</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">the alias layer at lines 203-232 resolves to zero consumers, so every painted surface inherits @fpkit/acss defaults and the blues on screen are the vendor&#39;s link colour rather than a design decision</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body">a stylesheet scan reports at least one <code class="md">var()</code> consumer for both aliases and <code class="md">getComputedStyle(document.body).backgroundColor</code> traces to a token rather than a literal.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-5">
+          <div class="step-card-header">
+            <div class="step-number">5</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Extend the <code class="md">@media (prefers-color-scheme: dark)</code> block at <code class="md">src/styles/_design-tokens.scss:236</code> to flip the new surface tokens and add a <code class="md">:root[data-theme=&quot;dark&quot;]</code> override path so an explicit toggle can win over the media query</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">exactly one dark-scoped rule exists in the loaded CSS and it only redefines <code class="md">:root</code> custom properties, so no painted surface responds and dark mode currently cannot change a single pixel</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body"><code class="md">getComputedStyle(document.body).backgroundColor</code> differs between light and dark emulation and at least one dark-scoped rule sets a background or colour on an element rather than a variable.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-6">
+          <div class="step-card-header">
+            <div class="step-number">6</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Create <code class="md">src/components/astro/HomeHero.astro</code> with a mono eyebrow, a left-aligned display headline, a deck at roughly a third of the headline size, two calls to action and a specimen figure pairing a rendered <code class="md">Card</code> with the import line that produces it, then render it from <code class="md">src/pages/index.astro</code> into the <code class="md">header</code> slot that <code class="md">src/layouts/Base.astro:102</code> already branches on</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">the shared <code class="md">Header.astro</code> serves every route, so using the layout&#39;s existing slot escape hatch confines the layout change to the homepage without adding a conditional to a shared component</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body">the homepage display-to-deck font-size ratio is at or above 3.0 with <code class="md">text-align: left</code>, and <code class="md">/about</code> still renders the original <code class="md">Header</code>.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-7">
+          <div class="step-card-header">
+            <div class="step-number">7</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">In <code class="md">src/components/astro/FeatureCards.astro</code> render the <code class="md">sectionTitle</code> prop that line 27 destructures and the template never uses, add an optional <code class="md">promoted</code> count defaulting to current behaviour that splits output into promoted specimens and compact rows, delete the <code class="md">&lt;style&gt;</code> block at lines 51-61 whose <code class="md">border-radius: 0</code> never applies, and add an additive <code class="md">&lt;slot name=&quot;code&quot; /&gt;</code> to <code class="md">src/components/astro/Card.astro</code></span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">six byte-identical cards give the eye nowhere to land, and both defects are live in components the package exports from <code class="md">src/components/index.ts</code>, so every fix must stay additive to avoid breaking consumers</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body"><code class="md">npm run type-check</code> passes with no call-site changes, passing <code class="md">sectionTitle</code> renders a heading, and the computed card border-radius matches the stylesheet instead of contradicting it.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-8">
+          <div class="step-card-header">
+            <div class="step-number">8</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Load <code class="md">/</code>, <code class="md">/posts/1</code>, <code class="md">/content/1</code>, <code class="md">/docs</code>, <code class="md">/tags</code> and <code class="md">/about</code> at 320, 390, 768 and 1280 in both light and dark, checking horizontal overflow and contrast on each</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">step 4 repaints global surfaces, so the interior routes this review never measured are where breakage will surface, and the repo fixed a 320px reflow regression in 254278a that must not return</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body"><code class="md">document.documentElement.scrollWidth - document.documentElement.clientWidth</code> is 0 for every route, width and theme combination.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-9">
+          <div class="step-card-header">
+            <div class="step-number">9</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Document the direction with a features page under <code class="md">project-docs/</code> and a matching Starlight docs entry covering the token names, the colour-marks-interactivity rule, the three type roles and how a consumer overrides them</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">the project&#39;s own instructions require any feature be documented in both project docs and the Starlight guide, and these tokens form the public styling contract for a package other projects import</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body">both pages exist and <code class="md">npm run build</code> completes with the new entry in the Starlight sidebar and no broken-link warning.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section-card card-tests" id="tests" aria-labelledby="h-tests">
+      <h2 id="h-tests">
+        <svg class="icon" aria-hidden="true"><use href="#ic-beaker"/></svg>
+        Tests
+      </h2>
+      <p class="section-intro">The tests that prove the change does what it promises.</p>
+      <div class="test-tier-label">Tier 1 — This plan changes application code</div>
+      <div class="objective-test-card">Objective: the homepage actually adopts the direction rather than merely declaring it. File: <code class="md">e2e/homepage-design-direction.spec.ts</code>; Type: smoke; Asserts: three distinct font families resolve where one did, the display-to-deck ratio is at or above 3.0 where it was 1.63, both token aliases have at least one consumer where they had none, body background differs between light and dark where it was identical, no non-interactive element carries the accent colour, and horizontal overflow is 0 at 320, 390, 768 and 1280; Run: <code class="md">npm run test:e2e -- homepage-design-direction</code></div>
+      <div class="test-list">
+        <div class="test-card">Unit: FeatureCards renders its previously-dead prop and tiers its output without breaking its public signature. File: <code class="md">tests/components/FeatureCards.astro.test.ts</code>; Targets: <code class="md">src/components/astro/FeatureCards.astro</code>; Key cases: <code class="md">sectionTitle</code> renders a heading when supplied and nothing when omitted, <code class="md">promoted</code> splits the two tiers, and the pre-existing prop set alone still yields the current card count</div>
+        <div class="test-card">Integration: the dead-token defect this plan fixes cannot silently return. File: <code class="md">tests/integration/design-tokens.test.ts</code>; Targets: <code class="md">src/styles/_design-tokens.scss</code> compiled through to <code class="md">src/styles/index.css</code>; Key cases: every component alias token declared in <code class="md">:root</code> has at least one <code class="md">var()</code> consumer in the compiled CSS, and the dark-mode block sets at least one painted property rather than variables alone</div>
+        <div class="test-card">E2E: the new surfaces stay reflow-safe and accessible on real routes. File: <code class="md">e2e/home-responsive.spec.ts</code> and <code class="md">e2e/home-accessibility.spec.ts</code>, both extended; Targets: the homepage and one interior route through the running app; Key cases: no horizontal overflow at 320px in light and dark, the documented contrast pairs clear WCAG AA, and keyboard focus stays visible against the new surfaces</div>
+      </div>
+    </section>
+
+    <section class="section-card card-criteria" id="criteria" aria-labelledby="h-criteria">
+      <h2 id="h-criteria">
+        <svg class="icon" aria-hidden="true"><use href="#ic-check-circle"/></svg>
+        Definition of done
+      </h2>
+      <p class="section-intro">The plan counts as done when every statement below is true — check each one off as you verify it.</p>
+      <ul class="criteria-list" id="criteria-list">
+        <li>
+          <input type="checkbox" id="ac1">
+          <label for="ac1">Three distinct <code class="md">font-family</code> values resolve across headings, body and labels on the homepage</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac2">
+          <label for="ac2">The homepage display-to-deck font-size ratio is at or above 3.0</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac3">
+          <label for="ac3"><code class="md">--card-background</code> and <code class="md">--header-background</code> each have at least one consumer in the compiled stylesheet</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac4">
+          <label for="ac4"><code class="md">getComputedStyle(document.body).backgroundColor</code> differs between light and dark</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac5">
+          <label for="ac5">At least one dark-scoped rule sets a background or colour on an element, not only on <code class="md">:root</code></label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac6">
+          <label for="ac6"><code class="md">FeatureCards</code> renders <code class="md">sectionTitle</code> when passed, and every existing call site compiles with no prop changes</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac7">
+          <label for="ac7">The <code class="md">&lt;style&gt;</code> block at <code class="md">FeatureCards.astro:51-61</code> is gone and no remaining rule declares a value that loses to the vendor stylesheet</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac8">
+          <label for="ac8">Horizontal overflow is 0 at 320, 390, 768 and 1280 for <code class="md">/</code>, <code class="md">/posts/1</code>, <code class="md">/content/1</code>, <code class="md">/docs</code>, <code class="md">/tags</code> and <code class="md">/about</code>, in both themes</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac9">
+          <label for="ac9">No non-interactive element computes to the accent colour</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac10">
+          <label for="ac10">Routes other than <code class="md">/</code> still render the shared <code class="md">Header</code> component</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac11">
+          <label for="ac11">The direction is documented in <code class="md">project-docs/</code> and in the Starlight guide</label>
+        </li>
+      </ul>
+      <span id="criteria-status" aria-live="polite" aria-atomic="true"
+            style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"></span>
+    </section>
+
+    <section class="section-card card-verification" id="verification" aria-labelledby="h-verification">
+      <h2 id="h-verification">
+        <svg class="icon" aria-hidden="true"><use href="#ic-magnifying-glass"/></svg>
+        Final check
+      </h2>
+      <p class="section-intro">One last pass to confirm the whole change works end to end.</p>
+      <p>Re-run the measurement pass from the original review against the dev server and compare each number to the Context section: font-family count 1 to 3, hero ratio 1.63 to at or above 3.0, token alias consumers 0 to non-zero, dark-mode surface rules 0 to non-zero, and accent-carrying non-interactive elements 0 throughout.</p>
+      <p>Then re-run <code class="md">npm test</code>, <code class="md">npm run type-check</code> and <code class="md">npm run test:e2e</code> and compare against the step 1 baseline file. The gate is that no test which passed at baseline now fails; a red suite on its own does not indicate a regression in this repo.</p>
+      <p>Finally walk <code class="md">/</code>, <code class="md">/posts/1</code>, <code class="md">/content/1</code>, <code class="md">/docs</code>, <code class="md">/tags</code> and <code class="md">/about</code> in both themes at 320 and 1280, confirming each renders, none scrolls horizontally, and the interior routes are visually unchanged apart from the new palette and type.</p>
+    </section>
+
+    <section class="section-card card-completion" id="completion" aria-labelledby="h-completion">
+      <h2 id="h-completion">
+        <svg class="icon" aria-hidden="true"><use href="#ic-clipboard-check"/></svg>
+        Wrapping up
+      </h2>
+      <p class="section-intro">Three gates that must all pass before this plan is marked completed.</p>
+      <div class="completion-checklist" id="completion-checklist">
+        <div class="completion-header">
+          <span class="completion-badge" id="completion-badge">Required</span>
+        </div>
+        <ul class="completion-list" id="completion-list">
+          <li>
+            <input type="checkbox" id="cc1" disabled>
+            <label for="cc1">All step TODOs marked as done</label>
+          </li>
+          <li>
+            <input type="checkbox" id="cc2" disabled>
+            <label for="cc2">All acceptance criteria verified and checked off</label>
+          </li>
+          <li>
+            <input type="checkbox" id="cc3" disabled>
+            <label for="cc3">Plan status updated to completed</label>
+          </li>
+        </ul>
+        <div class="completion-report" id="completion-report">
+          <h3 class="report-heading">Completion Report</h3>
+          <p class="report-empty">No items to report — all requirements met.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card card-next-steps" id="next-steps" aria-labelledby="h-next-steps">
+      <h2 id="h-next-steps">
+        <svg class="icon" aria-hidden="true"><use href="#ic-arrow-right-circle"/></svg>
+        Next steps
+      </h2>
+      <p class="section-intro">Follow-up ideas that came up along the way — none of them are required to finish this plan.</p>
+      <div class="next-steps-list">
+        <details class="next-step-item">
+          <summary>Roll the direction out to the interior routes</summary>
+          <div class="next-step-prompt">
+            <p>The hero and card tiering are homepage-only by design; the remaining index templates still use the shared header.</p>
+            <p>Paste this prompt into Claude to execute this follow-up:</p>
+            <pre>The astro-basics homepage now uses a design direction defined in src/styles/_design-tokens.scss: ink/paper/island tokens, three type roles (display, body, mono), and a rule that the accent colour marks interactivity only. The hero and card tiering are currently homepage-only, applied via src/components/astro/HomeHero.astro slotted into the Base layout&#39;s header slot. Extend the same treatment to the post, content, docs and tags index templates without changing the shared Header component&#39;s behaviour for routes that do not opt in. Measure horizontal overflow at 320px and the display-to-deck ratio on each route before and after, and report both.</pre>
+            <button class="copy-prompt-btn" type="button"
+                    onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+          </div>
+        </details>
+
+        <details class="next-step-item">
+          <summary>Fix the footer copy defect</summary>
+          <div class="next-step-prompt">
+            <p>Unrelated to this plan but found during the same review.</p>
+            <p>Paste this prompt into Claude to execute this follow-up:</p>
+            <pre>In src/components/astro/Footer.astro line 11, the text &quot;Learn more about my projects on&quot; is followed by a newline and then a Social component. Astro trims that whitespace, so the page renders &quot;projects ontwitter github youtube&quot;. The {&#39; &#39;} separators sit between the social links but not before the first one. Fix the spacing and add a test that fails if the run-on returns.</pre>
+            <button class="copy-prompt-btn" type="button"
+                    onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+          </div>
+        </details>
+
+        <details class="next-step-item">
+          <summary>Wish list: per-recommendation toggles in the prototype</summary>
+          <div class="next-step-prompt">
+            <p>Would let each of the five changes be judged in isolation rather than all at once.</p>
+            <p>Paste this prompt into Claude to execute this follow-up:</p>
+            <pre>docs/prototypes/restyle-astro-kit-homepage.html has a Current/Proposed switch that flips all five design recommendations at once, so no single change can be judged in isolation. Add five independent toggles (typography, colour, hero, cards, dark mode) so each can be turned on and off separately against the current baseline. Keep the file self-contained with no CDN, and keep the existing seed/proto-model script blocks and the table&#39;s data-field contract intact.</pre>
+            <button class="copy-prompt-btn" type="button"
+                    onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <footer class="plan-footer">
+      <svg class="icon" aria-hidden="true"><use href="#ic-sparkles"/></svg>
+      Generated by plan-agent · 2026-08-05 · astro-basics
+    </footer>
+
+  </main>
+</div><!-- /.layout -->
+
+<script>
+/* ── Theme toggle ───────────────────────────────────────────── */
+/* The <head> script has already applied any stored choice. This only has to
+   resolve what is currently on screen, flip it, and remember the answer. */
+function resolvedTheme() {
+  var set = document.documentElement.getAttribute('data-theme');
+  if (set === 'dark' || set === 'light') return set;
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark' : 'light';
+}
+
+function syncThemeButton(btn) {
+  if (!btn) return;
+  var dark = resolvedTheme() === 'dark';
+  btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+  btn.setAttribute('aria-label', dark ? 'Use light theme' : 'Use dark theme');
+  btn.textContent = dark ? 'Light' : 'Dark';
+}
+
+function toggleTheme(btn) {
+  var next = resolvedTheme() === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('plan-theme', next); } catch (e) { /* not persisted */ }
+  syncThemeButton(btn || document.getElementById('theme-toggle'));
+}
+
+/* ── Save as PDF (native browser print dialog) ──────────────── */
+function savePDF() {
+  window.print();
+}
+
+/* ── Build rich implementation prompt from DOM ──────────────── */
+function buildImplementPrompt() {
+  var cmdEl = document.getElementById('implement-cmd');
+  var status = document.documentElement.getAttribute('data-status') || 'todo';
+  var stepCards = Array.prototype.slice.call(document.querySelectorAll('.step-card'));
+  var criteriaItems = Array.prototype.slice.call(document.querySelectorAll('#criteria-list li'));
+
+  var totalSteps = stepCards.length;
+  var doneSteps = stepCards.filter(function(c) { return c.classList.contains('completed'); }).length;
+  var totalCriteria = criteriaItems.length;
+  var checkedCriteria = criteriaItems.filter(function(li) {
+    var cb = li.querySelector('input[type="checkbox"]');
+    return cb && cb.checked;
+  }).length;
+
+  var planPathMeta = document.querySelector('meta[name="plan-path"]');
+  var planPath = (planPathMeta && planPathMeta.getAttribute('content')) || '<plan-file>';
+  var mdMeta = document.querySelector('meta[name="plan-md"]');
+  var specPath = (mdMeta && mdMeta.getAttribute('content')) || planPath.replace(/\.html$/, '.md');
+
+  var lines = [];
+  lines.push(cmdEl ? cmdEl.textContent.trim() : 'Implement the plan');
+  lines.push('');
+  lines.push('Status: ' + status + ' (' + doneSteps + '/' + totalSteps + ' steps done, ' + checkedCriteria + '/' + totalCriteria + ' criteria met)');
+  lines.push('');
+  lines.push('Instructions:');
+  lines.push('1. Read the plan spec at ' + specPath + ' (Markdown — the source of truth; the sibling HTML at ' + planPath + ' is a rendered view of it).');
+  lines.push('2. Implement every step still marked todo; after completing each step, mark it done by adding its [x] marker in the spec (e.g. "3. [x] ...").');
+  lines.push('3. When all steps are done, verify each acceptance criterion and flip its bullet to "- [x]" in the spec.');
+  lines.push('4. Run the objective test\'s Run command from the plan\'s Tests section, then walk the Verification section end-to-end and confirm the stated objective actually works — on failure, fix and re-verify before continuing; never mark the plan done on a failing check.');
+  lines.push('5. Set "status: completed" in the spec frontmatter only once every step is marked, every criterion is checked, and verification passes.');
+  lines.push('6. Re-render the sibling HTML from the spec so it shows every step and criterion complete (the plan-agent render hook does this on save; otherwise run the bundled build-plan-html.mjs renderer) — never edit the HTML by hand.');
+
+  return lines.join('\n');
+}
+
+/* ── Shared clipboard helper ────────────────────────────────── */
+/* All copy buttons delegate here. `restoreLabel` is the button's   */
+/* idle text. On failure (Clipboard API rejects AND execCommand     */
+/* fails) the button shows a visible error so the user knows to      */
+/* select manually — never a silent no-op.                          */
+function clipboardCopy(text, btn, restoreLabel) {
+  function show(labelText, cls, delay) {
+    if (btn._copyTimer) clearTimeout(btn._copyTimer);
+    btn.textContent = labelText;
+    btn.classList.remove('copied', 'copy-failed');
+    if (cls) btn.classList.add(cls);
+    btn._copyTimer = setTimeout(function () {
+      btn.textContent = restoreLabel;
+      btn.classList.remove('copied', 'copy-failed');
+      btn._copyTimer = null;
+    }, delay);
+  }
+  function flash() { show('Copied ✓', 'copied', 2000); }
+  function fail()  { show('Copy failed — select manually', 'copy-failed', 4000); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    if (ok) flash(); else fail();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(flash).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+/* ── Copy implement prompt ──────────────────────────────────── */
+function copyCmd(btn) {
+  clipboardCopy(buildImplementPrompt(), btn, 'Copy');
+}
+
+/* ── Copy workflow prompt (element absent when plan has no workflow) ── */
+function copyWorkflow(btn) {
+  var code = document.getElementById('workflow-cmd');
+  if (!code) return;
+  clipboardCopy(code.textContent, btn, 'Copy');
+}
+
+/* ── Copy goal prompt ──────────────────────────────────────── */
+function copyGoal(btn) {
+  var code = document.getElementById('goal-cmd');
+  if (!code) return;
+  clipboardCopy(code.textContent, btn, 'Copy');
+}
+
+/* ── Copy plan file name / relative path ────────────────────── */
+function copyPath(btn, id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  clipboardCopy(el.textContent.trim(), btn, 'Copy');
+}
+
+/* ── Copy prompt button (global — required by inline onclick) ── */
+function copyPrompt(btn) {
+  var pre = btn.previousElementSibling;
+  if (!pre || pre.tagName !== 'PRE') {
+    pre = btn.parentElement && btn.parentElement.querySelector('pre');
+  }
+  if (!pre) return;
+  clipboardCopy(pre.textContent, btn, 'Copy prompt');
+}
+
+(function () {
+  'use strict';
+
+  /* ── Progress bar — state from HTML attributes ──────────────── */
+  /* State lives in the HTML itself: a criterion is done iff its       */
+  /* <input> carries the `checked` attribute, which the browser        */
+  /* renders natively on load. Toggling a box syncs the attribute so   */
+  /* the live DOM (and any saved copy of this file) stays the single   */
+  /* portable source of truth — no browser-only storage layer.         */
+  var bar        = document.getElementById('progress-bar');
+  var label      = document.getElementById('progress-label');
+  var liveRegion = document.getElementById('criteria-status');
+  var checkboxes = Array.prototype.slice.call(
+    document.querySelectorAll('#criteria-list input[type="checkbox"]')
+  );
+  var total = checkboxes.length;
+
+  function updateProgress() {
+    var done = checkboxes.filter(function (cb) { return cb.checked; }).length;
+    var pct  = total ? Math.round(done / total * 100) : 0;
+    if (bar) {
+      bar.style.width = pct + '%';
+      bar.setAttribute('aria-valuenow', pct);
+      if (pct > 0) bar.classList.add('has-progress');
+      else         bar.classList.remove('has-progress');
+    }
+    if (label) label.textContent = done + ' / ' + total + ' done';
+  }
+
+  checkboxes.forEach(function (cb, i) {
+    cb.addEventListener('change', function () {
+      cb.toggleAttribute('checked', cb.checked);
+      updateProgress();
+      if (liveRegion) {
+        liveRegion.textContent = 'Criterion ' + (i + 1) +
+          ' marked as ' + (cb.checked ? 'complete' : 'incomplete');
+      }
+    });
+  });
+
+  updateProgress();
+
+  /* ── Completion checklist auto-update ──────────────────────── */
+  var ccCheckboxes = Array.prototype.slice.call(
+    document.querySelectorAll('#completion-list input[type="checkbox"]')
+  );
+  var completionCard = document.getElementById('completion-checklist');
+
+  function updateCompletion() {
+    var stepCards = document.querySelectorAll('.step-card');
+    var allStepsDone = stepCards.length > 0 &&
+      Array.prototype.slice.call(stepCards).every(function(c) {
+        return c.classList.contains('completed');
+      });
+    if (ccCheckboxes[0]) ccCheckboxes[0].checked = allStepsDone;
+
+    var allCriteriaChecked = total > 0 &&
+      checkboxes.every(function(cb) { return cb.checked; });
+    if (ccCheckboxes[1]) ccCheckboxes[1].checked = allCriteriaChecked;
+
+    var metaStatus = document.querySelector('meta[name="plan-status"]');
+    var statusIsCompleted =
+      document.documentElement.getAttribute('data-status') === 'completed' &&
+      (!metaStatus || metaStatus.getAttribute('content') === 'completed');
+    if (ccCheckboxes[2]) ccCheckboxes[2].checked = statusIsCompleted;
+
+    var allComplete = allStepsDone && allCriteriaChecked && statusIsCompleted;
+    if (completionCard) {
+      if (allComplete) completionCard.classList.add('all-complete');
+      else completionCard.classList.remove('all-complete');
+    }
+  }
+
+  updateCompletion();
+
+  checkboxes.forEach(function(cb) {
+    cb.addEventListener('change', updateCompletion);
+  });
+
+  if ('MutationObserver' in window) {
+    new MutationObserver(updateCompletion).observe(
+      document.documentElement, { attributes: true, attributeFilter: ['data-status'] }
+    );
+  }
+
+  /* ── Scroll rail ─────────────────────────────────────────────── */
+  var rail = document.querySelector('.scroll-rail');
+  if (rail) {
+    function updateRail() {
+      var maxY = document.documentElement.scrollHeight - window.innerHeight;
+      var pct  = maxY > 0 ? (window.scrollY / maxY * 100).toFixed(1) : 0;
+      rail.style.setProperty('--scroll-pct', pct);
+    }
+    window.addEventListener('scroll', updateRail, { passive: true });
+    updateRail();
+  }
+
+  /* ── Step rail disclosure ────────────────────────────────────── */
+  /* Ships open so the rail is present with scripting off; below the layout
+     breakpoint it collapses, where an always-open list would push the plan
+     itself off the first screen. */
+  var railBox = document.querySelector('.rail-disclosure');
+  if (railBox && window.matchMedia) {
+    var narrow = window.matchMedia('(max-width: 900px)');
+    var syncRail = function (mq) { railBox.open = !mq.matches; };
+    syncRail(narrow);
+    if (narrow.addEventListener) narrow.addEventListener('change', syncRail);
+    else if (narrow.addListener) narrow.addListener(syncRail);
+  }
+
+  /* ── Theme button ────────────────────────────────────────────── */
+  syncThemeButton(document.getElementById('theme-toggle'));
+
+  /* ── Scroll spy ──────────────────────────────────────────────── */
+  /* Track which targets are on screen rather than reacting only to
+     entries that ARE intersecting: with one link per step, a stale
+     "you are here" marker left behind after scrolling past the last
+     target is worse than no marker at all. */
+  var navLinks = Array.prototype.slice.call(
+    document.querySelectorAll('.plan-nav a[href^="#"]')
+  );
+  if (navLinks.length && 'IntersectionObserver' in window) {
+    var targets = navLinks
+      .map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); })
+      .filter(Boolean);
+    var visible = [];
+    var setActive = function (id) {
+      navLinks.forEach(function (a) {
+        var isActive = id !== null && a.getAttribute('href') === '#' + id;
+        a.classList.toggle('active', isActive);
+        if (isActive) a.setAttribute('aria-current', 'true');
+        else          a.removeAttribute('aria-current');
+      });
+    };
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var at = visible.indexOf(entry.target);
+        if (entry.isIntersecting) { if (at === -1) visible.push(entry.target); }
+        else if (at !== -1) { visible.splice(at, 1); }
+      });
+      if (visible.length === 0) { setActive(null); return; }
+      /* Document order, not intersection order — the observer fires in
+         whatever order the entries arrive. */
+      var first = null;
+      targets.forEach(function (el) {
+        if (first === null && visible.indexOf(el) !== -1) first = el;
+      });
+      setActive(first ? first.id : null);
+    }, { threshold: 0, rootMargin: '-20% 0px -70% 0px' });
+    targets.forEach(function (el) { observer.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>
