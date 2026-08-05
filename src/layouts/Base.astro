@@ -59,6 +59,8 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
     <title>{pageTitle || SITE_TITLE}</title>
   </head>
   <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+
     <!-- Offline Status Indicator -->
     <!-- <OfflineIndicator /> -->
 
@@ -110,7 +112,9 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
         </>
       )
     }
-    <slot />
+    <main id="main">
+      <slot />
+    </main>
     <Footer />
 
     <!-- PWA Install Prompt -->
