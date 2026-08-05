@@ -526,7 +526,16 @@ function readSeed() {
 function load() {
   try {
     var raw = localStorage.getItem(STORE_KEY);
-    return raw ? JSON.parse(raw) : readSeed();
+    if (!raw) return readSeed();
+    // JSON.parse returns any JSON type. An object, string, number or null
+    // stored under this key would survive to records.filter and throw, and
+    // nothing rewrites the bad value — so the checklist would stay broken on
+    // every reload. Validate the shape here rather than at each consumer.
+    var parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return readSeed();
+    return parsed.filter(function (r) {
+      return r !== null && typeof r === 'object' && !Array.isArray(r);
+    });
   } catch (e) { return readSeed(); }
 }
 function save(records) {
@@ -560,11 +569,21 @@ function resetStore() {
   });
 
   var setTheme = bindPair('theme-light', 'theme-dark', function (w) {
-    root.setAttribute('data-theme', w === 'a' ? 'light' : 'dark');
+    var theme = w === 'a' ? 'light' : 'dark';
+    root.setAttribute('data-theme', theme);
+    // Same key the plan and gallery shells use, so a theme choice carries
+    // across the docs pages rather than resetting per file.
+    try { localStorage.setItem('plan-theme', theme); } catch (e) {}
   });
 
   try {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('b');
+    var stored = localStorage.getItem('plan-theme');
+    if (stored === 'dark' || stored === 'light') {
+      setTheme(stored === 'dark' ? 'b' : 'a');
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      // System preference is the fallback only — an explicit choice wins.
+      setTheme('b');
+    }
   } catch (e) {}
 })();
 

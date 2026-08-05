@@ -30,19 +30,21 @@ A clickable prototype of the target state, with a Current/Proposed toggle and a 
 
 ## Files
 
-- `public/fonts/space-grotesk-600.woff2` (new) — latin-subset display face, single weight
-- `src/styles/_design-tokens.scss` (modified) — direction tokens, `@font-face`, display role, dark-mode surface flips
-- `src/styles/_base.scss` (modified) — consume `--paper`/`--ink`, assign the three type roles, settle the deck override
-- `src/layouts/Base.astro` (modified) — preload the display face
-- `src/components/astro/HomeHero.astro` (new) — homepage hero with the live component specimen
-- `src/layouts/Layout.astro` (modified) — guarded forward of the `header` slot through to `Base`, which it does not currently pass on
-- `src/pages/index.astro` (modified) — render `HomeHero` into the forwarded `header` slot
-- `src/components/astro/FeatureCards.astro` (modified) — render `sectionTitle`, add promoted tiering, drop the dead style block
-- `src/components/astro/Card.astro` (modified) — additive `code` slot for the promoted tier
-- `e2e/homepage-design-direction.spec.ts` (new) — objective-verification smoke test
-- `tests/components/FeatureCards.astro.test.ts` (new) — unit coverage for the previously-dead prop
-- `tests/integration/design-tokens.test.ts` (new) — guard against tokens losing their consumers again
-- `project-docs/03-features/design-direction.md` (new) — the styling contract for package consumers
+- public/fonts/space-grotesk-600.woff2 (new) — latin-subset display face, single weight
+- src/styles/_design-tokens.scss (modified) — direction tokens, `@font-face`, display role, dark-mode surface flips
+- src/styles/_base.scss (modified) — consume `--paper`/`--ink`, assign the three type roles, settle the deck override
+- src/layouts/Base.astro (modified) — preload the display face
+- src/components/astro/HomeHero.astro (new) — homepage hero with the live component specimen
+- src/layouts/Layout.astro (modified) — guarded forward of the `header` slot through to `Base`, which it does not currently pass on
+- src/pages/index.astro (modified) — render `HomeHero` into the forwarded `header` slot
+- src/components/astro/FeatureCards.astro (modified) — render `sectionTitle`, add promoted tiering, drop the dead style block
+- src/components/astro/Card.astro (modified) — additive `code` slot for the promoted tier
+- e2e/homepage-design-direction.spec.ts (new) — objective-verification smoke test
+- tests/components/FeatureCards.astro.test.ts (new) — unit coverage for the previously-dead prop
+- tests/integration/design-tokens.test.ts (new) — guard against tokens losing their consumers again
+- project-docs/03-features/design-direction.md (new) — the styling contract for package consumers
+- src/content/docs/guides/design-direction.mdx (new) — Starlight guide entry required by step 9 and acceptance
+- docs/plans/baseline-add-homepage-design-direction.txt (new) — step 1 baseline pass/fail counts per runner
 
 ## Steps
 
@@ -61,7 +63,7 @@ A clickable prototype of the target state, with a Current/Proposed toggle and a 
 Tier 1 — This plan changes application code
 - Objective: the homepage actually adopts the direction rather than merely declaring it. File: `e2e/homepage-design-direction.spec.ts`; Type: smoke; Asserts: three distinct font families resolve where one did, the display-to-deck ratio is at or above 3.0 where it was 1.63, both token aliases have at least one consumer where they had none, body background differs between light and dark where it was identical, no non-interactive element carries the accent colour, and horizontal overflow is 0 at 320, 390, 768 and 1280; Run: `npm run test:e2e -- homepage-design-direction`
 - Unit: FeatureCards renders its previously-dead prop and tiers its output without breaking its public signature. File: `tests/components/FeatureCards.astro.test.ts`; Targets: `src/components/astro/FeatureCards.astro`; Key cases: `sectionTitle` renders a heading when supplied and nothing when omitted, `promoted` splits the two tiers, and the pre-existing prop set alone still yields the current card count
-- Integration: the dead-token defect this plan fixes cannot silently return. File: `tests/integration/design-tokens.test.ts`; Targets: `src/styles/_design-tokens.scss` compiled through to `src/styles/index.css`; Key cases: every component alias token declared in `:root` has at least one `var()` consumer in the compiled CSS, and the dark-mode block sets at least one painted property rather than variables alone
+- Integration: the dead-token defect this plan fixes cannot silently return. File: `tests/integration/design-tokens.test.ts`; Targets: `src/styles/_design-tokens.scss` compiled through to `src/styles/index.css`; Key cases: `--card-background` and `--header-background` — the two aliases step 4 actually wires — each have at least one `var()` consumer in the compiled CSS, and the dark-mode block sets at least one painted property rather than variables alone. Scoped to those two deliberately: the alias layer at lines 203-232 holds more tokens than this plan touches, so asserting over all of them would fail on aliases nobody wired and block the Verification gate. Widening the assertion belongs with the work that wires the rest
 - E2E: the new surfaces stay reflow-safe and accessible on real routes. File: `e2e/home-responsive.spec.ts` and `e2e/home-accessibility.spec.ts`, both extended; Targets: the homepage and one interior route through the running app; Key cases: no horizontal overflow at 320px in light and dark, the documented contrast pairs clear WCAG AA, and keyboard focus stays visible against the new surfaces
 
 ## Acceptance Criteria
@@ -90,16 +92,21 @@ Finally walk `/`, `/posts/1`, `/content/1`, `/docs`, `/tags` and `/about` in bot
 
 - Roll the direction out to the interior routes
   The hero and card tiering are homepage-only by design; the remaining index templates still use the shared header.
+
   ```text
   The astro-basics homepage now uses a design direction defined in src/styles/_design-tokens.scss: ink/paper/island tokens, three type roles (display, body, mono), and a rule that the accent colour marks interactivity only. The hero and card tiering are currently homepage-only, applied via src/components/astro/HomeHero.astro slotted into the Base layout's header slot. Extend the same treatment to the post, content, docs and tags index templates without changing the shared Header component's behaviour for routes that do not opt in. Measure horizontal overflow at 320px and the display-to-deck ratio on each route before and after, and report both.
   ```
+
 - Fix the footer copy defect
   Unrelated to this plan but found during the same review.
+
   ```text
   In src/components/astro/Footer.astro line 11, the text "Learn more about my projects on" is followed by a newline and then a Social component. Astro trims that whitespace, so the page renders "projects ontwitter github youtube". The {' '} separators sit between the social links but not before the first one. Fix the spacing and add a test that fails if the run-on returns.
   ```
+
 - Wish list: per-recommendation toggles in the prototype
   Would let each of the five changes be judged in isolation rather than all at once.
+
   ```text
   docs/prototypes/restyle-astro-kit-homepage.html has a Current/Proposed switch that flips all five design recommendations at once, so no single change can be judged in isolation. Add five independent toggles (typography, colour, hero, cards, dark mode) so each can be turned on and off separately against the current baseline. Keep the file self-contained with no CDN, and keep the existing seed/proto-model script blocks and the table's data-field contract intact.
   ```
