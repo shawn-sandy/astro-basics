@@ -213,6 +213,7 @@
   }
 }
 body {
+  background-color: #fff;
   min-width: 20.3125rem;
 }
 body > section {

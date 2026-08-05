@@ -60,6 +60,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Page background**: `body` now sets an explicit `background-color: #fff` in
+  `src/styles/_base.scss`. Nothing previously painted the body, so pages fell back to the
+  browser's default canvas, which renders dark under `prefers-color-scheme: dark`. The value is
+  literal rather than tokenised, so the page stays white in both colour schemes
 - Minor updates and refinements
 
 ## [0.2.0] - 2025-08-15
