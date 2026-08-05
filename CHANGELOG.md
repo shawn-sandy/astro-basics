@@ -40,6 +40,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Minor updates and refinements
 
+### Fixed
+
+- **Horizontal overflow at 320px viewports** (WCAG 2.1 SC 1.4.10 Reflow): every page
+  scrolled horizontally on narrow screens
+  - Overrode `@fpkit/acss`'s `body { min-width: 20.3125rem }` (325px) floor with
+    `min-width: 0`
+  - Allowed the primary nav list to wrap instead of overflowing at its 384px
+    `min-content` width (previously overflowed at 320px, 360px, and 375px)
+  - Unset the acss `nav ul > li { min-height: 100% }` pin below 580px, which pushed
+    the wrapped second row outside the list and under `<header>`, leaving the
+    "About" and "Contact" links invisible and unclickable
+  - Layout at 581px and wider is unchanged
+  - Added two regression tests to `e2e/home-responsive.spec.ts`
+
 ## [0.2.0] - 2025-08-15
 
 ### Added
