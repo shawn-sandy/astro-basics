@@ -9,6 +9,10 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
+# Plan specs are parsed by build-plan-html.mjs, which does not unescape
+# Prettier's defensive backslashes (e.g. \_navigation.scss)
+docs/plans/*.md
+
 # Files with code snippets that break Prettier
 docs/AUTHENTICATION_DEVELOPER_GUIDE.md
 docs/AUTHENTICATION_REVIEW.md
