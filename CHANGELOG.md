@@ -31,6 +31,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Full documentation: [Navigation Popover guide](/guide/components/navigation-popover)
 - **Breaking (library consumers)**: `Navigation.astro`'s default slot now renders inside the
   popover panel rather than in the bar
+- **Skip to main content link** (`src/layouts/Base.astro`): first focusable element on every page,
+  letting keyboard users bypass the nav bar. Matters more now that the hamburger button, not the
+  brand link, owns first focus
+  - Styling comes from `@fpkit/acss`'s existing `body > a[href^="#"]` rule rather than a
+    reimplementation, so it keeps that rule's slide-in transition and `--color-skip-link-bg` token
+  - Target is the `<main id="main" tabindex="-1">` landmark in
+    `src/components/astro/MainSection.astro`; `tabindex="-1"` is what moves focus rather than only
+    the scroll position
+  - `src/pages/offline.astro` and `src/pages/supabase-test.astro` bypass `MainSection`, so both
+    gained their own `<main>` landmark (neither had one before)
+  - Coverage: `e2e/skip-link.spec.ts`
 - **User Sync Utility** (`src/utils/user-sync.ts`): Consolidated utility for fetching user data from Clerk and syncing with Supabase
   - `fetchUserWithRole()` function reduces component code by 80% (1 line vs 40+ lines)
   - Automatic user creation when users don't exist in database (handles PGRST116 errors)

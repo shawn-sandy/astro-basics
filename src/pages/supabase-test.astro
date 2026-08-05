@@ -7,7 +7,7 @@ const pageDescription = 'Test page to verify Supabase integration is working cor
 ---
 
 <Base pageTitle={pageTitle} pageDescription={pageDescription}>
-  <div class="test-container">
+  <main id="main" tabindex="-1" class="test-container">
     <h1>Supabase Connection Test</h1>
     <p>This page tests the Supabase integration setup.</p>
 
@@ -52,7 +52,7 @@ SUPABASE_ANON_KEY=your_anon_key_here</code></pre>
         <li>Add real-time subscriptions for dynamic data</li>
       </ul>
     </div>
-  </div>
+  </main>
 </Base>
 
 <style lang="scss">

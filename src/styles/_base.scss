@@ -140,19 +140,3 @@ img + * {
 .hidden {
   display: none;
 }
-
-body > a.skip-link {
-  background-color: #000;
-  color: #fff;
-  left: -9999px;
-  overflow: hidden;
-  padding: 0.5rem 1rem;
-  position: absolute;
-  text-decoration: none;
-  top: 0;
-  z-index: 9999;
-
-  &:focus {
-    left: 0;
-  }
-}

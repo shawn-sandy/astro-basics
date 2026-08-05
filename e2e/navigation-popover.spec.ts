@@ -116,7 +116,7 @@ test.describe('Primary navigation popover', () => {
 
     // Top-left corner of <main>: far from the right-aligned panel, and not a
     // link — the URL assertion below catches it if that ever stops holding.
-    await page.locator('main').click({ position: { x: 4, y: 4 } })
+    await page.locator('main#main').click({ position: { x: 4, y: 4 } })
 
     await expectPopoverOpen(panel(page), false)
     expect(page.url()).toBe(urlBeforeDismiss)
