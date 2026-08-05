@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; style-src 'self' 'unsafe-inline';
+                 script-src 'self' 'unsafe-inline'; img-src data:;
+                 base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+  <meta name="generator" content="product-plans v3.4.5">
+  <title>Plan Review: Move the site navigation into a native HTML popover menu</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: var(--bg);
+           color: var(--text); line-height: 1.6; }
+
+    body.theme-default  { --bg: #ffffff; --surface: #f5f7fa; --border: #d0d5dd;
+                          --text: #101828; --text-muted: #475467;
+                          --accent: #1d4ed8; --accent-fg: #ffffff;
+                          --badge-approve: #15803d; --badge-revise: #92400e;
+                          --badge-reject: #b91c1c; --badge-fg: #ffffff; }
+    body.theme-developer{ --bg: #0d1117; --surface: #161b22; --border: #30363d;
+                          --text: #e6edf3; --text-muted: #8b949e;
+                          --accent: #58a6ff; --accent-fg: #0d1117;
+                          --badge-approve: #2ea043; --badge-revise: #d29922;
+                          --badge-reject: #f85149; --badge-fg: #ffffff; }
+    body.theme-document { --bg: #faf9f6; --surface: #f0ede8; --border: #ccc7be;
+                          --text: #1a1a1a; --text-muted: #5a5a5a;
+                          --accent: #2563eb; --accent-fg: #ffffff;
+                          --badge-approve: #166534; --badge-revise: #78350f;
+                          --badge-reject: #991b1b; --badge-fg: #ffffff; }
+    body.theme-minimal  { --bg: #ffffff; --surface: #ffffff; --border: #e5e7eb;
+                          --text: #111111; --text-muted: #6b7280;
+                          --accent: #000000; --accent-fg: #ffffff;
+                          --badge-approve: #166534; --badge-revise: #92400e;
+                          --badge-reject: #991b1b; --badge-fg: #ffffff; }
+
+    header { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 0; }
+    header h1 { font-size: 1.5rem; line-height: 1.3; }
+    .provenance { color: var(--text-muted); font-size: .875rem; margin-top: .35em; }
+
+    .layout        { display: grid; grid-template-columns: 240px 1fr;
+                     gap: 2rem; max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    @media (max-width: 768px) {
+      .layout      { grid-template-columns: 1fr; }
+      .sidebar     { position: static; }
+    }
+    .sidebar       { position: sticky; top: 1.5rem; align-self: start; }
+    .sidebar ol    { list-style: none; font-size: .875rem; }
+    .sidebar li    { margin-bottom: .35em; }
+    .sidebar a     { color: var(--text-muted); text-decoration: none; }
+    .sidebar a:hover, .sidebar a[aria-current="location"] { color: var(--accent); }
+
+    main h2 { font-size: 1.15rem; margin: 1.75em 0 .5em; padding-bottom: .25em;
+              border-bottom: 1px solid var(--border); }
+    main h3 { font-size: 1rem; margin: 1.25em 0 .4em; }
+    main p, main li { margin-bottom: .5em; }
+    main ul, main ol { padding-left: 1.4em; }
+    code { background: var(--surface); padding: .1em .35em; border-radius: .25em;
+           font-size: .875em; }
+
+    .decision-banner { padding: 1em 1.25em; border-radius: .5em; margin: 1.5em 0;
+                       color: var(--badge-fg); }
+    .decision-banner strong { font-size: 1.1rem; }
+    .decision-banner.banner-approve { background: var(--badge-approve); }
+    .decision-banner.banner-revise  { background: var(--badge-revise); }
+    .decision-banner.banner-reject  { background: var(--badge-reject); }
+
+    .remediation     { margin-top: 1em; padding: 1em; border-radius: .375em;
+                       border-left: 4px solid var(--badge-reject);
+                       background: var(--surface); color: var(--text); }
+    .remediation h3  { font-size: 1rem; margin-bottom: .5em; }
+    .remediation pre { max-height: 300px; overflow-y: auto; padding: .75em;
+                       background: var(--bg); border: 1px solid var(--border);
+                       border-radius: .25em; font-size: .85rem;
+                       white-space: pre-wrap; word-wrap: break-word; }
+    .remediation pre:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .copy-btn        { position: absolute; top: .5em; right: .5em;
+                       padding: .25em .75em; border: 1px solid var(--border);
+                       border-radius: .25em; background: var(--surface);
+                       color: var(--text); cursor: pointer; font-size: .8rem; }
+    .copy-btn:hover  { background: var(--border); }
+    .sr-only         { position: absolute; width: 1px; height: 1px;
+                       padding: 0; margin: -1px; overflow: hidden;
+                       clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    .reviewer-card   { border: 1px solid var(--border); border-radius: .5em;
+                       padding: 1em; margin-bottom: 1em; background: var(--surface); }
+    .reviewer-card h3 { margin-top: 0; }
+    .reviewer-card dl { display: grid; grid-template-columns: 12rem 1fr; gap: .4em 1em;
+                        font-size: .9rem; }
+    @media (max-width: 640px) { .reviewer-card dl { grid-template-columns: 1fr; } }
+    .reviewer-card dt { font-weight: 600; color: var(--text-muted); }
+    .unavailable-pill  { display: inline-flex; align-items: center; gap: .4em;
+                         padding: .25em .75em; border-radius: 9999px;
+                         background: var(--surface); border: 1px solid var(--border);
+                         font-size: .875rem; color: var(--text-muted); }
+
+    table        { width: 100%; border-collapse: collapse; font-size: .9rem;
+                   margin: .75em 0; }
+    th, td       { padding: .5em .75em; border: 1px solid var(--border);
+                   text-align: left; vertical-align: top; }
+    thead th     { background: var(--surface); color: var(--text); font-weight: 600; }
+
+    details > summary { cursor: pointer; font-weight: 600; padding: .5em 0;
+                        color: var(--accent); list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    details > summary::before { content: "\25B6 "; font-size: .75em; }
+    details[open] > summary::before { content: "\25BC "; }
+    .appendix-body { padding-top: .5em; }
+    .historical-review { margin-top: 1em; border: 1px solid var(--border);
+                         border-radius: .375em; padding: .5em; }
+
+    footer { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem; }
+    .disclaimer { color: var(--text-muted); font-size: .8rem; }
+
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    :focus:not(:focus-visible) { outline: none; }
+
+    @media print {
+      .sidebar          { display: none; }
+      .layout           { display: block; }
+      details           { display: block; }
+      summary           { display: none; }
+      ::details-content { content-visibility: visible; }
+      .copy-btn         { display: none; }
+    }
+  </style>
+</head>
+<body class="theme-default">
+
+  <header>
+    <h1>Plan Review: Move the site navigation into a native HTML popover menu</h1>
+    <p class="provenance">
+      Generated: 2026-08-04 UTC &middot;
+      Source: <code>docs/plans/move-navigation-into-popover.md</code> &middot;
+      Issue: <code>github.com/shawn-sandy/astro-basics/issues/346</code>
+    </p>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar">
+      <nav aria-label="Table of contents">
+        <ol>
+          <li><a href="#sec-summary">Executive Summary</a></li>
+          <li><a href="#sec-objective">Revised Objective</a></li>
+          <li><a href="#sec-corrections">Verified Corrections</a></li>
+          <li><a href="#sec-steps">Revised Steps</a></li>
+          <li><a href="#sec-criteria">Acceptance Criteria</a></li>
+          <li><a href="#sec-open">Unresolved Questions</a></li>
+          <li><a href="#sec-conflicts">Reviewer Conflicts</a></li>
+          <li><a href="#sec-reviewers">Role-by-Role Review</a></li>
+          <li><a href="#sec-edits">Inline Edits Applied</a></li>
+        </ol>
+      </nav>
+    </aside>
+
+    <main id="main-content">
+
+      <h2 id="sec-summary">Executive Summary</h2>
+      <p>Six reviewers &mdash; Product Manager, Lead Developer, UX Designer, Lead Frontend Engineer,
+      Accessibility Expert, and Security Expert &mdash; assessed the plan in parallel. All six returned
+      <em>approve with changes</em>; none were unavailable. The core approach (native Popover API, no
+      JavaScript, disclosure semantics over ARIA menu roles) was endorsed without dissent.</p>
+      <p>The original draft leaned on two mechanisms that are factually wrong. The Lead Developer
+      disproved both empirically in Chrome, and a third finding made one verification command
+      unrunnable. All revisions have been applied to the source plan.</p>
+
+      <div class="decision-banner banner-revise" role="status">
+        <strong>Approve with revisions</strong>
+        <p>The approach is sound and unanimously endorsed; the revisions were mechanical corrections
+        rather than a change of direction. Five blocking items have been applied to the plan, along
+        with the non-blocking improvements. Three genuine product decisions are recorded as
+        Unresolved Questions for the plan owner rather than guessed at.</p>
+      </div>
+      <span class="sr-only" aria-live="polite"></span>
+
+      <h2 id="sec-objective">Revised Objective</h2>
+      <p>Replace the inline navigation link list with a hamburger button that opens a native HTML
+      popover panel (the <code>popover="auto"</code> attribute plus a <code>popovertarget</code>
+      button) at all screen sizes, matching the reference screenshot's top-right dropdown menu.</p>
+
+      <h2 id="sec-corrections">Verified Corrections</h2>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Original claim</th>
+            <th scope="col">What is actually true</th>
+            <th scope="col">Applied fix</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Style the open state with <code>[aria-expanded="true"]</code> &mdash; browsers set
+            that attribute on popover invokers automatically.</td>
+            <td>False. The expanded state is an implicit accessibility-tree mapping, not a serialized
+            DOM attribute. Verified in Chrome: <code>hasAriaExpandedAttr: false</code>, the rule never
+            applied, and <code>getByRole('button', { expanded: true }).count()</code> returned 0.</td>
+            <td>Use <code>nav:has(&gt; [popover]:popover-open) button[popovertarget]</code>, which did
+            match in the same test.</td>
+          </tr>
+          <tr>
+            <td>Wrap the links in a <code>&lt;div popover&gt;</code>.</td>
+            <td>The attribute's invalid-value default is <code>manual</code>, and manual popovers have
+            no light dismiss and no Esc close &mdash; the two behaviors the entire no-JavaScript
+            rationale depends on. A stray <code>popover={true}</code> breaks it with no error.</td>
+            <td>Write <code>popover="auto"</code> explicitly and assert it in the unit test.</td>
+          </tr>
+          <tr>
+            <td>Verify with <code>npm run sass</code>.</td>
+            <td><code>npm run sass</code> is a <code>--watch</code> watcher that never terminates. No
+            other repo command compiles SCSS &mdash; <code>npm run build</code> does not &mdash; so a
+            forgotten recompile ships unstyled with every test green.</td>
+            <td>Add a one-shot <code>sass:build</code> script and verify with
+            <code>npm run sass:build &amp;&amp; npm run lint:styles</code>.</td>
+          </tr>
+          <tr>
+            <td>Unsupported browsers render the panel content inline &mdash; acceptable degradation.</td>
+            <td>Unsupported browsers do not hide <code>[popover]</code> at all. Combined with the
+            planned <code>position: fixed</code>, the menu renders as a permanently-open overlay beside
+            a hamburger button that does nothing when activated.</td>
+            <td>Add a <code>@supports not selector(:popover-open)</code> block that hides the button
+            and renders the links as a static inline row.</td>
+          </tr>
+          <tr>
+            <td>No mention of existing base styles.</td>
+            <td><code>_base.scss:12-24</code> uses a direct-child combinator
+            (<code>body &gt; nav &gt; ul</code>) that silently stops matching once the list moves
+            inside the popover div.</td>
+            <td>Repair the selector as part of Step 4, and reset the UA popover box
+            (<code>inset: auto; margin: 0</code>) before applying offsets.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="sec-steps">Revised Steps</h2>
+      <ol>
+        <li>Establish a green baseline: <code>npm install</code>, Playwright browser install, and a
+        passing pre-change test run. The worktree has no <code>node_modules</code> and the local
+        Playwright cache is version-mismatched.</li>
+        <li>Add the one-shot <code>sass:build</code> script to <code>package.json</code>.</li>
+        <li>Restructure <code>Navigation.astro</code>: exported <code>Props</code>, brand link,
+        hamburger button with an <code>aria-hidden</code> inline SVG, <code>popover="auto"</code>
+        panel with a namespaced id, and <code>&lt;nav aria-label="Primary"&gt;</code>.</li>
+        <li>Create <code>_navigation.scss</code>, register it, repair <code>_base.scss</code>, and
+        style the bar, the 44&times;44px button, and the clamped top-right panel using existing
+        <code>--card-*</code> and <code>--space-11</code> tokens.</li>
+        <li>Add the <code>@supports</code> fallback guard.</li>
+        <li>Add a unit test via <code>experimental_AstroContainer</code> for the markup contract.</li>
+        <li>Add the Playwright spec: open/close, Esc with focus restoration, light dismiss, keyboard
+        access, 44px bounding box, reduced motion, axe-core scan, and a negative-authorization
+        assertion.</li>
+        <li>Re-run the home suites and verify no authenticated markup reaches <code>dist/</code>.</li>
+        <li>Document the pattern in project docs and the Starlight guide.</li>
+      </ol>
+
+      <h2 id="sec-criteria">Acceptance Criteria</h2>
+      <p>Fourteen criteria, up from nine. New additions cover explicit <code>popover="auto"</code>,
+      focus restoration on close, the panel never covering the login control (WCAG 2.2 SC 2.4.11), no
+      horizontal scroll at 320px (SC 1.4.10), the no-popover fallback appearance, zero authenticated
+      link leakage to anonymous visitors, no new dependencies, and a full lint/type/test gate.</p>
+
+      <h2 id="sec-open">Unresolved Questions</h2>
+      <p>Three decisions belong to the plan owner and were recorded rather than guessed:</p>
+      <ul>
+        <li><strong>Dashboard and Profile placement.</strong> Four reviewers flagged that the
+        <code>login</code> slot carries <code>userId</code>-gated links, so signed-in users still see
+        an inline link row &mdash; backwards for a cleanup feature. Move them into the panel, or keep
+        them in the bar?</li>
+        <li><strong>Library-consumer slot contract.</strong> <code>Navigation.astro</code> is a public
+        export; relocating its default slot inside <code>[popover]</code> changes where consumer
+        content renders. Breaking change with a version bump, or keep the slot outside the panel?</li>
+        <li><strong>Sticky bar.</strong> Popovers are viewport-fixed and do not close on scroll, so the
+        panel detaches from the hamburger as the page scrolls. Make the bar sticky, or accept it?</li>
+      </ul>
+
+      <h2 id="sec-conflicts">Reviewer Conflicts</h2>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Topic</th>
+            <th scope="col">Conflict</th>
+            <th scope="col">Resolution</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Panel positioning</td>
+            <td>UX wanted <code>position: absolute</code> anchored to a relative nav so the panel
+            emerges from its trigger; Frontend and Lead Dev assumed <code>fixed</code> with an
+            explicit inset reset.</td>
+            <td>Keep <code>fixed</code>. Top-layer elements position against the viewport and ignore
+            ancestor positioning contexts, so <code>absolute</code> does not produce the anchoring UX
+            wants. The legitimate concern &mdash; a panel snapping to the viewport edge while the
+            button sits inset &mdash; is addressed by deriving the right offset from the same
+            content-width constraint the bar uses.</td>
+          </tr>
+          <tr>
+            <td>Success metrics</td>
+            <td>PM asked for metrics, an A/B test, and a rollout plan; no other reviewer raised
+            measurement.</td>
+            <td>Partially adopt. On a low-traffic demonstration site an A/B harness costs more than the
+            change it measures. Business rationale and an explicit <code>git revert</code> rollback
+            note were added; the A/B test was not.</td>
+          </tr>
+          <tr>
+            <td>Security scope</td>
+            <td>Security wanted <code>middleware.ts</code> and <code>netlify.toml</code> amended inside
+            this plan.</td>
+            <td>Split. The two items belonging to this change &mdash; the non-goal statement and the
+            negative-authorization test &mdash; became steps. The middleware and header changes are
+            real but independent, so they became Next Steps prompts rather than scope creep.</td>
+          </tr>
+          <tr>
+            <td>JS shim vs. no-JavaScript criterion</td>
+            <td>A11y asked whether a minimal ARIA shim would be acceptable if an engine fails to
+            announce the expanded state &mdash; which would violate an acceptance criterion the user
+            set.</td>
+            <td>Left unresolved by design, as an open question for the user rather than silently
+            relaxing their criterion.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <details id="appendix">
+        <summary>Panel Review (full report)</summary>
+        <div class="appendix-body">
+
+          <h2 id="sec-risks">Highest-Risk Issues</h2>
+          <ol>
+            <li><strong>[Lead Dev]</strong> <code>[aria-expanded="true"]</code> is a no-op &mdash;
+            empirically verified false in Chrome. The open-state criterion was untestable and the
+            styling would silently never apply.</li>
+            <li><strong>[Lead Dev]</strong> A bare <code>popover</code> attribute can resolve to
+            <code>manual</code>, silently killing light dismiss and Esc.</li>
+            <li><strong>[UX / Frontend / A11y]</strong> The stated graceful degradation was actually a
+            broken header &mdash; a permanently-open fixed overlay beside a dead button.</li>
+            <li><strong>[Security]</strong> Auth-gated markup relocation with no non-goal statement
+            (CWE-602) and no verification that prerendered routes stay clean (CWE-524).</li>
+            <li><strong>[Lead Dev]</strong> <code>npm run sass</code> never terminates, and no other
+            repo command compiles SCSS.</li>
+          </ol>
+
+          <h2 id="sec-blocking">Blocking Issues</h2>
+          <ul>
+            <li><strong>[Lead Dev]</strong> The open-state CSS hook must change to
+            <code>nav:has(&gt; [popover]:popover-open) button[popovertarget]</code>.</li>
+            <li><strong>[Lead Dev]</strong> <code>popover="auto"</code> must be explicit.</li>
+            <li><strong>[Lead Dev]</strong> A one-shot SCSS build script must exist.</li>
+            <li><strong>[Frontend]</strong> <code>_base.scss:12-24</code> must be repaired.</li>
+            <li><strong>[UX / A11y]</strong> The <code>@supports</code> fallback guard is required for
+            the degradation claim to hold.</li>
+          </ul>
+
+          <h2 id="sec-a11y">Accessibility Requirements</h2>
+          <ul>
+            <li>Assert focus returns to the invoker after Esc (SC 2.4.3); test per engine.</li>
+            <li>Guarantee the panel never overlaps the login control while both are in the focus path
+            (WCAG 2.2 SC 2.4.11).</li>
+            <li>Clamp panel width to <code>min(16rem, calc(100vw - 2rem))</code>; verify no horizontal
+            scroll at 320px (SC 1.4.10).</li>
+            <li>Automate reduced motion with <code>page.emulateMedia({ reducedMotion: 'reduce' })</code>.</li>
+            <li>Add an axe-core scan of the open panel against WCAG 2.2 AA.</li>
+            <li><code>aria-hidden="true" focusable="false"</code> on the inline SVG.</li>
+            <li><code>aria-label="Primary"</code> on the <code>&lt;nav&gt;</code> to disambiguate from
+            the unlabeled landmarks in <code>Pagination.astro</code> and <code>AstroPages.astro</code>
+            (SC 1.3.1).</li>
+            <li>Name contrast-checked tokens: &ge;4.5:1 for panel link text (SC 1.4.3), &ge;3:1 for
+            button border and icon (SC 1.4.11).</li>
+            <li>Reuse the repo's <code>outline: 2px solid; outline-offset: 2px</code> focus convention
+            (SC 2.4.7).</li>
+            <li>Hide the hamburger in the no-popover fallback so nobody activates a dead button.</li>
+            <li>Corrected citation: WCAG 2.2 SC 2.5.8 Target Size (Minimum), 24&times;24 CSS px &mdash;
+            the plan's original "WCAG 2.1 AA target size" does not exist; 2.1's criterion is AAA.</li>
+          </ul>
+
+          <h2 id="sec-security">Security Requirements</h2>
+          <ul>
+            <li>State that the popover is presentational and must never gate authenticated content
+            (CWE-602).</li>
+            <li>Negative-authorization E2E assertion: an anonymous visitor sees zero Dashboard and
+            Profile links.</li>
+            <li>Build-output check: <code>grep -rl 'href="/dashboard"' dist/</code> must return empty
+            after <code>npm run build</code> (CWE-524, OWASP A01:2021).</li>
+            <li>Enforce the no-new-dependency intent with a lockfile diff check (OWASP A06:2021).</li>
+            <li>Namespace the popover id to survive a duplicate-id collision from MDX-authored raw
+            HTML.</li>
+            <li>Require the icon be a literal inline <code>&lt;svg&gt;</code>, never
+            <code>set:html</code> (CWE-79).</li>
+            <li>Deferred to Next Steps: <code>/profile</code> middleware coverage (OWASP A01:2021) and
+            baseline framing headers in <code>netlify.toml</code> (OWASP A05:2021).</li>
+          </ul>
+
+          <h2 id="sec-frontend">Frontend Implementation Considerations</h2>
+          <ul>
+            <li>Repair <code>body &gt; nav &gt; ul</code>; reset <code>inset: auto; margin: 0</code>
+            before applying offsets.</li>
+            <li>Use <code>--card-*</code> tokens, <code>--space-11</code> (44px), and
+            <code>--transition-duration-150</code> rather than literals.</li>
+            <li>Flatten selectors to respect stylelint's <code>max-nesting-depth: 4</code> and
+            <code>selector-max-compound-selectors: 4</code>.</li>
+            <li>Reset the acss descendant rules (<code>nav ul &gt; li { min-height: 100% }</code>) that
+            follow the list into the panel.</li>
+            <li>CI runs Chromium only &mdash; cross-engine claims need a local three-engine run before
+            merge.</li>
+            <li>A fade-out, if ever added, needs <code>transition-behavior: allow-discrete</code>.</li>
+          </ul>
+
+          <h2 id="sec-feasibility">Technical Feasibility Concerns</h2>
+          <p>The worktree has no <code>node_modules</code>, and the local Playwright browser cache is
+          version-mismatched (<code>@playwright/test</code> 1.59.1 wants
+          <code>chromium_headless_shell-1217</code>; the cache holds <code>-1234</code>). Combined with
+          the recorded note about Chromium install hangs, this is the plan's highest delivery risk,
+          now addressed by an explicit baseline step. The two dark-mode systems conflict &mdash;
+          <code>_design-tokens.scss</code> keys off <code>prefers-color-scheme</code> while acss keys
+          off <code>[data-theme="dark"]</code>, which <code>Base.astro</code> never sets &mdash; so the
+          dark-mode verification could not pass honestly and moved to Next Steps.</p>
+
+          <section aria-labelledby="sec-reviewers">
+            <h2 id="sec-reviewers">Role-by-Role Review</h2>
+
+            <article class="reviewer-card" aria-labelledby="card-pm">
+              <h3 id="card-pm">Product Manager</h3>
+              <dl>
+                <dt>Approval</dt><dd>Approve with changes</dd>
+                <dt>Works well</dt><dd>Tight scope with no creep; the zero-JavaScript constraint is a
+                real maintenance-cost reducer worth naming as business rationale; graceful degradation
+                is sound risk mitigation; reuses existing design tokens and the SCSS partial pattern.</dd>
+                <dt>Critical concerns</dt><dd>No user problem stated or validated; no business goal or
+                success metric anywhere; desktop-wide link-hiding is a discoverability regression with
+                no mitigation, and a single-CTA nonprofit site is not an obvious model for a
+                multi-section content site.</dd>
+                <dt>Missing requirements</dt><dd>User value, business goals, success metrics,
+                release-readiness and rollback plan, prioritization rationale, and the documentation
+                step the project's own instructions require.</dd>
+              </dl>
+            </article>
+
+            <article class="reviewer-card" aria-labelledby="card-dev">
+              <h3 id="card-dev">Lead Developer</h3>
+              <dl>
+                <dt>Approval</dt><dd>Approve with changes</dd>
+                <dt>Works well</dt><dd>Popover API is the right call and anchor positioning correctly
+                rejected; the <code>&lt;nav&gt;</code> landmark survives so the three existing
+                <code>getByRole('navigation')</code> assertions keep passing;
+                <code>--z-index-popover</code> genuinely exists; the plan correctly listed the
+                git-tracked generated CSS.</dd>
+                <dt>Critical concerns</dt><dd>The <code>aria-expanded</code> selector is a no-op
+                (verified in Chrome); <code>popover</code> must be <code>"auto"</code> or light dismiss
+                dies; <code>npm run sass</code> never terminates; the panel detaches on scroll since the
+                bar is not sticky; the dark-mode verify cannot pass because two dark systems conflict.</dd>
+                <dt>Missing requirements</dt><dd>No <code>export type Props</code> (a stated
+                non-negotiable); no unit-test tier despite a working Astro Container pattern in the
+                repo; no documentation step; no signed-in verification; no library-consumer
+                breaking-change note; no SEO note (the footer carries no nav links).</dd>
+              </dl>
+            </article>
+
+            <article class="reviewer-card" aria-labelledby="card-ux">
+              <h3 id="card-ux">UX Designer</h3>
+              <dl>
+                <dt>Approval</dt><dd>Approve with changes</dd>
+                <dt>Works well</dt><dd>Brand &rarr; hamburger &rarr; login ordering reuses built-in
+                browser behavior correctly for a flat five-item list; the no-ARIA-menu-role decision is
+                deliberate and correctly reasoned; the reduced-motion criterion is concrete and
+                testable; verification covers 375px, not just desktop.</dd>
+                <dt>Critical concerns</dt><dd>Signed-in users don't get the decluttered bar the
+                objective promises; the degradation claim is inaccurate and produces a permanently-open
+                overlay; viewport-fixed positioning breaks the trigger-to-panel relationship on
+                centered layouts.</dd>
+                <dt>Missing requirements</dt><dd>Onboarding affordance for the desktop behavior change;
+                a defined error state for the unsupported-browser path; an IA decision for the
+                authenticated flow.</dd>
+              </dl>
+            </article>
+
+            <article class="reviewer-card" aria-labelledby="card-fe">
+              <h3 id="card-fe">Lead Frontend Engineer</h3>
+              <dl>
+                <dt>Approval</dt><dd>Approve with changes</dd>
+                <dt>Works well</dt><dd>Native Popover over a JS disclosure is the right state-management
+                call &mdash; no hydration directive, no store; exactly one call site, verified by grep;
+                follows the SCSS partial convention; the no-JavaScript criterion is a good architectural
+                guardrail.</dd>
+                <dt>Critical concerns</dt><dd><code>body &gt; nav &gt; ul</code> silently stops matching
+                after the restructure; the UA default <code>[popover]</code> box model
+                (<code>inset: 0; margin: auto</code>) is not reset, so setting only
+                <code>top</code>/<code>right</code> leaves a stretched or mispositioned box.</dd>
+                <dt>Missing requirements</dt><dd>Documentation step; no automated assertion for the
+                44&times;44 hit area or reduced motion; no focus-restoration assertion; no build check
+                that no <code>client:*</code> directive slipped in.</dd>
+              </dl>
+            </article>
+
+            <article class="reviewer-card" aria-labelledby="card-a11y">
+              <h3 id="card-a11y">Accessibility Expert</h3>
+              <dl>
+                <dt>Approval</dt><dd>Approve with changes</dd>
+                <dt>Works well</dt><dd>Disclosure semantics over ARIA menu roles matches the APG
+                Disclosure pattern and avoids the well-known <code>role="menu"</code>-without-arrow-keys
+                anti-pattern; native light dismiss and Esc satisfy SC 2.1.1 for free; the
+                reduced-motion guard is correctly scoped; <code>aria-label="Menu"</code> gives the
+                icon-only button a discernible name.</dd>
+                <dt>Critical concerns</dt><dd>Focus loss on close is unaddressed (SC 2.4.3);
+                focus-not-obscured risk from the panel over the login control (SC 2.4.11); no
+                verification method for the reduced-motion criterion; reflow risk at 320px
+                (SC 1.4.10).</dd>
+                <dt>Missing requirements</dt><dd>Axe-core scan of the open panel; focus-destination
+                assertion; a screen-reader manual test, since the whole state story rests on
+                browser-managed announcement; a landmark label.</dd>
+              </dl>
+            </article>
+
+            <article class="reviewer-card" aria-labelledby="card-sec">
+              <h3 id="card-sec">Security Expert</h3>
+              <dl>
+                <dt>Approval</dt><dd>Approve with changes</dd>
+                <dt>Works well</dt><dd>Zero new dependencies keeps the supply-chain surface flat
+                (OWASP A06:2021); no new XSS sink since no script is added; the auth decision stays
+                server-side via <code>Astro.locals.userId</code>; the site title is a compile-time
+                constant, not request-derived; styles land in a compiled partial, keeping a future
+                <code>style-src</code> CSP viable.</dd>
+                <dt>Critical concerns</dt><dd>Nothing forbade treating popover visibility as access
+                control (CWE-602); prerendered routes can bake auth-conditional markup (CWE-524/525);
+                <code>/profile</code> has no middleware protection and relies solely on
+                presentation-layer gating (OWASP A01:2021).</dd>
+                <dt>Missing requirements</dt><dd>Threat model, cache-control and <code>Vary</code>
+                guidance, signed-in E2E coverage, dependency-risk enforcement, a secrets constraint for
+                any future authenticated spec, and a GDPR note given Clerk renders identity PII.</dd>
+              </dl>
+            </article>
+          </section>
+
+          <h2 id="sec-edits">Inline Edits Applied</h2>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Plan section</th>
+                <th scope="col">Change applied</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>Frontmatter</td><td>Added <code>effort: high</code>; extended
+              <code>glance</code> to name the auth-leak and unit-test gates.</td></tr>
+              <tr><td>2</td><td>Objective</td><td>Changed <code>popover</code> to
+              <code>popover="auto"</code>.</td></tr>
+              <tr><td>3</td><td>Context</td><td>Added the business rationale and rollback note; added
+              the two empirically-verified corrections; added the accepted-tradeoffs paragraph with the
+              CWE-602 non-goal statement.</td></tr>
+              <tr><td>4</td><td>Steps</td><td>Expanded from four steps to nine: baseline install,
+              <code>sass:build</code> script, restructure with <code>Props</code> and landmark label,
+              styling with named tokens and the corrected selector, <code>@supports</code> fallback,
+              unit test, expanded E2E spec, build-output check, documentation.</td></tr>
+              <tr><td>5</td><td>Files</td><td>Added <code>package.json</code>,
+              <code>_base.scss</code>, <code>index.css.map</code>, the unit test, and both READMEs.</td></tr>
+              <tr><td>6</td><td>Tests</td><td>Added the unit tier and the accessibility/degradation
+              E2E bullet covering 44px, reduced motion, axe-core, and negative authorization.</td></tr>
+              <tr><td>7</td><td>Acceptance Criteria</td><td>Expanded from nine to fourteen; added focus
+              restoration, SC 2.4.11, explicit <code>popover="auto"</code>, 320px reflow, fallback
+              appearance, auth-leak check, and the lockfile guard.</td></tr>
+              <tr><td>8</td><td>Verification</td><td>Replaced the dark-mode step with a 320px and
+              signed-in walkthrough; added the full lint/type/test gate and the <code>dist/</code>
+              grep.</td></tr>
+              <tr><td>9</td><td>Next Steps</td><td>New section: dark-mode reconciliation,
+              <code>/profile</code> middleware, security headers, and the CI matrix wish-list item.</td></tr>
+              <tr><td>10</td><td>Unresolved Questions</td><td>New section: Dashboard/Profile placement,
+              the library-consumer slot contract, and the sticky-bar decision.</td></tr>
+              <tr><td>11</td><td>Resources</td><td>Corrected the WCAG target-size citation and added
+              the SC 2.4.11 and SC 1.4.10 references.</td></tr>
+            </tbody>
+          </table>
+
+        </div>
+      </details>
+
+    </main>
+  </div>
+
+  <footer>
+    <p class="disclaimer">This document may contain confidential plan content and reviewer findings.
+    Classify before sharing.</p>
+  </footer>
+
+  <script>
+    (function () {
+      var headings = document.querySelectorAll('main h2[id]');
+      var links = document.querySelectorAll('nav a[href^="#"]');
+      if (!headings.length || !links.length) return;
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          links.forEach(function (l) { l.removeAttribute('aria-current'); });
+          var active = document.querySelector('nav a[href="#' + e.target.id + '"]');
+          if (active) active.setAttribute('aria-current', 'location');
+        });
+      }, { rootMargin: '0px 0px -60% 0px', threshold: 0 });
+      headings.forEach(function (h) { obs.observe(h); });
+    })();
+
+    (function () {
+      function openAll()  { document.querySelectorAll('details').forEach(function(d){ d.open = true; }); }
+      function closeAll() { document.querySelectorAll('details').forEach(function(d){ d.removeAttribute('open'); }); }
+      window.addEventListener('beforeprint', openAll);
+      window.addEventListener('afterprint',  closeAll);
+    })();
+  </script>
+
+</body>
+</html>
