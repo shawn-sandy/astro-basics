@@ -2,6 +2,7 @@
 // Legacy tokens are maintained for backward compatibility
 
 body {
+  background-color: #fff;
   min-width: 20.3125rem;
 
   > section {
@@ -12,7 +13,9 @@ body {
   > nav {
     min-height: 4rem;
 
-    > ul {
+    // Descendant, not direct child: the primary link list now sits inside
+    // the navigation popover panel, so `> ul` no longer reaches it.
+    ul {
       margin-block-end: 0;
 
       li {

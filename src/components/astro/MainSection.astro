@@ -15,7 +15,11 @@ const { showBreadcrumb, breadcrumbRoutes } = Astro.props
 
 <>
   <slot name="featured" />
-  <main>
+  {
+    /* Skip-link target. tabindex="-1" so activating the link moves focus here,
+      not just the scroll position. */
+  }
+  <main id="main" tabindex="-1">
     {
       showBreadcrumb && (
         <section>
