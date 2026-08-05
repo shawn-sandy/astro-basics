@@ -40,6 +40,46 @@ const {
 } = Astro.props
 ---
 
+<!--
+  The site stylesheet is injected by JS in dev, so the browser paints the UA's
+  native button chrome (40x33, grey, 2px border) for a frame before the nav
+  styles land. `is:inline` keeps this block in the HTML, so the first paint
+  already matches the final one. Only the declarations that change the painted
+  box are repeated here; hover, focus and open states stay in
+  `_navigation.scss`. Specificity is (0,1,2) against that file's (0,2,2), so
+  those rules still win. A fade-in cannot fix this - it would have to live in
+  the same late stylesheet.
+
+  The `@supports` guard scopes the block to engines that actually get a
+  popover. Without a popover the button is inert, and `_navigation.scss`
+  hides it under `@supports not selector(:popover-open)`; that rule wins
+  today only because its `:has()` variant is (0,2,2) against this block's
+  (0,1,2). Stating the condition here means the fallback no longer depends
+  on that specificity race - splitting the rule's selector list would
+  otherwise leave this block overriding `display: none`.
+-->
+<style is:inline>
+  @supports selector(:popover-open) {
+    nav > button[popovertarget] {
+      align-items: center;
+      appearance: none;
+      background: transparent;
+      /* Transparent border and background make the radius invisible, so
+         `--card-radius` is not needed before the stylesheet lands. */
+      border: 1px solid transparent;
+      /* The SVG strokes with `currentColor`. Without this the icon paints in
+         the UA's `buttontext` system colour rather than the page's. */
+      color: inherit;
+      display: inline-flex;
+      justify-content: center;
+      /* Mirrors --space-11; the token is defined in the late stylesheet. */
+      min-height: 44px;
+      min-width: 44px;
+      padding: 0;
+    }
+  }
+</style>
+
 <nav aria-label="Primary">
   <button type="button" popovertarget={menuId} aria-label="Menu">
     <svg
