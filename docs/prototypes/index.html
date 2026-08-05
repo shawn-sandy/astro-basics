@@ -1,0 +1,86 @@
+<!doctype html>
+<!-- ponytail: placeholder empty state so the Plans gallery's Prototypes tab resolves.
+     The /plan-agent:prototype generator overwrites this file once a prototype exists. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prototypes Library</title>
+    <style>
+      :root {
+        --paper: #fcfcfa;
+        --panel: #ffffff;
+        --ink: #16151c;
+        --ink-3: #6e6a80;
+        --rule: #e6e3ec;
+        --accent: #4a2fe0;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #121118;
+          --panel: #1a1922;
+          --ink: #edebf3;
+          --ink-3: #8b87a0;
+          --rule: #2c2a38;
+          --accent: #a594ff;
+          color-scheme: dark;
+        }
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 2rem;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      .empty {
+        max-width: 34rem;
+        text-align: center;
+        background: var(--panel);
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        padding: 2.5rem 2rem;
+      }
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.5rem;
+        font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+      }
+      p {
+        margin: 0 0 1.5rem;
+        color: var(--ink-3);
+        line-height: 1.6;
+      }
+      code {
+        font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+      }
+      nav a {
+        color: var(--accent);
+        text-decoration: none;
+        margin: 0 0.5rem;
+      }
+      nav a:hover,
+      nav a:focus-visible {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="empty">
+      <h1>Prototypes Library</h1>
+      <p>
+        No prototypes yet. Run <code>/plan-agent:prototype</code> to generate a
+        runnable static-HTML prototype here.
+      </p>
+      <nav aria-label="Collections">
+        <a href="../index.html">Home</a>
+        <a href="../plans/index.html">Plans</a>
+      </nav>
+    </main>
+  </body>
+</html>
