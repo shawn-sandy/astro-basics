@@ -66,23 +66,9 @@
     .decision-banner.banner-revise  { background: var(--badge-revise); }
     .decision-banner.banner-reject  { background: var(--badge-reject); }
 
-    .remediation     { margin-top: 1em; padding: 1em; border-radius: .375em;
-                       border-left: 4px solid var(--badge-reject);
-                       background: var(--surface); color: var(--text); }
-    .remediation h3  { font-size: 1rem; margin-bottom: .5em; }
-    .remediation pre { max-height: 300px; overflow-y: auto; padding: .75em;
-                       background: var(--bg); border: 1px solid var(--border);
-                       border-radius: .25em; font-size: .85rem;
-                       white-space: pre-wrap; word-wrap: break-word; }
-    .remediation pre:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .copy-btn        { position: absolute; top: .5em; right: .5em;
-                       padding: .25em .75em; border: 1px solid var(--border);
-                       border-radius: .25em; background: var(--surface);
-                       color: var(--text); cursor: pointer; font-size: .8rem; }
-    .copy-btn:hover  { background: var(--border); }
-    .sr-only         { position: absolute; width: 1px; height: 1px;
-                       padding: 0; margin: -1px; overflow: hidden;
-                       clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    /* Reject-only remediation styles are omitted: this review's decision is
+       "Approve with revisions", so no remediation block or copy button is
+       rendered and no script writes to a live region. */
 
     .reviewer-card   { border: 1px solid var(--border); border-radius: .5em;
                        padding: 1em; margin-bottom: 1em; background: var(--surface); }
@@ -123,7 +109,6 @@
       details           { display: block; }
       summary           { display: none; }
       ::details-content { content-visibility: visible; }
-      .copy-btn         { display: none; }
     }
   </style>
 </head>
@@ -150,8 +135,7 @@
           <li><a href="#sec-criteria">Acceptance Criteria</a></li>
           <li><a href="#sec-open">Unresolved Questions</a></li>
           <li><a href="#sec-conflicts">Reviewer Conflicts</a></li>
-          <li><a href="#sec-reviewers">Role-by-Role Review</a></li>
-          <li><a href="#sec-edits">Inline Edits Applied</a></li>
+          <li><a href="#appendix">Full report (Role-by-Role, Inline Edits)</a></li>
         </ol>
       </nav>
     </aside>
@@ -174,7 +158,6 @@
         with the non-blocking improvements. Three genuine product decisions are recorded as
         Unresolved Questions for the plan owner rather than guessed at.</p>
       </div>
-      <span class="sr-only" aria-live="polite"></span>
 
       <h2 id="sec-objective">Revised Objective</h2>
       <p>Replace the inline navigation link list with a hamburger button that opens a native HTML
