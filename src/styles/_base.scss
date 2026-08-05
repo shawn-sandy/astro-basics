@@ -3,7 +3,10 @@
 
 body {
   background-color: #fff;
-  min-width: 20.3125rem;
+
+  // Overrides @fpkit/acss's 20.3125rem (325px) floor, which forced 5px of
+  // horizontal scroll at a 320px viewport (WCAG 2.1 SC 1.4.10 Reflow).
+  min-width: 0;
 
   > section {
     margin: auto;

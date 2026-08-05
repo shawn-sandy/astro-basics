@@ -214,7 +214,7 @@
 }
 body {
   background-color: #fff;
-  min-width: 20.3125rem;
+  min-width: 0;
 }
 body > section {
   margin: auto;

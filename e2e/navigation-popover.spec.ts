@@ -193,6 +193,13 @@ test.describe('Primary navigation popover', () => {
     await hamburger(page).click()
     await expectPopoverOpen(panel(page), true)
 
+    // `:popover-open` flips at the START of the 150ms opacity fade, so without
+    // this axe can sample a still-transparent panel and report a washed-out
+    // colour-contrast ratio that no user ever sees. Settle the fade first.
+    await expect
+      .poll(() => panel(page).evaluate(el => window.getComputedStyle(el).opacity))
+      .toBe('1')
+
     await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') })
 
     const results = await page.evaluate(
@@ -239,23 +246,26 @@ test.describe('Primary navigation popover', () => {
         clientWidth: document.documentElement.clientWidth,
       }))
 
-    // Baseline is taken with the panel shut rather than compared against the
-    // viewport directly: @fpkit/acss hard-sets `body { min-width: 20.3125rem }`
-    // (325px), so this site already overflows a 320px viewport by 5px on every
-    // page with the panel closed and even with the whole <nav> hidden. That is
-    // a pre-existing framework-level WCAG 1.4.10 issue, out of scope here — but
-    // the panel must not make it any worse.
+    // Absolute check against the viewport, not against a closed-panel
+    // baseline. @fpkit/acss's `body { min-width: 20.3125rem }` (325px) floor
+    // used to make every page overflow a 320px viewport by 5px regardless of
+    // the nav, which is why this once had to measure relative to itself. That
+    // floor is now overridden in src/styles/_base.scss, so the page genuinely
+    // fits 320px (WCAG 2.1 SC 1.4.10) both shut and open.
     const closed = await metrics()
+    expect(
+      closed.scrollWidth,
+      `closed scrollWidth ${closed.scrollWidth} vs viewport ${closed.clientWidth}`
+    ).toBeLessThanOrEqual(closed.clientWidth)
 
     await hamburger(page).click()
     await expectPopoverOpen(panel(page), true)
     const open = await metrics()
 
-    // 1px tolerance for sub-pixel rounding.
     expect(
       open.scrollWidth,
-      `open scrollWidth ${open.scrollWidth} vs closed baseline ${closed.scrollWidth}`
-    ).toBeLessThanOrEqual(closed.scrollWidth + 1)
+      `open scrollWidth ${open.scrollWidth} vs viewport ${open.clientWidth}`
+    ).toBeLessThanOrEqual(open.clientWidth)
 
     // The panel itself must sit entirely inside the 320px viewport — this is
     // what the `max-width: calc(100vw - 2rem)` clamp in _navigation.scss buys,

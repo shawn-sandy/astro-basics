@@ -77,6 +77,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   literal rather than tokenised, so the page stays white in both colour schemes
 - Minor updates and refinements
 
+### Fixed
+
+- **Horizontal overflow at 320px viewports** (WCAG 2.1 SC 1.4.10 Reflow): every page
+  scrolled horizontally by 5px on a 320px-wide screen
+  - Overrode `@fpkit/acss`'s `body { min-width: 20.3125rem }` (325px) floor with
+    `min-width: 0` in `src/styles/_base.scss`. The floor was wider than the viewport
+    it had to fit, so the overflow was present with the whole `<nav>` hidden and on
+    every page including 404
+  - `e2e/navigation-popover.spec.ts`'s 320px reflow test now asserts
+    `scrollWidth <= clientWidth` outright, both panel-shut and panel-open. It
+    previously had to measure against its own closed-panel baseline because the
+    framework floor made an absolute check impossible
+  - Added a page-level `no horizontal scrolling at 320px` case to
+    `e2e/home-responsive.spec.ts`
+- **Flaky axe-core scan in `e2e/navigation-popover.spec.ts`**: `:popover-open` flips at
+  the start of the panel's 150ms opacity fade, so the WCAG scan could sample a
+  still-transparent panel and report a colour-contrast violation that no user ever
+  sees. The scan now waits for the fade to settle before running
+
 ## [0.2.0] - 2025-08-15
 
 ### Added
