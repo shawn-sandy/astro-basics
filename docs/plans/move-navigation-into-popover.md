@@ -1,7 +1,8 @@
 ---
-status: todo
+status: in-progress
 type: feature
 created: 2026-08-04
+modified: 2026-08-05
 issue: https://github.com/shawn-sandy/astro-basics/issues/346
 effort: high
 glance: The site keeps a full row of nav links in the header at every screen size; moving them behind a hamburger button that opens a native HTML popover panel (like the reference screenshot) cleans up the top bar with zero custom JavaScript. Done means the hamburger opens a top-right panel with all five links, Esc and outside-click close it, no authenticated-only link leaks to anonymous visitors, and the new Playwright and unit specs pass.
@@ -63,26 +64,64 @@ Tier 1 — This plan changes application source and styles
 
 ## Acceptance Criteria
 
-- [ ] The top bar shows a hamburger menu button at every viewport width; the five nav links are no longer rendered inline in the bar
-- [ ] Clicking the hamburger opens a top-right popover panel listing Home, Articles, Blog, About, and Contact
-- [ ] Esc and clicking outside the panel both close it, and focus returns to the hamburger button
-- [ ] The Clerk sign-in/user button remains visible in the top bar and is never covered by the open panel (WCAG 2.2 SC 2.4.11)
-- [ ] A site-title link sits on the left of the bar and navigates to the home page
-- [ ] The panel markup carries `popover="auto"` explicitly, not a bare or boolean-rendered `popover`
-- [ ] The hamburger hit area measures at least 44×44px and shows a distinct style while the panel is open
-- [ ] The panel fade-in is disabled when the OS prefers reduced motion
-- [ ] No horizontal scrolling appears at a 320px viewport with the panel open (WCAG 1.4.10)
-- [ ] In a browser without Popover API support, the links render as a static inline row and the hamburger button is hidden
-- [ ] No custom JavaScript is added — the behavior uses only the HTML `popover` and `popovertarget` attributes
-- [ ] An anonymous request to the home page returns zero `/dashboard` and `/profile` links, and `npm run build` bakes none into `dist/`
-- [ ] `package.json` and `package-lock.json` gain no new dependencies (`sass:build` script only)
-- [ ] `npm test`, `npx playwright test`, `npm run type-check`, and `npm run lint:styles` all pass
+- [x] The top bar shows a hamburger menu button at every viewport width; the five nav links are no longer rendered inline in the bar
+- [x] Clicking the hamburger opens a top-right popover panel listing Home, Articles, Blog, About, and Contact
+- [x] Esc and clicking outside the panel both close it, and focus returns to the hamburger button
+- [x] The Clerk sign-in/user button remains visible in the top bar and is never covered by the open panel (WCAG 2.2 SC 2.4.11)
+- [x] A site-title link sits on the left of the bar and navigates to the home page
+- [x] The panel markup carries `popover="auto"` explicitly, not a bare or boolean-rendered `popover`
+- [x] The hamburger hit area measures at least 44×44px and shows a distinct style while the panel is open
+- [x] The panel fade-in is disabled when the OS prefers reduced motion
+- [ ] No horizontal scrolling appears at a 320px viewport with the panel open (WCAG 1.4.10) — **not met, pre-existing.** The panel itself adds nothing (`scrollWidth` is 325 with the panel open and 325 with it closed; the panel's own box measures 256px inside a 320px viewport). The 5px overflow comes from `body { min-width: 20.3125rem }` at `src/styles/_base.scss:5`, which overflows a 320px viewport on every page even with the whole `<nav>` set to `display: none`. Fixing it is a global layout change outside this plan's scope.
+- [x] In a browser without Popover API support, the links render as a static inline row and the hamburger button is hidden — verified in two halves; see Verification Results
+- [x] No custom JavaScript is added — the behavior uses only the HTML `popover` and `popovertarget` attributes
+- [x] An anonymous request to the home page returns zero `/dashboard` and `/profile` links, and `npm run build` bakes none into `dist/`
+- [x] `package.json` and `package-lock.json` gain no new dependencies (`sass:build` script only)
+- [ ] `npm test`, `npx playwright test`, `npm run type-check`, and `npm run lint:styles` all pass — **partially met.** `npm run lint:styles` and `npm run sass:build` exit 0. `npm test` and `npm run type-check` fail identically before and after this change (see Verification Results); this change adds zero new failures. `npx playwright test` passed on Chromium only, and could not be run as the canonical command; see Verification Results.
 
 ## Verification
 
 Start the dev server with `npm run dev` and open http://localhost:4321. Confirm the top bar shows the site-title brand link on the left and the hamburger plus Clerk sign-in control on the right — no inline link row. Click the hamburger: a bordered panel opens near the top-right listing Home, Articles, Blog, About, and Contact, matching the reference screenshot's layout, and the button takes on its open-state styling. Press Esc — the panel closes and focus returns to the hamburger. Reopen and click the page background — it closes again. Tab through the header to confirm no focus is lost or obscured. Repeat at a 320px viewport to confirm no horizontal scrolling, and once while signed in to confirm the Clerk controls still fit.
 
 Then run the full gate: `npm run sass:build && npm run type-check && npm run lint:styles && npm test && npx playwright test`. Every command must exit 0. Finally run `npm run build` and confirm `grep -rlE 'href="/(dashboard|profile)"' dist/` returns nothing, proving neither authenticated-only link reached the prerendered routes.
+
+## Verification Results (2026-08-05)
+
+### Gate commands
+
+| Command | Result |
+| --- | --- |
+| `npm run sass:build` | exit 0 |
+| `npm run lint:styles` | exit 0 |
+| `npx markdownlint-cli --config .markdownlint.json` on the three touched docs | exit 0 |
+| `npm run build` | exit 0 |
+| `grep -rlE 'href="/(dashboard\|profile)"' dist/` | 0 matches |
+| `npm test` | exit 1 — **14 failed files / 60 failed tests, identical before and after this change** (measured by stashing the worktree). Passing tests went 428 to 435: the 7 new `Navigation.astro.test.ts` cases. Zero new failures. |
+| `npm run type-check` | 127 errors, **identical before and after** (measured the same way). All are pre-existing: `tsc` cannot resolve `.astro` modules, plus unrelated errors in `src/utils/`. No error references `Navigation.astro` or the popover attributes. |
+| `npx playwright test` (Chromium) | 17/17 pass — `navigation-popover.spec.ts` 10/10 plus `home-structure`, `home-responsive`, `home-accessibility` 7/7 |
+| `npx playwright test e2e/navigation-popover.spec.ts` (Firefox) | 10/10 pass — including Esc focus restoration, which the accessibility review flagged as engine-dependent |
+| `npm test -- Navigation` | 8/8 pass (7 markup-contract cases plus a default-slot-renders-inside-the-panel case added when the account links moved) |
+
+### Measured values (Chromium, light scheme)
+
+At 1280x800 with the panel open: brand at x=16; hamburger at x=1147 measuring 45x45; login control at x=1208 (15px gap). Panel at x=1008, y=64, 256x234, right inset 16px. `nav` bottom is y=64 and the panel top is y=64, so the panel clears the bar and does not overlap the login control (SC 2.4.11). Computed panel styles: `position: fixed`, `margin: 0px`, `inset: 64px 16px 502px 1008px` (the UA `inset: 0; margin: auto` is fully reset), `z-index: 1500`, `overflow-y: auto`. Invoker background goes `rgba(0,0,0,0)` closed to `rgb(250,250,250)` open, confirming the `:has(> [popover]:popover-open)` hook fires. At 320px the panel computes `max-width: 288px` and sits entirely inside the viewport.
+
+### Deviations from the spec as written
+
+1. **Reduced motion computes to `1e-05s`, not `0s`.** `@fpkit/acss` ships the canonical reduced-motion reset `transition-duration: .01ms !important`; the non-zero value is deliberate upstream so `transitionend` keeps firing. The spec asserts the longest duration is at or below 1ms, then flips `emulateMedia` back to `no-preference` and asserts at least 0.1s, so the check is discriminating rather than vacuous.
+2. **The `@supports` fallback is verified in two halves, not with a live legacy engine.** No engine available to Playwright still lacks the Popover API, and Chromium 147 has dropped `--disable-blink-features=HTMLPopoverAttribute`. Verified instead that (a) the `@supports not selector(:popover-open)` block survives into the compiled CSS with the right declarations and stays inert in a supporting engine, and (b) replaying those exact rules unconditionally hides the hamburger (`display: none`), returns the panel to `position: static` with no border or shadow, and lays the five links out as one row at a single shared y with increasing x and no horizontal scroll.
+3. **`npx playwright test` was run through an equivalent config, not the canonical command.** A different project's dev server (`/Users/shawnsandy/devbox/513`) holds IPv6 `[::1]:4321`, and `e2e/test-utils.ts` hardcodes `http://localhost:4321/` while `playwright.config.ts` sets `reuseExistingServer: !CI` — so the canonical command silently runs every spec against that other site. This worktree's server was bound to IPv4 `127.0.0.1:4321` and Chromium pinned with `--host-resolver-rules=MAP localhost 127.0.0.1`. Same specs, same app, no repo file changed.
+4. **axe-core is injected from the transitive install.** Acceptance criterion 13 forbids new dependencies while step 7 requires an axe scan. Resolved with `require.resolve('axe-core/axe.min.js')` — axe-core is already present via the declared devDependency `eslint-plugin-jsx-a11y` — so no dependency was added and a missing install throws loudly rather than skipping.
+
+### Not verified
+
+- **Signed-in state.** The plan's Verification asks for one pass while signed in; no Clerk test credentials were available. Anonymous negative-authorization coverage is in place (zero `/dashboard` and `/profile` links in the response and in `dist/`).
+- **WebKit.** Chromium and Firefox both pass the full popover spec. WebKit could not be installed: Playwright's browser extraction stalls in this environment (a known local issue — the download completes and the zip validates, but the Node unzip step hangs on macOS `.app` symlinks; Chromium and Firefox were extracted manually with `unzip`). The stalled installer left a stale `~/Library/Caches/ms-playwright/__dirlock` that will block future `playwright install` runs until removed. Cross-engine coverage is already a Next Steps wish-list item.
+- **Dark mode.** Deliberately out of scope per Next Steps; the two competing dark-mode systems make it unverifiable today.
+
+### Bug found and fixed during verification
+
+The first draft of the `@supports` fallback was dead code. `@supports` gates whether a block applies but does not raise specificity, so `nav > button[popovertarget]` (0,1,2) lost to the main block's `nav:has(> [popover]) > button[popovertarget]` (0,2,2) — in a browser without popover support the hamburger would have stayed visible and the panel would have stayed `position: fixed`, which is exactly the broken permanently-open overlay the review panel flagged as blocking. Fixed by duplicating each fallback selector with the `:has()` root so specificity matches and source order decides, keeping the bare form for engines that support neither `:has()` nor popover.
 
 ## Next Steps
 
@@ -116,11 +155,11 @@ Then run the full gate: `npm run sass:build && npm run type-check && npm run lin
 
 ## Unresolved Questions
 
-- Where do the Dashboard and Profile links live?
+- ~~Where do the Dashboard and Profile links live?~~ **Resolved 2026-08-05 by the plan owner: they move into the popover panel.**
 
-  ```text
-  In the astro-basics repo, src/layouts/Base.astro passes a <ul slot="login"> containing userId-gated /dashboard and /profile links alongside the Clerk UserButton. The popover navigation plan at docs/plans/move-navigation-into-popover.md keeps the login slot in the top bar, which means signed-in users still see an inline link row — contradicting the plan's clean-bar objective. Recommend whether those two links should move into the popover panel (as a second <ul> rendered only when userId is set) or stay in the bar, and explain the tradeoff for signed-in users. Do not implement; report the recommendation.
-  ```
+  `src/layouts/Base.astro` now passes the `userId`-gated links through `Navigation.astro`'s default slot, which renders inside the panel, and keeps only the Clerk auth control in the `login` slot. Signed-in users get the same decluttered bar as anonymous ones — brand, hamburger, Clerk control — with all seven links in the panel, separated into a site group and an account group by a `ul + ul` rule in `_navigation.scss`.
+
+  The security posture is unchanged: the `{userId && ...}` server-side conditional is still what keeps the links out of an anonymous response. Moving markup inside `[popover]` hides nothing (CWE-602), and the negative-authorization E2E assertion plus the `dist/` grep both still return zero.
 
 - Is relocating the default `<slot />` a breaking change for library consumers?
 

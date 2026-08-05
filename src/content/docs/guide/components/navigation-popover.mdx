@@ -1,0 +1,202 @@
+---
+title: Navigation Popover
+description: How the site navigation uses the native HTML Popover API - markup, props, CSS state hooks, and the no-JavaScript fallback.
+---
+
+`Navigation.astro` renders the primary site navigation. The bar itself holds a brand link, a hamburger button and the
+`login` slot. The five site links live inside a native HTML popover panel that the button opens.
+
+Open, close, Esc-to-close and outside-click dismissal ("light dismiss") are provided by the browser through the
+`popover` and `popovertarget` attributes. The component ships no JavaScript: no event listeners, no hydration
+directive, and no open-state class toggled on the DOM.
+
+**Component:** `src/components/astro/Navigation.astro`
+
+**Styles:** `src/styles/components/_navigation.scss`
+
+## Markup structure
+
+```astro
+<nav aria-label="Primary">
+  <a href="/" data-nav-brand>Site title</a>
+
+  <button type="button" popovertarget="site-nav-popover" aria-label="Menu">
+    <svg aria-hidden="true" focusable="false"><!-- hamburger --></svg>
+  </button>
+
+  <div id="site-nav-popover" popover="auto">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <!-- Articles, Blog, About, Contact -->
+    </ul>
+    <slot />
+  </div>
+
+  <slot name="login" />
+</nav>
+```
+
+Three details carry the whole pattern:
+
+- The button's `popovertarget` value matches the panel's `id`. That single pairing is the entire toggle mechanism -
+  no `onclick`, no `showPopover()` call.
+- The panel carries `popover="auto"`, which tells the browser to keep it hidden until it is invoked, promote it to
+  the top layer when shown, and dismiss it on Esc or an outside click.
+- `aria-expanded` is never written into the markup. Once `popovertarget` points at a popover, the browser maps the
+  invoker's expanded state into the accessibility tree on its own.
+
+## Props
+
+All props are optional.
+
+| Prop         | Type      | Default              | Description                                                          |
+| ------------ | --------- | -------------------- | -------------------------------------------------------------------- |
+| `brandTitle` | `string`  | `SITE_TITLE`         | Text of the brand link on the left of the bar.                       |
+| `brandHref`  | `string`  | `'/'`                | Destination of the brand link.                                       |
+| `menuId`     | `string`  | `'site-nav-popover'` | id of the popover panel, wired to the button's `popovertarget`.      |
+| `showBrand`  | `boolean` | `true`               | Render the brand link. Set `false` when a consumer supplies its own. |
+
+`menuId` matters when more than one `Navigation` renders on a page: `id` values must stay unique, and a duplicate id
+sends both buttons to the same panel.
+
+```astro
+---
+import Navigation from '#components/astro/Navigation.astro'
+---
+
+<Navigation brandTitle="Docs" brandHref="/guide/" menuId="docs-nav-popover" showBrand={true}>
+  <p>Rendered inside the popover panel.</p>
+
+  <ul slot="login">
+    <li><a href="/dashboard">Dashboard</a></li>
+  </ul>
+</Navigation>
+```
+
+## Slots
+
+| Slot      | Renders                                                                                    |
+| --------- | ------------------------------------------------------------------------------------------ |
+| (default) | Inside the popover panel, directly below the link list. Only visible while the panel is open. |
+| `login`   | In the bar, after the panel. Always visible, regardless of panel state.                    |
+
+The default slot is a behaviour change for library consumers. `Navigation` is exported from `src/components/index.ts`
+and through the `./astro` entry in `package.json`, and content passed to the default slot previously rendered in the
+bar. It now renders inside the panel. Move anything that must stay permanently visible to the `login` slot.
+
+`src/layouts/Base.astro` uses the `login` slot for the dashboard link, profile link and Clerk auth controls, which is
+why they stay in the bar while the link panel is closed.
+
+## Why `popover="auto"` is written out
+
+`popover` is an enumerated attribute with two relevant states, `auto` and `manual`. The two defaults differ:
+
+- **Missing value default** is `auto`, so a bare `popover` behaves like `popover="auto"`.
+- **Invalid value default** is `manual`. Any value the parser does not recognise - `popover="atuo"`,
+  `popover="true"`, `popover="open"` - silently becomes `manual`.
+
+`manual` popovers have no light dismiss and no Esc close. They also do not close other open popovers. A typo would
+therefore leave a panel that opens on click, ignores Esc, ignores clicks elsewhere on the page, and can only be
+closed by clicking the hamburger a second time - with no error in the console to explain it.
+
+Writing `popover="auto"` explicitly states the intent at the call site and makes the difference reviewable in a
+diff. Do not shorten it to a bare `popover`.
+
+## Styling the open state
+
+There is no JavaScript, so nothing adds a class when the panel opens. The only hook is the `:popover-open`
+pseudo-class combined with `:has()`:
+
+```scss
+nav:has(> [popover]:popover-open) button[popovertarget] {
+  background-color: var(--card-background);
+  border-color: currentcolor;
+}
+```
+
+`:popover-open` matches the panel while it is showing. `:has()` walks back up to the `nav`, and the descendant
+combinator then reaches the button. The detour through the parent is required because CSS has no previous-sibling
+combinator, and the button precedes the panel in source order.
+
+### `[aria-expanded]` does not work as a selector
+
+The obvious-looking alternative fails:
+
+```scss
+// Never matches. Do not use.
+nav button[popovertarget][aria-expanded='true'] {
+  border-color: currentcolor;
+}
+```
+
+On a popover invoker, the expanded state is an **implicit accessibility-tree mapping** computed by the browser, not a
+serialized DOM attribute. The specification defines the invoker's exposed `expanded` state, but nothing writes an
+`aria-expanded` attribute into the markup. CSS attribute selectors only match serialized attributes, so
+`[aria-expanded='true']` never matches - the same reason `getAttribute('aria-expanded')` returns `null` while a
+screen reader still announces the button as expanded.
+
+This is also why the component does not hand-write `aria-expanded`. Doing so would create a second source of truth
+that only stays correct if JavaScript keeps it in sync, which reintroduces exactly the script the popover pattern
+removes.
+
+## Fallback without the Popover API
+
+Engines that do not implement the Popover API do not hide `[popover]` elements at all: the attribute is unknown, so
+the panel would paint as a permanently visible fixed overlay next to a button that does nothing. A feature query
+handles that case:
+
+```scss
+@supports not selector(:popover-open) {
+  nav > button[popovertarget] {
+    display: none;
+  }
+
+  nav > [popover] {
+    // Strip the panel chrome and positioning.
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+    position: static;
+  }
+
+  nav > [popover] ul {
+    flex-direction: row;
+  }
+}
+```
+
+The block hides the inert hamburger button and returns the panel to normal flow, so the links render as a static
+inline row in the bar. The result is plain, always-visible navigation rather than a broken overlay.
+
+`selector(:popover-open)` is the right probe here. It tests support for the pseudo-class the open-state styling
+depends on, which is the feature that actually has to be present, rather than testing the `popover` attribute
+indirectly.
+
+## The popover is not a security boundary
+
+The popover controls **visibility only**. Everything inside `[popover]`, including anything passed through the
+default slot, is present in the HTML response whether the panel is open or not. It is visible in View Source, in a
+`curl` of the page, and to any crawler.
+
+Never place authenticated, role-gated or otherwise sensitive content inside the panel and treat the closed state as
+protection. Gate protected content on the server instead - middleware, `Astro.locals.userId`, or the role guards.
+
+See the [Page-Level Protection guide](/guide/page-level-protection/) and the
+[Role Guard guide](/guide/role-guard-usage/) for the supported approaches.
+
+## Accessibility notes
+
+- The bar is a `<nav aria-label="Primary">` landmark, so assistive technology can jump straight to it.
+- The hamburger button carries `aria-label="Menu"`; its `<svg>` is `aria-hidden="true"` and `focusable="false"` so it
+  is not announced or reachable by keyboard.
+- The button meets the WCAG 2.2 target-size minimum (SC 2.5.8) through a `44px` min-height and min-width.
+- The panel is offset below the bar so it never covers the `login` slot while that slot is in the focus path
+  (SC 2.4.11, Focus Not Obscured).
+- The panel width is clamped so it cannot force horizontal scrolling at 320px (SC 1.4.10, Reflow).
+- The open transition is wrapped in `@media (prefers-reduced-motion: no-preference)`.
+
+## Related documentation
+
+- **[Components](/guide/components/)** - the wider component library
+- **[Layouts](/guide/layouts/)** - how `Base.astro` composes the navigation
+- **[Styling](/guide/styling/)** - design tokens used by the navigation styles

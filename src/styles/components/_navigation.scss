@@ -1,0 +1,156 @@
+// Site navigation: bar layout, hamburger button and native popover panel.
+// All interaction (toggle, Esc, outside-click) comes from the HTML
+// `popover` / `popovertarget` attributes — no JavaScript is involved, so
+// there is no open-state class to style against. The only CSS hook for the
+// open state is `:has(> [popover]:popover-open)`; `[aria-expanded]` is an
+// implicit accessibility-tree mapping on a popover invoker, not a DOM
+// attribute, so it never matches.
+
+nav:has(> [popover]) {
+  // acss stacks `body > nav` into a column below 580px. The bar stays a
+  // single row at every width now that the links live in the panel.
+  flex-direction: row;
+  gap: var(--space-4);
+
+  // acss sets `justify-content: space-between`, which strands the hamburger
+  // mid-bar between the brand and the login control. Grouping to the end and
+  // letting the brand claim the free space keeps the bar readable whether or
+  // not `showBrand` is set.
+  justify-content: flex-end;
+
+  > [data-nav-brand] {
+    font-weight: 600;
+    margin-inline-end: auto;
+    text-decoration: none;
+  }
+
+  > button[popovertarget] {
+    align-items: center;
+    background-color: transparent;
+    border: 1px solid var(--card-border);
+    border-radius: var(--card-radius);
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    justify-content: center;
+
+    // WCAG 2.2 SC 2.5.8 requires 24x24; --space-11 is 44px.
+    min-height: var(--space-11);
+    min-width: var(--space-11);
+    padding: 0;
+  }
+
+  > [popover] {
+    background-color: var(--card-background);
+    border: 1px solid var(--card-border);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+
+    // The UA sheet sets `inset: 0; margin: auto` to centre popovers on
+    // screen. Both have to be cleared before top/right can take effect.
+    inset: auto;
+    margin: 0;
+    max-height: calc(100dvh - 5rem);
+
+    // Clamped so the panel never forces horizontal scroll at 320px
+    // (WCAG 1.4.10 Reflow).
+    max-width: calc(100vw - 2rem);
+    min-width: min(16rem, calc(100vw - 2rem));
+    overflow-y: auto;
+    padding: var(--space-2);
+    position: fixed;
+
+    // Same inline padding the bar uses, so the panel lines up with it.
+    right: var(--nav-padding-inline, 1rem);
+
+    // Clears the 4rem bar, so the panel never covers the login control
+    // while it is in the focus path (WCAG 2.2 SC 2.4.11).
+    top: 4rem;
+    z-index: var(--z-index-popover);
+  }
+
+  > [popover] ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+
+  // A second list in the panel is the authenticated-account group from
+  // Base.astro; separate it so the two do not read as one list.
+  > [popover] ul + ul {
+    border-block-start: 1px solid var(--card-border);
+    margin-block-start: var(--space-2);
+    padding-block-start: var(--space-2);
+  }
+
+  > [popover] li {
+    // acss sets `nav ul > li { min-height: 100% }`, which follows the list
+    // into the panel and collapses the rows.
+    min-height: auto;
+    padding-inline: 0;
+    width: 100%;
+  }
+
+  > [popover] a {
+    border-radius: var(--radius-md);
+    display: block;
+    padding: var(--space-2) var(--space-3);
+    width: 100%;
+  }
+}
+
+// Open-state affordance on the invoker.
+nav:has(> [popover]:popover-open) button[popovertarget] {
+  background-color: var(--card-background);
+  border-color: currentcolor;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  nav > [popover]:popover-open {
+    opacity: 1;
+    transition: opacity var(--transition-duration-150) ease-out;
+
+    @starting-style {
+      opacity: 0;
+    }
+  }
+}
+
+// Graceful degradation. Engines without the Popover API do not hide
+// `[popover]` elements at all, so without this the panel would render as a
+// permanently-open fixed overlay beside a button that does nothing.
+// Each rule is duplicated with the `:has()` root so it matches the
+// specificity of the block above and wins on source order. `@supports`
+// gates whether a block applies, not how specific it is: the bare
+// `nav > button[popovertarget]` form alone (0,1,2) loses to
+// `nav:has(> [popover]) > button[popovertarget]` (0,2,2) and the whole
+// fallback silently does nothing. The bare form is kept for engines that
+// support neither `:has()` nor popover, where the block above never
+// matches either.
+@supports not selector(:popover-open) {
+  nav > button[popovertarget],
+  nav:has(> [popover]) > button[popovertarget] {
+    display: none;
+  }
+
+  nav > [popover],
+  nav:has(> [popover]) > [popover] {
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+    max-height: none;
+    max-width: none;
+    min-width: 0;
+    overflow: visible;
+    padding: 0;
+    position: static;
+  }
+
+  nav > [popover] ul,
+  nav:has(> [popover]) > [popover] ul {
+    flex-direction: row;
+  }
+}

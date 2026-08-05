@@ -1,25 +1,84 @@
 ---
+import { SITE_TITLE } from '#utils/site-config'
 
+/**
+ * Primary site navigation.
+ *
+ * The link list lives inside a native HTML popover panel toggled by a
+ * hamburger button. Open/close, Esc-to-close and outside-click ("light
+ * dismiss") are provided by the browser via the `popover` /
+ * `popovertarget` attributes — this component ships no JavaScript.
+ *
+ * The popover is presentational only. It must never be used to gate
+ * authenticated content: markup inside `[popover]` is present in the HTML
+ * response whether the panel is open or not.
+ */
+export type Props = {
+  /** Text of the brand link on the left of the bar. */
+  brandTitle?: string
+  /** Destination of the brand link. */
+  brandHref?: string
+  /** id of the popover panel, wired to the button's `popovertarget`. */
+  menuId?: string
+  /** Render the brand link. Set false when a consumer supplies its own. */
+  showBrand?: boolean
+}
+
+const {
+  brandTitle = SITE_TITLE,
+  brandHref = '/',
+  menuId = 'site-nav-popover',
+  showBrand = true,
+} = Astro.props
 ---
 
-<nav>
-  <ul>
-    <li>
-      <a href="/">Home</a>
-    </li>
-    <li>
-      <a href="/content/1">Articles</a>
-    </li>
-    <li>
-      <a href="/posts/1">Blog</a>
-    </li>
-    <li>
-      <a href="/about">About</a>
-    </li>
-    <li>
-      <a href="/contact">Contact</a>
-    </li>
-  </ul>
-  <slot />
+<nav aria-label="Primary">
+  {
+    showBrand && (
+      <a href={brandHref} data-nav-brand>
+        {brandTitle}
+      </a>
+    )
+  }
+
+  <button type="button" popovertarget={menuId} aria-label="Menu">
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      viewBox="0 0 24 24"
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+    >
+      <path d="M4 7h16"></path>
+      <path d="M4 12h16"></path>
+      <path d="M4 17h16"></path>
+    </svg>
+  </button>
+
+  <div id={menuId} popover="auto">
+    <ul>
+      <li>
+        <a href="/">Home</a>
+      </li>
+      <li>
+        <a href="/content/1">Articles</a>
+      </li>
+      <li>
+        <a href="/posts/1">Blog</a>
+      </li>
+      <li>
+        <a href="/about">About</a>
+      </li>
+      <li>
+        <a href="/contact">Contact</a>
+      </li>
+    </ul>
+    <slot />
+  </div>
+
   <slot name="login" />
 </nav>

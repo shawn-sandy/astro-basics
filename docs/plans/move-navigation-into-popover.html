@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-status="todo" data-effort="high">
+<html lang="en" data-status="in-progress" data-effort="high">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@ try {
   if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
 } catch (e) { /* no storage — prefers-color-scheme decides */ }
 </script>
-<meta name="plan-status" content="todo">
+<meta name="plan-status" content="in-progress">
 <meta name="plan-effort" content="high">
 <meta name="plan-type" content="feature">
 <meta name="plan-created" content="2026-08-04">
@@ -1528,7 +1528,7 @@ img, video { max-width: 100%; height: auto; }
         <span class="effort-badge" aria-label="Effort level">High</span>
         <a class="issue-link" href="https://github.com/shawn-sandy/astro-basics/issues/346"
            aria-label="View the tracking issue for this plan">Issue #346</a>
-        <span class="status-badge">todo</span>
+        <span class="status-badge">in-progress</span>
       </div>
     </div>
     <div class="plan-meta">
@@ -1641,12 +1641,12 @@ img, video { max-width: 100%; height: auto; }
     <div class="progress-wrap" id="progress">
       <div class="progress-header">
         <span>Definition of done</span>
-        <span id="progress-label">0 / 14 done</span>
+        <span id="progress-label">12 / 14 done</span>
       </div>
       <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progress-bar"
-             role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
-             aria-label="Plan progress" style="width:0%"></div>
+        <div class="progress-bar-fill has-progress" id="progress-bar"
+             role="progressbar" aria-valuenow="86" aria-valuemin="0" aria-valuemax="100"
+             aria-label="Plan progress" style="width:86%"></div>
       </div>
     </div>
 
@@ -1905,60 +1905,60 @@ img, video { max-width: 100%; height: auto; }
       <p class="section-intro">The plan counts as done when every statement below is true — check each one off as you verify it.</p>
       <ul class="criteria-list" id="criteria-list">
         <li>
-          <input type="checkbox" id="ac1">
+          <input type="checkbox" id="ac1" checked>
           <label for="ac1">The top bar shows a hamburger menu button at every viewport width; the five nav links are no longer rendered inline in the bar</label>
         </li>
         <li>
-          <input type="checkbox" id="ac2">
+          <input type="checkbox" id="ac2" checked>
           <label for="ac2">Clicking the hamburger opens a top-right popover panel listing Home, Articles, Blog, About, and Contact</label>
         </li>
         <li>
-          <input type="checkbox" id="ac3">
+          <input type="checkbox" id="ac3" checked>
           <label for="ac3">Esc and clicking outside the panel both close it, and focus returns to the hamburger button</label>
         </li>
         <li>
-          <input type="checkbox" id="ac4">
+          <input type="checkbox" id="ac4" checked>
           <label for="ac4">The Clerk sign-in/user button remains visible in the top bar and is never covered by the open panel (WCAG 2.2 SC 2.4.11)</label>
         </li>
         <li>
-          <input type="checkbox" id="ac5">
+          <input type="checkbox" id="ac5" checked>
           <label for="ac5">A site-title link sits on the left of the bar and navigates to the home page</label>
         </li>
         <li>
-          <input type="checkbox" id="ac6">
+          <input type="checkbox" id="ac6" checked>
           <label for="ac6">The panel markup carries <code class="md">popover=&quot;auto&quot;</code> explicitly, not a bare or boolean-rendered <code class="md">popover</code></label>
         </li>
         <li>
-          <input type="checkbox" id="ac7">
+          <input type="checkbox" id="ac7" checked>
           <label for="ac7">The hamburger hit area measures at least 44×44px and shows a distinct style while the panel is open</label>
         </li>
         <li>
-          <input type="checkbox" id="ac8">
+          <input type="checkbox" id="ac8" checked>
           <label for="ac8">The panel fade-in is disabled when the OS prefers reduced motion</label>
         </li>
         <li>
           <input type="checkbox" id="ac9">
-          <label for="ac9">No horizontal scrolling appears at a 320px viewport with the panel open (WCAG 1.4.10)</label>
+          <label for="ac9">No horizontal scrolling appears at a 320px viewport with the panel open (WCAG 1.4.10) — <strong class="md">not met, pre-existing.</strong> The panel itself adds nothing (<code class="md">scrollWidth</code> is 325 with the panel open and 325 with it closed; the panel&#39;s own box measures 256px inside a 320px viewport). The 5px overflow comes from <code class="md">body { min-width: 20.3125rem }</code> at <code class="md">src/styles/_base.scss:5</code>, which overflows a 320px viewport on every page even with the whole <code class="md">&lt;nav&gt;</code> set to <code class="md">display: none</code>. Fixing it is a global layout change outside this plan&#39;s scope.</label>
         </li>
         <li>
-          <input type="checkbox" id="ac10">
-          <label for="ac10">In a browser without Popover API support, the links render as a static inline row and the hamburger button is hidden</label>
+          <input type="checkbox" id="ac10" checked>
+          <label for="ac10">In a browser without Popover API support, the links render as a static inline row and the hamburger button is hidden — verified in two halves; see Verification Results</label>
         </li>
         <li>
-          <input type="checkbox" id="ac11">
+          <input type="checkbox" id="ac11" checked>
           <label for="ac11">No custom JavaScript is added — the behavior uses only the HTML <code class="md">popover</code> and <code class="md">popovertarget</code> attributes</label>
         </li>
         <li>
-          <input type="checkbox" id="ac12">
+          <input type="checkbox" id="ac12" checked>
           <label for="ac12">An anonymous request to the home page returns zero <code class="md">/dashboard</code> and <code class="md">/profile</code> links, and <code class="md">npm run build</code> bakes none into <code class="md">dist/</code></label>
         </li>
         <li>
-          <input type="checkbox" id="ac13">
+          <input type="checkbox" id="ac13" checked>
           <label for="ac13"><code class="md">package.json</code> and <code class="md">package-lock.json</code> gain no new dependencies (<code class="md">sass:build</code> script only)</label>
         </li>
         <li>
           <input type="checkbox" id="ac14">
-          <label for="ac14"><code class="md">npm test</code>, <code class="md">npx playwright test</code>, <code class="md">npm run type-check</code>, and <code class="md">npm run lint:styles</code> all pass</label>
+          <label for="ac14"><code class="md">npm test</code>, <code class="md">npx playwright test</code>, <code class="md">npm run type-check</code>, and <code class="md">npm run lint:styles</code> all pass — <strong class="md">partially met.</strong> <code class="md">npm run lint:styles</code> and <code class="md">npm run sass:build</code> exit 0. <code class="md">npm test</code> and <code class="md">npm run type-check</code> fail identically before and after this change (see Verification Results); this change adds zero new failures. <code class="md">npx playwright test</code> passed on Chromium only, and could not be run as the canonical command; see Verification Results.</label>
         </li>
       </ul>
       <span id="criteria-status" aria-live="polite" aria-atomic="true"

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "start",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["run-p", "dev -- --port 4330", "sass"],
+      "port": 4330
+    },
+    {
+      "name": "dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "4331"],
+      "port": 4331
+    }
+  ]
+}

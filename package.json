@@ -32,6 +32,7 @@
     "deploy:preview": "npm run build && netlify deploy --dir=dist",
     "deploy:prod": "npm run build && netlify deploy --dir=dist --prod",
     "sass": "sass --watch src/styles/index.scss:src/styles/index.css --style=compressed",
+    "sass:build": "sass src/styles/index.scss:src/styles/index.css --style=compressed",
     "astro": "astro",
     "pretest": "astro sync && mkdir -p .astro && cp node_modules/.astro/data-store.json .astro/data-store.json",
     "test": "vitest",

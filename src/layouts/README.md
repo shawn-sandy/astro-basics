@@ -31,8 +31,16 @@ image, YouTube video (if applicable), and tags.
 ### Header.astro, Navigation.astro, Sidebar.astro, Footer.astro
 
 These components represent the individual sections of the website layout, such
-as the header, navigation menu, sidebar, and footer. They are imported and used
-within the main `Layout.astro` component to create the overall page structure.
+as the header, navigation menu, sidebar, and footer. They live in
+`src/components/astro/` and are imported by the layout components in this
+directory to create the overall page structure.
+
+`Base.astro` renders `Navigation.astro` at the top of every page and fills its
+`login` slot with the Clerk auth control. The navigation links themselves are not
+in the bar: they sit inside a native HTML popover panel opened by a hamburger
+button, with no JavaScript involved. The `userId`-gated dashboard and profile
+links go through the default slot, which also renders inside that panel — the
+`userId` check, not the popover, is what keeps them out of an anonymous response.
 
 ### site-config.js
 
@@ -54,7 +62,12 @@ featured image, YouTube video (if applicable), and tags.
 
 The individual components like `Header.astro`, `Navigation.astro`,
 `Sidebar.astro`, and `Footer.astro` represent different sections of the website
-layout and can be customized or extended as needed.
+layout and can be customized or extended as needed. `Navigation.astro` accepts
+optional `brandTitle`, `brandHref`, `menuId` and `showBrand` props, exposes a
+`login` slot that renders in the bar, and renders its default slot inside the
+popover panel. See
+[the Astro components README](../components/astro/README.md) for the full prop
+and slot reference.
 
 The `site-config.js` file provides a centralized location for managing website
 metadata and configuration settings, making it easier to maintain and update

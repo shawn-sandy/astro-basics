@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Popover Navigation** (`src/components/astro/Navigation.astro`): site navigation moved into a
+  native HTML popover panel opened by a hamburger button, at every viewport width
+  - Zero JavaScript: open, close, Esc-to-close and outside-click dismissal all come from the
+    `popover="auto"` and `popovertarget` attributes
+  - `popover="auto"` is written explicitly. The attribute's invalid-value default is `manual`,
+    which silently has no light dismiss and no Esc close
+  - Exported `Props` type: `brandTitle`, `brandHref`, `menuId`, `showBrand`
+  - Site-title brand link on the left; the Clerk auth control stays in the bar
+  - `userId`-gated dashboard and profile links render into the panel through the default slot,
+    so signed-in users get the same decluttered bar
+  - 44x44px hit area (WCAG 2.2 SC 2.5.8), `aria-label="Primary"` landmark, reduced-motion-safe fade
+  - `@supports not selector(:popover-open)` fallback renders the links as a static inline row and
+    hides the hamburger in engines without the Popover API
+  - New `sass:build` script for one-shot SCSS compilation (`npm run sass` is a watcher that never
+    terminates, so it cannot be used as a verification command)
+  - Coverage: `tests/components/Navigation.astro.test.ts` (8 cases) and
+    `e2e/navigation-popover.spec.ts` (10 cases, passing on Chromium and Firefox)
+  - The popover is presentational and never an access-control mechanism; authenticated-only
+    markup stays behind the server-side `userId` check
+  - Full documentation: [Navigation Popover guide](/guide/components/navigation-popover)
+- **Breaking (library consumers)**: `Navigation.astro`'s default slot now renders inside the
+  popover panel rather than in the bar
 - **User Sync Utility** (`src/utils/user-sync.ts`): Consolidated utility for fetching user data from Clerk and syncing with Supabase
   - `fetchUserWithRole()` function reduces component code by 80% (1 line vs 40+ lines)
   - Automatic user creation when users don't exist in database (handles PGRST116 errors)
