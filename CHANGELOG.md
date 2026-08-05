@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - New `sass:build` script for one-shot SCSS compilation (`npm run sass` is a watcher that never
     terminates, so it cannot be used as a verification command)
   - Coverage: `tests/components/Navigation.astro.test.ts` (8 cases) and
-    `e2e/navigation-popover.spec.ts` (10 cases, passing on Chromium and Firefox)
+    `e2e/navigation-popover.spec.ts` (10 cases, passing on Chromium)
   - The popover is presentational and never an access-control mechanism; authenticated-only
     markup stays behind the server-side `userId` check
   - Full documentation: [Navigation Popover guide](/guide/components/navigation-popover)

@@ -1,4 +1,8 @@
 ---
+// Prerendered: astro.config sets `output: 'server'`, and a server-rendered
+// offline fallback is unreachable in the exact situation it exists for.
+export const prerender = true
+
 import Base from '#layouts/Base.astro'
 ---
 

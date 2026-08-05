@@ -114,12 +114,17 @@ test.describe('Primary navigation popover', () => {
     await hamburger(page).click()
     await expectPopoverOpen(panel(page), true)
 
-    // Top-left corner of <main>: clear of the panel *vertically*, and not a
-    // link — the URL assertion below catches it if that ever stops holding.
-    // The clearance is vertical, not horizontal: the panel is flush-left
-    // (x 0-256), so this x=4 click overlaps its column and is only outside it
-    // because <main> sits below the panel's bottom edge.
-    await page.locator('main#main').click({ position: { x: 4, y: 4 } })
+    // Derive the click point from the panel's own box rather than assuming an
+    // edge: the panel moved from right-aligned to flush-left during
+    // implementation, which silently invalidated a hardcoded "far from the
+    // panel" coordinate. Clicking just past its bottom-right corner stays
+    // outside it wherever it is anchored.
+    const box = await panel(page).boundingBox()
+    if (!box) throw new Error('panel has no box while open')
+    await page.mouse.click(box.x + box.width + 40, box.y + box.height + 40)
+
+    // Guard the derivation itself: a click that landed on a link would still
+    // close the panel, so assert we never navigated.
 
     await expectPopoverOpen(panel(page), false)
     expect(page.url()).toBe(urlBeforeDismiss)

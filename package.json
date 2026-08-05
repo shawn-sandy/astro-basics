@@ -88,7 +88,8 @@
     "setup:roles": "tsx scripts/setup-roles.ts",
     "setup:roles:dry-run": "tsx scripts/setup-roles.ts --dry-run",
     "validate:roles": "tsx -e \"import { validateRoleConfig } from './scripts/lib/role-validator.js'; import { roleConfig } from './config/roles.config.js'; const result = validateRoleConfig(roleConfig); if (!result.success) { console.error('Validation failed:', result.errors); process.exit(1); } console.log('✓ Configuration is valid!');\"",
-    "prepare": "husky && patch-package"
+    "prepare": "husky && patch-package",
+    "prebuild": "npm run sass:build"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,astro}": [
