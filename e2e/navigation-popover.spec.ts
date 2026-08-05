@@ -114,8 +114,11 @@ test.describe('Primary navigation popover', () => {
     await hamburger(page).click()
     await expectPopoverOpen(panel(page), true)
 
-    // Top-left corner of <main>: far from the right-aligned panel, and not a
+    // Top-left corner of <main>: clear of the panel *vertically*, and not a
     // link — the URL assertion below catches it if that ever stops holding.
+    // The clearance is vertical, not horizontal: the panel is flush-left
+    // (x 0-256), so this x=4 click overlaps its column and is only outside it
+    // because <main> sits below the panel's bottom edge.
     await page.locator('main#main').click({ position: { x: 4, y: 4 } })
 
     await expectPopoverOpen(panel(page), false)

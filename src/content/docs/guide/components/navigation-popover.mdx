@@ -68,7 +68,7 @@ import Navigation from '#components/astro/Navigation.astro'
   <p>Rendered inside the popover panel.</p>
 
   <ul slot="login">
-    <li><a href="/dashboard">Dashboard</a></li>
+    <li><button type="button">Sign in</button></li>
   </ul>
 </Navigation>
 ```
@@ -84,8 +84,13 @@ The default slot is a behaviour change for library consumers. `Navigation` is ex
 and through the `./astro` entry in `package.json`, and content passed to the default slot previously rendered in the
 bar. It now renders inside the panel. Move anything that must stay permanently visible to the `login` slot.
 
-`src/layouts/Base.astro` uses the `login` slot for the dashboard link, profile link and Clerk auth controls, which is
-why they stay in the bar while the link panel is closed.
+`src/layouts/Base.astro` puts the `userId`-gated dashboard and profile links in the **default** slot, so they render
+inside the panel alongside the site links, and keeps only the Clerk auth control in the `login` slot, which is why
+that control stays in the bar while the panel is closed.
+
+Do not put authenticated-only links in the `login` slot to "keep them handy" — that slot is always visible, so they
+would sit in the bar on every page. Which links exist at all is decided by the server-side `userId` check, never by
+the panel; see [Not a security boundary](#the-popover-is-not-a-security-boundary).
 
 ## Why `popover="auto"` is written out
 
@@ -109,7 +114,7 @@ pseudo-class combined with `:has()`:
 
 ```scss
 nav:has(> [popover]:popover-open) button[popovertarget] {
-  background-color: var(--card-background);
+  background-color: color-mix(in srgb, currentcolor 12%, transparent);
   border-color: currentcolor;
 }
 ```
