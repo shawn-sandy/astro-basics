@@ -396,7 +396,10 @@ nav:has(> [popover]) {
   background-color: inherit;
   flex-direction: row;
   gap: var(--space-4);
-  justify-content: flex-end;
+  justify-content: flex-start;
+}
+nav:has(> [popover]) > ul {
+  margin-inline-start: auto;
 }
 nav:has(> [popover]) > button[popovertarget] {
   align-items: center;
@@ -409,7 +412,6 @@ nav:has(> [popover]) > button[popovertarget] {
   justify-content: center;
   min-height: var(--space-11);
   min-width: var(--space-11);
-  margin-inline-end: auto;
   padding: 0;
 }
 nav:has(> [popover]) > [data-nav-brand] {
@@ -419,9 +421,10 @@ nav:has(> [popover]) > [data-nav-brand] {
 nav:has(> [popover]) > [popover] {
   background-color: inherit;
   border: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
-  border-radius: var(--card-radius);
+  border-radius: 0 var(--card-radius) var(--card-radius) 0;
   box-shadow: var(--card-shadow);
   inset: auto;
+  left: 0;
   margin: 0;
   max-height: calc(100dvh - 5rem);
   max-width: calc(100vw - 2rem);
@@ -429,7 +432,6 @@ nav:has(> [popover]) > [popover] {
   overflow-y: auto;
   padding: var(--space-2);
   position: fixed;
-  right: var(--nav-padding-inline, 1rem);
   top: 4rem;
   z-index: var(--z-index-popover);
 }
@@ -456,6 +458,12 @@ nav:has(> [popover]) > [popover] a {
   display: block;
   padding: var(--space-2) var(--space-3);
   width: 100%;
+}
+nav:has(> [popover]) > [popover] li:hover {
+  background-color: rgba(0, 0, 0, 0);
+}
+nav:has(> [popover]) > [popover] a:hover {
+  background-color: color-mix(in srgb, currentcolor 8%, transparent);
 }
 nav:has(> [popover]:popover-open) button[popovertarget] {
   background-color: color-mix(in srgb, currentcolor 12%, transparent);

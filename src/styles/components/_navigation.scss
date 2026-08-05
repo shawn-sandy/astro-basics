@@ -18,11 +18,18 @@ nav:has(> [popover]) {
   flex-direction: row;
   gap: var(--space-4);
 
-  // acss sets `justify-content: space-between`, which would strand elements.
-  // flex-end aligns all items to the right, then the hamburger pushes the
-  // login slot to the far right with margin-inline-end: auto, keeping button
-  // and brand grouped on the left.
-  justify-content: flex-end;
+  // acss sets `justify-content: space-between`, which would spread the three
+  // children apart. Packing to the start keeps the hamburger and brand
+  // together on the left; the login slot claims the gap on its own (below),
+  // so the grouping holds whether or not `showBrand` is set.
+  justify-content: flex-start;
+
+  // The only direct-child `ul` is the login slot — the panel's lists are
+  // nested inside `[popover]`. The auto margin lives here rather than on the
+  // brand so it still works when `showBrand` is false.
+  > ul {
+    margin-inline-start: auto;
+  }
 
   > button[popovertarget] {
     align-items: center;
@@ -36,10 +43,6 @@ nav:has(> [popover]) {
     cursor: pointer;
     display: inline-flex;
     justify-content: center;
-
-    // Pushes the login slot to the right while keeping the button and brand
-    // grouped on the left.
-    margin-inline-end: auto;
 
     // WCAG 2.2 SC 2.5.8 requires 24x24; --space-11 is 44px.
     min-height: var(--space-11);
@@ -58,12 +61,18 @@ nav:has(> [popover]) {
     // resolves against `body` rather than the UA's `Canvas` system colour.
     background-color: inherit;
     border: 1px solid color-mix(in srgb, currentcolor 20%, transparent);
-    border-radius: var(--card-radius);
+
+    // Square on the left: the panel sits flush against the viewport edge, so
+    // rounded corners there would leave a sliver of page showing through.
+    border-radius: 0 var(--card-radius) var(--card-radius) 0;
     box-shadow: var(--card-shadow);
 
     // The UA sheet sets `inset: 0; margin: auto` to centre popovers on
-    // screen. Both have to be cleared before top/right can take effect.
+    // screen. Both have to be cleared before top/left can take effect.
     inset: auto;
+
+    // Flush against the viewport edge rather than inset to the bar's padding.
+    left: 0;
     margin: 0;
     max-height: calc(100dvh - 5rem);
 
@@ -74,9 +83,6 @@ nav:has(> [popover]) {
     overflow-y: auto;
     padding: var(--space-2);
     position: fixed;
-
-    // Same inline padding the bar uses, so the panel lines up with it.
-    right: var(--nav-padding-inline, 1rem);
 
     // Clears the 4rem bar, so the panel never covers the login control
     // while it is in the focus path (WCAG 2.2 SC 2.4.11).
@@ -114,6 +120,19 @@ nav:has(> [popover]) {
     display: block;
     padding: var(--space-2) var(--space-3);
     width: 100%;
+  }
+
+  // acss tints `body > nav ul > li:hover` with `--color-surface-secondary`,
+  // another token that flips under `prefers-color-scheme: dark` and paints a
+  // near-black block behind the link text. Move the hover onto the anchor so
+  // it picks up the anchor's radius, and derive the tint from the inherited
+  // colour so it can never fight the surface underneath it.
+  > [popover] li:hover {
+    background-color: transparent;
+  }
+
+  > [popover] a:hover {
+    background-color: color-mix(in srgb, currentcolor 8%, transparent);
   }
 }
 
