@@ -18,7 +18,7 @@ directive, and no open-state class toggled on the DOM.
 ## Markup structure
 
 ```astro
-<nav aria-label="Primary">
+<nav aria-label="Primary" data-site-nav>
   <a href="/" data-nav-brand>Site title</a>
 
   <button type="button" popovertarget="site-nav-popover" aria-label="Menu">
@@ -37,7 +37,7 @@ directive, and no open-state class toggled on the DOM.
 </nav>
 ```
 
-Three details carry the whole pattern:
+Four details carry the whole pattern:
 
 - The button's `popovertarget` value matches the panel's `id`. That single pairing is the entire toggle mechanism -
   no `onclick`, no `showPopover()` call.
@@ -45,6 +45,9 @@ Three details carry the whole pattern:
   the top layer when shown, and dismiss it on Esc or an outside click.
 - `aria-expanded` is never written into the markup. Once `popovertarget` points at a popover, the browser maps the
   invoker's expanded state into the accessibility tree on its own.
+- `data-site-nav` on the root is the styling hook. It carries no behaviour; every selector in
+  `_navigation.scss` and in the inline first-paint block is scoped to it. See
+  [Why the styles are scoped to `[data-site-nav]`](#why-the-styles-are-scoped-to-data-site-nav).
 
 ## Props
 
@@ -108,13 +111,35 @@ closed by clicking the hamburger a second time - with no error in the console to
 Writing `popover="auto"` explicitly states the intent at the call site and makes the difference reviewable in a
 diff. Do not shorten it to a bare `popover`.
 
+## Why the styles are scoped to `[data-site-nav]`
+
+`Navigation` is exported from `src/components/index.ts` and through the `./astro` entry in `package.json`, so its
+stylesheet ships to consumers. Selectors like `nav:has(> [popover])` and `nav > button[popovertarget]` describe a
+_shape_, not this component - any popover-based navigation on the page matches them. A consumer with its own
+hamburger menu would silently inherit this one's 44px box, transparent border and fixed-position panel.
+
+`Navigation.astro` therefore marks its root:
+
+```astro
+<nav aria-label="Primary" data-site-nav>
+  <!-- hamburger button, brand link, popover panel, login slot -->
+</nav>
+```
+
+and every rule in `_navigation.scss` and in the inline first-paint block is prefixed with it. The attribute is a
+styling hook only - no script reads it, and the E2E suite targets `nav[aria-label="Primary"]` instead, so the two
+concerns stay independent.
+
+The marker adds `(0,1,0)` to every selector on both sides, so all the precedence relationships documented below are
+unchanged - only the absolute numbers move.
+
 ## Styling the open state
 
 There is no JavaScript, so nothing adds a class when the panel opens. The only hook is the `:popover-open`
 pseudo-class combined with `:has()`:
 
 ```scss
-nav:has(> [popover]:popover-open) button[popovertarget] {
+nav[data-site-nav]:has(> [popover]:popover-open) button[popovertarget] {
   background-color: color-mix(in srgb, currentcolor 12%, transparent);
   border-color: currentcolor;
 }
@@ -130,7 +155,7 @@ The obvious-looking alternative fails:
 
 ```scss
 // Never matches. Do not use.
-nav button[popovertarget][aria-expanded='true'] {
+nav[data-site-nav] button[popovertarget][aria-expanded='true'] {
   border-color: currentcolor;
 }
 ```
@@ -151,7 +176,7 @@ At rest the button is a bare icon. The border is not removed - it is kept at `1p
 colour changes:
 
 ```scss
-nav:has(> [popover]) > button[popovertarget] {
+nav[data-site-nav]:has(> [popover]) > button[popovertarget] {
   background-color: transparent;
   border: 1px solid transparent;
 
@@ -190,7 +215,7 @@ answers it with an `is:inline` style block:
 ```astro
 <style is:inline>
   @supports selector(:popover-open) {
-    nav > button[popovertarget] {
+    nav[data-site-nav] > button[popovertarget] {
       align-items: center;
       appearance: none;
       background: transparent;
@@ -212,19 +237,19 @@ Four things make this work:
   collected into the bundle and, in dev, injected by JavaScript like every other stylesheet - so it would arrive too
   late to help. `is:inline` opts out of bundling, scoping and processing, and the rules apply while the document is
   still parsing.
-- **Specificity keeps the duplication safe.** The inline selector `nav > button[popovertarget]` is (0,1,2). The rules
-  in `_navigation.scss` are (0,2,2), because `:has()` contributes its argument's specificity even though the
-  pseudo-class itself does not count. Hover, focus and open states therefore still win, and the inline block only
-  ever governs the frame before the stylesheet lands.
+- **Specificity keeps the duplication safe.** The inline selector `nav[data-site-nav] > button[popovertarget]` is
+  (0,2,2) - one for `[data-site-nav]`, one for `[popovertarget]`, two type selectors. The rules in
+  `_navigation.scss` are (0,3,2): the same two attributes plus `:has(> [popover])`, because `:has()` contributes its
+  argument's specificity even though the pseudo-class itself does not count. Hover, focus and open states therefore
+  still win, and the inline block only ever governs the frame before the stylesheet lands.
 - **Only declarations that change the painted box are repeated.** `border-radius` is deliberately absent: with a
   transparent background and a transparent border there is nothing for a radius to round, so `--card-radius` needs no
   stand-in at first paint. `44px` is hard-coded because `--space-11` is itself defined in the late stylesheet.
 - **The `@supports` guard keeps the block out of the fallback's way.** Without a popover the button is inert and
-  [the fallback](#fallback-without-the-popover-api) hides it with `display: none`. That rule currently wins on
-  specificity alone - its `:has()` variant is (0,2,2) against this block's (0,1,2) - but relying on that is fragile:
-  splitting the fallback's selector list into separate rules would leave the bare (0,1,2) selector losing to this
-  block's `display: inline-flex`, and the inert button would reappear. Scoping the block to engines that actually
-  get a popover states the intent instead of depending on the race.
+  [the fallback](#fallback-without-the-popover-api) hides it with `display: none`. The fallback's bare selector is
+  (0,2,2) - an exact tie with this block - and this block sits in `<body>` while the stylesheet is linked from
+  `<head>`, so on a tie the inline `display: inline-flex` wins and the inert button reappears. The guard removes the
+  tie from the picture entirely: on an engine with no popover, this block simply does not apply.
 
 A CSS fade-in cannot solve this. The animation would have to be declared in the same stylesheet whose arrival is
 late, so it could only begin after the flash had already been painted. Anything that fixes a first-paint problem has
@@ -238,20 +263,23 @@ handles that case:
 
 ```scss
 @supports not selector(:popover-open) {
-  nav > button[popovertarget] {
+  // Bare form: engines with neither `:has()` nor popover.
+  nav[data-site-nav] > button[popovertarget] {
     display: none;
   }
 
-  nav > [popover] {
-    // Strip the panel chrome and positioning.
+  // `:has()` form: matches the (0,3,2) rules above so it wins on source order.
+  nav[data-site-nav]:has(> [popover]) > button[popovertarget] {
+    display: none;
+  }
+
+  // The panel and its list follow the same pairing: strip the chrome and
+  // positioning, then repeat the block with the `:has()` root.
+  nav[data-site-nav] > [popover] {
     background-color: transparent;
     border: 0;
     box-shadow: none;
     position: static;
-  }
-
-  nav > [popover] ul {
-    flex-direction: row;
   }
 }
 ```
@@ -262,6 +290,37 @@ inline row in the bar. The result is plain, always-visible navigation rather tha
 `selector(:popover-open)` is the right probe here. It tests support for the pseudo-class the open-state styling
 depends on, which is the feature that actually has to be present, rather than testing the `popover` attribute
 indirectly.
+
+### Why each block is written twice
+
+`@supports` gates _whether_ a block applies, not _how specific_ it is. Inside the feature query, the bare
+`nav[data-site-nav] > button[popovertarget]` is still only (0,2,2), which loses to the (0,3,2) main rule above it -
+the fallback would parse fine and do nothing. Repeating each block with the `:has()` root produces a (0,3,2) tie that
+wins on source order.
+
+The bare form is not redundant. It is the only rule that reaches an engine supporting neither `:has()` nor popover,
+where the main block never matches either.
+
+### Why they are separate rules, not one selector list
+
+The two forms must not be combined into a comma-separated list:
+
+```scss
+// Wrong. On an engine without `:has()`, this whole rule is discarded.
+nav[data-site-nav] > button[popovertarget],
+nav[data-site-nav]:has(> [popover]) > button[popovertarget] {
+  display: none;
+}
+```
+
+A CSS selector list is **unforgiving**: if a parser cannot understand any one selector in the list, it drops the
+entire rule rather than the offending selector. `:has()` is not a forgiving-list pseudo-class - `:is()` and
+`:where()` are the ones that swallow unknown selectors, and while `:has()`'s own _argument_ list is forgiving, the
+outer list that contains it is not.
+
+So on exactly the engines the bare selector was written for - no `:has()`, no popover - the list form would take that
+selector down with the `:has()` one, and the fallback would silently do nothing. Splitting the list is what makes the
+bare form actually reach those engines.
 
 ## The popover is not a security boundary
 

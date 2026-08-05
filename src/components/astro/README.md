@@ -47,6 +47,10 @@ attributes. The component ships no JavaScript, so there is no open-state class
 to style against — see `src/styles/components/_navigation.scss` for the
 `:has(> [popover]:popover-open)` hook it uses instead.
 
+The root `nav` also carries `data-site-nav`. Every selector in the stylesheet
+and in the component's inline first-paint block is scoped to that marker, so
+the styles cannot reach a consumer's own popover navigation on the same page.
+
 **Props** (all optional):
 
 | Prop         | Type      | Default              | Description                                                          |

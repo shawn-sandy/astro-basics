@@ -17,6 +17,10 @@ import { SITE_TITLE } from '#utils/site-config'
  * dismiss") are provided by the browser via the `popover` /
  * `popovertarget` attributes — this component ships no JavaScript.
  *
+ * The root `nav` carries `data-site-nav`. Every selector in
+ * `_navigation.scss` and in the inline first-paint block below is scoped to
+ * it, so the styles cannot reach a consumer's own popover navigation.
+ *
  * The popover is presentational only. It must never be used to gate
  * authenticated content: markup inside `[popover]` is present in the HTML
  * response whether the panel is open or not.
@@ -46,21 +50,26 @@ const {
   styles land. `is:inline` keeps this block in the HTML, so the first paint
   already matches the final one. Only the declarations that change the painted
   box are repeated here; hover, focus and open states stay in
-  `_navigation.scss`. Specificity is (0,1,2) against that file's (0,2,2), so
+  `_navigation.scss`. Specificity is (0,2,2) against that file's (0,3,2), so
   those rules still win. A fade-in cannot fix this - it would have to live in
   the same late stylesheet.
 
+  `[data-site-nav]` scopes the rule to this component. `Navigation` is
+  exported from the package, so a bare `nav > button[popovertarget]` would
+  reach a consumer's own popover nav on the same page.
+
   The `@supports` guard scopes the block to engines that actually get a
   popover. Without a popover the button is inert, and `_navigation.scss`
-  hides it under `@supports not selector(:popover-open)`; that rule wins
-  today only because its `:has()` variant is (0,2,2) against this block's
-  (0,1,2). Stating the condition here means the fallback no longer depends
-  on that specificity race - splitting the rule's selector list would
-  otherwise leave this block overriding `display: none`.
+  hides it under `@supports not selector(:popover-open)`. That block now
+  states each selector as its own rule, and its bare form is (0,2,2) - an
+  exact tie with this one. This block sits in `<body>`, after every
+  stylesheet in `<head>`, so it would win that tie on source order and the
+  inert button would reappear. The guard removes the tie instead of
+  relying on it: with no popover, this block simply does not apply.
 -->
 <style is:inline>
   @supports selector(:popover-open) {
-    nav > button[popovertarget] {
+    nav[data-site-nav] > button[popovertarget] {
       align-items: center;
       appearance: none;
       background: transparent;
@@ -80,7 +89,7 @@ const {
   }
 </style>
 
-<nav aria-label="Primary">
+<nav aria-label="Primary" data-site-nav>
   <button type="button" popovertarget={menuId} aria-label="Menu">
     <svg
       aria-hidden="true"

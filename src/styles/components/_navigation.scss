@@ -6,7 +6,12 @@
 // implicit accessibility-tree mapping on a popover invoker, not a DOM
 // attribute, so it never matches.
 
-nav:has(> [popover]) {
+// Every selector is scoped to `[data-site-nav]`, the marker `Navigation.astro`
+// puts on its root `nav`. The component is exported from the package, so bare
+// `nav` / `nav > button[popovertarget]` selectors would style a consumer's own
+// popover navigation on the same page.
+
+nav[data-site-nav]:has(> [popover]) {
   // Neither the bar nor the panel picks its own colour: both follow whatever
   // the page sets. The `--card-*` tokens flip under `prefers-color-scheme:
   // dark` while `body` does not, which produced a dark panel on a white page.
@@ -146,7 +151,7 @@ nav:has(> [popover]) {
 }
 
 // Open-state affordance on the invoker.
-nav:has(> [popover]:popover-open) button[popovertarget] {
+nav[data-site-nav]:has(> [popover]:popover-open) button[popovertarget] {
   // Tinted from the inherited text colour, not a palette token, so the open
   // affordance stays visible on whatever surface the page provides.
   background-color: color-mix(in srgb, currentcolor 12%, transparent);
@@ -154,7 +159,7 @@ nav:has(> [popover]:popover-open) button[popovertarget] {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  nav > [popover]:popover-open {
+  nav[data-site-nav] > [popover]:popover-open {
     opacity: 1;
     transition: opacity var(--transition-duration-150) ease-out;
 
@@ -167,22 +172,29 @@ nav:has(> [popover]:popover-open) button[popovertarget] {
 // Graceful degradation. Engines without the Popover API do not hide
 // `[popover]` elements at all, so without this the panel would render as a
 // permanently-open fixed overlay beside a button that does nothing.
-// Each rule is duplicated with the `:has()` root so it matches the
-// specificity of the block above and wins on source order. `@supports`
-// gates whether a block applies, not how specific it is: the bare
-// `nav > button[popovertarget]` form alone (0,1,2) loses to
-// `nav:has(> [popover]) > button[popovertarget]` (0,2,2) and the whole
-// fallback silently does nothing. The bare form is kept for engines that
-// support neither `:has()` nor popover, where the block above never
-// matches either.
+
+// Each declaration block is written twice: once bare, once with the `:has()`
+// root. `@supports` gates whether a block applies, not how specific it is, so
+// the bare `nav[data-site-nav] > button[popovertarget]` form (0,2,2) alone
+// would lose to `nav[data-site-nav]:has(> [popover]) > button[popovertarget]`
+// (0,3,2) above and the fallback would silently do nothing. The bare form
+// serves engines that support neither `:has()` nor popover, where the block
+// above never matches either.
+
+// The two forms are separate rules, not one comma-separated selector list.
+// A selector list is unforgiving: an engine that cannot parse `:has()` drops
+// the entire rule, which would take the bare selector — the one written for
+// exactly those engines — down with it.
 @supports not selector(:popover-open) {
-  nav > button[popovertarget],
-  nav:has(> [popover]) > button[popovertarget] {
+  nav[data-site-nav] > button[popovertarget] {
     display: none;
   }
 
-  nav > [popover],
-  nav:has(> [popover]) > [popover] {
+  nav[data-site-nav]:has(> [popover]) > button[popovertarget] {
+    display: none;
+  }
+
+  nav[data-site-nav] > [popover] {
     background-color: transparent;
     border: 0;
     box-shadow: none;
@@ -194,8 +206,23 @@ nav:has(> [popover]:popover-open) button[popovertarget] {
     position: static;
   }
 
-  nav > [popover] ul,
-  nav:has(> [popover]) > [popover] ul {
+  nav[data-site-nav]:has(> [popover]) > [popover] {
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+    max-height: none;
+    max-width: none;
+    min-width: 0;
+    overflow: visible;
+    padding: 0;
+    position: static;
+  }
+
+  nav[data-site-nav] > [popover] ul {
+    flex-direction: row;
+  }
+
+  nav[data-site-nav]:has(> [popover]) > [popover] ul {
     flex-direction: row;
   }
 }

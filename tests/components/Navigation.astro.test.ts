@@ -90,6 +90,16 @@ describe('Navigation.astro popover markup contract', () => {
     expect(attr(openTag(await render(), 'nav'), 'aria-label')).toBe('Primary')
   })
 
+  it('marks the nav root with data-site-nav', async () => {
+    // Every selector in _navigation.scss and in the inline first-paint block
+    // is scoped to this attribute. Dropping it would strip the component of
+    // all its styling without failing any other assertion here.
+    const html = await render()
+
+    expect(openTag(html, 'nav')).toMatch(/\sdata-site-nav[\s>]/)
+    expect(html).toContain('nav[data-site-nav] > button[popovertarget]')
+  })
+
   it('renders default-slot content inside the popover panel', async () => {
     // Base.astro passes the userId-gated Dashboard and Profile links through
     // the default slot, so they must land inside the panel rather than the bar.
