@@ -67,6 +67,9 @@ const {
       /* Transparent border and background make the radius invisible, so
          `--card-radius` is not needed before the stylesheet lands. */
       border: 1px solid transparent;
+      /* The SVG strokes with `currentColor`. Without this the icon paints in
+         the UA's `buttontext` system colour rather than the page's. */
+      color: inherit;
       display: inline-flex;
       justify-content: center;
       /* Mirrors --space-11; the token is defined in the late stylesheet. */

@@ -182,7 +182,9 @@ native chrome:
 | First paint, unfixed | 40x33 | `rgb(239,239,239)` | `2px` black       |
 | After the stylesheet | 44x44 | transparent        | `1px` transparent |
 
-That is a grey bevelled button that then jumps 11px - visible as a flash on every dev reload. `Navigation.astro`
+That is a grey bevelled button that then grows by 4px in width and 11px in height - visible as a flash on every dev
+reload. The values above were read with `getComputedStyle` in Chromium on macOS; the exact user-agent numbers vary by
+browser and platform, so treat them as an illustration of the jump rather than fixed constants. `Navigation.astro`
 answers it with an `is:inline` style block:
 
 ```astro
@@ -193,6 +195,7 @@ answers it with an `is:inline` style block:
       appearance: none;
       background: transparent;
       border: 1px solid transparent;
+      color: inherit;
       display: inline-flex;
       justify-content: center;
       min-height: 44px;
