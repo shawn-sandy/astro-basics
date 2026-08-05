@@ -398,11 +398,6 @@ nav:has(> [popover]) {
   gap: var(--space-4);
   justify-content: flex-end;
 }
-nav:has(> [popover]) > [data-nav-brand] {
-  font-weight: 600;
-  margin-inline-end: auto;
-  text-decoration: none;
-}
 nav:has(> [popover]) > button[popovertarget] {
   align-items: center;
   background-color: rgba(0, 0, 0, 0);
@@ -414,7 +409,12 @@ nav:has(> [popover]) > button[popovertarget] {
   justify-content: center;
   min-height: var(--space-11);
   min-width: var(--space-11);
+  margin-inline-end: auto;
   padding: 0;
+}
+nav:has(> [popover]) > [data-nav-brand] {
+  font-weight: 600;
+  text-decoration: none;
 }
 nav:has(> [popover]) > [popover] {
   background-color: inherit;

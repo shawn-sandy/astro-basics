@@ -33,14 +33,6 @@ const {
 ---
 
 <nav aria-label="Primary">
-  {
-    showBrand && (
-      <a href={brandHref} data-nav-brand>
-        {brandTitle}
-      </a>
-    )
-  }
-
   <button type="button" popovertarget={menuId} aria-label="Menu">
     <svg
       aria-hidden="true"
@@ -58,6 +50,14 @@ const {
       <path d="M4 17h16"></path>
     </svg>
   </button>
+
+  {
+    showBrand && (
+      <a href={brandHref} data-nav-brand>
+        {brandTitle}
+      </a>
+    )
+  }
 
   <div id={menuId} popover="auto">
     <ul>

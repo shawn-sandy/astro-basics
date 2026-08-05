@@ -18,17 +18,11 @@ nav:has(> [popover]) {
   flex-direction: row;
   gap: var(--space-4);
 
-  // acss sets `justify-content: space-between`, which strands the hamburger
-  // mid-bar between the brand and the login control. Grouping to the end and
-  // letting the brand claim the free space keeps the bar readable whether or
-  // not `showBrand` is set.
+  // acss sets `justify-content: space-between`, which would strand elements.
+  // flex-end aligns all items to the right, then the hamburger pushes the
+  // login slot to the far right with margin-inline-end: auto, keeping button
+  // and brand grouped on the left.
   justify-content: flex-end;
-
-  > [data-nav-brand] {
-    font-weight: 600;
-    margin-inline-end: auto;
-    text-decoration: none;
-  }
 
   > button[popovertarget] {
     align-items: center;
@@ -43,10 +37,19 @@ nav:has(> [popover]) {
     display: inline-flex;
     justify-content: center;
 
+    // Pushes the login slot to the right while keeping the button and brand
+    // grouped on the left.
+    margin-inline-end: auto;
+
     // WCAG 2.2 SC 2.5.8 requires 24x24; --space-11 is 44px.
     min-height: var(--space-11);
     min-width: var(--space-11);
     padding: 0;
+  }
+
+  > [data-nav-brand] {
+    font-weight: 600;
+    text-decoration: none;
   }
 
   > [popover] {
