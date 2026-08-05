@@ -12,7 +12,8 @@ directive, and no open-state class toggled on the DOM.
 
 **Component:** `src/components/astro/Navigation.astro`
 
-**Styles:** `src/styles/components/_navigation.scss`
+**Styles:** `src/styles/components/_navigation.scss`, plus a small `is:inline` block in the component itself - see
+[Preventing the first-paint flash](#preventing-the-first-paint-flash)
 
 ## Markup structure
 
@@ -75,10 +76,10 @@ import Navigation from '#components/astro/Navigation.astro'
 
 ## Slots
 
-| Slot      | Renders                                                                                    |
-| --------- | ------------------------------------------------------------------------------------------ |
+| Slot      | Renders                                                                                       |
+| --------- | --------------------------------------------------------------------------------------------- |
 | (default) | Inside the popover panel, directly below the link list. Only visible while the panel is open. |
-| `login`   | In the bar, after the panel. Always visible, regardless of panel state.                    |
+| `login`   | In the bar, after the panel. Always visible, regardless of panel state.                       |
 
 The default slot is a behaviour change for library consumers. `Navigation` is exported from `src/components/index.ts`
 and through the `./astro` entry in `package.json`, and content passed to the default slot previously rendered in the
@@ -143,6 +144,80 @@ screen reader still announces the button as expanded.
 This is also why the component does not hand-write `aria-expanded`. Doing so would create a second source of truth
 that only stays correct if JavaScript keeps it in sync, which reintroduces exactly the script the popover pattern
 removes.
+
+## Styling the resting state
+
+At rest the button is a bare icon. The border is not removed - it is kept at `1px solid transparent` and only its
+colour changes:
+
+```scss
+nav:has(> [popover]) > button[popovertarget] {
+  background-color: transparent;
+  border: 1px solid transparent;
+
+  &:hover,
+  &:focus-visible {
+    border-color: color-mix(in srgb, currentcolor 30%, transparent);
+  }
+}
+```
+
+Keeping the border width at `1px` in every state is what stops the icon shifting a pixel on hover; `border: 0`
+would change the box. `:focus-visible` rides along with `:hover` so keyboard users get the same affordance - the
+browser outline is still the actual focus indicator.
+
+The tint is mixed from `currentcolor` rather than a palette token, for the same reason the open-state rule above
+does it: the button follows whatever colour the surrounding surface sets, so it cannot drift from the bar it sits
+on.
+
+## Preventing the first-paint flash
+
+`Base.astro` imports the stylesheets in its frontmatter. In a production build Astro emits them as a render-blocking
+`<link rel="stylesheet">` in `<head>`, but the dev server hands them to Vite, which injects them as `<style>` tags
+from JavaScript after the HTML is parsed. For one frame the browser therefore paints the button with the user-agent's
+native chrome:
+
+| Frame                | Box   | Background         | Border            |
+| -------------------- | ----- | ------------------ | ----------------- |
+| First paint, unfixed | 40x33 | `rgb(239,239,239)` | `2px` black       |
+| After the stylesheet | 44x44 | transparent        | `1px` transparent |
+
+That is a grey bevelled button that then jumps 11px - visible as a flash on every dev reload. `Navigation.astro`
+answers it with an `is:inline` style block:
+
+```astro
+<style is:inline>
+  nav > button[popovertarget] {
+    align-items: center;
+    appearance: none;
+    background: transparent;
+    border: 1px solid transparent;
+    display: inline-flex;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0;
+  }
+</style>
+```
+
+Three things make this work:
+
+- **`is:inline` is the only style directive Astro leaves in the HTML.** A plain `<style>` block in a component is
+  collected into the bundle and, in dev, injected by JavaScript like every other stylesheet - so it would arrive too
+  late to help. `is:inline` opts out of bundling, scoping and processing, and the rules apply while the document is
+  still parsing.
+- **Specificity keeps the duplication safe.** The inline selector `nav > button[popovertarget]` is (0,1,2). The rules
+  in `_navigation.scss` are (0,2,2), because `:has()` contributes its argument's specificity even though the
+  pseudo-class itself does not count. Hover, focus and open states therefore still win, and the inline block only
+  ever governs the frame before the stylesheet lands.
+- **Only declarations that change the painted box are repeated.** `border-radius` is deliberately absent: with a
+  transparent background and a transparent border there is nothing for a radius to round, so `--card-radius` needs no
+  stand-in at first paint. `44px` is hard-coded because `--space-11` is itself defined in the late stylesheet.
+
+A CSS fade-in cannot solve this. The animation would have to be declared in the same stylesheet whose arrival is
+late, so it could only begin after the flash had already been painted. Anything that fixes a first-paint problem has
+to be in the HTML.
 
 ## Fallback without the Popover API
 
