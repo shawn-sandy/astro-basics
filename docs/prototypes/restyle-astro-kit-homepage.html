@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-mode="after">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="proto-source" content="">
+<meta name="proto-created" content="2026-08-05">
+<title>Restyle Astro Kit homepage</title>
+<style>
+  /* ---------------------------------------------------------------
+     TOKENS — the proposed direction.
+     Signature rule: --island (violet) marks INTERACTIVITY ONLY.
+     Static content is ink. Links, buttons, focus rings and controls
+     carry the accent; headings, eyebrows and body copy never do.
+     --------------------------------------------------------------- */
+  :root {
+    --ink:        #101418;
+    --ink-soft:   #5a6472;
+    --paper:      #fcfcfd;
+    --paper-sunk: #f1f3f5;
+    --island:     #5b2cf5;
+    --island-bg:  #f0ebff;
+    --rule:       #dde1e6;
+
+    --font-display: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-body:    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono:    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+    --step: 8px;
+    --radius: 10px;
+  }
+  :root[data-theme="dark"] {
+    --ink:        #e8eaed;
+    --ink-soft:   #99a2ad;
+    --paper:      #0d1014;
+    --paper-sunk: #151a20;
+    --island:     #9b7dff;
+    --island-bg:  #1e1830;
+    --rule:       #262c33;
+  }
+  /* Renders correctly for anyone who already has the face installed;
+     production would self-host one subset woff2. No CDN — this file
+     must open on file://. */
+  @font-face {
+    font-family: "Space Grotesk";
+    src: local("Space Grotesk"), local("SpaceGrotesk-Medium");
+    font-weight: 400 700;
+    font-display: swap;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 2px solid var(--island); outline-offset: 3px; border-radius: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+
+  /* ---------------- prototype chrome ---------------- */
+  .pbar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: center;
+    padding: 12px 20px;
+    background: var(--paper-sunk);
+    border-bottom: 1px solid var(--rule);
+  }
+  .pbar__id { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em;
+              text-transform: uppercase; color: var(--ink-soft); margin-right: auto; }
+  .switch { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px;
+            background: var(--paper); padding: 2px; }
+  .switch button {
+    font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    padding: 5px 14px; border: 0; border-radius: 999px;
+    background: transparent; color: var(--ink-soft);
+  }
+  .switch button[aria-pressed="true"] { background: var(--island); color: #fff; }
+  .pbar__note { font-size: 12px; color: var(--ink-soft); flex-basis: 100%; }
+
+  /* ---------------- stage switching ---------------- */
+  :root[data-mode="after"]  .stage[data-variant="before"] { display: none; }
+  :root[data-mode="before"] .stage[data-variant="after"]  { display: none; }
+
+  .stage__tag {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-soft);
+    padding: 10px 20px; border-bottom: 1px dashed var(--rule);
+  }
+
+  /* =========================================================
+     BEFORE — measured from the running site at 1280px.
+     Deliberately hardcoded hex, never tokens: this mirrors
+     src/styles/_base.scss:4 (`background-color: #fff`), so the
+     theme toggle cannot reach it. That inertness IS the bug.
+     ========================================================= */
+  .legacy { background: #fff; color: #000; font-family: -apple-system, system-ui, sans-serif; }
+  .legacy-nav {
+    display: flex; align-items: center; gap: 14px;
+    height: 64px; padding: 0 16px; background: #fff; border-bottom: 1px solid #eee;
+  }
+  .legacy-nav__burger { width: 24px; height: 2px; background: #000; box-shadow: 0 7px 0 #000, 0 -7px 0 #000; }
+  .legacy-nav__brand { color: #1d4ed8; font-weight: 700; font-size: 17.92px; text-decoration: none; }
+  .legacy-hero { background: #f4f4f5; padding: 48px 20px; text-align: center; }
+  /* 78.4px / 48px = 1.63 ratio, weight 500, letter-spacing normal */
+  .legacy-hero h1 { font-size: 78.4px; font-weight: 500; line-height: 1.1; letter-spacing: normal; color: #000; }
+  .legacy-hero p  { font-size: 48px; font-weight: 400; line-height: 1.4; color: #000;
+                    max-width: 980px; margin: 0 auto; }
+  .legacy-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 48px 20px; }
+  .legacy-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 16px 24px; }
+  .legacy-card h3 { font-size: 20.97px; font-weight: 500; line-height: 1.2; color: #000; margin-bottom: 10px; }
+  .legacy-card p  { font-size: 17.92px; color: #000; }
+  .legacy-posts { padding: 24px 20px 56px; }
+  .legacy-posts h2 { font-size: 48px; font-weight: 400; line-height: 1.1; margin-bottom: 6px; }
+  .legacy-posts h2 a { color: #1d4ed8; text-decoration: none; }
+  .legacy-posts p { font-size: 17.92px; color: #000; }
+  .legacy-posts hr { border: 0; border-top: 1px solid #e5e5e5; margin: 20px 0; }
+  .legacy-footer { text-align: center; padding: 24px 20px 40px; font-size: 17.92px; }
+  .legacy-footer a { color: #1d4ed8; }
+
+  /* =========================================================
+     AFTER — the proposed direction.
+     ========================================================= */
+  .kit { background: var(--paper); color: var(--ink); }
+  .kit-wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  .kit-nav {
+    display: flex; align-items: center; gap: 12px 20px; flex-wrap: wrap;
+    /* min-height, not height: the row wraps at narrow widths and a fixed
+       height would clip the second line. */
+    min-height: 64px; padding-block: 12px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .kit-nav__brand {
+    font-family: var(--font-display); font-weight: 700; font-size: 17px;
+    letter-spacing: -.02em; color: var(--ink); text-decoration: none; margin-right: auto;
+  }
+  .kit-nav__links { display: flex; flex-wrap: wrap; gap: 8px 22px; list-style: none; }
+  .kit-nav__links a { font-size: 14px; color: var(--island); text-decoration: none; }
+  .kit-nav__links a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Hero: left-aligned thesis + live specimen. Ratio ~3.4, not 1.63. */
+  .kit-hero {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+    gap: 56px; align-items: start; padding: 72px 0 64px;
+  }
+  .kit-eyebrow {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-soft); margin-bottom: 20px;
+  }
+  .kit-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5.2vw, 4.25rem);
+    font-weight: 600; line-height: 1.02; letter-spacing: -.035em;
+    color: var(--ink); margin-bottom: 20px;
+  }
+  .kit-hero__deck { font-size: 1.25rem; line-height: 1.5; color: var(--ink-soft); max-width: 46ch; }
+  .kit-hero__cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+  .kit-btn {
+    font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none;
+    padding: 11px 20px; border-radius: var(--radius);
+    background: var(--island); color: #fff; border: 1px solid var(--island);
+  }
+  .kit-btn--ghost { background: transparent; color: var(--island); }
+  .kit-legend {
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-soft);
+    margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--rule);
+  }
+  /* Deliberately NOT accented. The rule is "colour marks interactivity", and a
+     legend is not interactive — the two buttons directly above already show the
+     swatch. Keeping this in ink makes the rule absolute and machine-checkable:
+     zero non-interactive elements carry --island. */
+  .kit-legend b { color: var(--ink); font-weight: 650; }
+
+  /* The signature: rendered component beside the code that makes it. */
+  .kit-specimen { border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden;
+                  background: var(--paper); }
+  .kit-specimen__label {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-soft); padding: 10px 16px; background: var(--paper-sunk);
+    border-bottom: 1px solid var(--rule);
+  }
+  .kit-specimen__body { padding: 24px 20px; }
+  .kit-card h3 {
+    font-family: var(--font-display); font-size: 1.25rem; font-weight: 600;
+    letter-spacing: -.015em; color: var(--ink); margin-bottom: 8px;
+  }
+  .kit-card p { font-size: 15px; color: var(--ink-soft); }
+  .kit-card a { display: inline-block; margin-top: 14px; font-size: 14px; font-weight: 600;
+                color: var(--island); text-decoration: none; }
+  .kit-card a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .kit-code {
+    font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7;
+    padding: 16px 20px; background: var(--paper-sunk); color: var(--ink-soft);
+    border-top: 1px solid var(--rule); overflow-x: auto; white-space: pre;
+  }
+  .kit-code .t { color: var(--ink); }
+
+  /* Feature tiers: 2 promoted specimens + 4 compact. Not 6 identical boxes. */
+  .kit-section { padding: 8px 0 72px; }
+  .kit-section__head {
+    display: flex; align-items: baseline; gap: 14px; margin-bottom: 28px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--rule);
+  }
+  .kit-section__head h2 {
+    font-family: var(--font-display); font-size: 1.4rem; font-weight: 600; letter-spacing: -.02em;
+  }
+  .kit-section__head span { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); }
+  .kit-tier1 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  /* Grid stretches both specimens to the taller one; without this the code
+     block floats mid-card and the two panels read as misaligned. */
+  .kit-tier1 .kit-specimen { display: flex; flex-direction: column; }
+  .kit-tier1 .kit-code { margin-top: auto; }
+  .kit-tier2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+               gap: 0 40px; margin-top: 36px; list-style: none; }
+  .kit-tier2 li { padding: 16px 0; border-top: 1px solid var(--rule); }
+  .kit-tier2 h3 { font-size: 15px; font-weight: 650; margin-bottom: 3px; }
+  .kit-tier2 p  { font-size: 14px; color: var(--ink-soft); }
+
+  .kit-footer { border-top: 1px solid var(--rule); padding: 28px 0 48px;
+                font-size: 14px; color: var(--ink-soft); }
+  .kit-footer a { color: var(--island); }
+
+  /* ---------------- adoption checklist ---------------- */
+  .adopt { border-top: 4px solid var(--rule); background: var(--paper-sunk); padding: 40px 0 64px; }
+  .adopt__inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  .adopt h2 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600;
+              letter-spacing: -.02em; margin-bottom: 4px; }
+  .adopt__sub { font-size: 13.5px; color: var(--ink-soft); margin-bottom: 20px; }
+  .summary-bar { margin: 0 0 18px; }
+  .summary-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+    padding: 7px 16px; border-radius: 999px;
+    background: var(--island-bg); color: var(--island); border: 1px solid var(--island);
+  }
+  #add-form {
+    display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;
+    padding: 18px; background: var(--paper); border: 1px solid var(--rule);
+    border-radius: var(--radius); margin-bottom: 20px;
+  }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em;
+                 text-transform: uppercase; color: var(--ink-soft); }
+  .field input[type="text"] {
+    font: inherit; font-size: 14px; padding: 8px 11px; min-width: 170px;
+    color: var(--ink); background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 7px;
+  }
+  .field--check { flex-direction: row; align-items: center; gap: 8px; padding-bottom: 9px; }
+  input[type="checkbox"] { accent-color: var(--island); width: 17px; height: 17px; cursor: pointer; }
+  .error { color: #d92d20; font-size: 12.5px; min-height: 18px; flex-basis: 100%; }
+  :root[data-theme="dark"] .error { color: #ff9d94; }
+
+  /* The record table is wider than a phone. It scrolls inside its own box so
+     the page body never scrolls horizontally (WCAG 2.1 SC 1.4.10 Reflow). */
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 14px;
+          background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius); }
+  caption { text-align: left; font-size: 12.5px; color: var(--ink-soft); margin-bottom: 8px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: 0; }
+  thead th {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-soft); background: var(--paper-sunk);
+  }
+  .btn { font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+         padding: 9px 18px; border-radius: 7px;
+         background: var(--island); color: #fff; border: 1px solid var(--island); }
+  .btn-secondary { background: transparent; color: var(--ink-soft); border-color: var(--rule); }
+  .btn-danger { font: inherit; font-size: 12px; cursor: pointer; padding: 4px 10px;
+                border-radius: 6px; background: transparent; color: #d92d20; border: 1px solid #f0b4ae; }
+  :root[data-theme="dark"] .btn-danger { color: #ff9d94; border-color: #5c2b28; }
+  .empty-state { color: var(--ink-soft); font-style: italic; }
+  .toolbar { display: flex; gap: 12px; margin-top: 18px; }
+  .status { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+  @media (max-width: 860px) {
+    /* Comfortable touch targets on phones; the bar stays compact on desktop. */
+    .switch button { min-height: 44px; padding-inline: 18px; }
+    .kit-hero { grid-template-columns: 1fr; gap: 36px; padding: 48px 0 40px; }
+    .kit-tier1, .kit-tier2 { grid-template-columns: 1fr; }
+    .legacy-cards { grid-template-columns: 1fr; }
+    .legacy-hero h1 { font-size: 44px; }
+    .legacy-hero p { font-size: 26px; }
+    .legacy-posts h2 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="pbar">
+  <span class="pbar__id">Astro Kit &middot; aesthetics prototype</span>
+
+  <div class="switch" role="group" aria-label="Design version">
+    <button type="button" id="mode-before" aria-pressed="false">Current</button>
+    <button type="button" id="mode-after"  aria-pressed="true">Proposed</button>
+  </div>
+
+  <div class="switch" role="group" aria-label="Colour theme">
+    <button type="button" id="theme-light" aria-pressed="true">Light</button>
+    <button type="button" id="theme-dark"  aria-pressed="false">Dark</button>
+  </div>
+
+  <p class="pbar__note">
+    Switch to <strong>Current</strong>, then toggle <strong>Dark</strong>: the page stays white.
+    No surface reads a token, so the dark palette has nothing to act on &mdash; that is recommendation 5.
+  </p>
+</div>
+
+<!-- Inline JSON seed. Script-breakout escaping only, never HTML-escaped. -->
+<script type="application/json" id="seed">[{"area":"Typography","change":"Three type roles, one webfont download","effort":"M","applied":false},{"area":"Color","change":"Wire the token aliases already defined","effort":"S","applied":false},{"area":"Hero","change":"Left-aligned specimen, not a centred slogan","effort":"M","applied":false},{"area":"Cards","change":"Two specimens plus four compact; fix dead sectionTitle","effort":"M","applied":false},{"area":"Dark mode","change":"Consume tokens on painted surfaces","effort":"S","applied":false}]</script>
+
+<!-- Derived data model. Field order and names match the th[data-field] headers. -->
+<script type="application/json" id="proto-model">{"entity":"Recommendation","fields":[{"name":"area","type":"string"},{"name":"change","type":"string"},{"name":"effort","type":"string"},{"name":"applied","type":"bool"}],"action":"Add","successSignal":"recommendations applied"}</script>
+
+
+<!-- ============================ BEFORE ============================ -->
+<section class="stage" data-variant="before" aria-label="Current design">
+  <p class="stage__tag">Current &mdash; measured in-browser at 1280px</p>
+  <div class="legacy">
+    <nav class="legacy-nav">
+      <span class="legacy-nav__burger" aria-hidden="true"></span>
+      <a class="legacy-nav__brand" href="#">Astro Kit</a>
+    </nav>
+
+    <div class="legacy-hero">
+      <h1>Astro Kit</h1>
+      <p>A simple, easy to use multipurpose starter theme for Astro.</p>
+    </div>
+
+    <div class="legacy-cards">
+      <div class="legacy-card"><h3>Content Management System</h3><p>Powerful content collections with MDX support, RSS feeds, tagging system, and publication workflow.</p></div>
+      <div class="legacy-card"><h3>Authentication &amp; Security</h3><p>Complete Clerk integration with protected routes, user management, and security utilities.</p></div>
+      <div class="legacy-card"><h3>Progressive Web App</h3><p>Full PWA implementation with offline support, service workers, and install prompts.</p></div>
+      <div class="legacy-card"><h3>Component Library</h3><p>30+ Astro components plus React components for building modern websites.</p></div>
+      <div class="legacy-card"><h3>Accessibility First</h3><p>Built-in screen reader support, keyboard navigation, and text-to-speech integration.</p></div>
+      <div class="legacy-card"><h3>Developer Experience</h3><p>Comprehensive testing suite with Playwright and Vitest, TypeScript support, and ESLint.</p></div>
+    </div>
+
+    <div class="legacy-posts">
+      <h2><a href="#">Youtube Example</a></h2>
+      <p>Why Astro is a preferred choice for building modern web projects</p>
+      <hr>
+      <h2><a href="#">MDX Post Example</a></h2>
+      <p>This is the first post of my new Astro blog.</p>
+      <hr>
+    </div>
+
+    <div class="legacy-footer">
+      <p>Learn more about my projects on<a href="#">twitter</a> <a href="#">github</a> <a href="#">youtube</a></p>
+      <p>&copy; 2026 Your name here. All rights reserved.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================ AFTER ============================= -->
+<section class="stage" data-variant="after" aria-label="Proposed design">
+  <p class="stage__tag">Proposed &mdash; all five recommendations applied</p>
+  <div class="kit">
+    <div class="kit-wrap">
+
+      <nav class="kit-nav">
+        <a class="kit-nav__brand" href="#">Astro Kit</a>
+        <ul class="kit-nav__links">
+          <li><a href="#">Components</a></li>
+          <li><a href="#">Docs</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">GitHub</a></li>
+        </ul>
+      </nav>
+
+      <header class="kit-hero">
+        <div>
+          <p class="kit-eyebrow">30+ components &middot; zero client JS by default</p>
+          <h1>Astro components, ready to paste.</h1>
+          <p class="kit-hero__deck">
+            Server-rendered components with typed props. Copy the import, drop in the
+            markup, ship static HTML.
+          </p>
+          <div class="kit-hero__cta">
+            <a class="kit-btn" href="#">Browse components</a>
+            <a class="kit-btn kit-btn--ghost" href="#">Read the docs</a>
+          </div>
+          <p class="kit-legend">
+            Colour marks interactivity. Static content is ink; <b>links, buttons and
+            controls</b> carry the accent. Nothing else does.
+          </p>
+        </div>
+
+        <figure class="kit-specimen">
+          <figcaption class="kit-specimen__label">Rendered</figcaption>
+          <div class="kit-specimen__body">
+            <div class="kit-card">
+              <h3>Accessibility First</h3>
+              <p>Screen-reader support, keyboard navigation, and WCAG-compliant patterns, built in.</p>
+              <a href="#">Read the guide</a>
+            </div>
+          </div>
+<pre class="kit-code"><code><span class="t">import</span> Card <span class="t">from</span> '#components/astro/Card.astro'
+
+&lt;<span class="t">Card</span> cardTitle="Accessibility First"&gt;
+  &lt;p&gt;Screen-reader support&hellip;&lt;/p&gt;
+&lt;/<span class="t">Card</span>&gt;</code></pre>
+        </figure>
+      </header>
+
+      <section class="kit-section">
+        <div class="kit-section__head">
+          <h2>What you get</h2>
+          <span>2 promoted &middot; 4 compact</span>
+        </div>
+
+        <div class="kit-tier1">
+          <figure class="kit-specimen">
+            <figcaption class="kit-specimen__label">Content collections</figcaption>
+            <div class="kit-specimen__body">
+              <div class="kit-card">
+                <h3>MDX, tagged and paginated</h3>
+                <p>Typed frontmatter, RSS, and a publish flag that keeps drafts off the site.</p>
+                <a href="#">See the schema</a>
+              </div>
+            </div>
+<pre class="kit-code"><code><span class="t">const</span> posts = <span class="t">await</span> getCollection('posts')</code></pre>
+          </figure>
+
+          <figure class="kit-specimen">
+            <figcaption class="kit-specimen__label">Auth</figcaption>
+            <div class="kit-specimen__body">
+              <div class="kit-card">
+                <h3>Protected routes with Clerk</h3>
+                <p>Middleware guards <code>/dashboard</code>, <code>/forum</code>, and <code>/organization</code>.</p>
+                <a href="#">Set up auth</a>
+              </div>
+            </div>
+<pre class="kit-code"><code><span class="t">const</span> { userId } = Astro.locals</code></pre>
+          </figure>
+        </div>
+
+        <ul class="kit-tier2">
+          <li><h3>Progressive web app</h3><p>Service worker, offline fallback, install prompt.</p></li>
+          <li><h3>Component library</h3><p>Astro for SSR, React for islands, exported via package entry points.</p></li>
+          <li><h3>Accessibility</h3><p>Skip links, focus management, and text-to-speech.</p></li>
+          <li><h3>Developer experience</h3><p>Vitest, Playwright, TypeScript strict, ESLint, Prettier.</p></li>
+        </ul>
+      </section>
+
+      <footer class="kit-footer">
+        <p>Learn more about my projects on <a href="#">twitter</a>, <a href="#">github</a>, and <a href="#">youtube</a>.</p>
+        <p>&copy; 2026 Your name here. All rights reserved.</p>
+      </footer>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================= ADOPTION CHECKLIST ====================== -->
+<section class="adopt">
+  <div class="adopt__inner">
+    <h2>Adoption checklist</h2>
+    <p class="adopt__sub">Five recommendations from the design review. Edits persist in this browser only.</p>
+
+    <div class="summary-bar">
+      <span class="summary-badge" id="summary" data-label="Applied">Applied: 0 / 5</span>
+    </div>
+
+    <form id="add-form" novalidate>
+      <div class="field">
+        <label for="area">Area <span aria-hidden="true">*</span></label>
+        <input type="text" id="area" name="area" data-required>
+      </div>
+      <div class="field">
+        <label for="change">Change <span aria-hidden="true">*</span></label>
+        <input type="text" id="change" name="change" data-required>
+      </div>
+      <div class="field">
+        <label for="effort">Effort</label>
+        <input type="text" id="effort" name="effort" placeholder="S / M / L">
+      </div>
+      <div class="field field--check">
+        <input type="checkbox" id="applied" name="applied">
+        <label for="applied" style="text-transform:none;letter-spacing:0;font-size:13px;">Already applied</label>
+      </div>
+      <button type="submit" class="btn">Add</button>
+      <p class="error" id="form-error" role="alert"></p>
+    </form>
+
+    <div class="table-scroll">
+    <table id="grid">
+      <caption>Recommendation records</caption>
+      <thead>
+        <tr>
+          <th scope="col" data-field="area"    data-type="string">Area</th>
+          <th scope="col" data-field="change"  data-type="string">Change</th>
+          <th scope="col" data-field="effort"  data-type="string">Effort</th>
+          <th scope="col" data-field="applied" data-type="bool">Applied</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    </div>
+
+    <div class="toolbar">
+      <button type="button" class="btn btn-secondary" id="reset-btn">Reset to sample data</button>
+    </div>
+
+    <p class="status" id="status" role="status" aria-live="polite" aria-atomic="true"></p>
+  </div>
+</section>
+
+<script>
+/* === STORE (extractable: depends only on STORE_KEY, document#seed, localStorage, confirm) === */
+var STORE_KEY = "proto-restyle-astro-kit-homepage";
+function readSeed() {
+  try { return JSON.parse(document.getElementById('seed').textContent); }
+  catch (e) { return []; }
+}
+function load() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    return raw ? JSON.parse(raw) : readSeed();
+  } catch (e) { return readSeed(); }
+}
+function save(records) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(records)); } catch (e) {}
+}
+function resetStore() {
+  if (!confirm('Reset to the sample data? This clears your local changes.')) return null;
+  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+  return readSeed();
+}
+/* === END STORE === */
+
+/* --- prototype chrome: before/after + theme ------------------------ */
+(function () {
+  var root = document.documentElement;
+
+  function bindPair(aId, bId, apply) {
+    var a = document.getElementById(aId), b = document.getElementById(bId);
+    function set(which) {
+      a.setAttribute('aria-pressed', String(which === 'a'));
+      b.setAttribute('aria-pressed', String(which === 'b'));
+      apply(which);
+    }
+    a.addEventListener('click', function () { set('a'); });
+    b.addEventListener('click', function () { set('b'); });
+    return set;
+  }
+
+  bindPair('mode-before', 'mode-after', function (w) {
+    root.setAttribute('data-mode', w === 'a' ? 'before' : 'after');
+  });
+
+  var setTheme = bindPair('theme-light', 'theme-dark', function (w) {
+    root.setAttribute('data-theme', w === 'a' ? 'light' : 'dark');
+  });
+
+  try {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('b');
+  } catch (e) {}
+})();
+
+/* --- adoption checklist ------------------------------------------- */
+(function () {
+  var rowsEl    = document.getElementById('rows');
+  var summaryEl = document.getElementById('summary');
+  var statusEl  = document.getElementById('status');
+  var errorEl   = document.getElementById('form-error');
+  var form      = document.getElementById('add-form');
+  var resetBtn  = document.getElementById('reset-btn');
+  var summaryLabel = summaryEl.getAttribute('data-label') || '';
+
+  // Field order + types derived from the table header — text nodes only, no raw HTML.
+  var fields = [];
+  document.querySelectorAll('#grid thead th[data-field]').forEach(function (th) {
+    fields.push({ key: th.getAttribute('data-field'), type: th.getAttribute('data-type') || 'string' });
+  });
+
+  var records = load();
+
+  function announce(msg) { statusEl.textContent = msg; }
+  function setText(cell, value) {
+    cell.appendChild(document.createTextNode(value == null ? '' : String(value)));
+  }
+
+  // The success signal is how many are APPLIED, not how many rows exist.
+  function updateSummary() {
+    var done = records.filter(function (r) { return !!r.applied; }).length;
+    summaryEl.textContent = summaryLabel + ': ' + done + ' / ' + records.length;
+  }
+
+  function toggleApplied(idx, on) {
+    records[idx].applied = on;
+    save(records);
+    updateSummary();
+    announce((records[idx].area || 'Recommendation') + (on ? ' marked applied.' : ' marked not applied.'));
+  }
+
+  function render() {
+    while (rowsEl.firstChild) rowsEl.removeChild(rowsEl.firstChild);
+
+    if (!records.length) {
+      var tr0 = document.createElement('tr');
+      var td0 = document.createElement('td');
+      td0.className = 'empty-state';
+      td0.setAttribute('colspan', String(fields.length + 1));
+      setText(td0, 'No records yet — add one above.');
+      tr0.appendChild(td0);
+      rowsEl.appendChild(tr0);
+    } else {
+      records.forEach(function (rec, idx) {
+        var tr = document.createElement('tr');
+        fields.forEach(function (f) {
+          var td = document.createElement('td');
+          if (f.type === 'bool') {
+            var box = document.createElement('input');
+            box.type = 'checkbox';
+            box.checked = !!rec[f.key];
+            box.setAttribute('aria-label', 'Applied: ' + (rec.area || 'recommendation'));
+            box.addEventListener('change', function () { toggleApplied(idx, box.checked); });
+            td.appendChild(box);
+          } else {
+            setText(td, rec[f.key]);        // textContent path — hostile input is inert
+          }
+          tr.appendChild(td);
+        });
+        var actions = document.createElement('td');
+        var del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'btn-danger';
+        del.textContent = 'Delete';
+        del.addEventListener('click', function () { remove(idx); });
+        actions.appendChild(del);
+        tr.appendChild(actions);
+        rowsEl.appendChild(tr);
+      });
+    }
+    updateSummary();
+  }
+
+  function remove(idx) {
+    records.splice(idx, 1);
+    save(records);
+    render();
+    announce('Record deleted. ' + records.length + ' remaining.');
+  }
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    errorEl.textContent = '';
+    var rec = {};
+    var firstInvalid = null;
+    for (var i = 0; i < fields.length; i++) {
+      var input = form.elements[fields[i].key];
+      if (!input) continue;
+      if (fields[i].type === 'bool') {
+        rec[fields[i].key] = !!input.checked;   // checkbox: read state, not "on"
+        continue;
+      }
+      var val = input.value.trim();
+      if (input.hasAttribute('data-required') && !val) {
+        if (!firstInvalid) firstInvalid = input;
+        continue;
+      }
+      rec[fields[i].key] = (fields[i].type === 'number' && val !== '') ? Number(val) : val;
+    }
+    if (firstInvalid) {
+      errorEl.textContent = 'Please fill in the required fields.';
+      firstInvalid.focus();
+      return;
+    }
+    records.push(rec);
+    save(records);
+    render();
+    form.reset();
+    var first = form.querySelector('input');
+    if (first) first.focus();
+    announce('Record added. ' + records.length + ' total.');
+  });
+
+  resetBtn.addEventListener('click', function () {
+    var seeded = resetStore();
+    if (seeded === null) return;              // user cancelled the confirm
+    records = seeded;
+    render();
+    resetBtn.focus();
+    announce('Reset to sample data. ' + records.length + ' records.');
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
