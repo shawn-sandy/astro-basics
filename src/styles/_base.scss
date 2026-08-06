@@ -9,7 +9,7 @@ body {
 
   // @fpkit/acss sets `font-family` on `html`, which is why a single face used
   // to render across every element on the site. Declaring the body role here
-  // beats that by inheritance and leaves h1-h3 free to take the display face.
+  // beats that by inheritance and leaves h1-h6 free to take the display face.
   font-family: var(--font-family-sans);
 
   // Overrides @fpkit/acss's 20.3125rem (325px) floor, which forced 5px of

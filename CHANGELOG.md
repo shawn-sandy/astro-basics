@@ -16,8 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `:root[data-theme]` override path, so an explicit toggle always beats the OS preference
   - "Colour marks hydration": `--island` paints only interactive elements. An E2E test fails the
     build if any non-interactive element computes to the accent
-  - Three type roles where there was previously one: display (self-hosted Space Grotesk 600,
-    13KB latin subset, preloaded), body (system sans), mono (code and labels)
+  - Three type roles where there was previously one: display (self-hosted Inter 600,
+    24KB latin subset, preloaded), body (system sans), mono (code and labels)
   - `HomeHero.astro`: full-bleed band pairing a rendered `Card` with the import line that produces
     it. Content stays on the 80rem measure via `padding-inline: max(gutter, (100% - maxw) / 2)`
   - `FeatureCards.astro` gains `sectionTitle` and `promoted` props for two-tier output — promoted
@@ -88,6 +88,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Typographic hierarchy pass** (`src/styles/_base.scss`, `src/components/astro/Footer.astro`,
+  `src/pages/index.astro`): three adjustments so heading, body and supporting text read at
+  distinct levels
+  - The display role now covers `h1` through `h6` rather than `h1`-`h3`. Every level resolves to
+    weight 600, the single weight the self-hosted woff2 ships, so the wider range costs no
+    additional font request. `text-transform: capitalize` deliberately stays on `h1`-`h3`: `h4`-`h6`
+    are used for UI labels, and the contact form's `h6` error summary would otherwise render as
+    "Please Correct The Following Errors"
+  - Footer drops to `0.875rem` on `--ink-soft`, matching the compact feature rows. Social links
+    need `--link-fs` retuned rather than a `font-size` override, because the vendor rule
+    `a[href] { --link-fs: 1rem; font-size: var(--link-fs) }` declares the variable on the element
+    itself, where inheritance cannot reach it
+  - The homepage hero and the feature cards were flush; the composing section in `index.astro` now
+    carries `margin-block-start: 4rem`. The spacing lives at the call site because `FeatureCards`
+    is a package export and must not carry homepage-specific margin
 - **Navigation styles scoped to `[data-site-nav]`**: every selector in
   `src/styles/components/_navigation.scss` and in `Navigation.astro`'s `is:inline` first-paint
   block previously matched bare `nav`, `nav:has(> [popover])` and `nav > button[popovertarget]`.
