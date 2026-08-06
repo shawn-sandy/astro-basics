@@ -18,7 +18,7 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config.js'
     <!-- <section>
       <Featured />
     </section> -->
-    <section>
+    <section class="home-features">
       <FeatureCards promoted={2} />
     </section>
   </div>
@@ -26,3 +26,13 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config.js'
     <CollectionList pageSize={2} />
   </section>
 </Layout>
+
+<style>
+  /* The hero's own padding sits inside its background band, so it buys no
+     separation from the cards below it. Spacing between the two belongs here,
+     where they are composed -- FeatureCards is exported for reuse and must not
+     carry homepage-specific margin. */
+  .home-features {
+    margin-block-start: 4rem;
+  }
+</style>

@@ -21,3 +21,28 @@ const today = new Date()
     </p>
   </div>
 </footer>
+
+<style>
+  /* The footer is supporting text, not content, but it inherited body size and
+     full-strength ink -- so it read at the same level as the article above it.
+     0.875rem paired with --ink-soft is the same de-emphasis the compact feature
+     rows use, so the whole page steps down consistently. The social links keep
+     their accent colour: they set it themselves, so this inherited value never
+     reaches them, and only the size cascades in. */
+  footer p {
+    font-size: 0.875rem;
+    color: var(--ink-soft);
+  }
+
+  /* Must match the 0.875rem above -- these links sit inline mid-sentence, so a
+     mismatch reads as a typo. Two reasons this rule looks the way it does:
+     the links come from Social.astro, so they carry no scope attribute from
+     this file and :global is the only way to reach them; and the vendor rule
+     `a[href] { --link-fs: 1rem; font-size: var(--link-fs) }` declares that
+     variable on the link itself, so an inherited font-size cannot win.
+     Retuning the variable is the extension point the vendor sheet exposes --
+     setting font-size here would just fight its own rule. */
+  footer p :global(a[href]) {
+    --link-fs: 0.875rem;
+  }
+</style>
