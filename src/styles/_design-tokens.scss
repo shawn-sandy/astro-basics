@@ -2,16 +2,16 @@
 // Generated for astro-basics-website design system
 
 // Self-hosted display face. One latin subset, one weight, no CDN and no
-// second request: `--font-family-display` is applied to h1/h2/h3 only, and
-// those render at weight 600, so a second woff2 would download bytes nothing
-// on the site asks for. Licensed SIL OFL 1.1; the file lives at
-// `public/fonts/space-grotesk-600.woff2` and is preloaded from `Base.astro`.
+// second request: `--font-family-display` is applied to h1-h6, and every one
+// of those renders at weight 600, so a second woff2 would download bytes
+// nothing on the site asks for. Licensed SIL OFL 1.1; the file lives at
+// `public/fonts/inter-600.woff2` and is preloaded from `Base.astro`.
 @font-face {
   font-display: swap;
-  font-family: "Space Grotesk";
+  font-family: Inter;
   font-style: normal;
   font-weight: 600;
-  src: url("/fonts/space-grotesk-600.woff2") format("woff2");
+  src: url("/fonts/inter-600.woff2") format("woff2");
 }
 
 // The direction: colour marks hydration.
@@ -147,13 +147,13 @@
   --color-info-dark: #1d4ed8;
 
   // Typography Tokens
-  // Three roles, and only three: display for h1-h3, sans for body copy, mono
+  // Three roles, and only three: display for h1-h6, sans for body copy, mono
   // for code and for the eyebrow/label opt-ins. The display stack falls all
   // the way back through the system sans, so a failed font request degrades
   // to the body face rather than to a serif.
   --font-family-display:
-    "Space Grotesk", ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI",
-    roboto, "Helvetica Neue", arial, sans-serif;
+    "Inter", ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", roboto,
+    "Helvetica Neue", arial, sans-serif;
   --font-family-sans:
     ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", roboto,
     "Helvetica Neue", arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",

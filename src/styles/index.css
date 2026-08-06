@@ -1,9 +1,9 @@
 ﻿@font-face {
   font-display: swap;
-  font-family: 'Space Grotesk';
+  font-family: Inter;
   font-style: normal;
   font-weight: 600;
-  src: url('/fonts/space-grotesk-600.woff2') format('woff2');
+  src: url('/fonts/inter-600.woff2') format('woff2');
 }
 :root {
   --ink: #101418;
@@ -47,8 +47,8 @@
   --color-info-light: #dbeafe;
   --color-info-dark: #1d4ed8;
   --font-family-display:
-    'Space Grotesk', ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, 'Segoe UI',
-    roboto, 'Helvetica Neue', arial, sans-serif;
+    'Inter', ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, 'Segoe UI', roboto,
+    'Helvetica Neue', arial, sans-serif;
   --font-family-sans:
     ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, 'Segoe UI', roboto,
     'Helvetica Neue', arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
@@ -378,10 +378,17 @@ header > section#header p {
 }
 h1,
 h2,
-h3 {
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-family-display);
   font-weight: var(--font-weight-semibold);
   letter-spacing: -0.015em;
+}
+h1,
+h2,
+h3 {
   text-transform: capitalize;
 }
 h1 {

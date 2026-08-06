@@ -98,14 +98,27 @@ header > section#header p {
   font-size: var(--header-deck-font-size);
 }
 
-// Type role one of three: display. h1-h3 only. h4-h6 stay on the body stack,
-// which is what keeps a single 600-weight woff2 sufficient.
+// Type role one of three: display, on every heading level. All six render at
+// --font-weight-semibold (600), which is the one weight the self-hosted woff2
+// ships -- so covering h4-h6 costs no additional font request.
 h1,
 h2,
-h3 {
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-family-display);
   font-weight: var(--font-weight-semibold);
   letter-spacing: -0.015em;
+}
+
+// Casing is deliberately NOT part of the shared role. h4-h6 are used for UI
+// labels rather than titles -- `contact.astro` renders the form's error
+// summary as an h6 -- and capitalizing a sentence produces "Please Correct The
+// Following Errors". Titles get the treatment; labels keep their own casing.
+h1,
+h2,
+h3 {
   text-transform: capitalize;
 }
 

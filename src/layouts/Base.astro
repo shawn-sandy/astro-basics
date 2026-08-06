@@ -48,13 +48,7 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
       same-origin — fonts are fetched in CORS mode, and without it the
       preload is discarded and the request happens twice.
     -->
-    <link
-      rel="preload"
-      href="/fonts/space-grotesk-600.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
+    <link rel="preload" href="/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin />
 
     <!-- PWA Meta Tags -->
     <meta name="description" content={pageDescription || SITE_DESCRIPTION} />
