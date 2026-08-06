@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro'
 import CollectionList from '#components/astro/CollectionList.astro'
 import FeatureCards from '#components/astro/FeatureCards.astro'
 import Featured from '#components/astro/Featured.astro'
+import HomeHero from '#components/astro/HomeHero.astro'
 import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config.js'
 ---
 
@@ -12,12 +13,13 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config.js'
   showBreadcrumb={false}
   pageImageUrl="/images/astro-kit-cover.webp"
 >
+  <HomeHero slot="header" />
   <div slot="featured">
     <!-- <section>
       <Featured />
     </section> -->
     <section>
-      <FeatureCards />
+      <FeatureCards promoted={2} />
     </section>
   </div>
   <section>

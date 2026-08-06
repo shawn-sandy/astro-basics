@@ -1,5 +1,21 @@
 ---
-import Card from './Card.astro'
+/**
+ * FeatureCards - renders the project's feature list.
+ *
+ * By default every feature renders as an equal card in a three-column flex row.
+ * Passing `promoted` splits the output into two tiers: the leading N features
+ * render as specimens that pair the rendered card with the source producing it,
+ * and the remainder render as compact rows. `promoted` defaults to 0, so call
+ * sites that omit it get exactly the previous output.
+ *
+ * @component FeatureCards
+ * @example
+ * ```astro
+ * <FeatureCards />
+ * <FeatureCards sectionTitle="What you get" promoted={2} />
+ * ```
+ */
+import Card from '#components/astro/Card.astro'
 import {
   getTopFeatures,
   getAllFeatures,
@@ -14,18 +30,21 @@ export type Props = {
   category?: FeatureCard['category']
   /** Show all features regardless of count */
   showAll?: boolean
-  /** Custom title for the features section */
+  /** Heading for the features section; omitted renders no heading */
   sectionTitle?: string
   /** Custom CSS class for the container */
   className?: string
+  /** Leading features rendered as promoted specimens (default: 0, all tiers equal) */
+  promoted?: number
 }
 
 const {
   count = 6,
   category,
   showAll = false,
-  sectionTitle = 'Key Features',
+  sectionTitle,
   className = '',
+  promoted = 0,
 } = Astro.props
 
 // Get features based on props
@@ -37,25 +56,166 @@ if (category) {
 } else {
   features = getTopFeatures(count)
 }
+
+// Clamped so a caller cannot promote more specimens than there are features,
+// and so a negative or fractional count falls back to the default tiering.
+const promotedCount = Math.min(Math.max(0, Math.trunc(promoted) || 0), features.length)
+const promotedFeatures = features.slice(0, promotedCount)
+const compactFeatures = features.slice(promotedCount)
+
+/**
+ * Source line that reproduces a promoted specimen, shown beside the rendered card.
+ */
+const specimenSource = (feature: FeatureCard): string =>
+  `import Card from '#components/astro/Card.astro'\n\n<Card cardTitle="${feature.title}" />`
 ---
 
-<div data-flex="cols-3">
-  {
-    features.map(feature => (
-      <Card cardTitle={feature.title} {...(feature.link && { cardLink: feature.link })}>
-        <p>{feature.description}</p>
-      </Card>
-    ))
-  }
-</div>
+{
+  sectionTitle && (
+    <div class="feature-cards__head">
+      <h2>{sectionTitle}</h2>
+      {promotedCount > 0 && (
+        <span>
+          {promotedCount} promoted · {compactFeatures.length} compact
+        </span>
+      )}
+    </div>
+  )
+}
+{
+  promotedCount === 0 ? (
+    <div data-flex="cols-3">
+      {features.map(feature => (
+        <Card cardTitle={feature.title} {...(feature.link && { cardLink: feature.link })}>
+          <p>{feature.description}</p>
+        </Card>
+      ))}
+    </div>
+  ) : (
+    <Fragment>
+      <div class="feature-cards__promoted">
+        {promotedFeatures.map(feature => (
+          <Card cardTitle={feature.title} {...(feature.link && { cardLink: feature.link })}>
+            <p>{feature.description}</p>
+            <Fragment slot="code">{specimenSource(feature)}</Fragment>
+          </Card>
+        ))}
+      </div>
+      {compactFeatures.length > 0 && (
+        <ul class="feature-cards__compact">
+          {compactFeatures.map(feature => (
+            <li>
+              <h3>{feature.title}</h3>
+              <p>{feature.description}</p>
+              {feature.link && <a href={feature.link}>Read more</a>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Fragment>
+  )
+}
+
 <style>
-  [data-grid],
-  [data-flex] {
-    width: 100%;
-    max-width: 100%;
-    border-radius: 0;
+  /* Every rule below targets an element this component authors, so none of them
+     compete with the vendor card stylesheet. */
+
+  /*
+   * The `featured` slot wrapper carries no inline padding, so these blocks would
+   * sit flush against the viewport edge while the hero's content starts one
+   * gutter in. This is the same measure `HomeHero.astro` uses, so the section
+   * heading and the specimens line up with the headline above them at every
+   * width. Deliberately not applied to the `[data-flex="cols-3"]` default path:
+   * that branch is the pre-existing markup and must keep rendering exactly as
+   * it did for consumers that pass no `promoted` count.
+   */
+  .feature-cards__head,
+  .feature-cards__promoted,
+  .feature-cards__compact {
+    box-sizing: border-box;
+    padding-inline: max(1.25rem, calc((100% - var(--max-content-width, 80rem)) / 2));
   }
-  [data-card] {
-    border-radius: 0;
+
+  .feature-cards__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.875rem;
+    margin-block-end: 1.75rem;
+    padding-block-end: 0.75rem;
+    border-block-end: 1px solid var(--rule);
+  }
+
+  .feature-cards__head h2 {
+    margin: 0;
+    padding: 0;
+  }
+
+  .feature-cards__head span {
+    font-family: var(--font-family-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* Two specimens side by side; minmax(0, 1fr) keeps a long code line from
+     forcing the track wider than its share of the row. */
+  .feature-cards__promoted {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+
+  /* The specimen card is vendor-rendered markup, so it carries no scope class
+     and has to be reached with :global. Without min-width: 0 the card refuses to
+     shrink below the min-content width of its code snippet and pushes the page
+     into horizontal scroll at 320px; with it the snippet scrolls inside its own
+     box instead (WCAG 2.1 SC 1.4.10 Reflow). */
+  .feature-cards__promoted > :global(*) {
+    min-width: 0;
+  }
+
+  .feature-cards__compact {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 2.5rem;
+    margin-block: 2.25rem 0;
+
+    /* padding-block only: the shared gutter rule above owns padding-inline, and
+       a `padding: 0` shorthand here would reset it and drop the list back to the
+       viewport edge. This still clears the UA list indent. */
+    padding-block: 0;
+    list-style: none;
+  }
+
+  .feature-cards__compact li {
+    padding-block: 1rem;
+    border-block-start: 1px solid var(--rule);
+  }
+
+  .feature-cards__compact h3 {
+    margin-block: 0 0.2rem;
+    font-size: 0.95rem;
+    line-height: 1.3;
+  }
+
+  .feature-cards__compact p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--ink-soft);
+  }
+
+  /* Accent is reserved for interactive elements; this link is one. */
+  .feature-cards__compact a {
+    color: var(--island);
+  }
+
+  @media (max-width: 53.75rem) {
+    .feature-cards__promoted,
+    .feature-cards__compact {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

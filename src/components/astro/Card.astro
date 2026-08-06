@@ -1,10 +1,29 @@
 ---
+/**
+ * Card - a content card with an optional image, title, body and "continue reading" link.
+ *
+ * The optional `code` slot pairs the rendered card with the source that produces it,
+ * which is what the promoted tier of `FeatureCards` uses. Omitting the slot renders
+ * nothing extra, so existing call sites are unaffected.
+ *
+ * @component Card
+ * @example
+ * ```astro
+ * <Card cardTitle="Accessibility First" cardLink="/docs">
+ *   <p>Screen-reader support, keyboard navigation and WCAG-compliant patterns.</p>
+ *   <Fragment slot="code">{`<Card cardTitle="Accessibility First" />`}</Fragment>
+ * </Card>
+ * ```
+ */
 import { Card as CardComponent } from '@fpkit/acss'
 import { sanitizeImageUrl } from '#/utils/security'
 
-type Props = {
+export type Props = {
+  /** Card heading (default: 'Card Feature') */
   cardTitle?: string
+  /** Image URL, sanitized before it reaches the DOM */
   cardImage?: string
+  /** Destination for the footer link; the footer is omitted when absent */
   cardLink?: string
 }
 
@@ -14,6 +33,13 @@ const { cardTitle, cardImage, cardLink } = Astro.props as Props
 const safeCardImage = cardImage
   ? sanitizeImageUrl(cardImage, 'https://picsum.photos/200')
   : undefined
+
+const hasCode = Astro.slots.has('code')
+
+// Rendered here rather than slotted inline: the code block below is
+// whitespace-sensitive, so the indentation of the markup that wraps a <slot>
+// would render as blank lines and leading spaces inside the snippet.
+const codeMarkup = hasCode ? `<code>${(await Astro.slots.render('code')).trim()}</code>` : ''
 ---
 
 <CardComponent>
@@ -31,4 +57,23 @@ const safeCardImage = cardImage
       </div>
     )
   }
+  {hasCode && <pre data-card-code set:html={codeMarkup} />}
 </CardComponent>
+
+<style>
+  /* Targets an element this component authors, so nothing in the vendor card
+     stylesheet declares the same properties on the same element. */
+  [data-card-code] {
+    margin: 0;
+    font-family: var(--font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 0.78rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    background-color: var(--paper-sunk);
+    border-top: 1px solid var(--rule);
+    /* The snippet is wider than a 320px viewport; it scrolls inside its own box
+       so the page body never scrolls horizontally (WCAG 2.1 SC 1.4.10 Reflow). */
+    overflow-x: auto;
+    white-space: pre;
+  }
+</style>

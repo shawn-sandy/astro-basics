@@ -2,7 +2,15 @@
 // Legacy tokens are maintained for backward compatibility
 
 body {
-  background-color: #fff;
+  // The direction's surface tokens, not a literal: this is what makes the
+  // whole page follow `prefers-color-scheme` and the `[data-theme]` toggle.
+  background-color: var(--paper);
+  color: var(--ink);
+
+  // @fpkit/acss sets `font-family` on `html`, which is why a single face used
+  // to render across every element on the site. Declaring the body role here
+  // beats that by inheritance and leaves h1-h3 free to take the display face.
+  font-family: var(--font-family-sans);
 
   // Overrides @fpkit/acss's 20.3125rem (325px) floor, which forced 5px of
   // horizontal scroll at a 320px viewport (WCAG 2.1 SC 1.4.10 Reflow).
@@ -61,14 +69,88 @@ header {
   }
 }
 
-header > section > p {
-  font-size: 2rem;
+// `--header-background` had zero consumers, so the band painted the
+// `whitesmoke` @fpkit/acss hardcodes on `header`. The child combinator is
+// load-bearing twice over: (0,0,2) beats the vendor's (0,0,1) regardless of
+// which stylesheet the bundler emits last, and it leaves `[data-card] >
+// header` — the card header strip, at (0,1,1) — alone.
+body > header {
+  background-color: var(--header-background);
 }
 
+// `--card-background` had zero consumers too. Scoped through `body` for the
+// same reason: the vendor's `[data-card]` rule is (0,1,0) and would otherwise
+// win or lose on source order.
+body [data-card] {
+  background-color: var(--card-background);
+}
+
+// The deck under the shared header's h1.
+// The old `header > section > p` selector never matched anything: the deck
+// lives in `Header.astro` as `header > section > div > p`, so what actually
+// painted was @fpkit/acss's descendant rule `header > section p`, whose
+// `--fs-8` clamps to 3rem and produced the 48px the review measured against a
+// 78.4px h1 — a 1.63 ratio. Matching the real DOM and scoping to the shared
+// header's own `#header` lifts specificity to (1,0,2), which beats the
+// vendor's (0,0,3) outright and cannot reach `HomeHero`, whose `header` has
+// no such id.
+header > section#header p {
+  font-size: var(--header-deck-font-size);
+}
+
+// Type role one of three: display. h1-h3 only. h4-h6 stay on the body stack,
+// which is what keeps a single 600-weight woff2 sufficient.
 h1,
 h2,
 h3 {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.015em;
   text-transform: capitalize;
+}
+
+h1 {
+  letter-spacing: -0.02em;
+}
+
+// Type role two: body copy on the system sans, inherited from `body`, stated
+// here so the role is legible in the source rather than implied.
+p,
+li {
+  font-family: var(--font-family-sans);
+}
+
+// Type role three: mono. Code semantics get it by element; everything else
+// opts in through `[data-ui]`, so an eyebrow or a label is a deliberate
+// choice at the call site instead of a selector guess about class names.
+code,
+kbd,
+samp,
+[data-ui="eyebrow"],
+[data-ui="label"] {
+  font-family: var(--font-family-mono);
+}
+
+[data-ui="eyebrow"],
+[data-ui="label"] {
+  color: var(--ink-soft);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+// Colour marks hydration: the accent lands on links and focus rings and
+// nowhere else. @fpkit/acss reads its link colour from `--link-color` on
+// `a[href]` (0,1,1), so the override is scoped through `body` to reach
+// (0,1,2) and win on specificity rather than on emit order.
+body a[href] {
+  --link-color: var(--island);
+  --link-focus-color: var(--island);
+}
+
+:focus-visible {
+  outline: var(--border-width-2) solid var(--island);
+  outline-offset: var(--space-0-5);
 }
 
 h2 a[href] {
@@ -112,7 +194,11 @@ article img {
 }
 
 code {
-  color: rgb(158, 49, 49);
+  // Was a literal `rgb(158, 49, 49)`. That was legible only because the page
+  // was always white; now that `body` follows `--paper`, the same red lands
+  // on `#0d1014` in dark mode at roughly 2.6:1. `--ink-soft` clears AA in
+  // both themes and matches how the prototype sets code apart from prose.
+  color: var(--ink-soft);
   font-size: smaller;
 }
 
