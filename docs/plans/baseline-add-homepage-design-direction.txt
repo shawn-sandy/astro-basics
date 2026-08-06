@@ -1,0 +1,53 @@
+Baseline for plan: docs/plans/add-homepage-design-direction.md
+Captured: 2026-08-06
+Branch: claude/homepage-design-direction-4a8a2a (at origin/primary, worktree clean apart from public/fonts/)
+Purpose: this repo's suite is red on a clean checkout, so only the DELTA against these
+counts carries information. The gate is "no test that passed here now fails".
+
+--------------------------------------------------------------------------
+RUNNER 1 — npm test  (vitest run)
+--------------------------------------------------------------------------
+Test files : 14 failed | 19 passed        (33 total)
+Tests      : 60 failed | 437 passed | 14 skipped   (511 total)
+
+--------------------------------------------------------------------------
+RUNNER 2 — npm run type-check  (tsc --noEmit)
+--------------------------------------------------------------------------
+Errors     : 127 "error TS" lines
+Exit code  : non-zero (fails on clean checkout)
+Sample     : src/utils/email-validation.ts TS18048, src/utils/env-config.ts TS2484,
+             src/utils/rate-limiter.ts TS2375/TS2532, src/utils/role-guard.ts TS2339,
+             src/utils/user-sync.ts TS2769/TS2339
+Note       : all pre-existing failures are in src/utils/* and src/libs/*; none in
+             src/styles, src/layouts or src/components/astro.
+
+--------------------------------------------------------------------------
+RUNNER 3 — npm run test:e2e  (playwright, --project=chromium)
+--------------------------------------------------------------------------
+FIRST RECORDING (INVALID — kept for the record, do not use as a gate)
+Tests      : 16 failed | 23 passed        (39 total)
+
+That run did not measure this repository. playwright.config.ts sets
+reuseExistingServer: !process.env.CI against http://localhost:4321, and on this
+machine port 4321 was held by an unrelated project (astro dev, cwd
+/Users/shawnsandy/devbox/513/.claude/worktrees/station-pages-story-81e541).
+e2e/test-utils.ts:1 additionally hardcodes BASE_URL to 4321, so it bypasses
+use.baseURL entirely. Verified with lsof and by loading the port directly. The
+recorded "scrollWidth 335 / clientWidth 320" reflow failure and the missing
+main#main / popover-button locators all belong to that other application.
+
+CORRECTED BASELINE (this repo's own dev server)
+Tests      : 2 failed | 50 passed         (52 total, after the new specs landed)
+
+Failing, pre-existing, unrelated to this plan:
+  e2e/astro-v7-upgrade.spec.ts:33   home to blog to post navigation has no console errors
+  e2e/home-performance.spec.ts:5    Home Page Performance > loads without errors
+
+Both share one root cause, identified from the network log:
+  GET /@id/astro/runtime/client/dev-toolbar/entrypoint.js -> 504 Outdated Optimize Dep
+That is Astro's own dev toolbar being re-optimized by Vite. It is dev-server-only
+(npm run build completes with exit 0 and 65 pages), it survives a cold server
+restart, and no file in this plan touches it.
+
+Everything else passes, including all 10 navigation-popover tests, all 3
+skip-link tests, and the 320px reflow test that the invalid run reported red.

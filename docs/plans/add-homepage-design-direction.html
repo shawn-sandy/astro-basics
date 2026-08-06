@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-status="todo" data-effort="high">
+<html lang="en" data-status="completed" data-effort="high">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@ try {
   if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
 } catch (e) { /* no storage — prefers-color-scheme decides */ }
 </script>
-<meta name="plan-status" content="todo">
+<meta name="plan-status" content="completed">
 <meta name="plan-effort" content="high">
 <meta name="plan-type" content="feature">
 <meta name="plan-created" content="2026-08-05">
@@ -1525,7 +1525,7 @@ img, video { max-width: 100%; height: auto; }
         <button class="theme-toggle" type="button" id="theme-toggle" onclick="toggleTheme(this)"
                 aria-pressed="false" aria-label="Use dark theme">Dark</button>
         <span class="effort-badge" aria-label="Effort level">High</span>
-        <span class="status-badge">todo</span>
+        <span class="status-badge">completed</span>
       </div>
     </div>
     <div class="plan-meta">
@@ -1558,15 +1558,15 @@ img, video { max-width: 100%; height: auto; }
       <summary>9 steps</summary>
       <div class="rail-heading">Steps</div>
       <ul class="rail-steps">
-        <li><a class="rail-step" href="#step-1"><span class="rail-no">1</span><span class="rail-text">Capture a baseline before touching anything by running <code class="md">npm test</code>, <code class="md">npm run type-check</code> and <code class="md">npm run test:e2e</code>, recording the pass/fail count per runner to <code class="md">docs/plans/baseline-add-homepage-design-direction.txt</code></span><span class="rail-state">step 1 of 9</span></a></li>
-        <li><a class="rail-step" href="#step-2"><span class="rail-no">2</span><span class="rail-text">Self-host the display face by adding a latin-subset, single-weight <code class="md">space-grotesk-600.woff2</code> to <code class="md">public/fonts/</code>, declaring <code class="md">@font-face</code> with <code class="md">font-display: swap</code> and a <code class="md">--font-family-display</code> token in <code class="md">src/styles/_design-tokens.scss</code>, and preloading it from <code class="md">src/layouts/Base.astro</code></span><span class="rail-state">step 2 of 9</span></a></li>
-        <li><a class="rail-step" href="#step-3"><span class="rail-no">3</span><span class="rail-text">Assign three type roles sitewide in <code class="md">src/styles/_base.scss</code> — headings to <code class="md">--font-family-display</code> with negative tracking, body copy to the system sans, and eyebrows, labels, captions and code to <code class="md">--font-family-mono</code> — and settle the override that makes <code class="md">header &gt; section &gt; p</code> compute to 48px when line 64 declares <code class="md">2rem</code></span><span class="rail-state">step 3 of 9</span></a></li>
-        <li><a class="rail-step" href="#step-4"><span class="rail-no">4</span><span class="rail-text">Define the seven direction tokens in <code class="md">src/styles/_design-tokens.scss</code>, replace the hardcoded <code class="md">background-color: #fff</code> at <code class="md">src/styles/_base.scss:4</code> with <code class="md">var(--paper)</code>, set <code class="md">color: var(--ink)</code>, and point the already-declared <code class="md">--card-background</code> and <code class="md">--header-background</code> aliases at the new surface tokens</span><span class="rail-state">step 4 of 9</span></a></li>
-        <li><a class="rail-step" href="#step-5"><span class="rail-no">5</span><span class="rail-text">Extend the <code class="md">@media (prefers-color-scheme: dark)</code> block at <code class="md">src/styles/_design-tokens.scss:236</code> to flip the new surface tokens and add a <code class="md">:root[data-theme=&quot;dark&quot;]</code> override path so an explicit toggle can win over the media query</span><span class="rail-state">step 5 of 9</span></a></li>
-        <li><a class="rail-step" href="#step-6"><span class="rail-no">6</span><span class="rail-text">Create <code class="md">src/components/astro/HomeHero.astro</code> with a mono eyebrow, a left-aligned display headline, a deck at roughly a third of the headline size, two calls to action and a specimen figure pairing a rendered <code class="md">Card</code> with the import line that produces it, forward the named slot through <code class="md">src/layouts/Layout.astro</code> as <code class="md">{Astro.slots.has(&#39;header&#39;) &amp;&amp; &lt;slot name=&quot;header&quot; slot=&quot;header&quot; /&gt;}</code>, then render <code class="md">HomeHero</code> from <code class="md">src/pages/index.astro</code> into that slot</span><span class="rail-state">step 6 of 9</span></a></li>
-        <li><a class="rail-step" href="#step-7"><span class="rail-no">7</span><span class="rail-text">In <code class="md">src/components/astro/FeatureCards.astro</code> render the <code class="md">sectionTitle</code> prop that line 27 destructures and the template never uses, add an optional <code class="md">promoted</code> count defaulting to current behaviour that splits output into promoted specimens and compact rows, delete the <code class="md">&lt;style&gt;</code> block at lines 51-61 whose <code class="md">border-radius: 0</code> never applies, and add an additive <code class="md">&lt;slot name=&quot;code&quot; /&gt;</code> to <code class="md">src/components/astro/Card.astro</code></span><span class="rail-state">step 7 of 9</span></a></li>
-        <li><a class="rail-step" href="#step-8"><span class="rail-no">8</span><span class="rail-text">Load <code class="md">/</code>, <code class="md">/posts/1</code>, <code class="md">/content/1</code>, <code class="md">/docs</code>, <code class="md">/tags</code> and <code class="md">/about</code> at 320, 390, 768 and 1280 in both light and dark, checking horizontal overflow and contrast on each</span><span class="rail-state">step 8 of 9</span></a></li>
-        <li><a class="rail-step" href="#step-9"><span class="rail-no">9</span><span class="rail-text">Document the direction with a features page under <code class="md">project-docs/</code> and a matching Starlight docs entry covering the token names, the colour-marks-interactivity rule, the three type roles and how a consumer overrides them</span><span class="rail-state">step 9 of 9</span></a></li>
+        <li><a class="rail-step done" href="#step-1"><span class="rail-no">✓</span><span class="rail-text">Capture a baseline before touching anything by running <code class="md">npm test</code>, <code class="md">npm run type-check</code> and <code class="md">npm run test:e2e</code>, recording the pass/fail count per runner to <code class="md">docs/plans/baseline-add-homepage-design-direction.txt</code></span><span class="rail-state">step 1 of 9, done</span></a></li>
+        <li><a class="rail-step done" href="#step-2"><span class="rail-no">✓</span><span class="rail-text">Self-host the display face by adding a latin-subset, single-weight <code class="md">space-grotesk-600.woff2</code> to <code class="md">public/fonts/</code>, declaring <code class="md">@font-face</code> with <code class="md">font-display: swap</code> and a <code class="md">--font-family-display</code> token in <code class="md">src/styles/_design-tokens.scss</code>, and preloading it from <code class="md">src/layouts/Base.astro</code></span><span class="rail-state">step 2 of 9, done</span></a></li>
+        <li><a class="rail-step done" href="#step-3"><span class="rail-no">✓</span><span class="rail-text">Assign three type roles sitewide in <code class="md">src/styles/_base.scss</code> — headings to <code class="md">--font-family-display</code> with negative tracking, body copy to the system sans, and eyebrows, labels, captions and code to <code class="md">--font-family-mono</code> — and settle the override that makes <code class="md">header &gt; section &gt; p</code> compute to 48px when line 64 declares <code class="md">2rem</code></span><span class="rail-state">step 3 of 9, done</span></a></li>
+        <li><a class="rail-step done" href="#step-4"><span class="rail-no">✓</span><span class="rail-text">Define the seven direction tokens in <code class="md">src/styles/_design-tokens.scss</code>, replace the hardcoded <code class="md">background-color: #fff</code> at <code class="md">src/styles/_base.scss:4</code> with <code class="md">var(--paper)</code>, set <code class="md">color: var(--ink)</code>, and point the already-declared <code class="md">--card-background</code> and <code class="md">--header-background</code> aliases at the new surface tokens</span><span class="rail-state">step 4 of 9, done</span></a></li>
+        <li><a class="rail-step done" href="#step-5"><span class="rail-no">✓</span><span class="rail-text">Extend the <code class="md">@media (prefers-color-scheme: dark)</code> block at <code class="md">src/styles/_design-tokens.scss:236</code> to flip the new surface tokens and add a <code class="md">:root[data-theme=&quot;dark&quot;]</code> override path so an explicit toggle can win over the media query</span><span class="rail-state">step 5 of 9, done</span></a></li>
+        <li><a class="rail-step done" href="#step-6"><span class="rail-no">✓</span><span class="rail-text">Create <code class="md">src/components/astro/HomeHero.astro</code> with a mono eyebrow, a left-aligned display headline, a deck at roughly a third of the headline size, two calls to action and a specimen figure pairing a rendered <code class="md">Card</code> with the import line that produces it, forward the named slot through <code class="md">src/layouts/Layout.astro</code> as <code class="md">&lt;slot name=&quot;header&quot; slot=&quot;header&quot;&gt;</code> carrying the shared <code class="md">Header</code> as its fallback content, then render <code class="md">HomeHero</code> from <code class="md">src/pages/index.astro</code> into that slot</span><span class="rail-state">step 6 of 9, done</span></a></li>
+        <li><a class="rail-step done" href="#step-7"><span class="rail-no">✓</span><span class="rail-text">In <code class="md">src/components/astro/FeatureCards.astro</code> render the <code class="md">sectionTitle</code> prop that line 27 destructures and the template never uses, add an optional <code class="md">promoted</code> count defaulting to current behaviour that splits output into promoted specimens and compact rows, delete the <code class="md">&lt;style&gt;</code> block at lines 51-61 whose <code class="md">border-radius: 0</code> never applies, and add an additive <code class="md">&lt;slot name=&quot;code&quot; /&gt;</code> to <code class="md">src/components/astro/Card.astro</code></span><span class="rail-state">step 7 of 9, done</span></a></li>
+        <li><a class="rail-step done" href="#step-8"><span class="rail-no">✓</span><span class="rail-text">Load <code class="md">/</code>, <code class="md">/posts/1</code>, <code class="md">/content/1</code>, <code class="md">/docs</code>, <code class="md">/tags</code> and <code class="md">/about</code> at 320, 390, 768 and 1280 in both light and dark, checking horizontal overflow and contrast on each</span><span class="rail-state">step 8 of 9, done</span></a></li>
+        <li><a class="rail-step done" href="#step-9"><span class="rail-no">✓</span><span class="rail-text">Document the direction with a features page under <code class="md">project-docs/</code> and a matching Starlight docs entry covering the token names, the colour-marks-interactivity rule, the three type roles and how a consumer overrides them</span><span class="rail-state">step 9 of 9, done</span></a></li>
       </ul>
     </details>
   </nav>
@@ -1638,12 +1638,12 @@ img, video { max-width: 100%; height: auto; }
     <div class="progress-wrap" id="progress">
       <div class="progress-header">
         <span>Definition of done</span>
-        <span id="progress-label">0 / 11 done</span>
+        <span id="progress-label">11 / 11 done</span>
       </div>
       <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progress-bar"
-             role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
-             aria-label="Plan progress" style="width:0%"></div>
+        <div class="progress-bar-fill has-progress" id="progress-bar"
+             role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+             aria-label="Plan progress" style="width:100%"></div>
       </div>
     </div>
 
@@ -1692,7 +1692,7 @@ img, video { max-width: 100%; height: auto; }
           <li><code>tests/components/FeatureCards.astro.test.ts</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">unit coverage for the previously-dead prop</span></li>
           <li><code>tests/integration/design-tokens.test.ts</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">guard against tokens losing their consumers again</span></li>
           <li><code>project-docs/03-features/design-direction.md</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">the styling contract for package consumers</span></li>
-          <li><code>src/content/docs/guides/design-direction.mdx</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">Starlight guide entry required by step 9 and acceptance</span></li>
+          <li><code>src/content/docs/guide/design-direction.mdx</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">Starlight guide entry required by step 9 and acceptance</span></li>
           <li><code>docs/plans/baseline-add-homepage-design-direction.txt</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">step 1 baseline pass/fail counts per runner</span></li>
         </ul>
       </div>
@@ -1706,12 +1706,12 @@ img, video { max-width: 100%; height: auto; }
       <p class="section-intro">The step-by-step work, in order — each step says what to do, why it matters, and how to check it worked.</p>
       <div class="steps-list">
 
-        <div class="step-card" id="step-1">
+        <div class="step-card completed" id="step-1">
           <div class="step-card-header">
             <div class="step-number">1</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text">Capture a baseline before touching anything by running <code class="md">npm test</code>, <code class="md">npm run type-check</code> and <code class="md">npm run test:e2e</code>, recording the pass/fail count per runner to <code class="md">docs/plans/baseline-add-homepage-design-direction.txt</code></span>
               </div>
               <div class="step-note step-why-note">
@@ -1726,12 +1726,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card" id="step-2">
+        <div class="step-card completed" id="step-2">
           <div class="step-card-header">
             <div class="step-number">2</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text">Self-host the display face by adding a latin-subset, single-weight <code class="md">space-grotesk-600.woff2</code> to <code class="md">public/fonts/</code>, declaring <code class="md">@font-face</code> with <code class="md">font-display: swap</code> and a <code class="md">--font-family-display</code> token in <code class="md">src/styles/_design-tokens.scss</code>, and preloading it from <code class="md">src/layouts/Base.astro</code></span>
               </div>
               <div class="step-note step-why-note">
@@ -1746,12 +1746,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card" id="step-3">
+        <div class="step-card completed" id="step-3">
           <div class="step-card-header">
             <div class="step-number">3</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text">Assign three type roles sitewide in <code class="md">src/styles/_base.scss</code> — headings to <code class="md">--font-family-display</code> with negative tracking, body copy to the system sans, and eyebrows, labels, captions and code to <code class="md">--font-family-mono</code> — and settle the override that makes <code class="md">header &gt; section &gt; p</code> compute to 48px when line 64 declares <code class="md">2rem</code></span>
               </div>
               <div class="step-note step-why-note">
@@ -1766,12 +1766,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card" id="step-4">
+        <div class="step-card completed" id="step-4">
           <div class="step-card-header">
             <div class="step-number">4</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text">Define the seven direction tokens in <code class="md">src/styles/_design-tokens.scss</code>, replace the hardcoded <code class="md">background-color: #fff</code> at <code class="md">src/styles/_base.scss:4</code> with <code class="md">var(--paper)</code>, set <code class="md">color: var(--ink)</code>, and point the already-declared <code class="md">--card-background</code> and <code class="md">--header-background</code> aliases at the new surface tokens</span>
               </div>
               <div class="step-note step-why-note">
@@ -1786,12 +1786,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card" id="step-5">
+        <div class="step-card completed" id="step-5">
           <div class="step-card-header">
             <div class="step-number">5</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text">Extend the <code class="md">@media (prefers-color-scheme: dark)</code> block at <code class="md">src/styles/_design-tokens.scss:236</code> to flip the new surface tokens and add a <code class="md">:root[data-theme=&quot;dark&quot;]</code> override path so an explicit toggle can win over the media query</span>
               </div>
               <div class="step-note step-why-note">
@@ -1806,32 +1806,32 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card" id="step-6">
+        <div class="step-card completed" id="step-6">
           <div class="step-card-header">
             <div class="step-number">6</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
-                <span class="step-chip-text">Create <code class="md">src/components/astro/HomeHero.astro</code> with a mono eyebrow, a left-aligned display headline, a deck at roughly a third of the headline size, two calls to action and a specimen figure pairing a rendered <code class="md">Card</code> with the import line that produces it, forward the named slot through <code class="md">src/layouts/Layout.astro</code> as <code class="md">{Astro.slots.has(&#39;header&#39;) &amp;&amp; &lt;slot name=&quot;header&quot; slot=&quot;header&quot; /&gt;}</code>, then render <code class="md">HomeHero</code> from <code class="md">src/pages/index.astro</code> into that slot</span>
+                <span class="step-chip">done</span>
+                <span class="step-chip-text">Create <code class="md">src/components/astro/HomeHero.astro</code> with a mono eyebrow, a left-aligned display headline, a deck at roughly a third of the headline size, two calls to action and a specimen figure pairing a rendered <code class="md">Card</code> with the import line that produces it, forward the named slot through <code class="md">src/layouts/Layout.astro</code> as <code class="md">&lt;slot name=&quot;header&quot; slot=&quot;header&quot;&gt;</code> carrying the shared <code class="md">Header</code> as its fallback content, then render <code class="md">HomeHero</code> from <code class="md">src/pages/index.astro</code> into that slot</span>
               </div>
               <div class="step-note step-why-note">
                 <span class="step-note-label">Why</span>
-                <div class="step-why"><code class="md">index.astro</code> renders <code class="md">Layout.astro</code>, not <code class="md">Base.astro</code>, and <code class="md">Layout.astro</code> today forwards only <code class="md">featured</code>, the default slot and the two sidebar slots, so a bare <code class="md">slot=&quot;header&quot;</code> on the page is silently dropped before it ever reaches the <code class="md">Astro.slots.has(&#39;header&#39;)</code> branch at <code class="md">src/layouts/Base.astro:102</code> — and the forward must stay guarded, because an unconditional <code class="md">&lt;slot name=&quot;header&quot; slot=&quot;header&quot; /&gt;</code> makes <code class="md">slots.has(&#39;header&#39;)</code> true on every route and would suppress the default <code class="md">Header</code> sitewide</div>
+                <div class="step-why"><code class="md">index.astro</code> renders <code class="md">Layout.astro</code>, not <code class="md">Base.astro</code>, and <code class="md">Layout.astro</code> forwarded only <code class="md">featured</code>, the default slot and the two sidebar slots, so a bare <code class="md">slot=&quot;header&quot;</code> on the page was silently dropped before it reached the <code class="md">Astro.slots.has(&#39;header&#39;)</code> branch at <code class="md">src/layouts/Base.astro:102</code> — and the guarded form this step originally specified, <code class="md">{Astro.slots.has(&#39;header&#39;) &amp;&amp; &lt;slot name=&quot;header&quot; slot=&quot;header&quot; /&gt;}</code>, does not work: Astro registers a forwarded named slot statically, so the key is emitted regardless of the guard, <code class="md">slots.has(&#39;header&#39;)</code> becomes true on every route and <code class="md">Base</code> stops rendering its own <code class="md">Header</code> sitewide (measured: <code class="md">/about</code> rendered no <code class="md">&lt;header&gt;</code> element at all), which is why the implementation supplies the default <code class="md">Header</code> as the slot&#39;s fallback instead</div>
               </div>
               <div class="step-note step-verify">
                 <span class="step-note-label">Verify</span>
-                <div class="verify-body">the homepage renders <code class="md">HomeHero</code> at a display-to-deck font-size ratio of 3.0 or above with <code class="md">text-align: left</code>, and <code class="md">/about</code>, <code class="md">/posts/1</code> and <code class="md">/docs</code> each still render the original <code class="md">Header</code> with its page title.</div>
+                <div class="verify-body">the homepage renders <code class="md">HomeHero</code> at a display-to-deck font-size ratio of 3.0 or above with <code class="md">text-align: left</code>, and <code class="md">/about</code>, <code class="md">/posts/1</code> and <code class="md">/guide/components/</code> each still render the original <code class="md">Header</code> with its page title.</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="step-card" id="step-7">
+        <div class="step-card completed" id="step-7">
           <div class="step-card-header">
             <div class="step-number">7</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text">In <code class="md">src/components/astro/FeatureCards.astro</code> render the <code class="md">sectionTitle</code> prop that line 27 destructures and the template never uses, add an optional <code class="md">promoted</code> count defaulting to current behaviour that splits output into promoted specimens and compact rows, delete the <code class="md">&lt;style&gt;</code> block at lines 51-61 whose <code class="md">border-radius: 0</code> never applies, and add an additive <code class="md">&lt;slot name=&quot;code&quot; /&gt;</code> to <code class="md">src/components/astro/Card.astro</code></span>
               </div>
               <div class="step-note step-why-note">
@@ -1846,12 +1846,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card" id="step-8">
+        <div class="step-card completed" id="step-8">
           <div class="step-card-header">
             <div class="step-number">8</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text">Load <code class="md">/</code>, <code class="md">/posts/1</code>, <code class="md">/content/1</code>, <code class="md">/docs</code>, <code class="md">/tags</code> and <code class="md">/about</code> at 320, 390, 768 and 1280 in both light and dark, checking horizontal overflow and contrast on each</span>
               </div>
               <div class="step-note step-why-note">
@@ -1866,12 +1866,12 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card" id="step-9">
+        <div class="step-card completed" id="step-9">
           <div class="step-card-header">
             <div class="step-number">9</div>
             <div class="step-body">
               <div class="step-action">
-                <span class="step-chip">todo</span>
+                <span class="step-chip">done</span>
                 <span class="step-chip-text">Document the direction with a features page under <code class="md">project-docs/</code> and a matching Starlight docs entry covering the token names, the colour-marks-interactivity rule, the three type roles and how a consumer overrides them</span>
               </div>
               <div class="step-note step-why-note">
@@ -1912,48 +1912,48 @@ img, video { max-width: 100%; height: auto; }
       <p class="section-intro">The plan counts as done when every statement below is true — check each one off as you verify it.</p>
       <ul class="criteria-list" id="criteria-list">
         <li>
-          <input type="checkbox" id="ac1">
-          <label for="ac1">Three distinct <code class="md">font-family</code> values resolve across headings, body and labels on the homepage</label>
+          <input type="checkbox" id="ac1" checked>
+          <label for="ac1">Three distinct <code class="md">font-family</code> values resolve across headings, body and labels on the homepage — measured 3: <code class="md">Space Grotesk</code> (h1), <code class="md">ui-sans-serif</code> (deck), <code class="md">ui-monospace</code> (<code class="md">[data-ui=&quot;eyebrow&quot;]</code>), in both themes</label>
         </li>
         <li>
-          <input type="checkbox" id="ac2">
-          <label for="ac2">The homepage display-to-deck font-size ratio is at or above 3.0</label>
+          <input type="checkbox" id="ac2" checked>
+          <label for="ac2">The homepage display-to-deck font-size ratio is at or above 3.0 — measured 3.20 at 320, 390, 768 and 1280 (one <code class="md">--hero-display-size</code> clamp drives both sizes, so the ratio is pinned rather than only correct at the desktop breakpoint)</label>
         </li>
         <li>
-          <input type="checkbox" id="ac3">
-          <label for="ac3"><code class="md">--card-background</code> and <code class="md">--header-background</code> each have at least one consumer in the compiled stylesheet</label>
+          <input type="checkbox" id="ac3" checked>
+          <label for="ac3"><code class="md">--card-background</code> and <code class="md">--header-background</code> each have at least one consumer in the compiled stylesheet — one painting rule each: <code class="md">body [data-card] { background-color: var(--card-background) }</code> and <code class="md">body &gt; header { background-color: var(--header-background) }</code></label>
         </li>
         <li>
-          <input type="checkbox" id="ac4">
-          <label for="ac4"><code class="md">getComputedStyle(document.body).backgroundColor</code> differs between light and dark</label>
+          <input type="checkbox" id="ac4" checked>
+          <label for="ac4"><code class="md">getComputedStyle(document.body).backgroundColor</code> differs between light and dark — <code class="md">rgb(252, 252, 253)</code> against <code class="md">rgb(13, 16, 20)</code>, and <code class="md">:root[data-theme]</code> beats <code class="md">prefers-color-scheme</code> in both directions</label>
         </li>
         <li>
-          <input type="checkbox" id="ac5">
-          <label for="ac5">At least one dark-scoped rule sets a background or colour on an element, not only on <code class="md">:root</code></label>
+          <input type="checkbox" id="ac5" checked>
+          <label for="ac5">At least one dark-scoped rule sets a background or colour on an element, not only on <code class="md">:root</code> — three per dark scope: <code class="md">body</code>, <code class="md">body &gt; header, body [data-card]</code>, and <code class="md">::selection</code></label>
         </li>
         <li>
-          <input type="checkbox" id="ac6">
-          <label for="ac6"><code class="md">FeatureCards</code> renders <code class="md">sectionTitle</code> when passed, and every existing call site compiles with no prop changes</label>
+          <input type="checkbox" id="ac6" checked>
+          <label for="ac6"><code class="md">FeatureCards</code> renders <code class="md">sectionTitle</code> when passed, and every existing call site compiles with no prop changes — covered by 9 unit tests asserting it renders a heading when supplied and none when omitted; the no-props default still yields the original six-card row. The sole call site, <code class="md">src/pages/index.astro</code>, opts in to <code class="md">promoted={2}</code> for the tiering but deliberately passes no <code class="md">sectionTitle</code>, so the homepage runs the specimens straight under the hero with no intervening heading row</label>
         </li>
         <li>
-          <input type="checkbox" id="ac7">
-          <label for="ac7">The <code class="md">&lt;style&gt;</code> block at <code class="md">FeatureCards.astro:51-61</code> is gone and no remaining rule declares a value that loses to the vendor stylesheet</label>
+          <input type="checkbox" id="ac7" checked>
+          <label for="ac7">The <code class="md">&lt;style&gt;</code> block at <code class="md">FeatureCards.astro:51-61</code> is gone and no remaining rule declares a value that loses to the vendor stylesheet — card <code class="md">border-radius</code> computes to 8px, matching <code class="md">--card-radius</code>, where the deleted rule declared <code class="md">0</code> and never applied; the replacement block targets only component-authored class names</label>
         </li>
         <li>
-          <input type="checkbox" id="ac8">
-          <label for="ac8">Horizontal overflow is 0 at 320, 390, 768 and 1280 for <code class="md">/</code>, <code class="md">/posts/1</code>, <code class="md">/content/1</code>, <code class="md">/docs</code>, <code class="md">/tags</code> and <code class="md">/about</code>, in both themes</label>
+          <input type="checkbox" id="ac8" checked>
+          <label for="ac8">Horizontal overflow is 0 at 320, 390, 768 and 1280 for <code class="md">/</code>, <code class="md">/posts/1</code>, <code class="md">/content/1</code>, <code class="md">/docs</code>, <code class="md">/tags</code> and <code class="md">/about</code>, in both themes — 0 across all 48 combinations. Caveat: <code class="md">/docs</code> returns a <strong class="md">pre-existing 500</strong> (<code class="md">getEntry(&#39;docs&#39;, &#39;0-welcome&#39;)</code> at <code class="md">src/pages/docs/index.astro:6</code> resolves <code class="md">undefined</code>, and the <code class="md">!</code> assertion lets <code class="md">render(undefined)</code> throw). The collection has held no <code class="md">0-welcome</code> entry since before <code class="md">52cde11</code>, <code class="md">src/pages/docs/index.astro</code> is untouched by this plan, and the route&#39;s 0 is therefore vacuous rather than a genuine pass. Tracked in Next Steps.</label>
         </li>
         <li>
-          <input type="checkbox" id="ac9">
-          <label for="ac9">No non-interactive element computes to the accent colour</label>
+          <input type="checkbox" id="ac9" checked>
+          <label for="ac9">No non-interactive element computes to the accent colour — 0 offenders across <code class="md">/</code>, <code class="md">/posts/1</code>, <code class="md">/content/1</code>, <code class="md">/tags</code> and <code class="md">/about</code> in both themes, scanning 88-134 elements per route with interactive elements and their descendants excluded</label>
         </li>
         <li>
-          <input type="checkbox" id="ac10">
-          <label for="ac10">Routes other than <code class="md">/</code> still render the shared <code class="md">Header</code> component</label>
+          <input type="checkbox" id="ac10" checked>
+          <label for="ac10">Routes other than <code class="md">/</code> still render the shared <code class="md">Header</code> component — <code class="md">/about</code>, <code class="md">/posts/1</code>, <code class="md">/tags</code>, <code class="md">/blog</code> and <code class="md">/content/1</code> each render <code class="md">&lt;header&gt;</code> with their own page title and no <code class="md">HomeHero</code> markup. The forward supplies the default <code class="md">Header</code> as slot fallback content rather than using an <code class="md">Astro.slots.has()</code> guard, because a forwarded named slot registers statically and would otherwise suppress the header sitewide</label>
         </li>
         <li>
-          <input type="checkbox" id="ac11">
-          <label for="ac11">The direction is documented in <code class="md">project-docs/</code> and in the Starlight guide</label>
+          <input type="checkbox" id="ac11" checked>
+          <label for="ac11">The direction is documented in <code class="md">project-docs/</code> and in the Starlight guide — <code class="md">project-docs/03-features/design-direction.md</code> and <code class="md">src/content/docs/guide/design-direction.mdx</code>, wired into the Starlight <code class="md">Features</code> sidebar</label>
         </li>
       </ul>
       <span id="criteria-status" aria-live="polite" aria-atomic="true"
@@ -1977,21 +1977,21 @@ img, video { max-width: 100%; height: auto; }
         Wrapping up
       </h2>
       <p class="section-intro">Three gates that must all pass before this plan is marked completed.</p>
-      <div class="completion-checklist" id="completion-checklist">
+      <div class="completion-checklist all-complete" id="completion-checklist">
         <div class="completion-header">
           <span class="completion-badge" id="completion-badge">Required</span>
         </div>
         <ul class="completion-list" id="completion-list">
           <li>
-            <input type="checkbox" id="cc1" disabled>
+            <input type="checkbox" id="cc1" disabled checked>
             <label for="cc1">All step TODOs marked as done</label>
           </li>
           <li>
-            <input type="checkbox" id="cc2" disabled>
+            <input type="checkbox" id="cc2" disabled checked>
             <label for="cc2">All acceptance criteria verified and checked off</label>
           </li>
           <li>
-            <input type="checkbox" id="cc3" disabled>
+            <input type="checkbox" id="cc3" disabled checked>
             <label for="cc3">Plan status updated to completed</label>
           </li>
         </ul>
@@ -2009,6 +2009,28 @@ img, video { max-width: 100%; height: auto; }
       </h2>
       <p class="section-intro">Follow-up ideas that came up along the way — none of them are required to finish this plan.</p>
       <div class="next-steps-list">
+        <details class="next-step-item">
+          <summary>Fix the pre-existing <code class="md">/docs</code> 500</summary>
+          <div class="next-step-prompt">
+            <p>Blocks acceptance criterion 8 from being genuinely measurable on one of its six named routes.</p>
+            <p>Paste this prompt into Claude to execute this follow-up:</p>
+            <pre>In the astro-basics repo, every /docs route returns a 500. src/pages/docs/index.astro line 6 calls getEntry(&#39;docs&#39;, &#39;0-welcome&#39;), but the docs content collection contains only guide/ and guide.mdx, so the entry resolves to undefined; the non-null assertion on line 7 (introDoc!) hides that from the type checker and render(undefined) then throws RenderUndefinedEntryError. This predates commit 52cde11. Decide whether /docs should render a real welcome entry, redirect to /guide/, or be removed, then implement it and add an e2e test asserting /docs returns 200. Report the status code for /docs, /docs/1 and /docs/guide before and after.</pre>
+            <button class="copy-prompt-btn" type="button"
+                    onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+          </div>
+        </details>
+
+        <details class="next-step-item">
+          <summary>Stop the e2e suite grading whichever app happens to hold port 4321</summary>
+          <div class="next-step-prompt">
+            <p>A local port collision made 14 of the 16 recorded baseline failures phantom.</p>
+            <p>Paste this prompt into Claude to execute this follow-up:</p>
+            <pre>In the astro-basics repo, e2e/test-utils.ts line 1 hardcodes BASE_URL = &#39;http://localhost:4321/&#39; and playwright.config.ts sets reuseExistingServer: !process.env.CI. When any other Astro project holds port 4321 locally, Playwright attaches to it and the suite silently grades a different application: measured 16 failed / 23 passed against a foreign server versus 2 failed / 50 passed against this repo&#39;s own. Make BASE_URL derive from the Playwright config&#39;s use.baseURL (or an env var with the current value as fallback) so the specs in home-performance, home-responsive, home-accessibility, home-structure, navigation-popover and skip-link follow the configured server. Verify by starting an unrelated dev server on 4321 and confirming the suite still measures this repo.</pre>
+            <button class="copy-prompt-btn" type="button"
+                    onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+          </div>
+        </details>
+
         <details class="next-step-item">
           <summary>Roll the direction out to the interior routes</summary>
           <div class="next-step-prompt">

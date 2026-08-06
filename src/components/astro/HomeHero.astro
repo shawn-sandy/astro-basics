@@ -1,0 +1,343 @@
+---
+/**
+ * Homepage hero.
+ *
+ * Replaces the shared `Header` on `/` only, by way of the `header` slot that
+ * `src/layouts/Layout.astro` forwards through to `Base.astro`. Every other
+ * route falls back to that forwarded slot's default content, which is the
+ * shared `Header` itself.
+ *
+ * The direction is "colour marks hydration": static content is ink on paper,
+ * and the accent (`--island`) appears only on things a visitor can operate --
+ * the two calls to action, the specimen's own link and the focus rings.
+ * Nothing decorative carries it, which keeps the rule machine-checkable.
+ *
+ * The signature element is the specimen: a real `Card` rendered from the same
+ * values the code sample prints, so the sample cannot drift from the component
+ * standing beside it.
+ *
+ * @component HomeHero
+ * @example
+ * ```astro
+ * <!-- The slot name is required: without it the hero renders into the page
+ *      body and the shared Header stays at the top of the document. -->
+ * <Layout pageTitle={SITE_TITLE}>
+ *   <HomeHero slot="header" />
+ * </Layout>
+ *
+ * <!-- All three strings are overridable; every one has a default. -->
+ * <HomeHero
+ *   slot="header"
+ *   eyebrow="30+ components / zero client JS by default"
+ *   headline="Astro components, ready to paste."
+ *   deck="Server-rendered components with typed props."
+ * />
+ * ```
+ */
+import Card from '#components/astro/Card.astro'
+
+export type Props = {
+  /** Mono eyebrow set above the headline. */
+  eyebrow?: string
+  /** Display headline. Rendered as the page's single `h1`. */
+  headline?: string
+  /** Deck paragraph, sized at a third of the headline. */
+  deck?: string
+}
+
+const {
+  eyebrow = '30+ components / zero client JS by default',
+  headline = 'Astro components, ready to paste.',
+  deck = 'Server-rendered components with typed props. Copy the import, drop in the markup, ship static HTML.',
+} = Astro.props as Props
+
+const specimenTitle = 'Accessibility First'
+const specimenBody =
+  'Screen-reader support, keyboard navigation and WCAG-compliant patterns, built in.'
+
+// The component index, and the destination for both the primary CTA and the
+// specimen card. Not `/docs`: that route calls `getEntry('docs', '0-welcome')`
+// for an entry the collection does not contain and passes the `undefined`
+// straight into `render()`, so it answers 500. `/guide/components/` is the
+// Starlight route that actually lists the components this hero is advertising.
+// Single constant on purpose — the printed code block below interpolates it, so
+// the rendered card, its href and the source line a visitor copies cannot drift.
+const specimenLink = '/guide/components/'
+
+// Built from the same constants the specimen renders from, so the printed
+// call site is always the call site that produced the card above it.
+const specimenCode = [
+  "import Card from '#components/astro/Card.astro'",
+  '',
+  `<Card cardTitle="${specimenTitle}" cardLink="${specimenLink}">`,
+  `  <p>${specimenBody}</p>`,
+  '</Card>',
+].join('\n')
+---
+
+<header class="home-hero" data-home-hero>
+  <div class="home-hero__lede">
+    <p class="home-hero__eyebrow" data-ui="eyebrow">{eyebrow}</p>
+    <h1 class="home-hero__display" data-ui="display">{headline}</h1>
+    <p class="home-hero__deck" data-home-hero-deck>{deck}</p>
+
+    <div class="home-hero__cta">
+      <a class="home-hero__button" href={specimenLink}>Browse components</a>
+      <a class="home-hero__button home-hero__button--ghost" href="/blog">Read the blog</a>
+    </div>
+
+    <p class="home-hero__legend">
+      Colour marks interactivity. Static content is ink; <b>links, buttons and controls</b> carry the
+      accent. Nothing else does.
+    </p>
+  </div>
+
+  <figure class="home-hero__specimen">
+    <figcaption class="home-hero__specimen-label">Rendered</figcaption>
+    <div class="home-hero__specimen-body">
+      <Card cardTitle={specimenTitle} cardLink={specimenLink}>
+        <p>{specimenBody}</p>
+      </Card>
+    </div>
+    <pre class="home-hero__code"><code>{specimenCode}</code></pre>
+  </figure>
+</header>
+
+<style>
+  .home-hero {
+    /*
+     * One knob drives both type sizes, so the display-to-deck ratio is pinned
+     * at 3.2 at every viewport width rather than only at the desktop clamp.
+     * The review measured 1.63; the gate is 3.0.
+     */
+    --hero-display-size: clamp(3rem, 6.6vw, 4.5rem);
+    --hero-deck-size: calc(var(--hero-display-size) / 3.2);
+
+    /*
+     * Direction tokens with literal fallbacks. The fallbacks keep the hero
+     * legible if it is rendered before the token layer loads; once
+     * `_design-tokens.scss` defines them, the tokens win and dark mode flips
+     * every surface here with the rest of the page.
+     */
+    --hero-ink: var(--ink, #101418);
+    --hero-ink-soft: var(--ink-soft, #5a6472);
+    --hero-paper: var(--paper, #fcfcfd);
+    --hero-paper-sunk: var(--paper-sunk, #f1f3f5);
+    --hero-island: var(--island, #5b2cf5);
+    --hero-island-bg: var(--island-bg, #f0ebff);
+    --hero-rule: var(--rule, #dde1e6);
+
+    align-items: start;
+    box-sizing: border-box;
+    color: var(--hero-ink);
+    display: grid;
+    gap: 3.5rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+
+    /*
+     * Undoes the vendor overlay grid: `grid-template-areas: "overlay"` plus the
+     * `minmax(300px, auto)` row floor `_base.scss` puts on every header. The
+     * `fit-content` min-height also beats acss's `min-height: 40vh`, which
+     * would otherwise leave a tall empty band under the content.
+     */
+    grid-template-areas: none;
+    grid-template-rows: auto;
+    min-height: fit-content;
+    padding-block: 4.5rem 4rem;
+
+    /*
+     * Full-bleed band. The background is painted by this element, so
+     * constraining the element itself to `--max-content-width` stopped the
+     * surface short of the viewport edge while the shared `Header` on every
+     * other route ran edge to edge. Spanning the full width and pushing the
+     * content in with padding keeps the grid on the same 80rem measure without
+     * a wrapper element. Below 80rem the subtraction goes negative and `max()`
+     * falls back to the 1.25rem gutter, so 320px reflow is unchanged.
+     */
+    padding-inline: max(1.25rem, calc((100% - var(--max-content-width, 80rem)) / 2));
+    width: 100%;
+  }
+
+  /*
+   * @fpkit/acss ships an "overlay" pattern keyed on the `header` element: it
+   * forces every direct child into `grid-area: overlay` and centres
+   * `header > div` inside a capped, padded column. Left unreset that collapses
+   * this two-column layout into a single stacked area, so the pattern is
+   * undone here rather than giving up the banner landmark.
+   */
+  .home-hero > * {
+    grid-area: auto;
+  }
+
+  .home-hero > .home-hero__lede {
+    gap: 0;
+    margin-inline: 0;
+    max-width: none;
+    padding-inline: 0;
+    text-align: left;
+  }
+
+  .home-hero .home-hero__lede,
+  .home-hero .home-hero__specimen {
+    /* Grid items default to `min-width: auto`, which lets a long word or the
+       code sample push the page wider than the viewport at 320px. */
+    min-width: 0;
+  }
+
+  .home-hero .home-hero__eyebrow {
+    color: var(--hero-ink-soft);
+    font-family: var(--font-family-mono, ui-monospace, monospace);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    margin: 0 0 1.25rem;
+    max-width: none;
+    text-transform: uppercase;
+  }
+
+  .home-hero .home-hero__display {
+    color: var(--hero-ink);
+    font-family: var(--font-family-display, inherit);
+    font-size: var(--hero-display-size);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+    margin: 0 0 1.25rem;
+
+    /* Left, not centred. A long compound word must break rather than widen
+       the document at 320px. */
+    hyphens: auto;
+    overflow-wrap: break-word;
+    text-align: left;
+    text-transform: none;
+  }
+
+  .home-hero .home-hero__deck {
+    color: var(--hero-ink-soft);
+    font-size: var(--hero-deck-size);
+    line-height: 1.5;
+    margin: 0;
+    max-width: 46ch;
+  }
+
+  .home-hero .home-hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-block-start: 2rem;
+  }
+
+  /* Interactive, so it may carry the accent. */
+  .home-hero .home-hero__button {
+    background: var(--hero-island);
+    border: 1px solid var(--hero-island);
+    border-radius: var(--radius, 0.5rem);
+
+    /*
+     * Paper, not a literal white. The accent lightens in dark mode, so white
+     * label text would drop to about 2.5:1 there; inverting to the paper token
+     * measures 6.56:1 in light and 6.15:1 in dark.
+     */
+    color: var(--hero-paper);
+    display: inline-block;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    padding: 0.6875rem 1.25rem;
+    text-decoration: none;
+  }
+
+  .home-hero .home-hero__button--ghost {
+    background: transparent;
+    color: var(--hero-island);
+  }
+
+  .home-hero .home-hero__button:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .home-hero .home-hero__button--ghost:hover {
+    background: var(--hero-island-bg);
+  }
+
+  .home-hero .home-hero__button:focus-visible {
+    outline: 2px solid var(--hero-island);
+    outline-offset: 3px;
+  }
+
+  /*
+   * Deliberately not accented. The legend describes the rule; it is not
+   * interactive, so honouring the rule means it stays in ink.
+   */
+  .home-hero .home-hero__legend {
+    border-top: 1px solid var(--hero-rule);
+    color: var(--hero-ink-soft);
+    font-family: var(--font-family-mono, ui-monospace, monospace);
+    font-size: 0.71875rem;
+    line-height: 1.6;
+    margin-block-start: 2.25rem;
+    max-width: 52ch;
+    padding-block-start: 1rem;
+  }
+
+  .home-hero .home-hero__legend b {
+    color: var(--hero-ink);
+    font-weight: 650;
+  }
+
+  .home-hero .home-hero__specimen {
+    background: var(--hero-paper);
+    border: 1px solid var(--hero-rule);
+    border-radius: var(--radius, 0.5rem);
+    margin: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .home-hero .home-hero__specimen-label {
+    background: var(--hero-paper-sunk);
+    border-bottom: 1px solid var(--hero-rule);
+    color: var(--hero-ink-soft);
+    font-family: var(--font-family-mono, ui-monospace, monospace);
+    font-size: 0.65625rem;
+    letter-spacing: 0.12em;
+    padding: 0.625rem 1rem;
+    text-transform: uppercase;
+  }
+
+  .home-hero .home-hero__specimen-body {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .home-hero .home-hero__code {
+    background: var(--hero-paper-sunk);
+    border-block-start: 1px solid var(--hero-rule);
+    border-radius: 0;
+    color: var(--hero-ink-soft);
+    font-family: var(--font-family-mono, ui-monospace, monospace);
+    font-size: 0.78125rem;
+    line-height: 1.7;
+    margin: 0;
+
+    /* The import line is longer than a 320px viewport. It scrolls inside this
+       box instead of widening the document. */
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 1rem 1.25rem;
+    white-space: pre;
+  }
+
+  .home-hero .home-hero__code code {
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  @media (max-width: 60rem) {
+    .home-hero {
+      gap: 2.25rem;
+      grid-template-columns: minmax(0, 1fr);
+      padding-block: 3rem 2.5rem;
+      padding-inline: 1rem;
+    }
+  }
+</style>

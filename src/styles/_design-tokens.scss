@@ -1,8 +1,61 @@
 // Design Tokens - Figma Integration Ready
 // Generated for astro-basics-website design system
 
-:root {
-  // Color Tokens - Primary Palette
+// Self-hosted display face. One latin subset, one weight, no CDN and no
+// second request: `--font-family-display` is applied to h1/h2/h3 only, and
+// those render at weight 600, so a second woff2 would download bytes nothing
+// on the site asks for. Licensed SIL OFL 1.1; the file lives at
+// `public/fonts/space-grotesk-600.woff2` and is preloaded from `Base.astro`.
+@font-face {
+  font-display: swap;
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 600;
+  src: url("/fonts/space-grotesk-600.woff2") format("woff2");
+}
+
+// The direction: colour marks hydration.
+// Astro ships static HTML and withholds JavaScript, so the palette says the
+// same thing the framework does — static content is ink on paper, and
+// `--island` appears only where something is interactive (links, buttons,
+// focus rings, the interactive-specimen badge). Never reach for `--island`
+// for a decorative border, a heading or a card surface: an e2e test asserts
+// that no non-interactive element computes to the accent.
+// Contrast, measured not estimated -- light: ink/paper 18.04:1,
+// ink-soft/paper 5.85:1, island/paper 6.56:1, ink-soft/paper-sunk 5.39:1
+// (the lowest pair). Dark: 6.15:1 or better on every pair.
+@mixin direction-light {
+  --ink: #101418;
+  --ink-soft: #5a6472;
+  --island: #5b2cf5;
+  --island-bg: #f0ebff;
+  --paper: #fcfcfd;
+  --paper-sunk: #f1f3f5;
+  --rule: #dde1e6;
+
+  // Lets the UA paint native controls, scrollbars and form widgets to match.
+  color-scheme: light;
+}
+
+@mixin direction-dark {
+  --ink: #e8eaed;
+  --ink-soft: #99a2ad;
+  --island: #9b7dff;
+  --island-bg: #1e1830;
+  --paper: #0d1014;
+  --paper-sunk: #151a20;
+  --rule: #262c33;
+
+  color-scheme: dark;
+}
+
+// The legacy palette in its light form. Extracted into a mixin so the explicit
+// `[data-theme="light"]` override can restore it, not just the direction tokens.
+// Without this a visitor whose OS prefers dark but who picks light gets light
+// `--paper`/`--ink` over an inverted `--color-neutral-*`, and every consumer of
+// the legacy family — `--card-border`, `--input-border`, `--footer-background`
+// and the utility classes — keeps painting dark values on a light surface.
+@mixin legacy-palette-light {
   --color-primary-50: #f0f9ff;
   --color-primary-100: #e0f2fe;
   --color-primary-200: #bae6fd;
@@ -13,8 +66,6 @@
   --color-primary-700: #0369a1;
   --color-primary-800: #075985;
   --color-primary-900: #0c4a6e;
-
-  // Color Tokens - Neutral Palette
   --color-neutral-50: #fafafa;
   --color-neutral-100: #f4f4f5;
   --color-neutral-200: #e4e4e7;
@@ -25,6 +76,61 @@
   --color-neutral-700: #3f3f46;
   --color-neutral-800: #27272a;
   --color-neutral-900: #18181b;
+}
+
+// Legacy palette inversion, kept with the direction flip so the two token
+// families can never disagree about which theme is active.
+@mixin legacy-palette-dark {
+  --color-primary-50: #0c4a6e;
+  --color-primary-100: #075985;
+  --color-primary-200: #0369a1;
+  --color-primary-300: #0284c7;
+  --color-primary-400: #0ea5e9;
+  --color-primary-500: #38bdf8;
+  --color-primary-600: #7dd3fc;
+  --color-primary-700: #bae6fd;
+  --color-primary-800: #e0f2fe;
+  --color-primary-900: #f0f9ff;
+  --color-neutral-50: #18181b;
+  --color-neutral-100: #27272a;
+  --color-neutral-200: #3f3f46;
+  --color-neutral-300: #52525b;
+  --color-neutral-400: #71717a;
+  --color-neutral-500: #a1a1aa;
+  --color-neutral-600: #d4d4d8;
+  --color-neutral-700: #e4e4e7;
+  --color-neutral-800: #f4f4f5;
+  --color-neutral-900: #fafafa;
+}
+
+// Painted dark surfaces. Redefining `:root` variables is not enough on its
+// own: @fpkit/acss resolves `--color-surface` from `--color-neutral-0`, a
+// token this file never declares, and hardcodes `whitesmoke` on the header
+// band, so the vendor's light surfaces keep painting unless the dark scope
+// reaches the elements themselves.
+@mixin direction-dark-surfaces {
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+  }
+
+  body > header,
+  body [data-card] {
+    background-color: var(--paper-sunk);
+    color: var(--ink);
+  }
+
+  ::selection {
+    background-color: var(--island-bg);
+    color: var(--ink);
+  }
+}
+
+:root {
+  @include direction-light;
+
+  // Color Tokens - Primary and Neutral Palettes
+  @include legacy-palette-light;
 
   // Semantic Color Tokens
   --color-success: #22c55e;
@@ -41,12 +147,21 @@
   --color-info-dark: #1d4ed8;
 
   // Typography Tokens
-  --font-family-sans: ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI",
-    roboto, "Helvetica Neue", arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+  // Three roles, and only three: display for h1-h3, sans for body copy, mono
+  // for code and for the eyebrow/label opt-ins. The display stack falls all
+  // the way back through the system sans, so a failed font request degrades
+  // to the body face rather than to a serif.
+  --font-family-display:
+    "Space Grotesk", ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI",
+    roboto, "Helvetica Neue", arial, sans-serif;
+  --font-family-sans:
+    ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", roboto,
+    "Helvetica Neue", arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", "Noto Color Emoji";
   --font-family-serif: ui-serif, georgia, cambria, "Times New Roman", times, serif;
-  --font-family-mono: ui-monospace, sfmono-regular, "SF Mono", menlo, monaco, consolas,
-    "Liberation Mono", "Courier New", monospace;
+  --font-family-mono:
+    ui-monospace, sfmono-regular, "SF Mono", menlo, monaco, consolas, "Liberation Mono",
+    "Courier New", monospace;
 
   // Font Size Tokens (Type Scale)
   --font-size-xs: 0.75rem; // 12px
@@ -202,7 +317,10 @@
 
   // Component-Specific Token Aliases
   // Card tokens
-  --card-background: var(--color-neutral-50);
+  // Pointed at the direction's sunk surface so cards flip with the theme.
+  // `_base.scss` gives this alias a real painted consumer; before that it had
+  // none, which is why every card inherited the vendor's white.
+  --card-background: var(--paper-sunk);
   --card-border: var(--color-neutral-200);
   --card-radius: var(--radius-lg);
   --card-shadow: var(--shadow-base);
@@ -224,8 +342,17 @@
 
   // Header tokens
   --header-height: var(--space-16);
-  --header-background: var(--color-neutral-50);
+
+  // Same story as `--card-background`: aliased to a direction surface and
+  // given a painted consumer in `_base.scss`, replacing the `whitesmoke`
+  // @fpkit/acss hardcodes on the header band.
+  --header-background: var(--paper-sunk);
   --header-border: var(--color-neutral-200);
+
+  // The deck under the header h1. Fluid on a shallower slope than the h1's
+  // own `--fs-12` clamp, so the two separate as the viewport grows instead of
+  // converging on the 1.63 ratio the review measured at 1280.
+  --header-deck-font-size: clamp(1.125rem, 0.9vw + 0.9rem, 1.5rem);
 
   // Footer tokens
   --footer-background: var(--color-neutral-100);
@@ -233,30 +360,34 @@
 }
 
 // Dark Mode Tokens
+// This block used to redefine `:root` variables and nothing else, so no
+// painted surface responded and dark mode could not change a pixel. It now
+// flips the direction tokens and paints elements as well.
 @media (prefers-color-scheme: dark) {
   :root {
-    // Override semantic tokens for dark mode
-    --color-primary-50: #0c4a6e;
-    --color-primary-100: #075985;
-    --color-primary-200: #0369a1;
-    --color-primary-300: #0284c7;
-    --color-primary-400: #0ea5e9;
-    --color-primary-500: #38bdf8;
-    --color-primary-600: #7dd3fc;
-    --color-primary-700: #bae6fd;
-    --color-primary-800: #e0f2fe;
-    --color-primary-900: #f0f9ff;
-
-    // Dark neutral palette
-    --color-neutral-50: #18181b;
-    --color-neutral-100: #27272a;
-    --color-neutral-200: #3f3f46;
-    --color-neutral-300: #52525b;
-    --color-neutral-400: #71717a;
-    --color-neutral-500: #a1a1aa;
-    --color-neutral-600: #d4d4d8;
-    --color-neutral-700: #e4e4e7;
-    --color-neutral-800: #f4f4f5;
-    --color-neutral-900: #fafafa;
+    @include direction-dark;
+    @include legacy-palette-dark;
   }
+
+  @include direction-dark-surfaces;
+}
+
+// Explicit-toggle override path. `[data-theme]` on the root beats the media
+// query on specificity alone — (0,2,0) against (0,1,0) — so the order of the
+// two blocks does not matter and a chosen theme always wins over the OS
+// preference. Starlight already stamps this attribute on the docs routes.
+:root[data-theme="dark"] {
+  @include direction-dark;
+  @include legacy-palette-dark;
+  @include direction-dark-surfaces;
+}
+
+// Both families flip together here, exactly as they do in the dark override.
+// `direction-light` alone is not enough: when the OS prefers dark, the media
+// block above has already applied `legacy-palette-dark` to `:root`, and nothing
+// in this block would put it back — leaving inverted `--color-neutral-*` and
+// `--color-primary-*` under light `--paper`/`--ink`.
+:root[data-theme="light"] {
+  @include direction-light;
+  @include legacy-palette-light;
 }

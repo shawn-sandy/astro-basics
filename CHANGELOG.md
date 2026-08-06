@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Homepage Design Direction** (`src/components/astro/HomeHero.astro`, `src/styles/_design-tokens.scss`):
+  the homepage now renders live component specimens instead of describing them
+  - Seven direction tokens — `--ink`, `--ink-soft`, `--paper`, `--paper-sunk`, `--island`,
+    `--island-bg`, `--rule` — each flipping in both `prefers-color-scheme: dark` and the
+    `:root[data-theme]` override path, so an explicit toggle always beats the OS preference
+  - "Colour marks hydration": `--island` paints only interactive elements. An E2E test fails the
+    build if any non-interactive element computes to the accent
+  - Three type roles where there was previously one: display (self-hosted Space Grotesk 600,
+    13KB latin subset, preloaded), body (system sans), mono (code and labels)
+  - `HomeHero.astro`: full-bleed band pairing a rendered `Card` with the import line that produces
+    it. Content stays on the 80rem measure via `padding-inline: max(gutter, (100% - maxw) / 2)`
+  - `FeatureCards.astro` gains `sectionTitle` and `promoted` props for two-tier output — promoted
+    specimens carry a code slot, the remainder render as compact rows. Both default to the
+    existing six-card layout, so current call sites are unaffected
+  - `Card.astro` exports its `Props` type and accepts a named `code` slot
+  - Docs: `project-docs/03-features/design-direction.md` and a Starlight guide at
+    `/guide/design-direction`
 - **Popover Navigation** (`src/components/astro/Navigation.astro`): site navigation moved into a
   native HTML popover panel opened by a hamburger button, at every viewport width
   - Zero JavaScript: open, close, Esc-to-close and outside-click dismissal all come from the
@@ -88,10 +105,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `src/styles/_base.scss`. Nothing previously painted the body, so pages fell back to the
   browser's default canvas, which renders dark under `prefers-color-scheme: dark`. The value is
   literal rather than tokenised, so the page stays white in both colour schemes
+  - **Superseded by the Homepage Design Direction work above**: the literal is now
+    `var(--paper)`, which is the point — the body is meant to follow the colour scheme rather
+    than stay white in both. The original entry stands as the record of why the literal was
+    there; it is no longer the current behaviour
 - Minor updates and refinements
 
 ### Fixed
 
+- **Design tokens had no consumers, so dark mode could not change a pixel**:
+  `src/styles/_design-tokens.scss` declared a full alias layer that nothing read.
+  `--card-background` and `--header-background` each had zero `var()` consumers, so every card and
+  the header band fell through to the `@fpkit/acss` defaults — including a hardcoded `whitesmoke`
+  on the header. The dark-mode block compounded this by redefining `:root` variables and nothing
+  else, so no element repainted. Both aliases now have painted consumers, and the dark scope
+  reaches the elements themselves. `tests/integration/design-tokens.test.ts` parses the compiled
+  stylesheet and fails if either alias loses its last painting consumer
+- **ESLint could not lint the E2E suite** (`eslint.config.js`): Playwright specs fell through to
+  the unit-test override, which declares no browser globals, so every `page.evaluate` callback
+  using `getComputedStyle`, `Element` or `Node` failed `no-undef` at the pre-commit hook. `e2e/**`
+  now has its own override declaring those three globals
 - **Popover fallback was silently inert in engines without `:has()`**: the
   `@supports not selector(:popover-open)` block in `src/styles/components/_navigation.scss` listed
   its bare and `:has()` selectors as one comma-separated list. A selector list is unforgiving, so a

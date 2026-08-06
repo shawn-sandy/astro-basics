@@ -1,17 +1,51 @@
 ---
 import Base from './Base.astro'
+import Header from '#components/astro/Header.astro'
 import Sidebar from '#components/astro/Sidebar.astro'
 import MainSection from '#components/astro/MainSection.astro'
 const { pageTitle, pageDescription, pageImageUrl, hideHeader, showBreadcrumb, breadcrumbRoutes } =
   Astro.props
+
+// Resolved once so the fallback `Header` below is rendered from exactly the
+// same values that are handed to `Base`, keeping every non-homepage route
+// byte-identical to the header it rendered before the slot was forwarded.
+const resolvedTitle = pageTitle || 'Authentication'
+const resolvedDescription = pageDescription || 'Sign in to your account'
 ---
 
 <Base
   hideHeader={hideHeader || false}
-  pageTitle={pageTitle || 'Authentication'}
-  pageDescription={pageDescription || 'Sign in to your account'}
+  pageTitle={resolvedTitle}
+  pageDescription={resolvedDescription}
   pageImageUrl={pageImageUrl}
 >
+  {
+    /*
+     * Forwards the `header` slot through to `Base`. Pages render `Layout`, not
+     * `Base`, and `Layout` previously passed on only `featured`, the default
+     * slot and the two sidebar slots -- so a `slot="header"` on a page was
+     * dropped before it could reach the `Astro.slots.has('header')` branch in
+     * `Base.astro`.
+     *
+     * The fallback content is load-bearing. Astro registers a forwarded named
+     * slot statically, so once this `<slot slot="header">` exists at all,
+     * `Astro.slots.has('header')` is true inside `Base` on EVERY route and
+     * `Base` stops rendering its own default `Header`. Wrapping the forward in
+     * `{Astro.slots.has('header') && ...}` does not help -- the slot key is
+     * still emitted and the header disappears sitewide (measured: `/about`
+     * rendered no `<header>` at all). Supplying the default `Header` as this
+     * slot's fallback restores it for every page that does not pass a header
+     * of its own, and `Base` still gates the whole thing behind `hideHeader`.
+     */
+  }
+  <slot name="header" slot="header">
+    <Header
+      headerTitle={resolvedTitle}
+      headerDescription={resolvedDescription}
+      headerImageUrl={pageImageUrl || ''}
+      headerImageAlt={resolvedTitle}
+    />
+  </slot>
   <MainSection showBreadcrumb={showBreadcrumb ?? true} breadcrumbRoutes={breadcrumbRoutes || []}>
     <div slot="featured">
       <slot name="featured" />

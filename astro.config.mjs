@@ -37,6 +37,7 @@ export default defineConfig({
             { label: 'Configurable Roles', link: '/guide/configurable-roles' },
             { label: 'Database Switching', link: '/guide/database-switching' },
             { label: 'Database Troubleshooting', link: '/guide/database-troubleshooting' },
+            { label: 'Design Direction', link: '/guide/design-direction' },
             { label: 'Logging System', link: '/guide/logging-system' },
             { label: 'Role Guard System', link: '/guide/role-guard-usage' },
             { label: 'Page Level Guards', link: '/guide/page-level-protection/' },
