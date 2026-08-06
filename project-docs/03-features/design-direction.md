@@ -40,8 +40,10 @@ Source of truth: `src/styles/_design-tokens.scss` (definitions) and `src/styles/
 | `--rule`       | `#dde1e6` | `#262c33` | Hairlines and dividers                                         |
 
 The light values are deliberately not Tailwind sky-500 and not indigo-600, so the palette does not read as a framework
-default. Every pair clears WCAG 2.1 AA: in light, ink on paper is roughly 18:1, ink-soft on paper roughly 6.4:1, and
-island on paper roughly 6.7:1; in dark, every pair is 6.1:1 or better.
+default. Every pair clears WCAG 2.1 AA. Measured against the running page rather than estimated: in light, ink on paper
+is 18.04:1, ink-soft on paper 5.85:1, island on paper 6.56:1, and the lowest pair of all — ink-soft on paper-sunk —
+5.39:1; in dark, every pair is 6.15:1 or better. `e2e/home-accessibility.spec.ts` asserts the 4.5:1 AA floor against the
+tokens the page actually resolves, so these figures cannot drift without a test failing.
 
 Both themes are defined as SCSS mixins - `direction-light` and `direction-dark` - and applied through three scopes:
 

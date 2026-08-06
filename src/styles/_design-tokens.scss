@@ -21,8 +21,9 @@
 // focus rings, the interactive-specimen badge). Never reach for `--island`
 // for a decorative border, a heading or a card surface: an e2e test asserts
 // that no non-interactive element computes to the accent.
-// Contrast, light: ink/paper ~18:1, ink-soft/paper ~6.4:1, island/paper
-// ~6.7:1. Dark: 6.1:1 or better on every pair.
+// Contrast, measured not estimated -- light: ink/paper 18.04:1,
+// ink-soft/paper 5.85:1, island/paper 6.56:1, ink-soft/paper-sunk 5.39:1
+// (the lowest pair). Dark: 6.15:1 or better on every pair.
 @mixin direction-light {
   --ink: #101418;
   --ink-soft: #5a6472;

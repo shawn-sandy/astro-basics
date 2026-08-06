@@ -37,6 +37,12 @@ test.describe('Homepage design direction', () => {
     await page.setViewportSize({ width: 1280, height: 900 })
     await page.goto('/')
 
+    // `page.goto` resolves on `load`, but the display face is declared
+    // `font-display: swap` and can activate after that. Without this wait the
+    // probe can read the fallback stack and score the roles against metrics
+    // that are about to change.
+    await page.evaluate(() => document.fonts.ready)
+
     const roles = await page.evaluate(() => {
       const family = (el: Element | null) => (el ? getComputedStyle(el).fontFamily : null)
 
@@ -223,6 +229,17 @@ test.describe('Homepage design direction', () => {
       luminance(light.body)
     )
 
+    // Prove both probes actually matched before filtering on them. `bg()`
+    // returns null for a missing element and the filter below drops nulls, so
+    // a selector that stops matching -- e.g. if `Base.astro` ever wraps the
+    // header slot in a container, breaking `body > header` -- would silently
+    // remove that surface from the check while the test still passed on
+    // `[data-card]` alone.
+    expect(light.header, 'body > header matched nothing; update the selector').not.toBeNull()
+    expect(light.card, '[data-card] matched nothing; update the selector').not.toBeNull()
+    expect(dark.header, 'body > header matched nothing in dark; update the selector').not.toBeNull()
+    expect(dark.card, '[data-card] matched nothing in dark; update the selector').not.toBeNull()
+
     // At least one *painted element* — not just a `:root` variable — has to
     // respond, which is what the baseline failed to do.
     const painted = [
@@ -337,6 +354,11 @@ test.describe('Homepage design direction', () => {
     for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 900 })
       await page.goto('/')
+
+      // Reflow is a text-metric question, so it has to be measured against the
+      // loaded display face rather than the fallback that `load` fires with.
+      await page.evaluate(() => document.fonts.ready)
+
       measured[width] = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth
       )

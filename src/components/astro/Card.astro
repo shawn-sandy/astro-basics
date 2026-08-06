@@ -65,6 +65,12 @@ const codeMarkup = hasCode ? `<code>${(await Astro.slots.render('code')).trim()}
      stylesheet declares the same properties on the same element. */
   [data-card-code] {
     margin: 0;
+
+    /* Matches the specimen code block in HomeHero.astro, so a promoted card and
+       the hero specimen present the same snippet the same way. Without it the
+       text sits flush against the card border and the horizontal scroll starts
+       at the very edge. */
+    padding: 1rem 1.25rem;
     font-family: var(--font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
     font-size: 0.78rem;
     line-height: 1.7;

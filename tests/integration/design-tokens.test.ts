@@ -18,8 +18,12 @@ import { describe, expect, it } from 'vitest'
  */
 const COMPILED_CSS = fileURLToPath(new URL('../../src/styles/index.css', import.meta.url))
 
-type Declaration = { property: string; value: string }
-type Rule = { selector: string; conditions: string[]; declarations: Declaration[] }
+type Declaration = { readonly property: string; readonly value: string }
+type Rule = {
+  readonly selector: string
+  readonly conditions: readonly string[]
+  readonly declarations: readonly Declaration[]
+}
 
 /** At-rules that wrap other rules rather than declarations, so the walk descends into them. */
 const CONDITIONAL_GROUP = /^@(media|supports|layer|container|scope|document)\b/i

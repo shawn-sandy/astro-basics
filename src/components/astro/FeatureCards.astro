@@ -57,8 +57,10 @@ if (category) {
   features = getTopFeatures(count)
 }
 
-// Clamped so a caller cannot promote more specimens than there are features,
-// and so a negative or fractional count falls back to the default tiering.
+// Clamped so a caller cannot promote more specimens than there are features.
+// Fractional counts truncate toward zero rather than falling back, so 2.7
+// promotes two; only values that truncate to zero or below (and NaN, via the
+// `|| 0`) reach the default untiered path.
 const promotedCount = Math.min(Math.max(0, Math.trunc(promoted) || 0), features.length)
 const promotedFeatures = features.slice(0, promotedCount)
 const compactFeatures = features.slice(promotedCount)

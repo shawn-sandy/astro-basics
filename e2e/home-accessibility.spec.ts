@@ -141,46 +141,52 @@ test.describe('Home Page Accessibility', () => {
       await page.emulateMedia({ colorScheme })
       await page.goto('/')
 
-      const before = await page.evaluate(() => {
-        const first = document.querySelector<HTMLElement>('a[href], button')
-        if (!first) return null
-        const style = getComputedStyle(first)
-        return {
-          outlineWidth: parseFloat(style.outlineWidth) || 0,
-          outlineStyle: style.outlineStyle,
-          boxShadow: style.boxShadow,
-          color: style.color,
-        }
-      })
-      expect(before, 'no focusable link or button on the homepage').not.toBeNull()
-
       await page.keyboard.press('Tab')
 
-      const after = await page.evaluate(() => {
+      // Both readings are taken from the SAME element -- the one Tab actually
+      // landed on -- by measuring it focused, blurring it, then measuring it
+      // again. Sampling the "before" state from `querySelector('a[href],
+      // button')` instead would compare two unrelated elements whenever Tab
+      // does not land on the first match in the DOM, and a colour difference
+      // between two different elements would satisfy the assertion below even
+      // with no focus ring painted anywhere.
+      const measured = await page.evaluate(() => {
         const el = document.activeElement as HTMLElement | null
         if (!el || el === document.body) return null
-        const style = getComputedStyle(el)
-        return {
-          tag: el.tagName.toLowerCase(),
-          outlineWidth: parseFloat(style.outlineWidth) || 0,
-          outlineStyle: style.outlineStyle,
-          outlineColor: style.outlineColor,
-          boxShadow: style.boxShadow,
-          color: style.color,
+
+        const read = (node: HTMLElement) => {
+          const style = getComputedStyle(node)
+          return {
+            outlineWidth: parseFloat(style.outlineWidth) || 0,
+            outlineStyle: style.outlineStyle,
+            outlineColor: style.outlineColor,
+            boxShadow: style.boxShadow,
+            color: style.color,
+          }
         }
+
+        const focused = read(el)
+        el.blur()
+        const unfocused = read(el)
+        el.focus()
+
+        return { tag: el.tagName.toLowerCase(), focused, unfocused }
       })
 
-      expect(after, 'Tab did not move focus off body').not.toBeNull()
+      expect(measured, 'Tab did not move focus off body').not.toBeNull()
+
+      const after = { tag: measured!.tag, ...measured!.focused }
+      const before = measured!.unfocused
 
       // A ring counts if it paints: a non-zero outline, a box-shadow ring, or a
-      // colour change against the unfocused state.
-      const hasOutline = after!.outlineWidth > 0 && after!.outlineStyle !== 'none'
-      const hasShadow = after!.boxShadow !== 'none' && after!.boxShadow !== ''
-      const changedColor = after!.color !== before!.color
+      // colour change against this same element's own unfocused state.
+      const hasOutline = after.outlineWidth > 0 && after.outlineStyle !== 'none'
+      const hasShadow = after.boxShadow !== 'none' && after.boxShadow !== ''
+      const changedColor = after.color !== before.color
 
       expect(
         hasOutline || hasShadow || changedColor,
-        `${colorScheme}: focused ${after!.tag} shows no visible focus indicator (outline ${after!.outlineWidth}px ${after!.outlineStyle} ${after!.outlineColor}, box-shadow ${after!.boxShadow})`
+        `${colorScheme}: focused ${after.tag} shows no visible focus indicator (outline ${after.outlineWidth}px ${after.outlineStyle} ${after.outlineColor}, box-shadow ${after.boxShadow})`
       ).toBe(true)
 
       // An outline that resolves to `transparent` or to the surface it sits on
@@ -208,12 +214,12 @@ test.describe('Home Page Accessibility', () => {
           probe.remove()
           const [hi, lo] = ring > surface ? [ring, surface] : [surface, ring]
           return (hi + 0.05) / (lo + 0.05)
-        }, after!.outlineColor)
+        }, after.outlineColor)
 
         // SC 1.4.11 Non-text Contrast: 3:1 for a UI indicator.
         expect(
           ringContrast,
-          `${colorScheme}: focus ring ${after!.outlineColor} against the page surface = ${ringContrast.toFixed(2)}:1`
+          `${colorScheme}: focus ring ${after.outlineColor} against the page surface = ${ringContrast.toFixed(2)}:1`
         ).toBeGreaterThanOrEqual(3)
       }
     })

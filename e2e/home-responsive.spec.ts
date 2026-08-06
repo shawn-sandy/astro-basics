@@ -26,22 +26,13 @@ test.describe('Home Page Responsive Design', () => {
   // `body { min-width: 20.3125rem }` (325px) floor, overridden in
   // src/styles/_base.scss. Nav-specific reflow is covered separately by
   // e2e/navigation-popover.spec.ts.
-  test('no horizontal scrolling at 320px', async ({ page }) => {
-    await page.setViewportSize({ width: 320, height: 640 })
-    await page.goto('/')
-
-    const { scrollWidth, clientWidth } = await page.evaluate(() => ({
-      scrollWidth: document.documentElement.scrollWidth,
-      clientWidth: document.documentElement.clientWidth,
-    }))
-
-    expect(scrollWidth).toBeLessThanOrEqual(clientWidth)
-  })
-
-  // The test above only ever exercises the default colour scheme. The design
-  // direction repaints every global surface and adds a dark branch that swaps
-  // borders, padding-bearing bands and the hero specimen, so reflow has to be
-  // proved in both themes rather than inferred from one.
+  // Parameterised over both colour schemes. The design direction repaints every
+  // global surface and adds a dark branch that swaps borders, padding-bearing
+  // bands and the hero specimen, so reflow has to be proved in both themes
+  // rather than inferred from one. The `light` case is a strict superset of the
+  // single-scheme test that stood here before -- same page, same assertion, and
+  // it additionally names the widest offending element -- so keeping both would
+  // only have run the same check twice.
   for (const colorScheme of ['light', 'dark'] as const) {
     test(`no horizontal scrolling at 320px in ${colorScheme} mode`, async ({ page }) => {
       await page.emulateMedia({ colorScheme })
@@ -68,10 +59,13 @@ test.describe('Home Page Responsive Design', () => {
         }
       })
 
+      // `<= 0` rather than `=== 0`: WCAG 2.1 SC 1.4.10 forbids overflow, not
+      // slack. Both figures are integers rounded from fractional layout values,
+      // so a page with no overflow can legitimately report -1.
       expect(
         scrollWidth - clientWidth,
         `${colorScheme}: scrollWidth ${scrollWidth} vs clientWidth ${clientWidth}; widest element ${widest}`
-      ).toBe(0)
+      ).toBeLessThanOrEqual(0)
     })
   }
 })
