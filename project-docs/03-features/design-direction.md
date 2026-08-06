@@ -18,7 +18,7 @@ walks the rendered homepage and asserts that **no non-interactive element comput
 
 Three supporting decisions are already settled:
 
-- **One self-hosted display face.** A latin-subset, single-weight `space-grotesk-600.woff2` in `public/fonts/`, not a
+- **One self-hosted display face.** A latin-subset, single-weight `inter-600.woff2` in `public/fonts/`, not a
   CDN and not a system stack alone. It is preloaded from `src/layouts/Base.astro` and declared with `font-display: swap`.
 - **The token layer applies sitewide.** Body background and text colour are global, so there is no way to scope them.
   The homepage hero and the card tiering are homepage-only.
@@ -113,15 +113,18 @@ roles is the smallest set that reads as deliberate.
 
 | Role        | Token                   | Applies to                                                        | Treatment                                  |
 | ----------- | ----------------------- | ----------------------------------------------------------------- | ------------------------------------------ |
-| **Display** | `--font-family-display` | `h1`, `h2`, `h3` only                                             | Space Grotesk 600, negative tracking       |
+| **Display** | `--font-family-display` | `h1` through `h6`                                                 | Inter 600, negative tracking               |
 | **Body**    | `--font-family-sans`    | `body`, `p`, `li`, and everything inheriting from `body`          | System sans stack                          |
 | **Mono**    | `--font-family-mono`    | `code`, `kbd`, `samp`, `[data-ui="eyebrow"]`, `[data-ui="label"]` | Uppercase, `0.12em` tracking, `--ink-soft` |
 
 Details worth knowing:
 
-- **Display is h1-h3 only.** `h4` through `h6` stay on the body stack. That is what keeps a single 600-weight woff2
-  sufficient - no second font request downloads bytes nothing asks for.
-- **Tracking is negative on display.** `-0.015em` on `h1`-`h3`, tightened to `-0.02em` on `h1`.
+- **Display covers every heading level.** `h1` through `h6` all render at weight 600, which is the single weight the
+  self-hosted woff2 ships - so the full range costs no additional font request.
+- **Casing is not part of the role.** `text-transform: capitalize` stays on `h1`-`h3`, which are titles. `h4`-`h6` are
+  used for UI labels - the contact form renders its error summary as an `h6` - and capitalizing a sentence would
+  produce "Please Correct The Following Errors".
+- **Tracking is negative on display.** `-0.015em` on `h1`-`h6`, tightened to `-0.02em` on `h1`.
 - **The display stack falls back through the system sans**, so a failed font request degrades to the body face rather
   than to a serif.
 - **Body is declared on `body`, not `html`.** @fpkit/acss sets `font-family` on `html`, which is why one face used to
@@ -192,9 +195,9 @@ resolve through `var()`, so redefining the variables repaints every surface that
 ```css
 :root {
   /* Swap the display face. Keep a fallback chain - the kit's @font-face rule
-     and Base.astro preload still reference the bundled Space Grotesk file. */
+     and Base.astro preload still reference the bundled Inter file. */
   --font-family-display: 'Söhne Breit', ui-sans-serif, system-ui, sans-serif;
-  --font-family-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-family-sans: 'Söhne', ui-sans-serif, system-ui, sans-serif;
   --font-family-mono: 'Berkeley Mono', ui-monospace, monospace;
 }
 ```
