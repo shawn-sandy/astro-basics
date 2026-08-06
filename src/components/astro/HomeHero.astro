@@ -127,6 +127,17 @@ const specimenCode = [
     --hero-island-bg: var(--island-bg, #f0ebff);
     --hero-rule: var(--rule, #dde1e6);
 
+    /*
+     * Hover and pressed fills, mixed toward ink. `--ink` is near-black in light
+     * and near-white in dark, so one pair of declarations darkens the accent on
+     * paper and lightens it on the dark surface -- no second theme block, and
+     * the label's contrast rises rather than falls in both directions. Mixed in
+     * oklch so the darkened accent keeps its chroma; the same mix in sRGB
+     * muddies a saturated violet.
+     */
+    --hero-island-hover: color-mix(in oklch, var(--hero-island) 88%, var(--hero-ink));
+    --hero-island-active: color-mix(in oklch, var(--hero-island) 78%, var(--hero-ink));
+
     align-items: start;
     box-sizing: border-box;
     color: var(--hero-ink);
@@ -243,20 +254,53 @@ const specimenCode = [
     font-weight: 600;
     padding: 0.6875rem 1.25rem;
     text-decoration: none;
+
+    /* Colour only. Nothing here moves, so there is no motion to suppress
+       under `prefers-reduced-motion`. */
+    transition:
+      background-color var(--transition-duration-150, 150ms) ease-out,
+      border-color var(--transition-duration-150, 150ms) ease-out;
   }
 
+  /*
+   * The secondary carries the accent on its label alone; its border drops to
+   * the neutral rule. Both buttons previously painted the border in full-chroma
+   * `--island`, which measured the same 6.56:1 as the primary's fill and left
+   * the pair reading as two equal calls to action. The accent still marks the
+   * control -- the direction only forbids accenting things a visitor cannot
+   * operate -- so the e2e assertion is unaffected.
+   */
   .home-hero .home-hero__button--ghost {
     background: transparent;
+    border-color: var(--hero-rule);
     color: var(--hero-island);
   }
 
   .home-hero .home-hero__button:hover {
+    background: var(--hero-island-hover);
+    border-color: var(--hero-island-hover);
+
+    /* Non-colour hover cue, so the state does not rely on hue alone. */
     text-decoration: underline;
     text-underline-offset: 3px;
   }
 
+  .home-hero .home-hero__button:active {
+    background: var(--hero-island-active);
+    border-color: var(--hero-island-active);
+  }
+
+  /* Hover is where the secondary earns its border: the tint arrives and the
+     rule gives way to the accent, which is the affordance the resting state
+     trades away for hierarchy. */
   .home-hero .home-hero__button--ghost:hover {
     background: var(--hero-island-bg);
+    border-color: var(--hero-island);
+  }
+
+  .home-hero .home-hero__button--ghost:active {
+    background: color-mix(in oklch, var(--hero-island) 18%, transparent);
+    border-color: var(--hero-island);
   }
 
   .home-hero .home-hero__button:focus-visible {

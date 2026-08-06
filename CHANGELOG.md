@@ -88,6 +88,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Hero call-to-action colour pass** (`src/components/astro/HomeHero.astro`): the two hero CTAs
+  read as a primary and a secondary rather than as two equal buttons
+  - The secondary's border drops from full-chroma `--island` to the neutral `--rule`. Both buttons
+    previously painted the accent at the same strength, so the border measured the same 6.56:1
+    against paper as the primary's fill and the pair carried identical visual weight. The accent
+    stays on the secondary's label, so "colour marks hydration" is unaffected — the rule forbids
+    accenting elements a visitor _cannot_ operate, and the E2E audit only polices that direction
+  - Hover and pressed fills are mixed toward ink in OKLCH at 88% and 78%. `--ink` is near-black in
+    light and near-white in dark, so a single pair of declarations darkens the accent on paper and
+    lightens it on the dark surface with no second theme block. Label contrast rises rather than
+    falls in both: light 6.56 → 7.57 → 8.52, dark
+    6.15 → 6.97 → 7.79. The mix is `oklch` because the same operation in sRGB mutes a saturated
+    violet as it darkens
+  - The primary previously had no colour change on hover at all; `text-decoration: underline` was
+    its only feedback. The underline stays as the non-colour cue, so the state never relies on hue
+  - The secondary promotes its border back to the accent on hover, earning at hover what the
+    resting state trades away for hierarchy
+  - `transition` covers `background-color` and `border-color` only at 150ms. Nothing moves, so
+    there is no motion to gate behind `prefers-reduced-motion`
 - **Typographic hierarchy pass** (`src/styles/_base.scss`, `src/components/astro/Footer.astro`,
   `src/pages/index.astro`): three adjustments so heading, body and supporting text read at
   distinct levels
