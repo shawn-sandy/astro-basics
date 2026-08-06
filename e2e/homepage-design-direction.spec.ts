@@ -346,4 +346,34 @@ test.describe('Homepage design direction', () => {
       expect(measured[width], `horizontal overflow at ${width}px`).toBe(0)
     }
   })
+
+  /**
+   * Follows the hero's calls to action instead of only loading the homepage.
+   *
+   * The hero previously pointed "Browse components" at `/docs`, which answers
+   * 500 because `src/pages/docs/index.astro` looks up a `docs/0-welcome` entry
+   * the collection does not contain and passes the `undefined` into `render()`.
+   * Every check in this file passed while that was true: measuring the homepage
+   * says nothing about where its links land. These assert the response status
+   * of the destination, so a CTA pointed at a broken or missing route fails
+   * here rather than in front of a visitor.
+   */
+  test('every hero call to action lands on a page that renders', async ({ page }) => {
+    await page.goto('/')
+
+    const hrefs = await page
+      .locator('[data-home-hero] a[href^="/"]')
+      .evaluateAll(nodes => [...new Set(nodes.map(node => node.getAttribute('href') ?? ''))])
+
+    expect(hrefs.length, 'hero should link somewhere').toBeGreaterThan(0)
+
+    for (const href of hrefs) {
+      const response = await page.goto(href)
+      expect(response?.status(), `${href} should not be an error page`).toBeLessThan(400)
+
+      // A 200 that rendered an error body would still pass a status check, so
+      // confirm the destination actually produced a document with content.
+      await expect(page.locator('body')).not.toBeEmpty()
+    }
+  })
 })

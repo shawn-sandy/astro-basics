@@ -48,6 +48,35 @@
   color-scheme: dark;
 }
 
+// The legacy palette in its light form. Extracted into a mixin so the explicit
+// `[data-theme="light"]` override can restore it, not just the direction tokens.
+// Without this a visitor whose OS prefers dark but who picks light gets light
+// `--paper`/`--ink` over an inverted `--color-neutral-*`, and every consumer of
+// the legacy family — `--card-border`, `--input-border`, `--footer-background`
+// and the utility classes — keeps painting dark values on a light surface.
+@mixin legacy-palette-light {
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f4f4f5;
+  --color-neutral-200: #e4e4e7;
+  --color-neutral-300: #d4d4d8;
+  --color-neutral-400: #a1a1aa;
+  --color-neutral-500: #71717a;
+  --color-neutral-600: #52525b;
+  --color-neutral-700: #3f3f46;
+  --color-neutral-800: #27272a;
+  --color-neutral-900: #18181b;
+}
+
 // Legacy palette inversion, kept with the direction flip so the two token
 // families can never disagree about which theme is active.
 @mixin legacy-palette-dark {
@@ -99,29 +128,8 @@
 :root {
   @include direction-light;
 
-  // Color Tokens - Primary Palette
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
-
-  // Color Tokens - Neutral Palette
-  --color-neutral-50: #fafafa;
-  --color-neutral-100: #f4f4f5;
-  --color-neutral-200: #e4e4e7;
-  --color-neutral-300: #d4d4d8;
-  --color-neutral-400: #a1a1aa;
-  --color-neutral-500: #71717a;
-  --color-neutral-600: #52525b;
-  --color-neutral-700: #3f3f46;
-  --color-neutral-800: #27272a;
-  --color-neutral-900: #18181b;
+  // Color Tokens - Primary and Neutral Palettes
+  @include legacy-palette-light;
 
   // Semantic Color Tokens
   --color-success: #22c55e;
@@ -373,6 +381,12 @@
   @include direction-dark-surfaces;
 }
 
+// Both families flip together here, exactly as they do in the dark override.
+// `direction-light` alone is not enough: when the OS prefers dark, the media
+// block above has already applied `legacy-palette-dark` to `:root`, and nothing
+// in this block would put it back — leaving inverted `--color-neutral-*` and
+// `--color-primary-*` under light `--paper`/`--ink`.
 :root[data-theme="light"] {
   @include direction-light;
+  @include legacy-palette-light;
 }

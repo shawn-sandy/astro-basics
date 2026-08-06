@@ -36,7 +36,15 @@ const {
 const specimenTitle = 'Accessibility First'
 const specimenBody =
   'Screen-reader support, keyboard navigation and WCAG-compliant patterns, built in.'
-const specimenLink = '/docs'
+
+// The component index, and the destination for both the primary CTA and the
+// specimen card. Not `/docs`: that route calls `getEntry('docs', '0-welcome')`
+// for an entry the collection does not contain and passes the `undefined`
+// straight into `render()`, so it answers 500. `/guide/components/` is the
+// Starlight route that actually lists the components this hero is advertising.
+// Single constant on purpose — the printed code block below interpolates it, so
+// the rendered card, its href and the source line a visitor copies cannot drift.
+const specimenLink = '/guide/components/'
 
 // Built from the same constants the specimen renders from, so the printed
 // call site is always the call site that produced the card above it.
@@ -56,7 +64,7 @@ const specimenCode = [
     <p class="home-hero__deck" data-home-hero-deck>{deck}</p>
 
     <div class="home-hero__cta">
-      <a class="home-hero__button" href="/docs">Browse components</a>
+      <a class="home-hero__button" href={specimenLink}>Browse components</a>
       <a class="home-hero__button home-hero__button--ghost" href="/blog">Read the blog</a>
     </div>
 
