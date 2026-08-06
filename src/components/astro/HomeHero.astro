@@ -15,6 +15,24 @@
  * The signature element is the specimen: a real `Card` rendered from the same
  * values the code sample prints, so the sample cannot drift from the component
  * standing beside it.
+ *
+ * @component HomeHero
+ * @example
+ * ```astro
+ * <!-- The slot name is required: without it the hero renders into the page
+ *      body and the shared Header stays at the top of the document. -->
+ * <Layout pageTitle={SITE_TITLE}>
+ *   <HomeHero slot="header" />
+ * </Layout>
+ *
+ * <!-- All three strings are overridable; every one has a default. -->
+ * <HomeHero
+ *   slot="header"
+ *   eyebrow="30+ components / zero client JS by default"
+ *   headline="Astro components, ready to paste."
+ *   deck="Server-rendered components with typed props."
+ * />
+ * ```
  */
 import Card from '#components/astro/Card.astro'
 

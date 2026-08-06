@@ -58,6 +58,14 @@ jobs:
         continue-on-error: true
       # Hard gate: the tests that actually verify this Astro upgrade.
       - run: npx vitest run tests/content-collections.test.ts tests/compress-html-whitespace.test.ts
+      # Hard gate: the design-direction tests. design-tokens.test.ts lives under
+      # tests/integration/** and would otherwise be swept up by the exclusion
+      # below, but it needs no Supabase credentials -- it only reads the
+      # compiled src/styles/index.css (which `pretest` now rebuilds). It is the
+      # gate proving --card-background and --header-background still have
+      # painting consumers, so excluding it would leave the defect this plan
+      # fixed free to return unnoticed.
+      - run: npx vitest run tests/integration/design-tokens.test.ts tests/components/FeatureCards.astro.test.ts
       # Informational, not blocking: the rest of the suite carries ~49
       # pre-existing failures unrelated to Astro (role-validator, csrf,
       # ip-validation, etc.), plus tests/integration/** needs live
