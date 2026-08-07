@@ -5,7 +5,7 @@ techniques: Long-context grounding, XML structure, Comparison tables, Positive f
 created: 2026-08-06
 modified: 2026-08-06
 status: converged
-generated-sha: 5580e1b8cd15da39168696f1b1a2a7c68fe31021a878fb8beb519e26f43ea971
+generated-sha: be293b636e9f442ab6fe255b2bab620826f28cb51939d0167033a28ece409d84
 ---
 
 # Proposal: Config-Driven Named Themes With A Repo-Aware Theme-Authoring Skill
@@ -119,16 +119,41 @@ Resolved in the 2026-08-06 review:
 
 4. **The theme-building Skill writes SCSS and registers the theme end-to-end.**
    It authors `src/styles/themes/_<name>.scss`, wires it into `index.scss`, adds
-   the name to the TypeScript union, runs `npm run sass`, and reports measured
+   the name to the TypeScript union, runs `npm run sass:build`, and reports measured
    contrast for every token pair; the human reviews a diff. Rejected: emitting
    loose tokens for manual wiring (leaves the error-prone half manual), and
    wrapping `acss-kit:theme-create` (couples the repo to a plugin that is not a
    project dependency). Propagates to Workstream D and Appendix C.
 
 5. **An unknown theme name is a compile-time error, not a runtime fallback.**
-   `SITE_THEME` is typed as a union of the registered theme names, so a typo
+   `SITE_THEME` is typed from a `SITE_THEMES` tuple (`as const`, with the type
+   derived via `(typeof SITE_THEMES)[number]`) rather than a bare union, so a typo
    fails `npm run type-check` rather than silently painting an unstyled page. No
    runtime default-theme branch is written.
+
+Amended after the 2026-08-07 plan review — the implementation plan at
+`docs/plans/add-config-driven-theming.md` is authoritative where these differ:
+
+6. **The contrast contract is five pairs, not four.** Every text pair
+   (ink/paper, ink-soft/paper, island/paper, ink-soft/paper-sunk) must clear
+   5.39:1 — the floor the current palette already achieves — rather than the
+   bare 4.5:1 AA minimum, and island/paper-sunk is added at 3:1 for WCAG 2.2
+   SC 1.4.11 focus indicators. Each palette must also declare `color-scheme`,
+   enforced by the same script.
+
+7. **Named-theme selectors must outrank the bare fallback.**
+   `:root[data-site-theme="ember"]` and `:root[data-theme="light"]` are both
+   (0,2,0), so a root carrying both attributes would resolve on source order
+   and an explicit light toggle could restore the default palette over the
+   selected theme. The bare fallbacks are therefore scoped
+   `:root:not([data-site-theme])[data-theme="light"|"dark"]`, making the two
+   sets mutually exclusive.
+
+8. **The theme-builder Skill ships `SKILL.md` and `references/` only.** No
+   `config.json` and no skill-private `scripts/`, despite `fpkit-developer`
+   carrying both: the contrast script lives at `scripts/check-theme-contrast.mjs`
+   in the repo so the test suite and CI can run it too, and a second private
+   copy is exactly the duplication decision 4 exists to avoid.
    </decisions>
 
 <workstreams>
@@ -165,7 +190,7 @@ references/ + scripts/). It takes a seed colour or an intent description,
 generates the 7 direction tokens and the legacy ramp for both light and dark,
 measures every contrast pair with a script, writes
 `src/styles/themes/_<name>.scss`, registers the name in `index.scss` and the TS
-union, and runs `npm run sass`. It must encode the two repo-specific contracts a
+union, and runs `npm run sass:build`. It must encode the two repo-specific contracts a
 generic generator cannot know: the accent is reserved for interactive elements,
 and the legacy ramp moves with the theme.
 
@@ -195,7 +220,7 @@ aliases waiting for one — so this is latent rather than live, and will surface
 the first time a component consumes them.
 
 **`index.css` is a committed artifact.** Every theme change requires
-`npm run sass` and produces a large compiled diff. The Skill must run it; a
+`npm run sass:build` and produces a large compiled diff. The Skill must run it; a
 hand-edited `index.css` is a defect.
 
 **Six palettes is real design work.** Two of the three themes are net-new colour
@@ -311,7 +336,7 @@ Appendix C — The theme-builder Skill I/O contract
 2. Selector blocks appended to `_design-tokens.scss` (light, explicit dark,
    media-query dark).
 3. `<name>` added to the `SiteTheme` union in `src/utils/site-config.ts`.
-4. `npm run sass` executed; `src/styles/index.css` regenerated.
+4. `npm run sass:build` executed (the one-shot compile; `npm run sass` is the watcher and never exits); `src/styles/index.css` regenerated.
 5. A contrast report: every pair from Appendix A measured in both directions
    against the recorded floor, pass or fail per pair.
 
@@ -320,7 +345,7 @@ accent/paper floor, and must refuse to hand-edit `index.css`.
 
 **References the skill ships:** the token inventory (Appendix A), the accent
 contract and its e2e enforcement, the @fpkit/acss surface workaround and why it
-exists, and the `npm run sass` build step.
+exists, and the `npm run sass:build` build step.
 </appendices>
 
 Author an execution plan that delivers Workstreams A through E in roadmap order.
