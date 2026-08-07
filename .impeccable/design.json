@@ -201,6 +201,10 @@
       "label": {
         "displayName": "Label / Mono",
         "purpose": "Eyebrows, captions, specimen badges and inline code. Opted into with data-ui=\"eyebrow\" or data-ui=\"label\"."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Interactive control labels on the body sans at 0.9375rem/600 — neither the display face nor the mono label role."
       }
     },
     "shadows": [

@@ -43,6 +43,10 @@ typography:
     fontSize: '0.75rem'
     fontWeight: 400
     letterSpacing: '0.12em'
+  button:
+    fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif'
+    fontSize: '0.9375rem'
+    fontWeight: 600
 rounded:
   none: '0'
   base: '4px'
@@ -65,7 +69,7 @@ components:
     textColor: '{colors.paper}'
     rounded: '{rounded.lg}'
     padding: '11px 20px'
-    typography: '{typography.label}'
+    typography: '{typography.button}'
     height: '44px'
   button-primary-hover:
     backgroundColor: '#0a5766'
@@ -75,6 +79,8 @@ components:
     textColor: '{colors.island}'
     rounded: '{rounded.lg}'
     padding: '11px 20px'
+    typography: '{typography.button}'
+    height: '44px'
   button-ghost-hover:
     backgroundColor: '{colors.island-bg}'
     textColor: '{colors.island}'
@@ -215,6 +221,8 @@ them.
 - **Body** (400, 1rem, 1.5): Prose and lists, capped at 60ch — 80ch inside `article`.
 - **Label** (400, 0.75rem, `0.12em`, uppercase, Soft Ink): Eyebrows, figure captions, specimen
   badges, inline code. Opted into with `data-ui="eyebrow"` or `data-ui="label"`.
+- **Button** (600, 0.9375rem): Interactive control labels. On the body sans, not the display face
+  and not the mono label role — a button is neither a title nor an annotation.
 
 ### Named Rules
 
