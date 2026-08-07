@@ -46,8 +46,14 @@ have 106 consumers across `src/`, 60 of them in
 `src/styles/components/_utility.scss` and 16 more in `src/styles/utilities.css`.
 A theme that changed only the seven direction tokens would visibly half-apply,
 so each palette is 27 values rather than 7. Two further hazards are carried into
-the steps: `src/styles/index.css` is a committed `npm run sass` artifact that
-must never be hand-edited, and `@mixin direction-dark-surfaces` (111-127) exists
+the steps: `src/styles/index.css` is a committed build artifact that must never
+be hand-edited, and — importantly for how the steps verify themselves — the
+committed copy is not what `sass:build` emits. Sass produces a single
+compressed line; the repo's stylelint and prettier commit hooks then expand it
+to 3,681 lines with single quotes. So a `git diff` against the committed file
+can never serve as a lossless-extraction check, and the steps compare two
+same-pipeline compiled outputs instead. Second,
+`@mixin direction-dark-surfaces` (111-127) exists
 only because @fpkit/acss v6 hardcodes `whitesmoke` on the header band and reads
 an undeclared `--color-neutral-0`, so it must be parameterized rather than
 copied once per theme.
@@ -81,16 +87,22 @@ token value rather than either alone.
    file from `_design-tokens.scss` and swap the four `@include` sites to the two
    new names. Why: the palette is currently welded into the token file, so a
    second theme has nowhere to live; moving it first proves the extraction is
-   lossless before any new colour exists. Verify: run `npm run sass:build` (the
-   one-shot compile; `npm run sass` is the watcher and will not exit) and
-   confirm `git diff --exit-code src/styles/index.css` reports no change.
+   lossless before any new colour exists. Verify: before editing anything, snapshot
+   the compiled baseline with `npx sass src/styles/index.scss:/tmp/theme-base.css --style=compressed`;
+   after the move, run `npx sass src/styles/index.scss:/tmp/theme-after.css --style=compressed`
+   and confirm `diff /tmp/theme-base.css /tmp/theme-after.css` prints nothing.
+   Compare the two compiled outputs, never the committed `src/styles/index.css` —
+   that file is stored expanded and single-quoted by the repo's stylelint and
+   prettier commit hooks, so it never matches raw `sass:build` output and a
+   `git diff` against it reports a wholesale rewrite on the very first run.
 2. Change `@mixin direction-dark-surfaces` to take the surface and ink tokens as
    parameters (`$paper`, `$paper-sunk`, `$ink`) and pass the existing `var(--*)`
    references at its one call site. Why: every dark-form theme needs the same
    @fpkit/acss repaint, and a parameterless mixin would have to be duplicated
-   three times and drift. Verify: `npm run sass:build` then
-   `git diff --exit-code src/styles/index.css` still reports no change, since
-   the arguments resolve to the values the mixin previously hardcoded.
+   three times and drift. Verify: recompile to `/tmp/theme-after.css` with the
+   same `npx sass` command as step 1 and confirm the diff against
+   `/tmp/theme-base.css` is still empty, since the arguments resolve to the
+   values the mixin previously hardcoded.
 3. Register `default` under the new attribute by adding
    `:root[data-site-theme="default"]`, `:root[data-site-theme="default"][data-theme="dark"]`
    and a `prefers-color-scheme: dark` block scoped to
@@ -100,20 +112,29 @@ token value rather than either alone.
    identity needs a separate attribute that composes with it rather than
    replacing it; the bare rules stay as the fallback for any surface that
    renders `<html>` without the new attribute, Starlight docs routes included,
-   which would otherwise paint with no palette at all. Verify: `npm run
-   sass:build`, then confirm `grep -c 'data-site-theme="default"'
-   src/styles/index.css` returns at least 3 and the existing
-   `[data-theme="dark"]` rules are still present.
+   which would otherwise paint with no palette at all. Verify: recompile to
+   `/tmp/theme-after.css`, then confirm
+   `grep -o 'data-site-theme="default"' /tmp/theme-after.css | wc -l` returns at
+   least 3 and that `grep -o 'data-theme="dark"' /tmp/theme-after.css | wc -l`
+   still finds the pre-existing rules. Count occurrences with `grep -o | wc -l`, not
+   `grep -c` — compressed CSS is a single line and `-c` counts matching lines,
+   so it can never exceed 1.
 4. Add `export type SiteTheme = 'default' | 'ember' | 'forest'` and
    `export const SITE_THEME: SiteTheme = 'default'` to
    `src/utils/site-config.ts`, then read it in `src/layouts/Base.astro` and
    stamp `data-site-theme={SITE_THEME}` on the `<html>` element; check
    `src/layouts/Auth.astro` and `src/layouts/Layout.astro` for their own `<html>`
-   elements and give them the same treatment. Why: this is the selector the
-   whole system was missing, and a shell that renders `<html>` without it would
-   silently fall back to the unthemed `:root` block. Verify: `npm run type-check`
-   exits 0, and `curl -s localhost:4321/ | grep -o 'data-site-theme="[a-z]*"'`
-   against the dev server returns `data-site-theme="default"`.
+   elements and give them the same treatment; then create the objective test
+   `e2e/site-theme.spec.ts`, asserting the server-rendered `<html>` carries
+   `data-site-theme` equal to `SITE_THEME` with no client-side mutation and that
+   `--island` and `--paper` resolve to that theme's declared values. Why: this
+   is the selector the whole system was missing, a shell that renders `<html>`
+   without it would silently fall back to the unthemed `:root` block, and this
+   spec is the only test covering the SSR stamp — step 8's accent audit switches
+   themes at runtime and never exercises it. Verify: `npm run type-check` exits
+   0, `curl -s localhost:4321/ | grep -o 'data-site-theme="[a-z]*"'` against the
+   dev server returns `data-site-theme="default"`, and
+   `npx playwright test e2e/site-theme.spec.ts` passes.
 5. Add `scripts/check-theme-contrast.mjs` that compiles a theme SCSS file
    through the `sass` JavaScript API, reads the emitted custom properties from
    the resulting CSS, and measures five pairs in both forms — ink/paper,
@@ -124,10 +145,14 @@ token value rather than either alone.
    measured contrast and the repo has no contrast tooling, so writing it once
    here keeps the Skill from carrying a private copy; compiling rather than
    regex-matching means it measures what actually ships and cannot be fooled by
-   a value expressed as a variable or a function call. Verify:
+   a value expressed as a variable or a function call. Also add
+   `tests/check-theme-contrast.test.ts` covering the script itself: known ratios
+   reproduced, a text pair below 5.39 rejected, an island/paper-sunk pair below
+   3.0 rejected, and a palette missing `color-scheme` rejected. Verify:
    `node scripts/check-theme-contrast.mjs src/styles/themes/_default.scss` exits
    0 and reproduces the ratios recorded in `_design-tokens.scss` lines 25-26 —
-   18.04, 5.85, 6.56 and 5.39 for the light form — within 0.05.
+   18.04, 5.85, 6.56 and 5.39 for the light form — within 0.05, and
+   `npx vitest run tests/check-theme-contrast.test.ts` passes.
 6. Author `src/styles/themes/_ember.scss` with `ember-light` and `ember-dark`
    mixins, 27 hand-authored values each — the seven direction tokens plus a
    warm-tuned `--color-primary-*` and `--color-neutral-*` ramp — on an amber/rust
@@ -147,7 +172,7 @@ token value rather than either alone.
    opposite chromatic direction from `ember` demonstrates the range the token
    surface actually supports. Verify:
    `node scripts/check-theme-contrast.mjs src/styles/themes/_forest.scss` exits 0,
-   and `grep -c 'data-site-theme=' src/styles/index.css` returns at least 9.
+   and `grep -o 'data-site-theme=' /tmp/theme-after.css | wc -l` returns at least 9.
 8. Parameterize the accent audit and the explicit-override test in
    `e2e/homepage-design-direction.spec.ts` to loop over the registered theme
    names, switching with
@@ -157,9 +182,10 @@ token value rather than either alone.
    dark-override guarantee are the two properties a new theme is most likely to
    break, and a test that only ever exercises one theme cannot catch it;
    switching at runtime keeps all three themes in one Playwright session instead
-   of three full rebuilds. Verify: `npx playwright test
-   e2e/homepage-design-direction.spec.ts` passes and its reporter shows the
-   accent audit running once per theme per colour scheme.
+   of three full rebuilds. Verify:
+   `npx playwright test e2e/homepage-design-direction.spec.ts`
+   passes and its reporter shows the accent audit running once per theme per
+   colour scheme.
 9. Add `tests/theme-registry.test.ts` asserting that the theme names registered
    in the SCSS (parsed from the `data-site-theme="..."` selectors in
    `src/styles/_design-tokens.scss`) exactly match the members of the
@@ -194,7 +220,9 @@ token value rather than either alone.
 - src/layouts/Auth.astro (modified) — same treatment if it renders its own `<html>`
 - scripts/check-theme-contrast.mjs (new) — WCAG contrast measurement for a theme file
 - e2e/homepage-design-direction.spec.ts (modified) — accent audit and override test parameterized over registered themes
+- e2e/site-theme.spec.ts (new) — objective test: the SSR-stamped attribute and the resolved token values
 - tests/theme-registry.test.ts (new) — SCSS-to-TypeScript theme name parity
+- tests/check-theme-contrast.test.ts (new) — covers the contrast script's floors and its `color-scheme` check
 - .claude/skills/theme-builder/SKILL.md (new) — the theme-authoring Skill
 - .claude/skills/theme-builder/references/token-surface.md (new) — the 27-value inventory and the contracts a theme must satisfy
 
@@ -220,18 +248,19 @@ Tier 1 — This plan changes application code
 - [ ] A theme name present in the `SiteTheme` union but absent from the SCSS selectors, or the reverse, fails `npm test`
 - [ ] `prefers-color-scheme: dark` and an explicit `data-theme="dark"` both still flip the palette under every registered theme
 - [ ] `.claude/skills/theme-builder/SKILL.md` exists with valid frontmatter, and using it to author a new theme produces a file that passes the contrast script and leaves the registry test green
-- [ ] `src/styles/index.css` contains no hand-edits — `npm run sass:build` followed by `git diff --exit-code src/styles/index.css` reports no change
+- [ ] `src/styles/index.css` is regenerated by `npm run sass:build` and committed through the repo's stylelint and prettier hooks, never hand-edited — evidenced by the compiled-output comparison in steps 1 and 2, not by a `git diff` against the committed file
+- [ ] `e2e/site-theme.spec.ts` and `tests/check-theme-contrast.test.ts` both exist and pass, alongside `tests/theme-registry.test.ts`
 
 ## Verification
 
 Start from a clean tree and run the full local gate: `npm run type-check`, then
-`npm test`, then `git diff --exit-code src/styles/index.css`. The order matters
-— `pretest` runs `sass:build`, so `npm test` recompiles the stylesheet as a side
-effect and the diff afterwards proves the committed CSS is exactly what the
-compiler produces. Note that this repo has a known red baseline: measure the
-delta against a pre-change run of the same commands rather than trusting a
-non-zero exit on its own. All three must be no worse than baseline before the
-change is considered done.
+`npm test`. Do not add a `git diff --exit-code src/styles/index.css` check —
+`pretest` runs `sass:build`, which overwrites the committed file with
+single-line compressed output, so that diff is guaranteed non-empty and proves
+nothing. The stylesheet's correctness is established instead by the
+compiled-output comparison in steps 1 and 2, which diffs two artifacts produced
+by the same pipeline. Measure both commands as a delta against a pre-change run
+rather than trusting an exit code on its own.
 
 Then exercise the objective by hand, once per theme. Set `SITE_THEME` to
 `default`, start the dev server, and open `/`. Confirm the page looks unchanged
@@ -247,11 +276,11 @@ with the theme. Repeat for `forest`.
 With `forest` still active, toggle the OS to dark mode and confirm the palette
 flips; then set `document.documentElement.setAttribute('data-theme', 'light')`
 in the console and confirm it flips back, proving the two attributes compose
-rather than collide. Finally run `npx playwright test
-e2e/homepage-design-direction.spec.ts e2e/site-theme.spec.ts` and confirm both
-pass. Note that `e2e/test-utils.ts` hardcodes `http://localhost:4321/` and
-Playwright reuses whatever server already holds that port, so check with `lsof
--i :4321` before trusting a green run.
+rather than collide. Finally run
+`npx playwright test e2e/homepage-design-direction.spec.ts e2e/site-theme.spec.ts`
+and confirm both pass. Note that `e2e/test-utils.ts` hardcodes
+`http://localhost:4321/` and Playwright reuses whatever server already holds
+that port, so check with `lsof -i :4321` before trusting a green run.
 
 ## Unresolved Questions
 
