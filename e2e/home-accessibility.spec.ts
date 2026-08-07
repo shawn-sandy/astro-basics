@@ -33,21 +33,19 @@ test.describe('Home Page Accessibility', () => {
 
   /**
    * The design direction documents its contrast budget in
-   * docs/plans/add-homepage-design-direction.md: ink on paper ~18:1, ink-soft
-   * ~6.4:1 and island ~6.7:1 in light, with every dark variant at 6.1:1 or
-   * better. Those claims are what this asserts, against the tokens the page
-   * actually resolves rather than against the numbers written in the plan.
+   * src/content/docs/guide/design-direction.mdx. Those claims are what this
+   * asserts, against the tokens the page actually resolves rather than against
+   * the numbers written in the docs.
    *
    * The floor is WCAG 2.1 SC 1.4.3 Level AA for normal-size text (4.5:1); the
    * documented values sit well above it, so a drop to AA-failing means a token
    * changed without the budget being rechecked.
    *
-   * Measured on the running page at the time of writing -- light: ink/paper
-   * 18.04, ink-soft/paper 5.85, island/paper 6.56, ink/paper-sunk 16.63,
-   * ink-soft/paper-sunk 5.39; dark: 15.82, 7.38, 6.15, 14.51, 6.77. Note that
-   * ink-soft/paper measures 5.85 rather than the ~6.4 the plan's Context
-   * claims. It still clears AA by a wide margin, so the gate stays at the
-   * falsifiable standard (4.5) rather than at the prose estimate.
+   * Measured on the running page after the accent moved from violet to petrol
+   * -- light: ink/paper 18.04, ink-soft/paper 5.85, island/paper 7.01,
+   * ink/paper-sunk 16.63, ink-soft/paper-sunk 5.39; dark: 15.82, 7.38, 8.54,
+   * 14.51, 6.77. The gate stays at the falsifiable standard (4.5) rather than
+   * at any of these figures, so repointing a token is not a test edit.
    */
   for (const colorScheme of ['light', 'dark'] as const) {
     test(`documented contrast pairs clear WCAG AA in ${colorScheme} mode`, async ({ page }) => {
