@@ -25,10 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `PRODUCT.md` records the evaluating-developer audience, the three confirmed differentiators,
     clone-or-template distribution, and an explicit list of evidence the project does **not** have,
     so future work cannot fabricate it
-- **Impeccable live mode** (`.impeccable/live/config.json`, `src/layouts/Base.astro`): configuration
-  for browser-based design iteration. The tooling injects a picker `<script>` into the base layout
-  between `impeccable-live-start` / `impeccable-live-end` markers; that block is a local development
-  artifact and is removed by `live-server.mjs stop`
+- **Impeccable live mode** (`.impeccable/live/config.json`): durable configuration for browser-based
+  design iteration. Running live mode injects a picker `<script>` into `src/layouts/Base.astro` and
+  writes session state under `.impeccable/live/`; both are local development artifacts, removed by
+  `live-server.mjs stop` and excluded from version control via `.gitignore`
 - **Homepage Design Direction** (`src/components/astro/HomeHero.astro`, `src/styles/_design-tokens.scss`):
   the homepage now renders live component specimens instead of describing them
   - Seven direction tokens — `--ink`, `--ink-soft`, `--paper`, `--paper-sunk`, `--island`,

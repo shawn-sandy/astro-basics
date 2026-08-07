@@ -33,3 +33,7 @@ pnpm-debug.log*
 .vercel/
 .mcp.json
 backup-docs/
+# Impeccable live mode session state (machine-specific: pids, tokens, absolute paths).
+# Only .impeccable/live/config.json is durable project config and stays tracked.
+.impeccable/live/*
+!.impeccable/live/config.json
