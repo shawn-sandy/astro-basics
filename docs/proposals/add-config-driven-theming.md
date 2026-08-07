@@ -187,8 +187,11 @@ unthemed shells cannot diverge.
 
 ### D — The theme-builder project Skill
 
-A new `.claude/skills/theme-builder/` matching the shape of the existing
-`fpkit-developer` skill. It takes a seed colour or an intent description,
+A new `.claude/skills/theme-builder/` containing `SKILL.md` and `references/`
+only — see decision 8; it deliberately does not mirror `fpkit-developer`'s
+`config.json` or skill-private `scripts/`, because the contrast script is
+shared at `scripts/check-theme-contrast.mjs`.
+It takes a seed colour or an intent description,
 generates the 7 direction tokens and the legacy ramp for both light and dark,
 measures every contrast pair with a script, writes
 `src/styles/themes/_<name>.scss`, registers the name in `index.scss` and the TS

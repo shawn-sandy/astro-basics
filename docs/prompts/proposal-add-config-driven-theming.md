@@ -5,7 +5,7 @@ techniques: Long-context grounding, XML structure, Comparison tables, Positive f
 created: 2026-08-06
 modified: 2026-08-06
 status: converged
-generated-sha: be293b636e9f442ab6fe255b2bab620826f28cb51939d0167033a28ece409d84
+generated-sha: 94ef1f1e37db086c75181db75eeeb95062d3b3cc9d0bfdf1389f218de953f931
 ---
 
 # Proposal: Config-Driven Named Themes With A Repo-Aware Theme-Authoring Skill
@@ -185,8 +185,10 @@ layout must be checked for the same treatment so themed and unthemed shells
 cannot diverge.
 
 **D — The theme-builder project Skill.** A new `.claude/skills/theme-builder/`
-matching the shape of the existing `fpkit-developer` skill (SKILL.md +
-references/ + scripts/). It takes a seed colour or an intent description,
+containing `SKILL.md` and `references/` only — see decision 8; it deliberately
+does not mirror `fpkit-developer`'s `config.json` or skill-private `scripts/`,
+because the contrast script is shared at `scripts/check-theme-contrast.mjs`.
+It takes a seed colour or an intent description,
 generates the 7 direction tokens and the legacy ramp for both light and dark,
 measures every contrast pair with a script, writes
 `src/styles/themes/_<name>.scss`, registers the name in `index.scss` and the TS
