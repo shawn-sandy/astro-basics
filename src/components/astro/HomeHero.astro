@@ -246,7 +246,7 @@ const specimenCode = [
     /*
      * Paper, not a literal white. The accent lightens in dark mode, so white
      * label text would drop to about 2.5:1 there; inverting to the paper token
-     * measures 7.01:1 in light and 9.25:1 in dark.
+     * measures 7.01:1 in light and 8.54:1 in dark.
      */
     color: var(--hero-paper);
     display: inline-block;
@@ -265,8 +265,8 @@ const specimenCode = [
   /*
    * The secondary carries the accent on its label alone; its border drops to
    * the neutral rule. Both buttons previously painted the border in full-chroma
-   * `--island`, which measured the same 7.01:1 as the primary's fill and left
-   * the pair reading as two equal calls to action. The accent still marks the
+   * `--island`, which measured the same 7.01:1 in light as the primary's fill
+   * (8.54:1 in dark) and left the pair reading as two equal calls to action. The accent still marks the
    * control -- the direction only forbids accenting things a visitor cannot
    * operate -- so the e2e assertion is unaffected.
    */

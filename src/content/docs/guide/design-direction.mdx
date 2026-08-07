@@ -57,8 +57,9 @@ is the point: the accent sits beside ink as a second voice rather than shouting 
 the `color-mix` hover states instead of going muddy. Every pair clears WCAG 2.1 Level AA. Measured against the running
 page rather than estimated: in light, ink on paper is 18.04:1, ink-soft on paper 5.85:1, island on paper 7.01:1, and the
 lowest pair of all — ink-soft on paper-sunk — 5.39:1; in dark, island on paper is 8.54:1 and the lowest pair — again
-ink-soft on paper-sunk — is 6.77:1. `e2e/home-accessibility.spec.ts` asserts the 4.5:1 AA floor against
-the tokens the page actually resolves, so these figures cannot drift without a test failing.
+ink-soft on paper-sunk — is 6.77:1. `e2e/home-accessibility.spec.ts` asserts the 4.5:1 AA floor against the tokens the
+page actually resolves, so no repoint can drop a pair below AA without failing the build. The exact figures above are
+not themselves asserted — they record the current budget, and re-measuring is part of changing a token.
 
 ### How the themes are applied
 
