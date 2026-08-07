@@ -21,14 +21,20 @@
 // focus rings, the interactive-specimen badge). Never reach for `--island`
 // for a decorative border, a heading or a card surface: an e2e test asserts
 // that no non-interactive element computes to the accent.
+// The accent is a deep petrol -- a low-chroma blue-green, deliberately neither
+// the violet/indigo every generated palette reaches for nor stock Tailwind
+// sky-500. Low chroma is the point: it sits next to ink as a considered second
+// voice rather than shouting over it, and it darkens cleanly under the
+// `color-mix` hover states instead of going muddy.
 // Contrast, measured not estimated -- light: ink/paper 18.04:1,
-// ink-soft/paper 5.85:1, island/paper 6.56:1, ink-soft/paper-sunk 5.39:1
-// (the lowest pair). Dark: 6.15:1 or better on every pair.
+// ink-soft/paper 5.85:1, island/paper 7.01:1, ink-soft/paper-sunk 5.39:1
+// (the lowest pair). Dark: island/paper 8.54:1, ink-soft/paper-sunk 6.77:1
+// (the lowest pair).
 @mixin direction-light {
   --ink: #101418;
   --ink-soft: #5a6472;
-  --island: #5b2cf5;
-  --island-bg: #f0ebff;
+  --island: #0b6070;
+  --island-bg: #e6f2f6;
   --paper: #fcfcfd;
   --paper-sunk: #f1f3f5;
   --rule: #dde1e6;
@@ -40,8 +46,8 @@
 @mixin direction-dark {
   --ink: #e8eaed;
   --ink-soft: #99a2ad;
-  --island: #9b7dff;
-  --island-bg: #1e1830;
+  --island: #6bb9c9;
+  --island-bg: #102a33;
   --paper: #0d1014;
   --paper-sunk: #151a20;
   --rule: #262c33;

@@ -88,19 +88,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Accent repointed from violet to petrol** (`src/styles/_design-tokens.scss`): `--island` and
+  `--island-bg` move off the violet/indigo family that generated palettes converge on
+  - Light `#5b2cf5` → `#0b6070`, dark `#9b7dff` → `#6bb9c9`; the washes follow, `#f0ebff` →
+    `#e6f2f6` and `#1e1830` → `#102a33`. Low chroma is the intent: the accent now sits beside ink
+    as a second voice instead of shouting over it
+  - Two token declarations cover the whole surface. Links (`--link-color`), focus rings, both hero
+    CTAs and the feature-card accent already resolved through `--island`, so no component changed
+    colour by hand. The `color-mix` hover states needed no rework either — they mix toward `--ink`,
+    which is hue-agnostic
+  - Contrast measured against the running page in both themes: links, ghost label and primary fill
+    all 7.01:1 in light and 8.54:1 in dark; accent on its own wash 6.30:1 light, and the lowest
+    pair overall is unchanged at ink-soft on paper-sunk (5.39:1 light, 6.77:1 dark)
+  - `e2e/homepage-design-direction.spec.ts` needed no assertion change: it reads `--island` off the
+    live document and resolves it through the browser's own colour parser rather than comparing
+    against a literal
 - **Hero call-to-action colour pass** (`src/components/astro/HomeHero.astro`): the two hero CTAs
   read as a primary and a secondary rather than as two equal buttons
   - The secondary's border drops from full-chroma `--island` to the neutral `--rule`. Both buttons
-    previously painted the accent at the same strength, so the border measured the same 6.56:1
+    previously painted the accent at the same strength, so the border measured the same 7.01:1
     against paper as the primary's fill and the pair carried identical visual weight. The accent
     stays on the secondary's label, so "colour marks hydration" is unaffected — the rule forbids
     accenting elements a visitor _cannot_ operate, and the E2E audit only polices that direction
   - Hover and pressed fills are mixed toward ink in OKLCH at 88% and 78%. `--ink` is near-black in
     light and near-white in dark, so a single pair of declarations darkens the accent on paper and
     lightens it on the dark surface with no second theme block. Label contrast rises rather than
-    falls in both: light 6.56 → 7.57 → 8.52, dark
-    6.15 → 6.97 → 7.79. The mix is `oklch` because the same operation in sRGB mutes a saturated
-    violet as it darkens
+    falls in both: light 7.01 → 8.07 → 9.04, dark
+    8.54 → 9.24 → 9.88. The mix is `oklch` because the same operation in sRGB mutes the accent's
+    chroma as it darkens
   - The primary previously had no colour change on hover at all; `text-decoration: underline` was
     its only feedback. The underline stays as the non-colour cue, so the state never relies on hue
   - The secondary promotes its border back to the accent on hover, earning at hover what the

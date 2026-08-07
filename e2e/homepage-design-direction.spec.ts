@@ -281,7 +281,7 @@ test.describe('Homepage design direction', () => {
           .trim()
         if (!accentToken) return { accent: '', offenders: [] as string[] }
 
-        // Resolve the author-level token (`#5b2cf5`) to the `rgb(...)` form
+        // Resolve the author-level token (`#0b6070`) to the `rgb(...)` form
         // getComputedStyle returns, using the browser's own colour parser so
         // the comparison cannot drift from how the page actually paints.
         const probe = document.createElement('span')

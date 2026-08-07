@@ -35,14 +35,17 @@ Source of truth: `src/styles/_design-tokens.scss` (definitions) and `src/styles/
 | `--ink-soft`   | `#5a6472` | `#99a2ad` | Secondary text: decks, eyebrows, labels, captions, inline code |
 | `--paper`      | `#fcfcfd` | `#0d1014` | Page background                                                |
 | `--paper-sunk` | `#f1f3f5` | `#151a20` | Recessed surfaces: the header band, card backgrounds           |
-| `--island`     | `#5b2cf5` | `#9b7dff` | The accent. Interactive only                                   |
-| `--island-bg`  | `#f0ebff` | `#1e1830` | Accent wash behind interactive affordances and `::selection`   |
+| `--island`     | `#0b6070` | `#6bb9c9` | The accent. Interactive only                                   |
+| `--island-bg`  | `#e6f2f6` | `#102a33` | Accent wash behind interactive affordances and `::selection`   |
 | `--rule`       | `#dde1e6` | `#262c33` | Hairlines and dividers                                         |
 
-The light values are deliberately not Tailwind sky-500 and not indigo-600, so the palette does not read as a framework
-default. Every pair clears WCAG 2.1 AA. Measured against the running page rather than estimated: in light, ink on paper
-is 18.04:1, ink-soft on paper 5.85:1, island on paper 6.56:1, and the lowest pair of all — ink-soft on paper-sunk —
-5.39:1; in dark, every pair is 6.15:1 or better. `e2e/home-accessibility.spec.ts` asserts the 4.5:1 AA floor against the
+The accent is a deep petrol — a low-chroma blue-green, deliberately not Tailwind sky-500 and not the violet/indigo
+family that generated palettes converge on, so the palette does not read as a framework default. Low chroma is the
+point: the accent sits beside ink as a second voice rather than shouting over it, and it darkens cleanly under the
+`color-mix` hover states instead of going muddy. Every pair clears WCAG 2.1 AA. Measured against the running page
+rather than estimated: in light, ink on paper is 18.04:1, ink-soft on paper 5.85:1, island on paper 7.01:1, and the
+lowest pair of all — ink-soft on paper-sunk — 5.39:1; in dark, island on paper is 8.54:1 and the lowest pair — again
+ink-soft on paper-sunk — is 6.77:1. `e2e/home-accessibility.spec.ts` asserts the 4.5:1 AA floor against the
 tokens the page actually resolves, so these figures cannot drift without a test failing.
 
 Both themes are defined as SCSS mixins - `direction-light` and `direction-dark` - and applied through three scopes:
@@ -232,7 +235,7 @@ Measured against the running dev server, light and dark:
 | `body` colour                           | `rgb(16,20,24)`    | `rgb(232,234,237)` |
 | `body > header` (`--header-background`) | `rgb(241,243,245)` | `rgb(21,26,32)`    |
 | `[data-card]` (`--card-background`)     | `rgb(241,243,245)` | `rgb(21,26,32)`    |
-| Link colour (`--island`)                | `rgb(91,44,245)`   | `rgb(155,125,255)` |
+| Link colour (`--island`)                | `rgb(11,96,112)`   | `rgb(107,185,201)` |
 | `code` colour (`--ink-soft`)            | `rgb(90,100,114)`  | `rgb(153,162,173)` |
 
 Automated coverage:
