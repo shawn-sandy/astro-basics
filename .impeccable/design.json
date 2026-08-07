@@ -1,0 +1,393 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-07T00:00:00.000Z",
+  "title": "Design System: Astro Kit",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(18.9% 0.010 248.4)",
+        "darkValue": "#e8eaed",
+        "tonalRamp": [
+          "#080c0f",
+          "#202529",
+          "#3c4045",
+          "#595e63",
+          "#797e83",
+          "#9a9fa5",
+          "#c2c8ce",
+          "#e9eff5"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "oklch(50.0% 0.026 256.8)",
+        "darkValue": "#99a2ad",
+        "tonalRamp": [
+          "#050b16",
+          "#1c2530",
+          "#37404d",
+          "#555e6c",
+          "#747e8d",
+          "#949faf",
+          "#bdc8d8",
+          "#e4f0ff"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "oklch(99.1% 0.001 286.4)",
+        "darkValue": "#0d1014",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242425",
+          "#404040",
+          "#5d5d5e",
+          "#7d7d7e",
+          "#9e9e9f",
+          "#c7c7c8",
+          "#eeeeef"
+        ]
+      },
+      "paper-sunk": {
+        "role": "neutral",
+        "displayName": "Sunk Paper",
+        "canonical": "oklch(96.3% 0.003 247.9)",
+        "darkValue": "#151a20",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#232426",
+          "#3e4041",
+          "#5c5e5f",
+          "#7c7d7f",
+          "#9d9fa0",
+          "#c5c7c9",
+          "#edeff1"
+        ]
+      },
+      "island": {
+        "role": "primary",
+        "displayName": "Harbour Teal",
+        "canonical": "oklch(45.1% 0.077 214.9)",
+        "darkValue": "#6bb9c9",
+        "tonalRamp": [
+          "#00101f",
+          "#002c3b",
+          "#004959",
+          "#196878",
+          "#40899a",
+          "#63abbc",
+          "#8cd5e6",
+          "#b3fcff"
+        ]
+      },
+      "island-bg": {
+        "role": "primary",
+        "displayName": "Harbour Wash",
+        "canonical": "oklch(95.3% 0.014 219.6)",
+        "darkValue": "#102a33",
+        "tonalRamp": [
+          "#050d0f",
+          "#1d2629",
+          "#384245",
+          "#556063",
+          "#757f83",
+          "#95a1a4",
+          "#becacd",
+          "#e5f1f5"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "oklch(90.8% 0.008 253.9)",
+        "darkValue": "#262c33",
+        "tonalRamp": [
+          "#090b0f",
+          "#212428",
+          "#3d4044",
+          "#5a5e62",
+          "#7a7e82",
+          "#9b9fa3",
+          "#c4c8cd",
+          "#ebeff4"
+        ]
+      },
+      "success": {
+        "role": "tertiary",
+        "displayName": "Success Green",
+        "canonical": "oklch(72.3% 0.192 149.6)",
+        "tonalRamp": [
+          "#001900",
+          "#003700",
+          "#005700",
+          "#007807",
+          "#009a34",
+          "#0ebe57",
+          "#55e980",
+          "#82ffa6"
+        ]
+      },
+      "warning": {
+        "role": "tertiary",
+        "displayName": "Warning Amber",
+        "canonical": "oklch(76.9% 0.165 70.1)",
+        "tonalRamp": [
+          "#2e0000",
+          "#500000",
+          "#722300",
+          "#954500",
+          "#b96600",
+          "#de8800",
+          "#ffb234",
+          "#ffd964"
+        ]
+      },
+      "error": {
+        "role": "tertiary",
+        "displayName": "Error Red",
+        "canonical": "oklch(63.7% 0.208 25.3)",
+        "tonalRamp": [
+          "#410000",
+          "#680000",
+          "#8f0000",
+          "#b60010",
+          "#de3136",
+          "#ff5b57",
+          "#ff877f",
+          "#ffb0a5"
+        ]
+      },
+      "info": {
+        "role": "tertiary",
+        "displayName": "Info Blue",
+        "canonical": "oklch(62.3% 0.188 259.8)",
+        "tonalRamp": [
+          "#090059",
+          "#00007c",
+          "#0031a0",
+          "#0755c5",
+          "#3177ea",
+          "#539bff",
+          "#7bc5ff",
+          "#a1eeff"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The homepage hero h1 only. One knob drives display and deck together, pinning their ratio at 3.2 across every viewport width."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page-level h1 on every route except the homepage. Capitalized."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section and card titles (h2, h3). Capitalized."
+      },
+      "deck": {
+        "displayName": "Deck",
+        "purpose": "The paragraph beneath a page heading, in Soft Ink. Clamps on a shallower slope than the heading so the two separate as the viewport grows."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Prose and lists on the system sans, capped at 60ch (80ch inside article)."
+      },
+      "label": {
+        "displayName": "Label / Mono",
+        "purpose": "Eyebrows, captions, specimen badges and inline code. Opted into with data-ui=\"eyebrow\" or data-ui=\"label\"."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Interactive control labels on the body sans at 0.9375rem/600 — neither the display face nor the mono label role."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-sm",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "purpose": "Lightest available lift. Hover response on an interactive card."
+      },
+      {
+        "name": "shadow-base",
+        "value": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "purpose": "Aliased by --card-shadow. Reserved for a card genuinely lifting under interaction, never at rest."
+      },
+      {
+        "name": "shadow-lg",
+        "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+        "purpose": "Overlays and popovers that float above the page."
+      }
+    ],
+    "motion": [
+      {
+        "name": "duration-150",
+        "value": "150ms",
+        "purpose": "Default state-change duration. Button colour transitions run at this."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0, 0, 0.2, 1)",
+        "purpose": "Default easing for state transitions. Colour only; nothing in the resting system moves."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Reserved for two-way transitions such as popover panels."
+      }
+    ],
+    "breakpoints": [
+      { "name": "reflow-floor", "value": "320px" },
+      { "name": "nav-stack", "value": "580px" },
+      { "name": "hero-collapse", "value": "960px" },
+      { "name": "measure", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The primary call to action. Harbour Teal fill with a Paper label — never white, which fails contrast in dark mode.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\">Browse components</a>",
+      "css": ".ds-btn-primary { display: inline-block; background: var(--island, #0b6070); border: 1px solid var(--island, #0b6070); border-radius: 8px; color: var(--paper, #fcfcfd); font-family: var(--font-family-sans, system-ui, sans-serif); font-size: 0.9375rem; font-weight: 600; padding: 0.6875rem 1.25rem; text-decoration: none; transition: background-color 150ms ease-out, border-color 150ms ease-out; } .ds-btn-primary:hover { background: color-mix(in oklch, var(--island, #0b6070) 88%, var(--ink, #101418)); border-color: color-mix(in oklch, var(--island, #0b6070) 88%, var(--ink, #101418)); text-decoration: underline; text-underline-offset: 3px; } .ds-btn-primary:active { background: color-mix(in oklch, var(--island, #0b6070) 78%, var(--ink, #101418)); } .ds-btn-primary:focus-visible { outline: 2px solid var(--island, #0b6070); outline-offset: 3px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "The secondary action. The accent lives on the label; the border stays neutral so the pair does not read as two equal calls to action.",
+      "html": "<a class=\"ds-btn-ghost\" href=\"#\">Read the blog</a>",
+      "css": ".ds-btn-ghost { display: inline-block; background: transparent; border: 1px solid var(--rule, #dde1e6); border-radius: 8px; color: var(--island, #0b6070); font-family: var(--font-family-sans, system-ui, sans-serif); font-size: 0.9375rem; font-weight: 600; padding: 0.6875rem 1.25rem; text-decoration: none; transition: background-color 150ms ease-out, border-color 150ms ease-out; } .ds-btn-ghost:hover { background: var(--island-bg, #e6f2f6); border-color: var(--island, #0b6070); text-decoration: underline; text-underline-offset: 3px; } .ds-btn-ghost:active { background: color-mix(in oklch, var(--island, #0b6070) 18%, transparent); border-color: var(--island, #0b6070); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--island, #0b6070); outline-offset: 3px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Recessed content surface. Flat at rest — separation comes from the tone step and a single hairline.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Accessibility First</h3><p class=\"ds-card-body\">Screen-reader support, keyboard navigation and WCAG-compliant patterns, built in.</p><div class=\"ds-card-footer\"><a href=\"#\"><i>Continue Reading</i></a></div></div>",
+      "css": ".ds-card { background: var(--paper-sunk, #f1f3f5); border: 1px solid var(--rule, #dde1e6); border-radius: 8px; color: var(--ink, #101418); display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem; max-width: 24rem; } .ds-card-title { font-family: var(--font-family-display, system-ui, sans-serif); font-size: 1.25rem; font-weight: 600; letter-spacing: -0.015em; margin: 0; text-transform: capitalize; } .ds-card-body { color: var(--ink-soft, #5a6472); font-family: var(--font-family-sans, system-ui, sans-serif); font-size: 1rem; line-height: 1.5; margin: 0; } .ds-card-footer a { color: var(--island, #0b6070); font-size: 0.9375rem; } .ds-card-footer a:focus-visible { outline: 2px solid var(--island, #0b6070); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Form field at the tighter 4px radius so it reads as a field rather than a button. Validation is deferred until blur.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Email address</span><input class=\"ds-input\" type=\"email\" placeholder=\"you@example.com\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 0.5rem; font-family: var(--font-family-sans, system-ui, sans-serif); max-width: 20rem; } .ds-field-label { color: var(--ink, #101418); font-size: 0.9375rem; } .ds-input { background: var(--paper, #fcfcfd); border: 1px solid var(--rule, #dde1e6); border-radius: 4px; color: var(--ink, #101418); font-family: inherit; font-size: 1rem; padding: 0.5rem 0.75rem; } .ds-input::placeholder { color: var(--ink-soft, #5a6472); } .ds-input:focus-visible { outline: 2px solid var(--island, #0b6070); outline-offset: 2px; } .ds-input:user-invalid:not(:focus) { outline: 1px solid var(--color-error, #ef4444); }"
+    },
+    {
+      "name": "Navigation Bar",
+      "kind": "nav",
+      "refersTo": "nav-toggle",
+      "description": "Single-row bar at every width. The toggle keeps a transparent border at rest so revealing it on hover costs no layout shift. The real panel is a native HTML popover with no JavaScript.",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-nav-toggle\" aria-label=\"Open navigation\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"/><line x1=\"3\" y1=\"12\" x2=\"21\" y2=\"12\"/><line x1=\"3\" y1=\"18\" x2=\"21\" y2=\"18\"/></svg></button><a class=\"ds-nav-brand\" href=\"#\">Astro Kit</a><a class=\"ds-nav-account\" href=\"#\">Sign in</a></nav>",
+      "css": ".ds-nav { align-items: center; background: inherit; display: flex; flex-direction: row; gap: 1rem; justify-content: flex-start; min-height: 4rem; padding-inline: 1rem; font-family: var(--font-family-sans, system-ui, sans-serif); } .ds-nav-toggle { align-items: center; background: transparent; border: 1px solid transparent; border-radius: 8px; color: inherit; cursor: pointer; display: inline-flex; justify-content: center; min-height: 44px; min-width: 44px; padding: 0; } .ds-nav-toggle:hover, .ds-nav-toggle:focus-visible { border-color: color-mix(in srgb, currentcolor 30%, transparent); } .ds-nav-toggle:focus-visible { outline: 2px solid var(--island, #0b6070); outline-offset: 2px; } .ds-nav-brand { color: var(--ink, #101418); font-weight: 600; text-decoration: none; } .ds-nav-account { color: var(--island, #0b6070); margin-inline-start: auto; font-size: 0.9375rem; }"
+    },
+    {
+      "name": "Eyebrow Label",
+      "kind": "chip",
+      "refersTo": "eyebrow",
+      "description": "The system's annotation voice — small mono capitals in Soft Ink. Opted into at the call site with data-ui=\"eyebrow\", never guessed at by class name.",
+      "html": "<p class=\"ds-eyebrow\" data-ui=\"eyebrow\">30+ components / zero client JS by default</p>",
+      "css": ".ds-eyebrow { color: var(--ink-soft, #5a6472); font-family: var(--font-family-mono, ui-monospace, Menlo, monospace); font-size: 0.75rem; letter-spacing: 0.12em; margin: 0; text-transform: uppercase; }"
+    },
+    {
+      "name": "Specimen",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "The signature pattern: a rendered component and the source that produced it, shown as one framed object. Both are built from the same constants, so the snippet cannot drift from the component beside it. The code block squares its corners because it spans the frame edge-to-edge.",
+      "html": "<figure class=\"ds-specimen\"><figcaption class=\"ds-specimen-label\">Rendered</figcaption><div class=\"ds-specimen-body\"><div class=\"ds-specimen-card\"><h3 class=\"ds-specimen-title\">Accessibility First</h3><p class=\"ds-specimen-text\">Screen-reader support, keyboard navigation and WCAG-compliant patterns, built in.</p></div></div><pre class=\"ds-specimen-code\"><code>import Card from '#components/astro/Card.astro'\n\n&lt;Card cardTitle=\"Accessibility First\"&gt;\n  &lt;p&gt;Screen-reader support, keyboard navigation.&lt;/p&gt;\n&lt;/Card&gt;</code></pre></figure>",
+      "css": ".ds-specimen { background: var(--paper, #fcfcfd); border: 1px solid var(--rule, #dde1e6); border-radius: 8px; margin: 0; max-width: 26rem; overflow: hidden; } .ds-specimen-label { background: var(--paper-sunk, #f1f3f5); border-bottom: 1px solid var(--rule, #dde1e6); color: var(--ink-soft, #5a6472); font-family: var(--font-family-mono, ui-monospace, Menlo, monospace); font-size: 0.65625rem; letter-spacing: 0.12em; padding: 0.625rem 1rem; text-transform: uppercase; } .ds-specimen-body { padding: 1.5rem 1.25rem; } .ds-specimen-card { background: var(--paper-sunk, #f1f3f5); border: 1px solid var(--rule, #dde1e6); border-radius: 8px; padding: 1.25rem; } .ds-specimen-title { color: var(--ink, #101418); font-family: var(--font-family-display, system-ui, sans-serif); font-size: 1.125rem; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 0.5rem; } .ds-specimen-text { color: var(--ink-soft, #5a6472); font-family: var(--font-family-sans, system-ui, sans-serif); font-size: 0.9375rem; line-height: 1.5; margin: 0; } .ds-specimen-code { background: var(--paper-sunk, #f1f3f5); border-top: 1px solid var(--rule, #dde1e6); border-radius: 0; color: var(--ink-soft, #5a6472); font-family: var(--font-family-mono, ui-monospace, Menlo, monospace); font-size: 0.78125rem; line-height: 1.7; margin: 0; overflow-x: auto; padding: 1rem 1.25rem; white-space: pre; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Instrument Reading",
+    "overview": "Astro Kit looks like the face of a measuring instrument. The ground is neutral and quiet, the scale is precise and legible at a glance, and exactly one thing on the dial is lit. Nothing is decorated for its own sake; every mark on the surface is there because it reports something. The palette's own token names say it out loud — ink, paper, island — and the accent behaves like a needle rather than a brand flourish.\n\nThe density is calm and generous. Content sits on an 80rem measure with real air around it, prose is capped at 60ch, and surfaces separate by tone and a single hairline rather than by shadow or ornament. Type does the structural work: one display face at one weight, the system sans for reading, and small mono capitals for anything that annotates rather than speaks. When a component needs to explain itself, it does so by standing next to the source that produced it — the instrument shows its reading and its calibration together.\n\nWhat makes the system unusual is that its central rule is enforced by tests rather than taste. Colour marks hydration: static content is ink on paper, and the accent appears only on things a visitor can operate. e2e/homepage-design-direction.spec.ts walks the rendered homepage and fails the build if a non-interactive element computes to the accent, and e2e/home-accessibility.spec.ts asserts the 4.5:1 contrast floor against the tokens the page actually resolves. Breaking the direction is a build failure, not a disagreement. Confirmed rejections: the violet/indigo family every generated palette converges on, and stock Tailwind sky-500 — the accent is deliberately neither.",
+    "keyCharacteristics": [
+      "One lit indicator: the accent is a signal, never decoration",
+      "Ink-on-paper neutrals with tonal layering instead of shadow",
+      "Three type roles and no fourth",
+      "Small mono capitals for every annotation and label",
+      "Measured, not estimated — contrast ratios are recorded and asserted",
+      "The rendered artifact and its source shown together"
+    ],
+    "rules": [
+      {
+        "name": "The Hydration Rule",
+        "body": "Colour marks interactivity. Static content renders in ink on paper; the accent appears only where something responds — links, buttons, focus rings, the specimen badge. Never a decorative border, a heading, a hairline, or a card surface. This is machine-checked, not a preference: e2e/homepage-design-direction.spec.ts fails the build when a non-interactive element computes to the accent. Treat it exactly as you would a type error.",
+        "section": "colors"
+      },
+      {
+        "name": "The Legacy Family Rule",
+        "body": "The --color-primary-* sky-blue ramp and the --color-neutral-* grey ramp exist for backward compatibility with earlier component tokens. They are not the palette. New work reaches for the seven direction tokens; a sky-blue that reaches the screen is a regression.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three Scopes Rule",
+        "body": "Both palette families flip together in all three theming scopes — :root, @media (prefers-color-scheme: dark), and :root[data-theme]. Redefining only :root looks correct in light mode and silently keeps the old values the moment the visitor's OS is dark.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three Roles Rule",
+        "body": "Display for h1–h6, body sans for everything that reads, mono for everything that annotates. There is no fourth role. A new face is a new decision about the whole system, not a local one.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Weight Rule",
+        "body": "The self-hosted display face ships exactly one weight (600) as a single latin-subset woff2, preloaded, no CDN, one font request total. Every heading level renders at that weight — so covering h4–h6 costs nothing. A design that needs a second weight is asking for a second network request; make that trade deliberately or not at all.",
+        "section": "typography"
+      },
+      {
+        "name": "The Labels Keep Their Case Rule",
+        "body": "text-transform: capitalize applies to h1–h3, which are titles. h4–h6 are used as UI labels — the contact form renders its error summary as an h6 — and capitalizing a sentence produces \"Please Correct The Following Errors\".",
+        "section": "typography"
+      },
+      {
+        "name": "The 320 Rule",
+        "body": "Nothing may widen the document at a 320px viewport (WCAG 2.1 SC 1.4.10 Reflow). Grid children declare min-width: 0, long headings set overflow-wrap: break-word and hyphens: auto, and any content wider than the viewport — code samples above all — scrolls inside its own overflow-x: auto box rather than pushing the page.",
+        "section": "layout"
+      },
+      {
+        "name": "The Composition Owns Spacing Rule",
+        "body": "Space between two components belongs to the page that composes them, never to either component. Components are exported for reuse; a margin baked into one is a bug at every other call site.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat-At-Rest Rule",
+        "body": "Surfaces are flat at rest. A shadow is a response to state — hover, focus, or genuine overlay — never a resting property of a card, a band, or a section. If a surface needs to read as separate while sitting still, step its tone or draw a hairline.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Squared-Insert Rule",
+        "body": "An element that spans its container edge-to-edge drops its own radius to zero and separates with a hairline instead. The code block inside a specimen card is the canonical case: it runs the full card width, so a rounded corner inside a rounded corner would read as a mistake.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do reserve Harbour Teal for things a visitor can operate — links, buttons, focus rings, specimen badges. Run the homepage e2e spec before assuming an exception is safe.",
+      "Do use the seven direction tokens (--ink, --ink-soft, --paper, --paper-sunk, --island, --island-bg, --rule) for every new surface.",
+      "Do flip both palette families in all three theming scopes when overriding, and load your sheet after the kit's.",
+      "Do separate surfaces with a tone step and a 1px Rule hairline before reaching for a shadow.",
+      "Do put annotations, eyebrows, and captions in mono capitals via data-ui=\"eyebrow\" or data-ui=\"label\" rather than styling them ad hoc.",
+      "Do let long content scroll inside its own box; check 320px before shipping.",
+      "Do pair a rendered component with the source that produced it, built from shared constants.",
+      "Do re-measure contrast when repointing a token — the recorded ratios are a budget, not a decoration."
+    ],
+    "donts": [
+      "Don't put the accent on a heading, a decorative border, a hairline, or a card surface. The test will catch it, and it is the one rule the whole system rests on.",
+      "Don't reach for the legacy --color-primary-* sky-blue or --color-neutral-* greys in new work; they exist only for backward compatibility.",
+      "Don't drift the accent toward violet, indigo, or Tailwind sky-500 — those are confirmed rejections, not untried options.",
+      "Don't put white text on the accent. Use Paper; white fails contrast in dark mode.",
+      "Don't add a shadow to a resting surface, or a second typeface, or a second display weight.",
+      "Don't bake page-specific margin into a reusable component.",
+      "Don't apply text-transform: capitalize to h4–h6; they carry sentence-cased UI labels.",
+      "Don't style navigation state against [aria-expanded] — it is an implicit accessibility-tree mapping on a popover invoker, not a DOM attribute, and never matches."
+    ]
+  }
+}

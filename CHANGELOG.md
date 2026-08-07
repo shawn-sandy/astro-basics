@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Design System Record** (`DESIGN.md`, `PRODUCT.md`, `.impeccable/design.json`): the incumbent
+  visual system and durable product context captured as machine-readable records
+  - `DESIGN.md` follows the DESIGN.md format spec — YAML frontmatter carrying the eleven colour
+    tokens, six type roles, radius and spacing scales, and nine component definitions, followed by
+    the eight canonical prose sections
+  - Ten named rules extracted from the implementation, including The Hydration Rule (colour marks
+    interactivity), The One Weight Rule (one self-hosted display weight, one font request), and
+    The 320 Rule (nothing widens the document at a 320px viewport)
+  - Creative North Star recorded as "The Instrument Reading": neutral ground, precise scale,
+    exactly one lit indicator
+  - `.impeccable/design.json` sidecar carries what the frontmatter schema cannot — computed OKLCH
+    canonicals and eight-step tonal ramps per colour, shadow and motion vocabularies, breakpoints,
+    and seven drop-in component HTML/CSS snippets
+  - `PRODUCT.md` records the evaluating-developer audience, the three confirmed differentiators,
+    clone-or-template distribution, and an explicit list of evidence the project does **not** have,
+    so future work cannot fabricate it
+- **Impeccable live mode** (`.impeccable/live/config.json`): durable configuration for browser-based
+  design iteration. Running live mode injects a picker `<script>` into `src/layouts/Base.astro` and
+  writes session state under `.impeccable/live/`; both are local development artifacts, removed by
+  `live-server.mjs stop` and excluded from version control via `.gitignore`
 - **Homepage Design Direction** (`src/components/astro/HomeHero.astro`, `src/styles/_design-tokens.scss`):
   the homepage now renders live component specimens instead of describing them
   - Seven direction tokens — `--ink`, `--ink-soft`, `--paper`, `--paper-sunk`, `--island`,
