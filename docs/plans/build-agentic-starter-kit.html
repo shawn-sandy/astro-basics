@@ -1,0 +1,2442 @@
+<!DOCTYPE html>
+<html lang="en" data-status="todo" data-effort="high">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+/* Runs in <head> before the first paint, on purpose: a plan opened from
+   file:// has no server to stamp the attribute, and a flash of the wrong
+   theme on every load is worse than having no dark mode at all. Storage
+   throws in some sandboxed file:// contexts — fall through to
+   prefers-color-scheme rather than blocking the render. */
+try {
+  var t = localStorage.getItem('plan-theme');
+  if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+} catch (e) { /* no storage — prefers-color-scheme decides */ }
+</script>
+<meta name="plan-status" content="todo">
+<meta name="plan-effort" content="high">
+<meta name="plan-type" content="feature">
+<meta name="plan-created" content="2026-08-10">
+<meta name="plan-repo" content="astro-basics">
+<meta name="plan-file" content="build-agentic-starter-kit.html">
+<meta name="plan-path" content="docs/plans/build-agentic-starter-kit.html">
+<meta name="plan-md" content="docs/plans/build-agentic-starter-kit.md">
+<meta name="plan-implement" content="Read and implement all steps in the plan at docs/plans/build-agentic-starter-kit.md — Make every agentic affordance in astro-basics executable, verifiable, and true. Verify against the plan&#39;s Tests, Verification, and Acceptance Criteria before reporting done. If everything passed, mark completion in docs/plans/build-agentic-starter-kit.md — tick each step&#39;s [x] marker and each criterion&#39;s - [x], set status: completed — and re-render the HTML from the spec. If any check failed, leave status: in-progress and say which.">
+<meta name="plan-goal" content="Achieve this goal: Make every agentic affordance in astro-basics executable, verifiable, and true. The plan at docs/plans/build-agentic-starter-kit.md describes one approach — use it as reference, but optimize for the outcome. Fan out across parallel subagents where that serves the outcome. Verify against the plan&#39;s Tests, Verification, and Acceptance Criteria before reporting done. If everything passed, mark completion in docs/plans/build-agentic-starter-kit.md — tick each step&#39;s [x] marker and each criterion&#39;s - [x], set status: completed — and re-render the HTML from the spec. If any check failed, leave status: in-progress and say which.">
+<meta name="plan-workflow" content="Run a workflow to implement the plan at docs/plans/build-agentic-starter-kit.md — Make every agentic affordance in astro-basics executable, verifiable, and true. Brief subagents with the plan file at docs/plans/build-agentic-starter-kit.md. Reserve a final verification phase for the lead agent, not a subagent. Verify against the plan&#39;s Tests, Verification, and Acceptance Criteria before reporting done. If everything passed, mark completion in docs/plans/build-agentic-starter-kit.md — tick each step&#39;s [x] marker and each criterion&#39;s - [x], set status: completed — and re-render the HTML from the spec. If any check failed, leave status: in-progress and say which.">
+<meta name="plan-issue" content="https://github.com/shawn-sandy/astro-basics/issues/366">
+<title>Plan: Make every agentic affordance in astro-basics executable, verifiable, and true</title>
+<style>
+/* ── Design tokens ─────────────────────────────────────────────────
+     Indigo-violet lead on warm-neutral paper. Status is carried by form
+     (soft fill + rule) rather than a second colour scale, so every status
+     chip inherits the theme instead of pinning white text onto a hue that
+     only works on one background. Type has three roles: --mono for every
+     structural label, --ui for chrome, --prose for reading text.
+     Contrast is a hard constraint, not a preference — every text token
+     below clears 4.5:1 on the surfaces it is used against in BOTH
+     palettes, and tests/plugins/test-plan-redesign.mjs measures it. ── */
+  :root {
+    --paper:      #fcfcfa;
+    --panel:      #ffffff;
+    --sunk:       #f5f4f1;
+    --ink:        #16151c;
+    --ink-2:      #4b4858;
+    --ink-3:      #6e6a80;
+    --rule:       #e6e3ec;
+    --rule-soft:  #f0eef4;
+    --accent:     #4a2fe0;
+    --accent-soft:#efebfe;
+    --accent-line:#c9befb;
+    --on-accent:  #ffffff;
+    --moss:       #2f6b45;
+    --moss-soft:  #edf5ef;
+    --moss-line:  #c3ddcd;
+    --signal:     #a8420c;
+    --signal-soft:#fbf0e9;
+    --signal-line:#e8c9b4;
+    --red:        #b42318;
+    --red-bg:     #fdf1f0;
+    --red-border: #edc4bf;
+    --purple:     #7b2d9e;
+    --purple-bg:  #f9f0fd;
+    --purple-border:#dcb8ee;
+    --wish-bg:    #fbf5fe;
+    --wish-border:#dcb8ee;
+    --radius:     4px;
+    --shadow:     0 1px 2px rgba(22,21,28,.05);
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    --ui:   system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --prose: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  }
+
+  /* Dark palette. Written twice on purpose: an explicit choice
+     ([data-theme]) has to beat the OS preference, and plain CSS has no way
+     to share one declaration block between an attribute selector and a
+     media query. Keep the two lists in sync — the redesign test asserts
+     both selectors define the same token names. */
+  :root[data-theme="dark"] {
+    --paper:      #121118;
+    --panel:      #1a1922;
+    --sunk:       #201f29;
+    --ink:        #edebf3;
+    --ink-2:      #b3afc4;
+    --ink-3:      #8b87a0;
+    --rule:       #2c2a38;
+    --rule-soft:  #24232e;
+    --accent:     #a594ff;
+    --accent-soft:#221f36;
+    --accent-line:#4a4270;
+    --on-accent:  #16151c;
+    --moss:       #7bc098;
+    --moss-soft:  #1b2a21;
+    --moss-line:  #2f4a39;
+    --signal:     #e8a278;
+    --signal-soft:#2b2019;
+    --signal-line:#4d3826;
+    --red:        #f4998f;
+    --red-bg:     #2b1a19;
+    --red-border: #4d2b27;
+    --purple:     #d9a6f0;
+    --purple-bg:  #251b2d;
+    --purple-border:#4a3557;
+    --wish-bg:    #251b2d;
+    --wish-border:#4a3557;
+    --shadow:     0 1px 2px rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #121118;
+      --panel:      #1a1922;
+      --sunk:       #201f29;
+      --ink:        #edebf3;
+      --ink-2:      #b3afc4;
+      --ink-3:      #8b87a0;
+      --rule:       #2c2a38;
+      --rule-soft:  #24232e;
+      --accent:     #a594ff;
+      --accent-soft:#221f36;
+      --accent-line:#4a4270;
+      --on-accent:  #16151c;
+      --moss:       #7bc098;
+      --moss-soft:  #1b2a21;
+      --moss-line:  #2f4a39;
+      --signal:     #e8a278;
+      --signal-soft:#2b2019;
+      --signal-line:#4d3826;
+      --red:        #f4998f;
+      --red-bg:     #2b1a19;
+      --red-border: #4d2b27;
+      --purple:     #d9a6f0;
+      --purple-bg:  #251b2d;
+      --purple-border:#4a3557;
+      --wish-bg:    #251b2d;
+      --wish-border:#4a3557;
+      --shadow:     0 1px 2px rgba(0,0,0,.4);
+    }
+  }
+  /* Native controls (checkboxes, scrollbars) follow the resolved theme. */
+  :root { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { color-scheme: dark; }
+  }
+
+  /* ── Reset & base ──────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--ui);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    color: var(--ink);
+    background: var(--paper);
+  }
+  a { color: var(--accent); }
+  code, pre {
+    font-family: var(--mono);
+    font-size: .875em;
+  }
+  /* Inline spans rendered from backtick markers in plan prose. Scoped to .md
+     so the bare <code> carrying file paths and copyable prompts keeps its own
+     layout — those live inside chips and rows that already style themselves.
+     No backticks in this comment: the whole stylesheet is a JS template. */
+  code.md {
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: .08em .35em;
+    /* Long paths must wrap rather than force the card into a sideways scroll. */
+    overflow-wrap: anywhere;
+  }
+  strong.md { font-weight: 650; color: var(--ink); }
+  em.md { font-style: italic; }
+  pre {
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: .75rem 1rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* ── SVG icon helper ────────────────────────────────────────────── */
+  .icon {
+    width: 1rem;
+    height: 1rem;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  /* ── Skip link ─────────────────────────────────────────────────── */
+  .skip-link {
+    position: absolute;
+    left: -9999px; top: auto;
+    width: 1px; height: 1px;
+    overflow: hidden;
+  }
+  .skip-link:focus {
+    position: fixed;
+    left: 1rem; top: 1rem;
+    width: auto; height: auto;
+    overflow: visible;
+    background: var(--accent);
+    color: var(--on-accent);
+    padding: .5rem 1rem;
+    border-radius: var(--radius);
+    font-weight: 700;
+    z-index: 9999;
+    text-decoration: none;
+  }
+
+  /* ── Header — document cover ────────────────────────────────────── */
+  .plan-header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    padding: 0;
+  }
+  .plan-header::before {
+    content: "";
+    display: block;
+    height: 3px;
+    background: var(--accent);
+  }
+  .plan-header-inner {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 1.75rem 1.5rem 1.5rem;
+  }
+  .plan-doc-type {
+    font-family: var(--mono);
+    font-size: .65rem;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .6rem;
+  }
+  .plan-header-top {
+    display: block;
+  }
+  .plan-title {
+    font-family: var(--mono);
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 600;
+    letter-spacing: -.035em;
+    line-height: 1.14;
+    color: var(--ink);
+    max-width: 26ch;
+    text-wrap: balance;
+  }
+  .plan-header-actions {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+    margin-top: .75rem;
+  }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .25rem .75rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-family: var(--mono);
+    color: var(--ink-3);
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+  }
+  .status-badge::before {
+    content: "";
+    display: inline-block;
+    width: .45em;
+    height: .45em;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+  [data-status="in-progress"] .status-badge { color: var(--signal); background: var(--signal-soft); border-color: var(--signal-line); }
+  [data-status="completed"]   .status-badge { color: var(--moss);   background: var(--moss-soft);   border-color: var(--moss-line); }
+
+  /* Effort badge — color tracks the data-effort attribute, mirroring .status-badge */
+  .effort-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .25rem .75rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-family: var(--mono);
+    color: var(--ink-3);
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+  }
+  .effort-badge::before { content: "Effort "; opacity: .7; }
+  [data-effort="low"]    .effort-badge { color: var(--moss);   border-color: var(--moss-line); }
+  [data-effort="medium"] .effort-badge { color: var(--signal); border-color: var(--signal-line); }
+  [data-effort="high"]   .effort-badge { color: var(--red);    border-color: var(--red-border); }
+
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+  [data-status="in-progress"] .status-badge::before {
+    animation: pulse-dot 1.4s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    [data-status="in-progress"] .status-badge::before { animation: none; }
+  }
+
+  /* Save as PDF button */
+  .save-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .4rem 1rem;
+    font-size: .75rem;
+    font-weight: 600;
+    font-family: var(--mono);
+    color: var(--on-accent);
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    cursor: pointer;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: filter .15s, box-shadow .15s;
+  }
+  .save-pdf-btn:hover { filter: brightness(.85); box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+  .save-pdf-btn:active { filter: brightness(.75); }
+  .save-pdf-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .save-pdf-btn { transition: none; } }
+
+  /* Theme toggle — same shape as Save as PDF, quieter fill. */
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-width: 44px;
+    min-height: 44px;
+    padding: .4rem .9rem;
+    font-family: var(--mono);
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .theme-toggle:hover { color: var(--accent); border-color: var(--accent-line); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Meta row */
+  .plan-meta {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--ink-2);
+  }
+  .plan-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+  }
+  .plan-meta .icon { opacity: .55; }
+
+  /* ── Layout ────────────────────────────────────────────────────── */
+  .layout {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: 3.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+    align-items: start;
+  }
+  /* 900, not 720: the sidebar now carries a step rail and is 15rem wide, so
+     between those two widths the main column was narrow enough to break a
+     copyable path across four lines. Collapse to one column sooner. */
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; padding: 1.5rem .75rem 4rem; gap: 0; }
+  }
+
+  /* ── Sidebar — table of contents ───────────────────────────────── */
+  .plan-nav {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+    overflow: hidden;
+  }
+  @media (max-width: 900px) {
+    .plan-nav {
+      position: static;
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+  }
+  .nav-heading {
+    font-family: var(--mono);
+    font-size: .625rem;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 0 1rem .6rem;
+    margin-bottom: .25rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .scroll-rail {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--rule);
+    border-radius: 1px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .scroll-rail::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: calc(var(--scroll-pct, 0) * 1%);
+    background: var(--accent);
+    transition: height .1s linear;
+  }
+  @media (prefers-reduced-motion: reduce) { .scroll-rail::after { transition: none; } }
+  .plan-nav ul { list-style: none; padding: 0; margin: 0; }
+  .plan-nav > ul > li > a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: .125rem 1rem .125rem 1.25rem;
+    font-size: .825rem;
+    color: var(--ink-2);
+    text-decoration: none;
+    gap: .5rem;
+    border-left: 2px solid transparent;
+    transition: color .12s, border-color .12s;
+  }
+  .plan-nav a:hover { color: var(--ink); border-left-color: var(--accent-line); }
+  .plan-nav a.active { color: var(--accent); font-weight: 600; border-left-color: var(--accent); }
+  .plan-nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .plan-nav .icon { opacity: .65; }
+  .plan-nav a.active .icon,
+  .plan-nav a:hover .icon { opacity: 1; }
+
+  /* ── Step rail — one link per step, the plan's real structure ───── */
+  .rail-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--rule);
+    padding-top: .5rem;
+    margin-top: .75rem;
+  }
+  .rail-heading {
+    font-family: var(--mono);
+    font-size: .625rem;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 0 1rem .45rem 1.25rem;
+  }
+  a.rail-step {
+    display: grid;
+    grid-template-columns: 1.6rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: .35rem;
+    min-height: 30px;
+    padding: .3rem 1rem .3rem 1.25rem;
+    font-size: .78rem;
+    line-height: 1.35;
+    color: var(--ink-2);
+    text-decoration: none;
+    border-left: 2px solid var(--rule-soft);
+    transition: color .12s, border-color .12s;
+  }
+  @media (prefers-reduced-motion: reduce) { a.rail-step { transition: none; } }
+  a.rail-step .rail-no {
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--ink-3);
+  }
+  a.rail-step .rail-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  a.rail-step.done .rail-no { color: var(--moss); }
+  a.rail-step.done .rail-text { color: var(--ink-3); }
+  a.rail-step.active {
+    color: var(--ink);
+    font-weight: 600;
+    border-left-color: var(--accent);
+    background: linear-gradient(90deg, var(--accent-soft), transparent 75%);
+  }
+  a.rail-step.active .rail-no { color: var(--accent); }
+  /* Visually-hidden step state — the tick glyph alone tells a screen reader
+     nothing, so every rail link carries "step N of M[, done]" in text. */
+  .rail-state {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* Once the sidebar stops being a sidebar the step list collapses into a
+     disclosure rather than disappearing — a phone reader keeps every jump
+     target. The element ships OPEN and the inline script closes it below the
+     breakpoint: a closed-by-default <details> would hide the whole rail on
+     desktop when scripting is off, and no-JS-on-mobile only costs some
+     scrolling. */
+  .rail-disclosure { margin-top: .75rem; }
+  .rail-disclosure > summary {
+    display: none;
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    cursor: pointer;
+    list-style: none;
+    align-items: center;
+    gap: .4rem;
+    min-height: 44px;
+    padding: 0 1rem 0 1.25rem;
+  }
+  .rail-disclosure > summary::-webkit-details-marker { display: none; }
+  .rail-disclosure > summary::before { content: "▶"; font-size: .55em; }
+  .rail-disclosure[open] > summary::before { content: "▼"; }
+  @media (max-width: 900px) {
+    .rail-disclosure > summary { display: flex; }
+  }
+
+  /* ── Objective card — executive summary ────────────────────────── */
+  .objective-card {
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 1.35rem 1.5rem;
+    margin-bottom: 2.5rem;
+    color: var(--ink);
+  }
+  .objective-card > p {
+    font-family: var(--prose);
+    font-size: 1.1rem;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .objective-card .section-label,
+  .plan-glance-label {
+    font-family: var(--mono);
+    font-size: .625rem;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .5rem;
+  }
+
+  /* ── At a glance — the plain-language register of the same goal, nested
+        inside #objective so the reader meets one summary, not two. ────── */
+  .plan-glance {
+    margin-top: 1.1rem;
+    padding-top: .9rem;
+    border-top: 1px solid var(--accent-line);
+  }
+  .plan-glance p { margin: 0; color: var(--ink-2); font-size: .9rem; line-height: 1.65; }
+
+  /* ── Progress bar ──────────────────────────────────────────────── */
+  .progress-wrap {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: .6rem;
+    font-family: var(--mono);
+    font-size: .65rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    letter-spacing: .16em;
+  }
+  .progress-bar-bg { height: 4px; background: var(--rule); border-radius: 999px; overflow: hidden; }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--accent);
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .progress-bar-fill { transition: none; }
+  }
+
+  /* ── Document sections ─────────────────────────────────────────── */
+  .section-card {
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--rule);
+    border-radius: 0;
+    padding: 2rem 0 1.25rem;
+    margin-bottom: 0;
+    box-shadow: none;
+  }
+  .section-card:first-of-type { border-top: none; }
+  .section-card h2 {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    color: var(--ink);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .section-card h2::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  .section-card h2 .icon { opacity: .75; }
+  .section-card .section-intro {
+    font-size: .85rem;
+    color: var(--ink-2);
+    margin: -1rem 0 1.25rem;
+  }
+  .section-card p {
+    margin-bottom: .75rem;
+    color: var(--ink-2);
+    font-family: var(--prose);
+    font-size: 1.02rem;
+    line-height: 1.7;
+    max-width: 68ch;
+  }
+  .section-card p.section-intro { font-family: var(--ui); font-size: .85rem; }
+  .section-card p strong.md { color: var(--ink); }
+  .section-card p:last-child { margin-bottom: 0; }
+  .section-card ul, .section-card ol {
+    padding-left: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+  }
+
+  /* ── Steps ──────────────────────────────────────────────────────── */
+  .steps-list { display: flex; flex-direction: column; }
+
+  /* Records, not cards: a rule between steps, no box and no dotted
+     timeline. The sidebar rail is the page's one progress device now. */
+  .step-card {
+    background: transparent;
+    border: 0;
+    border-top: 1px solid var(--rule-soft);
+    border-radius: 0;
+    padding: 1.05rem 0;
+    box-shadow: none;
+    position: relative;
+    scroll-margin-top: 1.5rem;
+  }
+  .step-card:first-child { border-top: 0; }
+
+  .step-card-header { display: flex; align-items: flex-start; gap: .75rem; }
+  .step-number {
+    flex-shrink: 0;
+    width: 2rem;
+    font-family: var(--mono);
+    color: var(--ink-3);
+    font-size: .8rem;
+    font-weight: 600;
+    padding-top: .12rem;
+  }
+  .step-card.completed .step-number { color: var(--moss); }
+  .step-body { flex: 1; min-width: 0; }
+  .step-action {
+    font-weight: 600;
+    margin-bottom: .3rem;
+    display: flex;
+    align-items: baseline;
+    gap: .45rem;
+    flex-wrap: wrap;
+    color: var(--ink);
+  }
+  .step-chip {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .58rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    padding: .12em .5em;
+    border-radius: 3px;
+    background: var(--sunk);
+    color: var(--ink-3);
+    border: 1px solid var(--rule);
+    vertical-align: middle;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .step-card.completed .step-chip {
+    background: var(--moss-soft);
+    color: var(--moss);
+    border-color: var(--moss-line);
+  }
+  .step-chip-text { flex: 1; }
+
+  /* Why and Verify are both always visible. Verify is the line a reader
+     needs WHILE executing the step — putting it behind a disclosure was the
+     single worst call in the previous shell. */
+  .step-note {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr);
+    gap: .1rem .75rem;
+    margin-top: .5rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+  .step-note > .step-note-label {
+    font-family: var(--mono);
+    font-size: .6rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding-top: .25rem;
+  }
+  .step-verify > .step-note-label { color: var(--accent); }
+  @media (max-width: 560px) {
+    .step-note { grid-template-columns: 1fr; gap: .1rem; }
+  }
+
+  /* ── Acceptance criteria ───────────────────────────────────────── */
+  .criteria-list {
+    list-style: none; padding: 0;
+    display: flex; flex-direction: column; gap: .6rem;
+  }
+  .criteria-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .6rem .75rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--panel);
+    transition: background .12s;
+  }
+  .criteria-list li:has(input:checked) { background: var(--sunk); }
+  .criteria-list input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 1rem; height: 1rem;
+    margin-top: .2rem;
+    accent-color: var(--moss);
+    cursor: pointer;
+  }
+  .criteria-list label { cursor: pointer; font-size: .9rem; }
+  .criteria-list input:checked + label { text-decoration: line-through; color: var(--ink-2); }
+
+  /* ── Completion checklist ────────────────────────────────────── */
+  .completion-checklist {
+    background: var(--panel);
+    border: 2px solid var(--signal);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-top: 1rem;
+  }
+  .completion-checklist.all-complete { border-color: var(--moss); }
+  .completion-header {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: 1rem;
+  }
+  .completion-badge {
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .15rem .6rem;
+    border-radius: 999px;
+    background: var(--signal-soft);
+    color: var(--signal);
+    border: 1px solid var(--signal-line);
+  }
+  .completion-checklist.all-complete .completion-badge {
+    background: var(--moss-soft);
+    color: var(--moss);
+    border-color: var(--moss-line);
+  }
+  .completion-list {
+    list-style: none; padding: 0;
+    display: flex; flex-direction: column; gap: .6rem;
+  }
+  .completion-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .6rem .75rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--panel);
+    transition: background .12s;
+  }
+  .completion-list li:has(input:checked) { background: var(--sunk); }
+  .completion-list input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 1rem; height: 1rem;
+    margin-top: .2rem;
+    accent-color: var(--moss);
+  }
+  .completion-list label { font-size: .9rem; }
+  .completion-list input:checked + label { text-decoration: line-through; color: var(--ink-2); }
+  @media (prefers-reduced-motion: reduce) {
+    .completion-list li { transition: none; }
+  }
+
+  /* ── Completion report ─────────────────────────────────────── */
+  .completion-report {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+  }
+  .report-heading {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-bottom: .75rem;
+  }
+  .report-empty {
+    font-style: italic;
+    color: var(--ink-3);
+    font-size: .875rem;
+  }
+  .report-list { margin: 0; padding: 0; }
+  .report-list dt {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: .875rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin-top: .75rem;
+  }
+  .report-list dt:first-child { margin-top: 0; }
+  .report-list dt::before {
+    content: "";
+    display: inline-block;
+    width: .5rem; height: .5rem;
+    border-radius: 50%;
+    background: var(--red);
+    flex-shrink: 0;
+  }
+  .report-list dd {
+    color: var(--ink-2);
+    font-size: .85rem;
+    margin-left: .9rem;
+    margin-top: .2rem;
+    margin-bottom: 0;
+  }
+
+  /* ── Next steps ────────────────────────────────────────────────── */
+  .next-steps-list { padding: 0; display: flex; flex-direction: column; gap: .75rem; }
+  .next-step-item {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .next-step-item summary {
+    font-weight: 600;
+    font-size: .9rem;
+    padding: .75rem 1rem;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--panel);
+    user-select: none;
+    min-height: 44px;
+  }
+  .next-step-item summary::before { content: "▶"; font-size: .55em; color: var(--ink-3); transition: transform .2s; }
+  .next-step-item[open] summary::before { transform: rotate(90deg); }
+  .next-step-prompt { padding: .75rem 1rem 1rem; background: var(--sunk); border-top: 1px solid var(--rule); }
+  .next-step-prompt p { font-size: .8rem; color: var(--ink-2); margin-bottom: .5rem; }
+  .next-step-prompt pre { margin: 0; }
+  @media (prefers-reduced-motion: reduce) { .next-step-item summary::before { transition: none; } }
+
+  /* ── Copy prompt button ─────────────────────────────────────── */
+  .copy-prompt-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    margin-top: .6rem;
+    padding: .3rem .75rem;
+    font-size: .775rem;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+  }
+  .copy-prompt-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .copy-prompt-btn:active { background: var(--accent-line); }
+  .copy-prompt-btn.copied { color: var(--moss); background: var(--moss-soft); border-color: var(--moss-line); }
+  .copy-prompt-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media print { .copy-prompt-btn { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-prompt-btn { transition: none; } }
+  /* Shared clipboard-failure state for every copy button */
+  .copy-failed { color: var(--red) !important; background: var(--red-bg) !important; border-color: var(--red-border) !important; white-space: normal; }
+
+  /* Wish list variant */
+  .wish-list-header {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin: 1.5rem 0 .75rem;
+  }
+  .wish-list-header::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--wish-border);
+    opacity: .5;
+  }
+  .wish-item { border: 1px dashed var(--wish-border) !important; background: var(--wish-bg) !important; }
+  .wish-item summary { background: var(--wish-bg) !important; color: var(--purple); }
+  .wish-badge {
+    font-size: .6rem;
+    background: var(--purple-bg);
+    color: var(--purple);
+    padding: .1rem .5rem;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-left: auto;
+    border: 1px solid var(--purple-border);
+  }
+
+  /* ── Collapsible optional sections ─────────────────────────────── */
+  .optional-section {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    margin-top: 1.5rem;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .optional-section > summary {
+    padding: .875rem 1.25rem;
+    font-weight: 600;
+    font-size: .9rem;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    user-select: none;
+    min-height: 44px;
+  }
+  .optional-section > summary::before,
+  .plan-more-ways > summary::before { content: "▶"; font-size: .55em; color: var(--ink-3); transition: transform .2s; }
+  .optional-section[open] > summary::before,
+  .plan-more-ways[open] > summary::before { transform: rotate(90deg); }
+  .optional-body { padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+  .unresolved-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .unresolved-item summary { font-weight: 600; padding: .35rem 0; cursor: pointer; list-style: none; user-select: none; font-size: .9rem; }
+  .unresolved-prompt { margin-top: .5rem; }
+  @media (prefers-reduced-motion: reduce) { .optional-section > summary::before, .plan-more-ways > summary::before { transition: none; } }
+
+  /* ── More-ways drawer (goal / workflow / plan-source rows) ─────── */
+  .plan-more-ways {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--panel);
+    margin: -.5rem 0 1.5rem;
+    font-size: .8rem;
+    overflow: hidden;
+  }
+  .plan-more-ways > summary {
+    padding: .55rem 1rem;
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    user-select: none;
+    min-height: 44px;
+  }
+  .plan-more-ways > summary:hover { color: var(--accent); }
+  .more-ways-hint { font-weight: 400; color: var(--ink-2); }
+  .plan-more-ways-body {
+    padding: .75rem 1rem 1rem;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+  @media print { .plan-more-ways { display: none !important; } }
+
+  /* ── Implement prompt ─────────────────────────────────────────── */
+  .plan-implement {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    margin-bottom: 1.5rem;
+    padding: .45rem .75rem;
+    background: var(--moss-soft);
+    border: 1px solid var(--moss-line);
+    border-radius: var(--radius);
+    font-size: .8rem;
+  }
+  .plan-implement-label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--moss);
+    flex-shrink: 0;
+    margin-top: .1rem;
+  }
+  .plan-implement code {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .82rem;
+    color: var(--ink);
+    flex: 1;
+    word-break: break-all;
+  }
+  .copy-cmd-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-cmd-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .copy-cmd-btn.copied { color: var(--moss); background: var(--moss-soft); border-color: var(--moss-line); }
+  .copy-cmd-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [data-status="completed"] .copy-cmd-btn { display: none; }
+  @media print { .plan-implement { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-cmd-btn { transition: none; } }
+
+  /* ── Plan source (file name + relative path — lives in the drawer) ── */
+  /* Borderless like its sibling drawer rows — the drawer body supplies the frame */
+  .plan-source {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    margin: 0;
+    padding: .55rem .75rem;
+    font-size: .8rem;
+  }
+  .plan-source-row { display: flex; align-items: center; gap: .6rem; }
+  .plan-source-label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    flex-shrink: 0;
+    width: 2.4rem;
+  }
+  .plan-source code {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .82rem;
+    color: var(--ink);
+    flex: 1;
+    word-break: break-all;
+  }
+  .copy-src-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-src-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .copy-src-btn.copied { color: var(--moss); background: var(--moss-soft); border-color: var(--moss-line); }
+  .copy-src-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media print { .copy-src-btn { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-src-btn { transition: none; } }
+
+  /* ── Workflow prompt row (conditional — remove row when empty; lives in the drawer) ── */
+  .plan-workflow {
+    margin: 0;
+    font-size: .8rem;
+  }
+  .plan-workflow-label {
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--accent);
+    padding: .1rem 0;
+  }
+  .plan-workflow-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    margin-top: .4rem;
+    padding: .45rem .75rem;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius);
+  }
+  .plan-workflow code {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .82rem;
+    color: var(--ink);
+    flex: 1;
+    word-break: break-all;
+  }
+  .copy-workflow-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-workflow-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .copy-workflow-btn.copied { color: var(--moss); background: var(--moss-soft); border-color: var(--moss-line); }
+  .copy-workflow-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [data-status="completed"] .plan-workflow { display: none; }
+  /* Redundant under .plan-more-ways' print hide; kept to mirror the test-pinned .plan-goal print rule */
+  @media print { .plan-workflow { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-workflow-btn { transition: none; } }
+
+  /* ── Goal prompt row (outcome-driven — always present; lives in the drawer) ── */
+  .plan-goal {
+    margin: 0;
+    font-size: .8rem;
+  }
+  .plan-goal-label {
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--purple);
+    padding: .1rem 0;
+  }
+  .plan-goal-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    margin-top: .4rem;
+    padding: .45rem .75rem;
+    background: var(--purple-bg);
+    border: 1px solid var(--purple-border);
+    border-radius: var(--radius);
+  }
+  .plan-goal code {
+    font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: .82rem;
+    color: var(--ink);
+    flex: 1;
+    word-break: break-all;
+  }
+  .copy-goal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+    font-family: inherit;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-goal-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .copy-goal-btn.copied { color: var(--moss); background: var(--moss-soft); border-color: var(--moss-line); }
+  .copy-goal-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [data-status="completed"] .plan-goal { display: none; }
+  /* Redundant under .plan-more-ways' print hide, but pinned byte-for-byte by test-goal-prompt.sh check 4 */
+  @media print { .plan-goal { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .copy-goal-btn { transition: none; } }
+
+  /* ── Tests section ──────────────────────────────────────────────── */
+  .test-list {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+  .test-card {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .test-card-header {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: .5rem;
+    flex-wrap: wrap;
+  }
+  .test-badge {
+    display: inline-block;
+    font-size: .6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: .15em .55em;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .test-badge-unit        { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
+  .test-badge-integration { background: var(--signal-soft);  color: var(--signal);  border: 1px solid var(--signal-line); }
+  .test-badge-e2e         { background: var(--purple-bg);  color: var(--purple);  border: 1px solid var(--purple-border); }
+  .test-badge-objective   { background: var(--moss-soft);  color: var(--moss);  border: 1px solid var(--moss-line); }
+  .test-card-title {
+    font-weight: 600;
+    font-size: .95rem;
+    color: var(--ink);
+    flex: 1;
+  }
+  .test-card-body { font-size: .875rem; color: var(--ink-2); }
+  .test-card-body p { margin-bottom: .4rem; }
+  .test-card-body p:last-child { margin-bottom: 0; }
+  .test-card-body code { font-size: .85em; }
+  .test-card-body strong { color: var(--ink); font-weight: 600; }
+  .test-tier-label {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-bottom: .75rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+  .test-tier-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+  .objective-test-card {
+    background: var(--moss-soft);
+    border: 1px solid var(--moss-line);
+    border-left: 4px solid var(--moss);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .objective-test-card .test-card-header { margin-bottom: .6rem; }
+  .objective-test-card .test-card-title { color: var(--moss); }
+  .objective-test-card .test-card-body { color: var(--moss); }
+  .objective-test-card .test-card-body strong { color: var(--moss); }
+  /* ── Footer ────────────────────────────────────────────────────── */
+  .plan-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    font-size: .75rem;
+    color: var(--ink-3);
+    margin-top: 3rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+  }
+  .plan-footer .icon { opacity: .35; }
+
+  /* ── Focus styles ───────────────────────────────────────────────── */
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ── Print styles ───────────────────────────────────────────────── */
+  @media print {
+    .plan-nav, .scroll-rail, .progress-wrap, .save-pdf-btn, .theme-toggle { display: none !important; }
+    .layout { display: block !important; }
+    .step-card, .section-card { box-shadow: none !important; break-inside: avoid; }
+    .step-chip { display: none !important; }
+    a[href]::after { content: " (" attr(href) ")"; font-size: .8em; }
+  }
+
+  /* ═════════════════════════════════════════════════════════════════
+     OPT-IN VISUAL COMPONENTS
+     Pure-CSS / token-driven — no CDN, no external script. These rules
+     are always present (harmless when unused); the matching <body>
+     section blocks are kept only when a plan needs them and deleted
+     otherwise. See SKILL.md → "Visual Components".
+     ═════════════════════════════════════════════════════════════════ */
+
+  /* ── Files file-tree ────────────────────────────────────────────── */
+  .file-tree { font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace; font-size: .85rem; }
+  .file-tree-root { font-weight: 700; color: var(--ink); margin-bottom: .5rem; display: flex; align-items: center; gap: .35rem; }
+  .file-list, .file-list ul { list-style: none; padding-left: 1.25rem; margin: 0; border-left: 1px dashed var(--rule); }
+  .file-list li { padding: .2rem 0; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; color: var(--ink-2); }
+  .file-list li.file-dir { color: var(--ink); font-weight: 600; }
+  .file-list li.file-dir > ul { flex-basis: 100%; } /* nested dir list takes its own row inside the flex li */
+  .file-badge { font-size: .6rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: .1em .45em; border-radius: 999px; }
+  .file-badge-new       { background: var(--moss-soft); color: var(--moss); border: 1px solid var(--moss-line); }
+  .file-badge-modified  { background: var(--signal-soft); color: var(--signal); border: 1px solid var(--signal-line); }
+  .file-badge-deleted   { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-border); }
+  .file-badge-generated { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
+  .file-note { font-size: .75rem; color: var(--ink-3); font-style: italic; font-family: system-ui, sans-serif; }
+
+  /* ── Flow / pipeline diagram ────────────────────────────────────── */
+  .pipeline { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 0 auto; max-width: 580px; }
+  .pipeline-node { width: 100%; border: 1px solid var(--rule); border-radius: var(--radius); padding: .7rem 1.25rem; background: var(--panel); text-align: center; box-shadow: var(--shadow); }
+  .pipeline-label { font-size: .62rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .2rem; color: var(--accent); }
+  .pipeline-node code { font-size: .82rem; font-weight: 600; display: block; color: var(--ink); }
+  .pipeline-sub { font-size: .74rem; color: var(--ink-2); margin-top: .2rem; }
+  .pipeline-arrow { font-size: .85rem; color: var(--ink-3); padding: .25rem 0; }
+
+  /* ── Comparison grid (2–3 way) ──────────────────────────────────── */
+  .compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+  @media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+  .compare-header { font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: .35rem .75rem; border-radius: var(--radius) var(--radius) 0 0; text-align: center; }
+  .compare-col-add     .compare-header { background: var(--moss-soft);  color: var(--moss);  border: 1px solid var(--moss-line); }
+  .compare-col-neutral .compare-header { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
+  .compare-col-remove  .compare-header { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red-border); }
+  .compare-list { list-style: none; padding: .5rem .75rem; margin: 0; border: 1px solid var(--rule); border-top: none; border-radius: 0 0 var(--radius) var(--radius); background: var(--panel); }
+  .compare-list li { font-family: ui-monospace, "SF Mono", "Fira Code", Consolas, monospace; font-size: .78rem; color: var(--ink-2); padding: .15rem 0; }
+
+  /* ── Bar chart (value via inline --val) ─────────────────────────── */
+  .bar-chart { display: flex; flex-direction: column; gap: .55rem; }
+  .bar-row { display: grid; grid-template-columns: 9.5rem 1fr 3rem; align-items: center; gap: .75rem; }
+  @media (max-width: 520px) { .bar-row { grid-template-columns: 1fr; gap: .15rem; } }
+  .bar-label { font-size: .82rem; color: var(--ink); }
+  .bar-track { background: var(--rule); border-radius: 999px; height: .7rem; overflow: hidden; }
+  .bar-fill { height: 100%; width: var(--val, 0%); background: var(--accent); border-radius: 999px; }
+  .bar-fill.full { background: var(--moss); }
+  .bar-fill.zero { background: var(--ink-3); }
+  .bar-value { font-size: .78rem; font-weight: 600; color: var(--ink-2); white-space: nowrap; text-align: right; }
+
+  /* ── Data table ─────────────────────────────────────────────────── */
+  .plan-table { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: .5rem; }
+  .plan-table caption { text-align: left; font-size: .78rem; color: var(--ink-3); font-style: italic; margin-bottom: .5rem; }
+  .plan-table th, .plan-table td { text-align: left; padding: .5rem .75rem; border: 1px solid var(--rule); vertical-align: top; }
+  .plan-table thead th { background: var(--sunk); font-weight: 700; color: var(--ink-2); text-transform: uppercase; font-size: .66rem; letter-spacing: .05em; }
+  .plan-table tbody tr:nth-child(even) { background: var(--sunk); }
+  .plan-table code { font-size: .8em; }
+
+  /* Shared sub-heading used inside visual sections */
+  .diagram-subheading { font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin: 1.75rem 0 .75rem; }
+
+  /* ── Resources (images, screenshots & reference links) ──────────── */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+  .resource-figure { margin: 0; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; background: var(--panel); box-shadow: var(--shadow); }
+  .resource-figure > a { display: block; line-height: 0; }
+  .resource-figure img { display: block; width: 100%; height: auto; background: var(--sunk); }
+  .resource-figure figcaption { font-size: .74rem; line-height: 1.5; color: var(--ink-2); padding: .5rem .75rem; border-top: 1px solid var(--rule); }
+  .resource-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .1rem; }
+  .resource-links li { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; padding: .4rem 0; border-bottom: 1px solid var(--rule); }
+  .resource-links li:last-child { border-bottom: none; }
+  .resource-links a { font-weight: 600; word-break: break-word; }
+  .resource-note { font-size: .78rem; color: var(--ink-3); font-style: italic; }
+
+  .plan-back-nav { margin-bottom: .5rem; }
+  .plan-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .3125rem;
+    font-size: .8125rem;
+    color: var(--ink-2);
+    text-decoration: none;
+    transition: color .15s;
+  }
+  .plan-back-link:hover { color: var(--accent); }
+  .plan-back-link svg { width: 14px; height: 14px; flex-shrink: 0; }
+</style>
+<style id="plan-responsive-fix" data-version="1">
+/* plan-responsive-fix v1 — injected by scripts/retrofit-responsive-plans.mjs */
+body { overflow-wrap: anywhere; }
+main, nav, aside { min-width: 0; }
+.layout > *, .wrap > *, .compare-grid > * { min-width: 0; }
+pre { white-space: pre-wrap; max-width: 100%; }
+table { max-width: 100%; }
+img, video { max-width: 100%; height: auto; }
+@media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="ic-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"/>
+  </symbol>
+  <symbol id="ic-chart-bar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/>
+  </symbol>
+  <symbol id="ic-document-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+  </symbol>
+  <symbol id="ic-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"/>
+  </symbol>
+  <symbol id="ic-list-bullet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+  </symbol>
+  <symbol id="ic-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+  </symbol>
+  <symbol id="ic-magnifying-glass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+  </symbol>
+  <symbol id="ic-arrow-right-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+  </symbol>
+  <symbol id="ic-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
+  </symbol>
+  <symbol id="ic-code-bracket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/>
+  </symbol>
+  <symbol id="ic-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/>
+    <path d="M6 6h.008v.008H6V6Z"/>
+  </symbol>
+  <symbol id="ic-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"/>
+  </symbol>
+  <symbol id="ic-question-mark-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"/>
+  </symbol>
+  <symbol id="ic-clipboard-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15a2.25 2.25 0 0 1 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"/>
+  </symbol>
+  <symbol id="ic-beaker" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23-.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>
+  </symbol>
+  <symbol id="ic-photo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+  </symbol>
+</svg>
+
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header class="plan-header">
+  <div class="plan-header-inner">
+    <div class="plan-back-nav">
+      <a href="./index.html" class="plan-back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
+        Plans
+      </a>
+    </div>
+    <div class="plan-doc-type">Implementation Plan</div>
+    <div class="plan-header-top">
+      <h1 class="plan-title">Make every agentic affordance in astro-basics executable, verifiable, and true</h1>
+      <div class="plan-header-actions">
+        <button class="save-pdf-btn" type="button" onclick="savePDF()"
+                aria-label="Save this plan as PDF">Save as PDF</button>
+        <button class="theme-toggle" type="button" id="theme-toggle" onclick="toggleTheme(this)"
+                aria-pressed="false" aria-label="Use dark theme">Dark</button>
+        <span class="effort-badge" aria-label="Effort level">High</span>
+        <a class="issue-link" href="https://github.com/shawn-sandy/astro-basics/issues/366"
+           aria-label="View the tracking issue for this plan">Issue #366</a>
+        <span class="status-badge">todo</span>
+      </div>
+    </div>
+    <div class="plan-meta">
+      <span><svg class="icon" aria-hidden="true"><use href="#ic-calendar"/></svg> 2026-08-10</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#ic-code-bracket"/></svg> astro-basics</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#ic-tag"/></svg> feature</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#ic-bolt"/></svg> High effort</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <nav class="plan-nav" aria-label="Plan sections">
+    <div class="scroll-rail" aria-hidden="true"></div>
+    <div class="nav-heading">On this page</div>
+    <ul>
+      <li><a href="#objective"><svg class="icon" aria-hidden="true"><use href="#ic-bolt"/></svg> Objective</a></li>
+      <li><a href="#progress"><svg class="icon" aria-hidden="true"><use href="#ic-chart-bar"/></svg> Progress</a></li>
+      <li><a href="#context"><svg class="icon" aria-hidden="true"><use href="#ic-document-text"/></svg> Context</a></li>
+      <li><a href="#files"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> Files that change</a></li>
+      <li><a href="#steps"><svg class="icon" aria-hidden="true"><use href="#ic-list-bullet"/></svg> Steps</a></li>
+      <li><a href="#tests"><svg class="icon" aria-hidden="true"><use href="#ic-beaker"/></svg> Tests</a></li>
+      <li><a href="#criteria"><svg class="icon" aria-hidden="true"><use href="#ic-check-circle"/></svg> Definition of done</a></li>
+      <li><a href="#verification"><svg class="icon" aria-hidden="true"><use href="#ic-magnifying-glass"/></svg> Final check</a></li>
+      <li><a href="#completion"><svg class="icon" aria-hidden="true"><use href="#ic-clipboard-check"/></svg> Wrapping up</a></li>
+      <li><a href="#next-steps"><svg class="icon" aria-hidden="true"><use href="#ic-arrow-right-circle"/></svg> Next steps</a></li>
+    </ul>
+    <details class="rail-disclosure" open>
+      <summary>10 steps</summary>
+      <div class="rail-heading">Steps</div>
+      <ul class="rail-steps">
+        <li><a class="rail-step" href="#step-1"><span class="rail-no">1</span><span class="rail-text">Make a fresh clone run with zero configuration: replace the 21 <code class="md">node --env-file=.env</code> invocations in package.json with a shared <code class="md">scripts/lib/preflight-env.mjs</code> preflight that copies <code class="md">.env.example</code> to <code class="md">.env</code> when absent — locked over in-process loading because it automates the exact README step humans already perform and gives <code class="md">db:wizard</code> a file to edit — make <code class="md">scripts/setup-wizard.js</code> print guidance instead of dying, rewrite README&#39;s opening to lead with clone → install → <code class="md">npm run dev</code>, reconcile the port drift (README says 4321; <code class="md">.claude/launch.json</code> uses 4330/4331), and state the red-baseline status honestly until step 3 lands</span><span class="rail-state">step 1 of 10</span></a></li>
+        <li><a class="rail-step" href="#step-2"><span class="rail-no">2</span><span class="rail-text">Close both security holes: rewrite <code class="md">src/middleware.ts</code> so that when Clerk keys are absent or placeholders the protected-route matcher (<code class="md">/dashboard</code>, <code class="md">/forum</code>, <code class="md">/organization</code>) serves the setup-notice page directly with HTTP 503 — a direct response or internal rewrite, never a 3xx redirect, so the status code itself carries the refusal — instead of omitting <code class="md">authMiddleware</code> from the <code class="md">sequence()</code> entirely; fix the redirect target for the configured-auth path, where <code class="md">forum</code> and <code class="md">organization</code> currently send unauthenticated users to <code class="md">/sign-in</code> while the real route is <code class="md">/login</code>; and delete <code class="md">src/pages/api/test/sync-user.ts</code> — an endpoint that accepts an arbitrary <code class="md">userId</code> and writes via the Supabase service-role client with no auth check — or gate it behind <code class="md">import.meta.env.DEV</code>; render blocked routes as a styled 503 setup-notice page on the Base layout (&quot;authentication isn&#39;t configured yet&quot;, pointing at the setup path) and hide the Dashboard/Forum/Organization links in <code class="md">src/components/astro/Navigation.astro</code> while auth is unconfigured</span><span class="rail-state">step 2 of 10</span></a></li>
+        <li><a class="rail-step" href="#step-3"><span class="rail-no">3</span><span class="rail-text">Drive <code class="md">npm run type-check</code> and <code class="md">npm test</code> to green without behaviour changes: fix the 127 type errors across 25 files by family — TS18048 null-guards from <code class="md">noUncheckedIndexedAccess</code> (9 in <code class="md">src/utils/email-validation.ts</code> alone), the TS2484 export conflicts at <code class="md">src/types/design-tokens.ts:489-497</code>, TS2339 <code class="md">never</code> errors from Supabase generated types in <code class="md">role-guard.ts</code> and <code class="md">user-sync.ts</code> — repair the ~49 vitest failures (role-validator, csrf, ip-validation), and move integration tests that need live Supabase credentials behind a separate <code class="md">test:integration</code> script excluded from <code class="md">npm test</code> entirely; keep <code class="md">exactOptionalPropertyTypes</code> and <code class="md">noUncheckedIndexedAccess</code> enabled — fixing under the flags is the point, relaxing them is the quiet version of <code class="md">continue-on-error</code>; any fix that would change behaviour moves to another step with a comment naming why; stall trigger: if two focused working sessions do not bring type-check errors below ~30, switch to the scoped-gate fallback (green-gate the starter-relevant surface, record the quarantine list in this spec) as a conscious, recorded downgrade</span><span class="rail-state">step 3 of 10</span></a></li>
+        <li><a class="rail-step" href="#step-4"><span class="rail-no">4</span><span class="rail-text">Make CI&#39;s gate real: remove both <code class="md">continue-on-error: true</code> lines from <code class="md">.github/workflows/ci.yml</code> (lines 58 and 75) plus the inline comment excusing the red baseline, and replace the four hand-named <code class="md">npx vitest run &lt;specific files&gt;</code> gates with the same command step 3&#39;s definition of done names — the job must invoke <code class="md">npm test</code> (plus <code class="md">npm run test:e2e</code> for the e2e gate), not a curated subset, so command parity with local development is enforced rather than assumed; retain only the deliberate <code class="md">tests/integration/**</code> exclusion, which step 3 moved behind <code class="md">test:integration</code>; add a <code class="md">.husky/pre-push</code> hook running <code class="md">npm run type-check</code> — deliberately the fast checks only, so the hook stays fast enough that nobody bypasses it; the residual risk is explicit and accepted: during a GitHub Actions billing outage a unit-test regression can be pushed, because nothing automatically runs <code class="md">npm test</code> locally, so an outage means running <code class="md">npm test</code> by hand before pushing</span><span class="rail-state">step 4 of 10</span></a></li>
+        <li><a class="rail-step" href="#step-5"><span class="rail-no">5</span><span class="rail-text">Collapse the instruction corpus to a thin, true CLAUDE.md: delete <code class="md">CLAUDE.md.backup</code> and the link calling it authoritative, delete <code class="md">copilot.instructions.md</code> (titled for <code class="md">@shawnsandy/astro-kit</code>, a different project), delete the unloadable <code class="md">&quot;. cursorrules&quot;</code> (literal space after the dot), delete <code class="md">.claude/hooks/css-refactor-hook.js</code> — registered in no settings file and carrying a fully commented-out CONFIG block, so it runs nowhere and never has — collapse the 9 exact-name duplicate pairs under <code class="md">.github/instructions/</code>, reconcile <code class="md">.github/copilot-instructions.md</code>, fix the <code class="md">src/content/config.ts</code> → <code class="md">src/content.config.ts</code> reference, and commit a real <code class="md">.claude/settings.json</code> — derived from <code class="md">settings.local.json</code> but stripped of the embedded 30-line commit message and the 4 dead <code class="md">openspec</code> grants; CLAUDE-PATTERNS.md content that describes how to write correct code is marked for migration but not yet deleted</span><span class="rail-state">step 5 of 10</span></a></li>
+        <li><a class="rail-step" href="#step-6"><span class="rail-no">6</span><span class="rail-text">Build the referential-integrity checker: author <code class="md">scripts/check-references.mjs</code> wired as <code class="md">npm run check:refs</code>, parsing <code class="md">.claude/**</code> (commands, agents, skills, settings grants) and the surviving instruction files — both structured references and backtick-quoted repo-path-shaped strings in prose, with an inline ignore marker for deliberate examples — and failing with a named list when any referenced npm script, file path, slash command, agent, or skill does not resolve; the checker also validates <code class="md">.claude/agents/</code> frontmatter — every file parses, and every entry in its <code class="md">tools:</code> list appears in an explicit allowed-tool set the checker owns as a named constant, which is the source of truth the invalid-tool-name test case asserts against — and flags any script under <code class="md">.claude/hooks/</code> that no settings file registers; ships with a fixture-based test proving it catches today&#39;s real defect classes (the three phantom <code class="md">db-*</code> commands and the <code class="md">Skill(design-token-extractor)</code> grant for a skill that ships only as an agent)</span><span class="rail-state">step 6 of 10</span></a></li>
+        <li><a class="rail-step" href="#step-7"><span class="rail-no">7</span><span class="rail-text">Repair the agent registry and ship the capability skills: add the missing frontmatter to <code class="md">.claude/agents/astro-basics-release-manager.md</code>, fix the invalid tool names in <code class="md">css-refactor-agent.md</code>, collapse the two duplicate agent pairs (<code class="md">code-reviewer</code>/<code class="md">astro-basics-code-reviewer</code>, <code class="md">release-manager</code>/<code class="md">astro-basics-release-manager</code>), back the three phantom <code class="md">db-*</code> commands with scripts or delete them, fill or delete the 1-line <code class="md">pull-request.md</code>; then author <code class="md">.claude/skills/</code> entries for scaffold-page, scaffold-component (enforcing astro/react/dashboard placement and the mandatory <code class="md">type Props</code> export), scaffold-api-endpoint (auth-check-first, consistent <code class="md">{ error, details? }</code> shape), and add-module — author <code class="md">.claude/skills/wcag-compliance-reviewer/</code> as part of this step — <code class="md">CLAUDE.md:150</code> advertises it and <code class="md">:157</code> instructs using it, but only <code class="md">fpkit-developer</code> is actually committed, so it is a phantom skill and every UI-producing skill emits semantic, WCAG 2.1 AA-conformant markup and ends by invoking it, and each migrates the corresponding CLAUDE-PATTERNS.md prose into itself before that prose is deleted; finally add the <code class="md">check:refs</code> job to <code class="md">.github/workflows/ci.yml</code> and append <code class="md">npm run check:refs</code> to <code class="md">.husky/pre-push</code> now that the tree passes it</span><span class="rail-state">step 7 of 10</span></a></li>
+        <li><a class="rail-step" href="#step-8"><span class="rail-no">8</span><span class="rail-text">Make content authoring a first-class agent operation: author an <code class="md">author-content</code> skill that reads <code class="md">baseSchema</code> from <code class="md">src/content.config.ts</code>, emits valid frontmatter for all four required fields (<code class="md">title</code>, <code class="md">pubDate</code>, <code class="md">description</code>, <code class="md">author</code>), and never sets <code class="md">publish: true</code> on its own — the existing zod default <code class="md">publish: false</code> is the human review gate; fix <code class="md">src/pages/docs/[page].astro:13</code>, which filters the docs collection on <code class="md">data.publish</code>, a field <code class="md">docsSchema</code> never defines, so the paginated route always yields nothing; restructure the hardcoded Starlight <code class="md">sidebar</code> array in <code class="md">astro.config.mjs</code> to the hybrid shape — curated top-level section order kept, each section&#39;s contents autogenerated from its directory — so new guide pages appear without config edits while the reading order survives</span><span class="rail-state">step 8 of 10</span></a></li>
+        <li><a class="rail-step" href="#step-9"><span class="rail-no">9</span><span class="rail-text">Prune the dead weight and ship the two-platform deploy story: delete the ~12 one-off historical migration scripts wired to no npm script, the near-duplicate <code class="md">src/views/ContactFormView.tsx</code>, and the orphaned <code class="md">_component-sample-tokens.scss</code> and <code class="md">_header.scss</code>; make the SCSS build unskippable — Base.astro imports <code class="md">../styles/index.css</code>, which only the standalone <code class="md">sass</code> CLI produces, so add a <code class="md">predev</code> one-shot compile and fold the watcher into <code class="md">npm run dev</code> (today&#39;s <code class="md">npm run start</code> behaviour; <code class="md">start</code> becomes an alias) — then stop committing the built CSS; fix the <code class="md">13-agents/</code>/<code class="md">13-refactorings/</code> numbering collision and the devcontainer&#39;s Node 20 vs <code class="md">engines.node &gt;=22.12.0</code> conflict; document and script the <code class="md">ASTRO_ADAPTER</code> switch with Vercel deploy scripts matching the existing Netlify <code class="md">deploy:preview</code>/<code class="md">deploy:prod</code>, remove the hardcoded ngrok host from <code class="md">astro.config.mjs</code>, and gate <code class="md">ContactForm.tsx</code>&#39;s hardcoded <code class="md">data-netlify=&quot;true&quot;</code> behind the site-config flag</span><span class="rail-state">step 9 of 10</span></a></li>
+        <li><a class="rail-step" href="#step-10"><span class="rail-no">10</span><span class="rail-text">Make the codebase Workers-clean and add Cloudflare as the third platform: add <code class="md">@astrojs/cloudflare</code> and its branch to the adapter switch in <code class="md">astro.config.mjs</code>, replace <code class="md">node:net</code> <code class="md">isIP</code> in <code class="md">src/utils/ip-validation.ts</code> (used on the request path via middleware rate limiting) with a runtime-neutral check, configure a Workers-compatible image service (Astro&#39;s default sharp service will not run there), and replace the in-memory rate limiter&#39;s module-scope <code class="md">setInterval</code> and per-isolate state in <code class="md">src/utils/rate-limiter.ts</code> — which is already semantically broken on all serverless targets — with a runtime-aware design: in-memory limiting stays for the node adapter where it actually works, and each serverless adapter disables it only in exchange for a committed edge policy — <strong class="md">including Netlify, which is the default adapter and therefore the most likely production target</strong> — meaning each target&#39;s own documented rate-limiting mechanism, confirmed against that platform&#39;s current docs at implementation time rather than assumed — on Vercel this is the Firewall (a provisioned WAF rate-limit rule, or <code class="md">@vercel/firewall</code>&#39;s <code class="md">checkRateLimit</code> with a stable rule identifier), not a <code class="md">vercel.json</code> key, since <code class="md">vercel.json</code> has no rate-limit primitive; on Cloudflare a WAF rate-limiting rule or Durable-Object-backed limiter; on Netlify its documented equivalent — each referenced from the README, with whatever is checked in committed, and never a bare &quot;the platform handles it&quot;; <code class="md">rateLimitMiddleware</code> is currently the only quota in front of the public <code class="md">POST /api/message-us</code>, which proceeds to a database insert, so removing it without a replacement opens message spam and resource exhaustion on the default deploy; only after this lands may the README claim all three platforms</span><span class="rail-state">step 10 of 10</span></a></li>
+      </ul>
+    </details>
+  </nav>
+
+  <main id="main">
+
+    <div class="objective-card" id="objective">
+      <div class="section-label">Objective</div>
+      <p>Convert astro-basics into a Claude Code-first agentic starter kit by delivering the proposal&#39;s nine features in roadmap order: a zero-config first run with fail-closed security, a green and enforced quality gate, a truthful instruction corpus backed by invocable skills, a repo-native AI-driven CMS, and a scripted deploy story for Netlify, Vercel, and Cloudflare.</p>
+      <section class="plan-glance" aria-labelledby="plan-glance-label">
+        <div class="plan-glance-label" id="plan-glance-label">At a glance</div>
+        <p>An agent handed this repo today cannot verify anything it does — the quality gates are red by policy, the setup wizard crashes on a fresh clone, and much of what the instructions say is false. When this plan is done, a keyless clone serves a working site, the gates are green and CI-enforced, and every capability the instructions describe is invocable and machine-checked for truth.</p>
+      </section>
+    </div>
+
+    <div class="plan-implement">
+      <span class="plan-implement-label">Implement</span>
+      <code id="implement-cmd" aria-label="Implement prompt">Read and implement all steps in the plan at docs/plans/build-agentic-starter-kit.md — Make every agentic affordance in astro-basics executable, verifiable, and true. Verify against the plan&#39;s Tests, Verification, and Acceptance Criteria before reporting done. If everything passed, mark completion in docs/plans/build-agentic-starter-kit.md — tick each step&#39;s [x] marker and each criterion&#39;s - [x], set status: completed — and re-render the HTML from the spec. If any check failed, leave status: in-progress and say which.</code>
+      <button class="copy-cmd-btn" type="button"
+              onclick="copyCmd(this)" aria-label="Copy implement prompt to clipboard">Copy</button>
+    </div>
+
+    <details class="plan-more-ways">
+      <summary>More ways to run this plan <span class="more-ways-hint">— goal &amp; workflow prompts, file path</span></summary>
+      <div class="plan-more-ways-body">
+
+        <div class="plan-goal">
+          <div class="plan-goal-label">Pursue as goal — optimize for the outcome, in parallel</div>
+          <div class="plan-goal-inner">
+            <code id="goal-cmd" aria-label="Goal prompt">Achieve this goal: Make every agentic affordance in astro-basics executable, verifiable, and true. The plan at docs/plans/build-agentic-starter-kit.md describes one approach — use it as reference, but optimize for the outcome. Fan out across parallel subagents where that serves the outcome. Verify against the plan&#39;s Tests, Verification, and Acceptance Criteria before reporting done. If everything passed, mark completion in docs/plans/build-agentic-starter-kit.md — tick each step&#39;s [x] marker and each criterion&#39;s - [x], set status: completed — and re-render the HTML from the spec. If any check failed, leave status: in-progress and say which.</code>
+            <button class="copy-goal-btn" type="button"
+                    onclick="copyGoal(this)" aria-label="Copy goal prompt to clipboard">Copy</button>
+          </div>
+        </div>
+
+        <div class="plan-workflow">
+          <div class="plan-workflow-label">Run as workflow — launch parallel subagents</div>
+          <div class="plan-workflow-inner">
+            <code id="workflow-cmd" aria-label="Workflow prompt">Run a workflow to implement the plan at docs/plans/build-agentic-starter-kit.md — Make every agentic affordance in astro-basics executable, verifiable, and true. Brief subagents with the plan file at docs/plans/build-agentic-starter-kit.md. Reserve a final verification phase for the lead agent, not a subagent. Verify against the plan&#39;s Tests, Verification, and Acceptance Criteria before reporting done. If everything passed, mark completion in docs/plans/build-agentic-starter-kit.md — tick each step&#39;s [x] marker and each criterion&#39;s - [x], set status: completed — and re-render the HTML from the spec. If any check failed, leave status: in-progress and say which.</code>
+            <button class="copy-workflow-btn" type="button"
+                    onclick="copyWorkflow(this)" aria-label="Copy workflow prompt to clipboard">Copy</button>
+          </div>
+        </div>
+
+        <div class="plan-source">
+          <div class="plan-source-row">
+            <span class="plan-source-label">File</span>
+            <code id="plan-file" aria-label="Plan file name">build-agentic-starter-kit.html</code>
+            <button class="copy-src-btn" type="button"
+                    onclick="copyPath(this, 'plan-file')" aria-label="Copy plan file name to clipboard">Copy</button>
+          </div>
+          <div class="plan-source-row">
+            <span class="plan-source-label">Path</span>
+            <code id="plan-path" aria-label="Plan relative path">docs/plans/build-agentic-starter-kit.html</code>
+            <button class="copy-src-btn" type="button"
+                    onclick="copyPath(this, 'plan-path')" aria-label="Copy plan relative path to clipboard">Copy</button>
+          </div>
+          <div class="plan-source-row">
+            <span class="plan-source-label">Spec</span>
+            <code id="plan-md" aria-label="Plan spec markdown path">docs/plans/build-agentic-starter-kit.md</code>
+            <button class="copy-src-btn" type="button"
+                    onclick="copyPath(this, 'plan-md')" aria-label="Copy plan spec path to clipboard">Copy</button>
+          </div>
+        </div>
+
+      </div>
+    </details>
+
+    <div class="progress-wrap" id="progress">
+      <div class="progress-header">
+        <span>Definition of done</span>
+        <span id="progress-label">0 / 18 done</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-bar"
+             role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+             aria-label="Plan progress" style="width:0%"></div>
+      </div>
+    </div>
+
+    <section class="section-card card-context" id="context" aria-labelledby="h-context">
+      <h2 id="h-context">
+        <svg class="icon" aria-hidden="true"><use href="#ic-document-text"/></svg>
+        Context
+      </h2>
+      <p class="section-intro">The story behind this plan — what prompted the work and why it matters now.</p>
+      <p>This plan executes the converged proposal at docs/prompts/proposal-build-agentic-starter-kit.md. The proposal&#39;s core finding: the repo carries 5,224 lines of AI instruction across 33 files, 8 subagents, and 16 slash commands, yet almost none of it is agent-operable — every affordance is prose describing a capability rather than an executable surface an agent can invoke and verify. The gates are pre-broken (127 type errors, ~49 vitest failures, both <code class="md">continue-on-error</code> flags in CI), three slash commands have no backing implementation, and <code class="md">npm run db:wizard</code> — self-described as &quot;Interactive setup for non-developers&quot; — crashes before its first prompt on a fresh clone because 21 scripts pass <code class="md">--env-file=.env</code> to Node — 16 of the 22 <code class="md">db:*</code>/<code class="md">setup:*</code> scripts plus 5 <code class="md">test:*</code> scripts — a fatal startup error when the file is absent.</p>
+      <p>Nine decisions are locked and must not be reopened: Claude Code is the first-class target; the AI CMS is repo-native (agent authors MDX via commits — no runtime CMS); prune in place (astro-basics itself becomes the starter); fix the baseline to green before building agent machinery; collapse the instruction corpus to a thin CLAUDE.md plus skills; capability is packaged skills-first; both security defects are fixed early; Cloudflare is deferred to its own feature; and zero-config static-first is the default posture.</p>
+      <p>Known risks, with mitigations built into the steps: Feature A (green baseline) is large and unglamorous — if it stalls, the fallback is a consciously scoped gate (green-gate the starter-relevant surface, quarantine the rest), a deliberate downgrade rather than drift. Skills-first packaging has no compile-time truth — step 4&#39;s referential-integrity check is the compensating control, and its residual risk (a skill that resolves but produces wrong code) is accepted and named. Deleting instructions can delete load-bearing knowledge — steps 3 and 5 are sequenced so pattern knowledge migrates into skills before the prose that carried it is removed. GitHub Actions on this account is frequently billing-blocked, so every CI-dependent verify names a local equivalent.</p>
+    </section>
+
+    <section class="section-card card-files" id="files" aria-labelledby="h-files">
+      <h2 id="h-files">
+        <svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg>
+        Files that change
+      </h2>
+      <p class="section-intro">Every file this plan touches, and what happens to each one.</p>
+      <div class="file-tree">
+        <div class="file-tree-root"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> astro-basics/</div>
+        <ul class="file-list">
+          <li><code>package.json</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">guard the 21 <code class="md">--env-file=.env</code> script entries; add <code class="md">check:refs</code>, Vercel deploy scripts, <code class="md">@astrojs/cloudflare</code></span></li>
+          <li><code>scripts/setup-wizard.js</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">survive a missing <code class="md">.env</code> and print guidance instead of crashing</span></li>
+          <li><code>src/middleware.ts</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">fail closed: serve the setup-notice page with HTTP 503 on protected routes when Clerk keys are absent or placeholders</span></li>
+          <li><code>.claude/hooks/css-refactor-hook.js</code> <span class="file-badge file-badge-deleted">deleted</span> <span class="file-note">registered nowhere, its own CONFIG block commented out</span></li>
+          <li><code>src/pages/api/test/sync-user.ts</code> <span class="file-badge file-badge-deleted">deleted</span> <span class="file-note">unauthenticated service-role write; delete or DEV-gate</span></li>
+          <li><code>scripts/lib/preflight-env.mjs</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">copies <code class="md">.env.example</code> to <code class="md">.env</code> when absent; shared by all db/setup scripts</span></li>
+          <li><code>src/components/astro/Navigation.astro</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">hide Dashboard/Forum/Organization links while auth is unconfigured</span></li>
+          <li><code>src/pages/auth-setup.astro</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">styled 503 setup-notice page shown for protected routes when auth is unconfigured</span></li>
+          <li><code>.husky/pre-push</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">local gate: <code class="md">npm run type-check</code> plus <code class="md">npm run check:refs</code></span></li>
+          <li><code>README.md</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">lead with the zero-config first run; fix the 4321 vs 4330/4331 port drift; state baseline status honestly</span></li>
+          <li><code>src/types/design-tokens.ts</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">TS2484 export-conflict cluster at lines 489-497</span></li>
+          <li><code>src/utils/email-validation.ts</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">TS18048 cluster (9 errors) from <code class="md">noUncheckedIndexedAccess</code></span></li>
+          <li><code>.github/workflows/ci.yml</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">remove both <code class="md">continue-on-error: true</code> lines; add the <code class="md">check:refs</code> job</span></li>
+          <li><code>CLAUDE.md</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">becomes a thin, true routing file; fix the <code class="md">src/content/config.ts</code> reference</span></li>
+          <li><code>CLAUDE.md.backup</code> <span class="file-badge file-badge-deleted">deleted</span> <span class="file-note">pre-refactor snapshot linked as authoritative</span></li>
+          <li><code>copilot.instructions.md</code> <span class="file-badge file-badge-deleted">deleted</span> <span class="file-note">titled for a different project (<code class="md">@shawnsandy/astro-kit</code>)</span></li>
+          <li><code>.github/instructions/</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">collapse the 9 exact-name duplicate pairs</span></li>
+          <li><code>.claude/settings.json</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">committed shared config a fresh cloner inherits</span></li>
+          <li><code>.claude/skills/</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">scaffold-page, scaffold-component, scaffold-api-endpoint, add-module, author-content, and wcag-compliance-reviewer skills (the last is advertised in CLAUDE.md today but has never existed)</span></li>
+          <li class="file-dir"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> .claude/agents/
+            <ul class="file-list">
+            <li><code>astro-basics-release-manager.md</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">add the missing frontmatter</span></li>
+            <li><code>css-refactor-agent.md</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">replace invalid tool names (<code class="md">Bash:read</code>, <code class="md">FileEditor</code>, <code class="md">CodebaseSearch</code>)</span></li>
+            </ul>
+          </li>
+          <li><code>.claude/commands/</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">back or delete the phantom <code class="md">db-health</code>, <code class="md">db-cleanup</code>, <code class="md">db-debug</code>; fill or delete the empty <code class="md">pull-request.md</code></span></li>
+          <li><code>scripts/check-references.mjs</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">referential-integrity checker behind <code class="md">npm run check:refs</code></span></li>
+          <li><code>src/pages/docs/[page].astro</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">remove the dead <code class="md">data.publish</code> filter that empties the paginated docs route</span></li>
+          <li><code>astro.config.mjs</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">Starlight sidebar to <code class="md">autogenerate</code>; remove the hardcoded ngrok host; Cloudflare adapter branch and image service</span></li>
+          <li class="file-dir"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> src/utils/
+            <ul class="file-list">
+            <li><code>ip-validation.ts</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">replace <code class="md">node:net</code> <code class="md">isIP</code> with a runtime-neutral check (Cloudflare blocker)</span></li>
+            <li><code>rate-limiter.ts</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">remove module-scope <code class="md">setInterval</code> and per-isolate state (Cloudflare blocker)</span></li>
+            </ul>
+          </li>
+          <li><code>src/components/react/ContactForm.tsx</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">gate the hardcoded <code class="md">data-netlify=&quot;true&quot;</code> behind the site-config flag</span></li>
+          <li><code>src/views/ContactFormView.tsx</code> <span class="file-badge file-badge-deleted">deleted</span> <span class="file-note">near-duplicate of src/components/react/view/ContactFormView.tsx</span></li>
+          <li><code>src/styles/</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">remove orphaned <code class="md">_component-sample-tokens.scss</code> and <code class="md">_header.scss</code>; stop committing built CSS once the build step is unskippable</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section-card card-steps" id="steps" aria-labelledby="h-steps">
+      <h2 id="h-steps">
+        <svg class="icon" aria-hidden="true"><use href="#ic-list-bullet"/></svg>
+        Steps
+      </h2>
+      <p class="section-intro">The step-by-step work, in order — each step says what to do, why it matters, and how to check it worked.</p>
+      <div class="steps-list">
+
+        <div class="step-card" id="step-1">
+          <div class="step-card-header">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Make a fresh clone run with zero configuration: replace the 21 <code class="md">node --env-file=.env</code> invocations in package.json with a shared <code class="md">scripts/lib/preflight-env.mjs</code> preflight that copies <code class="md">.env.example</code> to <code class="md">.env</code> when absent — locked over in-process loading because it automates the exact README step humans already perform and gives <code class="md">db:wizard</code> a file to edit — make <code class="md">scripts/setup-wizard.js</code> print guidance instead of dying, rewrite README&#39;s opening to lead with clone → install → <code class="md">npm run dev</code>, reconcile the port drift (README says 4321; <code class="md">.claude/launch.json</code> uses 4330/4331), and state the red-baseline status honestly until step 3 lands</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">21 scripts die before their first prompt on a fresh clone — including <code class="md">db:wizard</code>, the documented non-developer entry point — so the locked zero-config posture is impossible until this single highest-leverage fix lands</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body">in a scratch checkout with no <code class="md">.env</code>, <code class="md">npm run db:status</code> and <code class="md">npm run db:wizard</code> start and print guidance instead of Node&#39;s fatal <code class="md">--env-file</code> error, and <code class="md">npm run dev</code> serves the homepage with no env vars set.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-2">
+          <div class="step-card-header">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Close both security holes: rewrite <code class="md">src/middleware.ts</code> so that when Clerk keys are absent or placeholders the protected-route matcher (<code class="md">/dashboard</code>, <code class="md">/forum</code>, <code class="md">/organization</code>) serves the setup-notice page directly with HTTP 503 — a direct response or internal rewrite, never a 3xx redirect, so the status code itself carries the refusal — instead of omitting <code class="md">authMiddleware</code> from the <code class="md">sequence()</code> entirely; fix the redirect target for the configured-auth path, where <code class="md">forum</code> and <code class="md">organization</code> currently send unauthenticated users to <code class="md">/sign-in</code> while the real route is <code class="md">/login</code>; and delete <code class="md">src/pages/api/test/sync-user.ts</code> — an endpoint that accepts an arbitrary <code class="md">userId</code> and writes via the Supabase service-role client with no auth check — or gate it behind <code class="md">import.meta.env.DEV</code>; render blocked routes as a styled 503 setup-notice page on the Base layout (&quot;authentication isn&#39;t configured yet&quot;, pointing at the setup path) and hide the Dashboard/Forum/Organization links in <code class="md">src/components/astro/Navigation.astro</code> while auth is unconfigured</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">a starter a non-developer deploys must not ship a fail-open auth gate or a publicly reachable service-role write — both holes are live today on any keyless deploy — and a visitor who clicks a protected link deserves guidance, not a dead end</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body">with placeholder keys, <code class="md">curl -s -o /dev/null -w &#39;%{http_code}&#39; http://localhost:4321/dashboard</code> prints 503 and a GET of the same URL contains the setup-notice text, the nav renders without the three protected links, and <code class="md">POST /api/test/sync-user</code> returns 404 in a production build.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-3">
+          <div class="step-card-header">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Drive <code class="md">npm run type-check</code> and <code class="md">npm test</code> to green without behaviour changes: fix the 127 type errors across 25 files by family — TS18048 null-guards from <code class="md">noUncheckedIndexedAccess</code> (9 in <code class="md">src/utils/email-validation.ts</code> alone), the TS2484 export conflicts at <code class="md">src/types/design-tokens.ts:489-497</code>, TS2339 <code class="md">never</code> errors from Supabase generated types in <code class="md">role-guard.ts</code> and <code class="md">user-sync.ts</code> — repair the ~49 vitest failures (role-validator, csrf, ip-validation), and move integration tests that need live Supabase credentials behind a separate <code class="md">test:integration</code> script excluded from <code class="md">npm test</code> entirely; keep <code class="md">exactOptionalPropertyTypes</code> and <code class="md">noUncheckedIndexedAccess</code> enabled — fixing under the flags is the point, relaxing them is the quiet version of <code class="md">continue-on-error</code>; any fix that would change behaviour moves to another step with a comment naming why; stall trigger: if two focused working sessions do not bring type-check errors below ~30, switch to the scoped-gate fallback (green-gate the starter-relevant surface, record the quarantine list in this spec) as a conscious, recorded downgrade</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">an agent without a trustworthy gate either burns its run on 127 unrelated errors or learns to ignore red — both fatal to autonomous operation — and the error families are already clustered, so this is volume work, not research</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body"><code class="md">npm run type-check</code> exits 0 and <code class="md">npm test</code> exits 0 on a clean checkout with the credentialed suite excluded by default.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-4">
+          <div class="step-card-header">
+            <div class="step-number">4</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Make CI&#39;s gate real: remove both <code class="md">continue-on-error: true</code> lines from <code class="md">.github/workflows/ci.yml</code> (lines 58 and 75) plus the inline comment excusing the red baseline, and replace the four hand-named <code class="md">npx vitest run &lt;specific files&gt;</code> gates with the same command step 3&#39;s definition of done names — the job must invoke <code class="md">npm test</code> (plus <code class="md">npm run test:e2e</code> for the e2e gate), not a curated subset, so command parity with local development is enforced rather than assumed; retain only the deliberate <code class="md">tests/integration/**</code> exclusion, which step 3 moved behind <code class="md">test:integration</code>; add a <code class="md">.husky/pre-push</code> hook running <code class="md">npm run type-check</code> — deliberately the fast checks only, so the hook stays fast enough that nobody bypasses it; the residual risk is explicit and accepted: during a GitHub Actions billing outage a unit-test regression can be pushed, because nothing automatically runs <code class="md">npm test</code> locally, so an outage means running <code class="md">npm test</code> by hand before pushing</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">removing <code class="md">continue-on-error</code> while the job still runs four named files leaves the gate cosmetic — CI stays green with most of the suite outside it, which is the same failure this step is meant to end</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body"><code class="md">grep -c continue-on-error .github/workflows/ci.yml</code> returns 0, <code class="md">grep -c &#39;npx vitest run tests/&#39; .github/workflows/ci.yml</code> returns 0, the workflow contains a literal <code class="md">npm test</code> invocation, and running <code class="md">npm run type-check &amp;&amp; npm test</code> locally exits 0.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-5">
+          <div class="step-card-header">
+            <div class="step-number">5</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Collapse the instruction corpus to a thin, true CLAUDE.md: delete <code class="md">CLAUDE.md.backup</code> and the link calling it authoritative, delete <code class="md">copilot.instructions.md</code> (titled for <code class="md">@shawnsandy/astro-kit</code>, a different project), delete the unloadable <code class="md">&quot;. cursorrules&quot;</code> (literal space after the dot), delete <code class="md">.claude/hooks/css-refactor-hook.js</code> — registered in no settings file and carrying a fully commented-out CONFIG block, so it runs nowhere and never has — collapse the 9 exact-name duplicate pairs under <code class="md">.github/instructions/</code>, reconcile <code class="md">.github/copilot-instructions.md</code>, fix the <code class="md">src/content/config.ts</code> → <code class="md">src/content.config.ts</code> reference, and commit a real <code class="md">.claude/settings.json</code> — derived from <code class="md">settings.local.json</code> but stripped of the embedded 30-line commit message and the 4 dead <code class="md">openspec</code> grants; CLAUDE-PATTERNS.md content that describes how to write correct code is marked for migration but not yet deleted</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">5,224 lines across 33 files where much is false, duplicated, or unloadable actively misleads the agent, but pattern knowledge must move into skills (step 7) before its prose is deleted, so this step removes only what is dead or false</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body"><code class="md">wc -l</code> across the surviving instruction files shows at least 1,090 lines removed and the corpus below 4,200 — the attainable ceiling for this step, since the deletable dead weight is exactly <code class="md">CLAUDE.md.backup</code> (623) + <code class="md">copilot.instructions.md</code> (371) + <code class="md">&quot;. cursorrules&quot;</code> (96) and the nine duplicate twins are 0-line aliases; the corpus only crosses the halfway mark once step 7 migrates <code class="md">CLAUDE-PATTERNS.md</code> (966), <code class="md">CLAUDE-ANTI-PATTERNS.md</code> (956), and <code class="md">CLAUDE-VALIDATION.md</code> (615) into skills, so that assertion belongs there and not here — every file path referenced in the survivors resolves via a spot-check, <code class="md">.claude/hooks/</code> contains no unregistered scripts, and a fresh clone sees the committed <code class="md">.claude/settings.json</code>.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-6">
+          <div class="step-card-header">
+            <div class="step-number">6</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Build the referential-integrity checker: author <code class="md">scripts/check-references.mjs</code> wired as <code class="md">npm run check:refs</code>, parsing <code class="md">.claude/**</code> (commands, agents, skills, settings grants) and the surviving instruction files — both structured references and backtick-quoted repo-path-shaped strings in prose, with an inline ignore marker for deliberate examples — and failing with a named list when any referenced npm script, file path, slash command, agent, or skill does not resolve; the checker also validates <code class="md">.claude/agents/</code> frontmatter — every file parses, and every entry in its <code class="md">tools:</code> list appears in an explicit allowed-tool set the checker owns as a named constant, which is the source of truth the invalid-tool-name test case asserts against — and flags any script under <code class="md">.claude/hooks/</code> that no settings file registers; ships with a fixture-based test proving it catches today&#39;s real defect classes (the three phantom <code class="md">db-*</code> commands and the <code class="md">Skill(design-token-extractor)</code> grant for a skill that ships only as an agent)</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">skills-first capability packaging was chosen for speed over testability, and this repo already demonstrates the resulting drift three times over; this check converts that class of failure from invisible to blocking without giving up the flexibility the decision bought</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body"><code class="md">npm run check:refs</code> fails on the current tree naming the known phantoms, and <code class="md">npx vitest run tests/check-references.test.ts</code> passes its fixture cases.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-7">
+          <div class="step-card-header">
+            <div class="step-number">7</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Repair the agent registry and ship the capability skills: add the missing frontmatter to <code class="md">.claude/agents/astro-basics-release-manager.md</code>, fix the invalid tool names in <code class="md">css-refactor-agent.md</code>, collapse the two duplicate agent pairs (<code class="md">code-reviewer</code>/<code class="md">astro-basics-code-reviewer</code>, <code class="md">release-manager</code>/<code class="md">astro-basics-release-manager</code>), back the three phantom <code class="md">db-*</code> commands with scripts or delete them, fill or delete the 1-line <code class="md">pull-request.md</code>; then author <code class="md">.claude/skills/</code> entries for scaffold-page, scaffold-component (enforcing astro/react/dashboard placement and the mandatory <code class="md">type Props</code> export), scaffold-api-endpoint (auth-check-first, consistent <code class="md">{ error, details? }</code> shape), and add-module — author <code class="md">.claude/skills/wcag-compliance-reviewer/</code> as part of this step — <code class="md">CLAUDE.md:150</code> advertises it and <code class="md">:157</code> instructs using it, but only <code class="md">fpkit-developer</code> is actually committed, so it is a phantom skill and every UI-producing skill emits semantic, WCAG 2.1 AA-conformant markup and ends by invoking it, and each migrates the corresponding CLAUDE-PATTERNS.md prose into itself before that prose is deleted; finally add the <code class="md">check:refs</code> job to <code class="md">.github/workflows/ci.yml</code> and append <code class="md">npm run check:refs</code> to <code class="md">.husky/pre-push</code> now that the tree passes it</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">this turns the five surfaces the original ask names — setup, coding, extensions, modules, pages — from description into invocable capability, and doing the PATTERNS migration here honours the delete-only-after-knowledge-moves risk</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body">each skill invoked in a scratch session produces a file that passes <code class="md">npm run type-check</code> and the placement rules, a fixture assertion confirms every UI-producing skill&#39;s body contains the <code class="md">wcag-compliance-reviewer</code> invocation (so the requirement is machine-checked, not honour-system), <code class="md">npm run check:refs</code> exits 0, and ci.yml contains the check job.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-8">
+          <div class="step-card-header">
+            <div class="step-number">8</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Make content authoring a first-class agent operation: author an <code class="md">author-content</code> skill that reads <code class="md">baseSchema</code> from <code class="md">src/content.config.ts</code>, emits valid frontmatter for all four required fields (<code class="md">title</code>, <code class="md">pubDate</code>, <code class="md">description</code>, <code class="md">author</code>), and never sets <code class="md">publish: true</code> on its own — the existing zod default <code class="md">publish: false</code> is the human review gate; fix <code class="md">src/pages/docs/[page].astro:13</code>, which filters the docs collection on <code class="md">data.publish</code>, a field <code class="md">docsSchema</code> never defines, so the paginated route always yields nothing; restructure the hardcoded Starlight <code class="md">sidebar</code> array in <code class="md">astro.config.mjs</code> to the hybrid shape — curated top-level section order kept, each section&#39;s contents autogenerated from its directory — so new guide pages appear without config edits while the reading order survives</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">content is already git-native with an accidental review gate built into the schema — this step makes the agent the CMS while keeping a human between authorship and publication</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body">invoking the skill produces an MDX file that passes <code class="md">astro check</code>/zod validation and is invisible on <code class="md">/posts</code> until <code class="md">publish</code> is flipped, and <code class="md">/docs/2</code> (or any paginated docs page) returns entries instead of an empty list.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-9">
+          <div class="step-card-header">
+            <div class="step-number">9</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Prune the dead weight and ship the two-platform deploy story: delete the ~12 one-off historical migration scripts wired to no npm script, the near-duplicate <code class="md">src/views/ContactFormView.tsx</code>, and the orphaned <code class="md">_component-sample-tokens.scss</code> and <code class="md">_header.scss</code>; make the SCSS build unskippable — Base.astro imports <code class="md">../styles/index.css</code>, which only the standalone <code class="md">sass</code> CLI produces, so add a <code class="md">predev</code> one-shot compile and fold the watcher into <code class="md">npm run dev</code> (today&#39;s <code class="md">npm run start</code> behaviour; <code class="md">start</code> becomes an alias) — then stop committing the built CSS; fix the <code class="md">13-agents/</code>/<code class="md">13-refactorings/</code> numbering collision and the devcontainer&#39;s Node 20 vs <code class="md">engines.node &gt;=22.12.0</code> conflict; document and script the <code class="md">ASTRO_ADAPTER</code> switch with Vercel deploy scripts matching the existing Netlify <code class="md">deploy:preview</code>/<code class="md">deploy:prod</code>, remove the hardcoded ngrok host from <code class="md">astro.config.mjs</code>, and gate <code class="md">ContactForm.tsx</code>&#39;s hardcoded <code class="md">data-netlify=&quot;true&quot;</code> behind the site-config flag</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">an agent&#39;s search space must be signal and deployment must be one invocable operation per platform on the two platforms that already work</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body"><code class="md">npm run build</code> succeeds from a clean tree without pre-committed CSS, <code class="md">ASTRO_ADAPTER=netlify</code> and <code class="md">=vercel</code> builds both exit 0, and <code class="md">git grep -l ngrok astro.config.mjs</code> returns nothing.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-10">
+          <div class="step-card-header">
+            <div class="step-number">10</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Make the codebase Workers-clean and add Cloudflare as the third platform: add <code class="md">@astrojs/cloudflare</code> and its branch to the adapter switch in <code class="md">astro.config.mjs</code>, replace <code class="md">node:net</code> <code class="md">isIP</code> in <code class="md">src/utils/ip-validation.ts</code> (used on the request path via middleware rate limiting) with a runtime-neutral check, configure a Workers-compatible image service (Astro&#39;s default sharp service will not run there), and replace the in-memory rate limiter&#39;s module-scope <code class="md">setInterval</code> and per-isolate state in <code class="md">src/utils/rate-limiter.ts</code> — which is already semantically broken on all serverless targets — with a runtime-aware design: in-memory limiting stays for the node adapter where it actually works, and each serverless adapter disables it only in exchange for a committed edge policy — <strong class="md">including Netlify, which is the default adapter and therefore the most likely production target</strong> — meaning each target&#39;s own documented rate-limiting mechanism, confirmed against that platform&#39;s current docs at implementation time rather than assumed — on Vercel this is the Firewall (a provisioned WAF rate-limit rule, or <code class="md">@vercel/firewall</code>&#39;s <code class="md">checkRateLimit</code> with a stable rule identifier), not a <code class="md">vercel.json</code> key, since <code class="md">vercel.json</code> has no rate-limit primitive; on Cloudflare a WAF rate-limiting rule or Durable-Object-backed limiter; on Netlify its documented equivalent — each referenced from the README, with whatever is checked in committed, and never a bare &quot;the platform handles it&quot;; <code class="md">rateLimitMiddleware</code> is currently the only quota in front of the public <code class="md">POST /api/message-us</code>, which proceeds to a database insert, so removing it without a replacement opens message spam and resource exhaustion on the default deploy; only after this lands may the README claim all three platforms</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">Cloudflare is the one platform that cannot be reached by an env-var switch — its <code class="md">workerd</code> runtime rejects Node built-ins the request path currently uses, so this is runtime engineering, deliberately deferred to last and sized large</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body"><code class="md">ASTRO_ADAPTER=cloudflare npm run build</code> exits 0, <code class="md">git grep -l &quot;node:net&quot; src/</code> returns nothing, <code class="md">wrangler dev</code> (or the adapter&#39;s preview) serves the homepage locally, and each serverless target has its rate-limiting mechanism in place and documented, proven by bursting <code class="md">POST /api/message-us</code> past the configured threshold against a Netlify, Vercel, and Cloudflare preview deployment and getting HTTP 429 from each.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section-card card-tests" id="tests" aria-labelledby="h-tests">
+      <h2 id="h-tests">
+        <svg class="icon" aria-hidden="true"><use href="#ic-beaker"/></svg>
+        Tests
+      </h2>
+      <p class="section-intro">The tests that prove the change does what it promises.</p>
+      <div class="test-tier-label">Tier 1 — This plan changes application code</div>
+      <div class="objective-test-card">Objective: a fresh keyless clone builds and serves the static core, and the agentic surface is internally consistent. File: tests/agentic-starter.smoke.test.ts; Type: smoke; Asserts: <code class="md">npm run build</code> succeeds with no env vars set — the npm lifecycle command, not bare <code class="md">astro build</code>, so the <code class="md">prebuild</code> Sass compile that produces <code class="md">src/styles/index.css</code> actually runs on a clean checkout — the built output contains the homepage and a published post with non-empty stylesheet output, and <code class="md">check:refs</code> exits 0; Run: npx vitest run tests/agentic-starter.smoke.test.ts</div>
+      <div class="test-list">
+        <div class="test-card">Unit: env preflight guard. File: tests/preflight-env.test.ts; Targets: scripts/lib/preflight-env.mjs; Key cases: missing <code class="md">.env</code> copies <code class="md">.env.example</code> and proceeds, existing <code class="md">.env</code> left untouched, missing both fails with guidance</div>
+        <div class="test-card">Unit: referential-integrity checker. File: tests/check-references.test.ts; Targets: scripts/check-references.mjs; Key cases: phantom command fixture fails with its name in output, fully-resolving fixture passes, an agent tool name outside the checker&#39;s allowed-tool constant fails, agent frontmatter that does not parse fails, an unregistered <code class="md">.claude/hooks/</code> script fails, backticked prose path to a nonexistent file fails, ignore-marked example passes</div>
+        <div class="test-card">Integration: fail-closed middleware. File: tests/middleware-fail-closed.test.ts; Targets: src/middleware.ts; Key cases: placeholder Clerk keys yield status 503 plus setup-notice body for <code class="md">/dashboard</code> (asserting the code, not merely non-200), nav omits the three protected links, <code class="md">/posts</code> stays public, configured keys redirect unauthenticated <code class="md">/forum</code> and <code class="md">/organization</code> to <code class="md">/login</code></div>
+        <div class="test-card">Integration: content-authoring output. File: tests/author-content.test.ts; Targets: the author-content skill&#39;s frontmatter contract; Key cases: all four required fields present, <code class="md">publish</code> absent or false, output parses under <code class="md">baseSchema</code></div>
+        <div class="test-card">E2E: docs pagination returns entries. File: e2e/docs-pagination.spec.ts; Targets: /docs/[page] route; Key cases: page 1 renders a non-empty list after the dead <code class="md">data.publish</code> filter is removed</div>
+        <div class="test-card">Unit: scaffold skills invoke the accessibility reviewer. File: tests/skill-contracts.test.ts; Targets: <code class="md">.claude/skills/</code> UI-producing entries; Key cases: each of scaffold-page and scaffold-component references <code class="md">wcag-compliance-reviewer</code>, a fixture skill missing it fails</div>
+      </div>
+    </section>
+
+    <section class="section-card card-criteria" id="criteria" aria-labelledby="h-criteria">
+      <h2 id="h-criteria">
+        <svg class="icon" aria-hidden="true"><use href="#ic-check-circle"/></svg>
+        Definition of done
+      </h2>
+      <p class="section-intro">The plan counts as done when every statement below is true — check each one off as you verify it.</p>
+      <ul class="criteria-list" id="criteria-list">
+        <li>
+          <input type="checkbox" id="ac1">
+          <label for="ac1">A fresh clone with no <code class="md">.env</code> runs <code class="md">npm install &amp;&amp; npm run dev</code> and serves the homepage, posts, and guide pages</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac2">
+          <label for="ac2"><code class="md">npm run db:wizard</code> on a fresh clone reaches its first interactive prompt instead of a Node startup error</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac3">
+          <label for="ac3">With Clerk keys absent or placeholders, <code class="md">/dashboard</code>, <code class="md">/forum</code>, and <code class="md">/organization</code> respond with HTTP 503 and the setup-notice body — no 3xx redirect — and the nav shows no links to them</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac4">
+          <label for="ac4">With Clerk configured, unauthenticated <code class="md">/forum</code> and <code class="md">/organization</code> requests redirect to <code class="md">/login</code>, not the nonexistent <code class="md">/sign-in</code></label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac5">
+          <label for="ac5"><code class="md">src/pages/api/test/sync-user.ts</code> is deleted or unreachable in a production build</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac6">
+          <label for="ac6"><code class="md">npm run type-check</code> and <code class="md">npm test</code> both exit 0 on a clean checkout, with <code class="md">tsconfig.json</code> still enabling <code class="md">exactOptionalPropertyTypes</code> and <code class="md">noUncheckedIndexedAccess</code></label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac7">
+          <label for="ac7">A <code class="md">.husky/pre-push</code> hook runs <code class="md">npm run type-check</code> and <code class="md">npm run check:refs</code></label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac8">
+          <label for="ac8"><code class="md">.github/workflows/ci.yml</code> contains no <code class="md">continue-on-error</code> lines, invokes <code class="md">npm test</code> rather than a hand-named subset of test files, and includes a <code class="md">check:refs</code> job</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac9">
+          <label for="ac9">No unregistered scripts remain under <code class="md">.claude/hooks/</code></label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac10">
+          <label for="ac10">Each serverless target enforces rate limiting via its own documented mechanism; none disables the in-memory limiter without a working replacement, proven by a 429 on burst</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac11">
+          <label for="ac11"><code class="md">CLAUDE.md.backup</code>, <code class="md">copilot.instructions.md</code>, <code class="md">&quot;. cursorrules&quot;</code>, and the 9 duplicate instruction pairs are gone; every path the surviving instructions reference resolves</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac12">
+          <label for="ac12">A committed <code class="md">.claude/settings.json</code> exists with no <code class="md">openspec</code> grants and no embedded commit-message text</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac13">
+          <label for="ac13"><code class="md">npm run check:refs</code> exits 0 on the finished tree and fails when a phantom reference fixture is introduced</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac14">
+          <label for="ac14">Every <code class="md">.claude/agents/</code> file registers (valid frontmatter, valid tool names, no duplicate pairs) and every slash command has a backing implementation</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac15">
+          <label for="ac15">Every skill CLAUDE.md advertises exists under <code class="md">.claude/skills/</code>, including <code class="md">wcag-compliance-reviewer</code></label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac16">
+          <label for="ac16">The author-content skill emits all four required frontmatter fields and never sets <code class="md">publish: true</code> unprompted</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac17">
+          <label for="ac17">The paginated docs route returns entries instead of an always-empty list</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac18">
+          <label for="ac18"><code class="md">ASTRO_ADAPTER=netlify</code>, <code class="md">=vercel</code>, and <code class="md">=cloudflare</code> production builds all exit 0</label>
+        </li>
+      </ul>
+      <span id="criteria-status" aria-live="polite" aria-atomic="true"
+            style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"></span>
+    </section>
+
+    <section class="section-card card-verification" id="verification" aria-labelledby="h-verification">
+      <h2 id="h-verification">
+        <svg class="icon" aria-hidden="true"><use href="#ic-magnifying-glass"/></svg>
+        Final check
+      </h2>
+      <p class="section-intro">One last pass to confirm the whole change works end to end.</p>
+      <p>Walk the non-developer&#39;s path end to end on a scratch clone: <code class="md">git clone</code> → <code class="md">npm install</code> → <code class="md">npm run dev</code> with zero env vars must serve the homepage, <code class="md">/posts</code>, and the Starlight guide; <code class="md">npm run db:wizard</code> must reach its first prompt. Then walk the agent&#39;s path: <code class="md">npm run type-check</code>, <code class="md">npm test</code>, and <code class="md">npm run check:refs</code> all exit 0; invoke the scaffold-component skill and confirm the generated file lands in the right directory with a <code class="md">type Props</code> export and passes type-check; invoke author-content and confirm the new MDX entry validates against <code class="md">baseSchema</code> and stays invisible on <code class="md">/posts</code> until <code class="md">publish: true</code> is set by hand. Finally walk the deploy path: <code class="md">ASTRO_ADAPTER=netlify npm run build</code>, <code class="md">ASTRO_ADAPTER=vercel npm run build</code>, and <code class="md">ASTRO_ADAPTER=cloudflare npm run build</code> each exit 0 from a clean tree. With placeholder Clerk keys, a GET of <code class="md">/dashboard</code> on the preview server returns HTTP 503 and a body containing the setup-notice text — assert on the status code and the body, not a HEAD request, since a redirect would satisfy a bare &quot;non-200&quot; check while violating the contract.</p>
+    </section>
+
+    <section class="section-card card-completion" id="completion" aria-labelledby="h-completion">
+      <h2 id="h-completion">
+        <svg class="icon" aria-hidden="true"><use href="#ic-clipboard-check"/></svg>
+        Wrapping up
+      </h2>
+      <p class="section-intro">Three gates that must all pass before this plan is marked completed.</p>
+      <div class="completion-checklist" id="completion-checklist">
+        <div class="completion-header">
+          <span class="completion-badge" id="completion-badge">Required</span>
+        </div>
+        <ul class="completion-list" id="completion-list">
+          <li>
+            <input type="checkbox" id="cc1" disabled>
+            <label for="cc1">All step TODOs marked as done</label>
+          </li>
+          <li>
+            <input type="checkbox" id="cc2" disabled>
+            <label for="cc2">All acceptance criteria verified and checked off</label>
+          </li>
+          <li>
+            <input type="checkbox" id="cc3" disabled>
+            <label for="cc3">Plan status updated to completed</label>
+          </li>
+        </ul>
+        <div class="completion-report" id="completion-report">
+          <h3 class="report-heading">Completion Report</h3>
+          <p class="report-empty">No items to report — all requirements met.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card card-next-steps" id="next-steps" aria-labelledby="h-next-steps">
+      <h2 id="h-next-steps">
+        <svg class="icon" aria-hidden="true"><use href="#ic-arrow-right-circle"/></svg>
+        Next steps
+      </h2>
+      <p class="section-intro">Follow-up ideas that came up along the way — none of them are required to finish this plan.</p>
+      <div class="next-steps-list">
+        <details class="next-step-item">
+          <summary>Design the eject path for the opinionated features</summary>
+          <div class="next-step-prompt">
+            <p>Prune-in-place leaves forum, dashboard, and organization in every clone; removing them safely is unscoped work the proposal names as a risk.</p>
+            <p>Paste this prompt into Claude to execute this follow-up:</p>
+            <pre>In the astro-basics repo, design an agent-invocable eject path for the
+forum, dashboard, and organization features: enumerate every file, route,
+middleware matcher, npm script, and instruction reference each feature
+owns, then propose either a removal skill or a manifest-driven script.
+Verify by running the removal on a scratch branch and confirming
+npm run type-check, npm test, and npm run check:refs all still exit 0.</pre>
+            <button class="copy-prompt-btn" type="button"
+                    onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+          </div>
+        </details>
+
+        <details class="next-step-item">
+          <summary>Automate the publish flip as a reviewed operation</summary>
+          <div class="next-step-prompt">
+            <p>Today a human hand-edits <code class="md">publish: true</code>; a PR-based flow would make the review gate first-class.</p>
+            <p>Paste this prompt into Claude to execute this follow-up:</p>
+            <pre>In the astro-basics repo, add a publish-content flow: a skill or script
+that opens a pull request flipping publish: true on a named entry under
+src/content/, so agent-authored content is published through code review
+rather than a direct edit. Verify by running it against a draft entry and
+confirming the PR diff touches only that entry&#39;s frontmatter.</pre>
+            <button class="copy-prompt-btn" type="button"
+                    onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+          </div>
+        </details>
+
+        <details class="next-step-item">
+          <summary>Wish list: retire the parallel sass CLI pipeline</summary>
+          <div class="next-step-prompt">
+            <p>The interview kept the predev-plus-watcher approach; importing the SCSS through Astro/Vite would delete the second build system entirely.</p>
+            <p>Paste this prompt into Claude to execute this follow-up:</p>
+            <pre>In the astro-basics repo, migrate styling from the standalone sass CLI
+(prebuild/predev scripts) to Vite-native SCSS: import src/styles/index.scss
+from src/layouts/Base.astro, remove the sass npm scripts and the committed
+CSS outputs, and diff the rendered CSS before and after across the 11
+authored SCSS files (5,623 LOC). Verify: npm run dev and npm run build
+serve identical (or intentionally-diffed) styles with the sass CLI gone.</pre>
+            <button class="copy-prompt-btn" type="button"
+                    onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+          </div>
+        </details>
+
+        <details class="next-step-item">
+          <summary>Wish list: expose the repo-native CMS over MCP</summary>
+          <div class="next-step-prompt">
+            <p>A local MCP server wrapping the author-content and publish flows would let non-Claude-Code clients drive the same repo-native CMS.</p>
+            <p>Paste this prompt into Claude to execute this follow-up:</p>
+            <pre>In the astro-basics repo, prototype an MCP server exposing author-content,
+list-drafts, and publish-request tools that wrap the existing repo-native
+content skills, keeping the publish:false review gate intact. Verify with
+the MCP inspector: each tool call produces the same file state as the
+corresponding skill invocation.</pre>
+            <button class="copy-prompt-btn" type="button"
+                    onclick="copyPrompt(this)" aria-label="Copy prompt to clipboard">Copy prompt</button>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <footer class="plan-footer">
+      <svg class="icon" aria-hidden="true"><use href="#ic-sparkles"/></svg>
+      Generated by plan-agent · 2026-08-10 · astro-basics
+    </footer>
+
+  </main>
+</div><!-- /.layout -->
+
+<script>
+/* ── Theme toggle ───────────────────────────────────────────── */
+/* The <head> script has already applied any stored choice. This only has to
+   resolve what is currently on screen, flip it, and remember the answer. */
+function resolvedTheme() {
+  var set = document.documentElement.getAttribute('data-theme');
+  if (set === 'dark' || set === 'light') return set;
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark' : 'light';
+}
+
+function syncThemeButton(btn) {
+  if (!btn) return;
+  var dark = resolvedTheme() === 'dark';
+  btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+  btn.setAttribute('aria-label', dark ? 'Use light theme' : 'Use dark theme');
+  btn.textContent = dark ? 'Light' : 'Dark';
+}
+
+function toggleTheme(btn) {
+  var next = resolvedTheme() === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('plan-theme', next); } catch (e) { /* not persisted */ }
+  syncThemeButton(btn || document.getElementById('theme-toggle'));
+}
+
+/* ── Save as PDF (native browser print dialog) ──────────────── */
+function savePDF() {
+  window.print();
+}
+
+/* ── Build rich implementation prompt from DOM ──────────────── */
+function buildImplementPrompt() {
+  var cmdEl = document.getElementById('implement-cmd');
+  var status = document.documentElement.getAttribute('data-status') || 'todo';
+  var stepCards = Array.prototype.slice.call(document.querySelectorAll('.step-card'));
+  var criteriaItems = Array.prototype.slice.call(document.querySelectorAll('#criteria-list li'));
+
+  var totalSteps = stepCards.length;
+  var doneSteps = stepCards.filter(function(c) { return c.classList.contains('completed'); }).length;
+  var totalCriteria = criteriaItems.length;
+  var checkedCriteria = criteriaItems.filter(function(li) {
+    var cb = li.querySelector('input[type="checkbox"]');
+    return cb && cb.checked;
+  }).length;
+
+  var planPathMeta = document.querySelector('meta[name="plan-path"]');
+  var planPath = (planPathMeta && planPathMeta.getAttribute('content')) || '<plan-file>';
+  var mdMeta = document.querySelector('meta[name="plan-md"]');
+  var specPath = (mdMeta && mdMeta.getAttribute('content')) || planPath.replace(/\.html$/, '.md');
+
+  var lines = [];
+  lines.push(cmdEl ? cmdEl.textContent.trim() : 'Implement the plan');
+  lines.push('');
+  lines.push('Status: ' + status + ' (' + doneSteps + '/' + totalSteps + ' steps done, ' + checkedCriteria + '/' + totalCriteria + ' criteria met)');
+  lines.push('');
+  lines.push('Instructions:');
+  lines.push('1. Read the plan spec at ' + specPath + ' (Markdown — the source of truth; the sibling HTML at ' + planPath + ' is a rendered view of it).');
+  lines.push('2. Implement every step still marked todo; after completing each step, mark it done by adding its [x] marker in the spec (e.g. "3. [x] ...").');
+  lines.push('3. When all steps are done, verify each acceptance criterion and flip its bullet to "- [x]" in the spec.');
+  lines.push('4. Run the objective test\'s Run command from the plan\'s Tests section, then walk the Verification section end-to-end and confirm the stated objective actually works — on failure, fix and re-verify before continuing; never mark the plan done on a failing check.');
+  lines.push('5. Set "status: completed" in the spec frontmatter only once every step is marked, every criterion is checked, and verification passes.');
+  lines.push('6. Re-render the sibling HTML from the spec so it shows every step and criterion complete (the plan-agent render hook does this on save; otherwise run the bundled build-plan-html.mjs renderer) — never edit the HTML by hand.');
+
+  return lines.join('\n');
+}
+
+/* ── Shared clipboard helper ────────────────────────────────── */
+/* All copy buttons delegate here. `restoreLabel` is the button's   */
+/* idle text. On failure (Clipboard API rejects AND execCommand     */
+/* fails) the button shows a visible error so the user knows to      */
+/* select manually — never a silent no-op.                          */
+function clipboardCopy(text, btn, restoreLabel) {
+  function show(labelText, cls, delay) {
+    if (btn._copyTimer) clearTimeout(btn._copyTimer);
+    btn.textContent = labelText;
+    btn.classList.remove('copied', 'copy-failed');
+    if (cls) btn.classList.add(cls);
+    btn._copyTimer = setTimeout(function () {
+      btn.textContent = restoreLabel;
+      btn.classList.remove('copied', 'copy-failed');
+      btn._copyTimer = null;
+    }, delay);
+  }
+  function flash() { show('Copied ✓', 'copied', 2000); }
+  function fail()  { show('Copy failed — select manually', 'copy-failed', 4000); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    if (ok) flash(); else fail();
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(flash).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+/* ── Copy implement prompt ──────────────────────────────────── */
+function copyCmd(btn) {
+  clipboardCopy(buildImplementPrompt(), btn, 'Copy');
+}
+
+/* ── Copy workflow prompt (element absent when plan has no workflow) ── */
+function copyWorkflow(btn) {
+  var code = document.getElementById('workflow-cmd');
+  if (!code) return;
+  clipboardCopy(code.textContent, btn, 'Copy');
+}
+
+/* ── Copy goal prompt ──────────────────────────────────────── */
+function copyGoal(btn) {
+  var code = document.getElementById('goal-cmd');
+  if (!code) return;
+  clipboardCopy(code.textContent, btn, 'Copy');
+}
+
+/* ── Copy plan file name / relative path ────────────────────── */
+function copyPath(btn, id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  clipboardCopy(el.textContent.trim(), btn, 'Copy');
+}
+
+/* ── Copy prompt button (global — required by inline onclick) ── */
+function copyPrompt(btn) {
+  var pre = btn.previousElementSibling;
+  if (!pre || pre.tagName !== 'PRE') {
+    pre = btn.parentElement && btn.parentElement.querySelector('pre');
+  }
+  if (!pre) return;
+  clipboardCopy(pre.textContent, btn, 'Copy prompt');
+}
+
+(function () {
+  'use strict';
+
+  /* ── Progress bar — state from HTML attributes ──────────────── */
+  /* State lives in the HTML itself: a criterion is done iff its       */
+  /* <input> carries the `checked` attribute, which the browser        */
+  /* renders natively on load. Toggling a box syncs the attribute so   */
+  /* the live DOM (and any saved copy of this file) stays the single   */
+  /* portable source of truth — no browser-only storage layer.         */
+  var bar        = document.getElementById('progress-bar');
+  var label      = document.getElementById('progress-label');
+  var liveRegion = document.getElementById('criteria-status');
+  var checkboxes = Array.prototype.slice.call(
+    document.querySelectorAll('#criteria-list input[type="checkbox"]')
+  );
+  var total = checkboxes.length;
+
+  function updateProgress() {
+    var done = checkboxes.filter(function (cb) { return cb.checked; }).length;
+    var pct  = total ? Math.round(done / total * 100) : 0;
+    if (bar) {
+      bar.style.width = pct + '%';
+      bar.setAttribute('aria-valuenow', pct);
+      if (pct > 0) bar.classList.add('has-progress');
+      else         bar.classList.remove('has-progress');
+    }
+    if (label) label.textContent = done + ' / ' + total + ' done';
+  }
+
+  checkboxes.forEach(function (cb, i) {
+    cb.addEventListener('change', function () {
+      cb.toggleAttribute('checked', cb.checked);
+      updateProgress();
+      if (liveRegion) {
+        liveRegion.textContent = 'Criterion ' + (i + 1) +
+          ' marked as ' + (cb.checked ? 'complete' : 'incomplete');
+      }
+    });
+  });
+
+  updateProgress();
+
+  /* ── Completion checklist auto-update ──────────────────────── */
+  var ccCheckboxes = Array.prototype.slice.call(
+    document.querySelectorAll('#completion-list input[type="checkbox"]')
+  );
+  var completionCard = document.getElementById('completion-checklist');
+
+  function updateCompletion() {
+    var stepCards = document.querySelectorAll('.step-card');
+    var allStepsDone = stepCards.length > 0 &&
+      Array.prototype.slice.call(stepCards).every(function(c) {
+        return c.classList.contains('completed');
+      });
+    if (ccCheckboxes[0]) ccCheckboxes[0].checked = allStepsDone;
+
+    var allCriteriaChecked = total > 0 &&
+      checkboxes.every(function(cb) { return cb.checked; });
+    if (ccCheckboxes[1]) ccCheckboxes[1].checked = allCriteriaChecked;
+
+    var metaStatus = document.querySelector('meta[name="plan-status"]');
+    var statusIsCompleted =
+      document.documentElement.getAttribute('data-status') === 'completed' &&
+      (!metaStatus || metaStatus.getAttribute('content') === 'completed');
+    if (ccCheckboxes[2]) ccCheckboxes[2].checked = statusIsCompleted;
+
+    var allComplete = allStepsDone && allCriteriaChecked && statusIsCompleted;
+    if (completionCard) {
+      if (allComplete) completionCard.classList.add('all-complete');
+      else completionCard.classList.remove('all-complete');
+    }
+  }
+
+  updateCompletion();
+
+  checkboxes.forEach(function(cb) {
+    cb.addEventListener('change', updateCompletion);
+  });
+
+  if ('MutationObserver' in window) {
+    new MutationObserver(updateCompletion).observe(
+      document.documentElement, { attributes: true, attributeFilter: ['data-status'] }
+    );
+  }
+
+  /* ── Scroll rail ─────────────────────────────────────────────── */
+  var rail = document.querySelector('.scroll-rail');
+  if (rail) {
+    function updateRail() {
+      var maxY = document.documentElement.scrollHeight - window.innerHeight;
+      var pct  = maxY > 0 ? (window.scrollY / maxY * 100).toFixed(1) : 0;
+      rail.style.setProperty('--scroll-pct', pct);
+    }
+    window.addEventListener('scroll', updateRail, { passive: true });
+    updateRail();
+  }
+
+  /* ── Step rail disclosure ────────────────────────────────────── */
+  /* Ships open so the rail is present with scripting off; below the layout
+     breakpoint it collapses, where an always-open list would push the plan
+     itself off the first screen. */
+  var railBox = document.querySelector('.rail-disclosure');
+  if (railBox && window.matchMedia) {
+    var narrow = window.matchMedia('(max-width: 900px)');
+    var syncRail = function (mq) { railBox.open = !mq.matches; };
+    syncRail(narrow);
+    if (narrow.addEventListener) narrow.addEventListener('change', syncRail);
+    else if (narrow.addListener) narrow.addListener(syncRail);
+  }
+
+  /* ── Theme button ────────────────────────────────────────────── */
+  syncThemeButton(document.getElementById('theme-toggle'));
+
+  /* ── Scroll spy ──────────────────────────────────────────────── */
+  /* Track which targets are on screen rather than reacting only to
+     entries that ARE intersecting: with one link per step, a stale
+     "you are here" marker left behind after scrolling past the last
+     target is worse than no marker at all. */
+  var navLinks = Array.prototype.slice.call(
+    document.querySelectorAll('.plan-nav a[href^="#"]')
+  );
+  if (navLinks.length && 'IntersectionObserver' in window) {
+    var targets = navLinks
+      .map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); })
+      .filter(Boolean);
+    var visible = [];
+    var setActive = function (id) {
+      navLinks.forEach(function (a) {
+        var isActive = id !== null && a.getAttribute('href') === '#' + id;
+        a.classList.toggle('active', isActive);
+        if (isActive) a.setAttribute('aria-current', 'true');
+        else          a.removeAttribute('aria-current');
+      });
+    };
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var at = visible.indexOf(entry.target);
+        if (entry.isIntersecting) { if (at === -1) visible.push(entry.target); }
+        else if (at !== -1) { visible.splice(at, 1); }
+      });
+      if (visible.length === 0) { setActive(null); return; }
+      /* Document order, not intersection order — the observer fires in
+         whatever order the entries arrive. */
+      var first = null;
+      targets.forEach(function (el) {
+        if (first === null && visible.indexOf(el) !== -1) first = el;
+      });
+      setActive(first ? first.id : null);
+    }, { threshold: 0, rootMargin: '-20% 0px -70% 0px' });
+    targets.forEach(function (el) { observer.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>
