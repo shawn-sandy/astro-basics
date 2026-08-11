@@ -23,7 +23,7 @@ repo-name: astro-basics
 astro-basics is already one of the most agentically-instrumented repos you will
 find — 5,224 lines of AI instruction across 33 files, 8 subagents, 16 slash
 commands, 73 npm scripts, 5 CI workflows including two Claude-triggered ones —
-and almost none of it is agent-_operable_. Every affordance is prose describing
+and almost none of it is agent-operable. Every affordance is prose describing
 a capability rather than executable surface an agent can invoke and verify: the
 gates are pre-broken (127 type errors, ~49 vitest failures, both
 `continue-on-error` in CI), three slash commands describe capabilities with no
@@ -86,7 +86,8 @@ What already exists, grounded in measurement of the worktree at commit `ee23d1e`
 
 **The non-developer path is hard-broken at step one.**
 
-- **20 of 24** `db:*` / `setup:*` scripts run `node --env-file=.env`. Node
+- **21 scripts run `node --env-file=.env`** — 16 of the 22 `db:*` / `setup:*`
+  scripts (neither `setup:*` entry is affected), plus 5 `test:*` scripts. Node
   treats a missing `--env-file` target as a fatal startup error — verified
   directly.
 - Consequence: on a fresh clone with no `.env`, `npm run db:wizard` — described
@@ -127,7 +128,7 @@ _applications_.
 ## Core finding
 
 > astro-basics is already one of the most agentically-instrumented repos you
-> will find — and almost none of it is agent-_operable_, because every
+> will find — and almost none of it is agent-operable, because every
 > affordance is prose describing a capability rather than executable surface an
 > agent can invoke and verify; the gap is not missing AI guidance but that
 > nothing an agent does here can be checked, and much of what it reads is false.
@@ -186,7 +187,7 @@ an explicit opt-in project). This feature changes no behaviour.
 
 ### B — Zero-config first run (highest leverage, smallest work)
 
-Guard the `--env-file=.env` crash across 20 scripts. Make auth fail closed —
+Guard the `--env-file=.env` crash across 21 scripts. Make auth fail closed —
 `src/middleware.ts` currently omits `authMiddleware` entirely when Clerk keys are
 placeholders, leaving `/dashboard`, `/forum`, `/organization` publicly reachable.
 Delete or DEV-gate `src/pages/api/test/sync-user.ts`. Rewrite README's opening
@@ -295,7 +296,7 @@ Phases 1 and 2 are independent and may run in parallel.
 
 | Defect                                | Location                                            | Class      |
 | ------------------------------------- | --------------------------------------------------- | ---------- |
-| `db:wizard` crashes on fresh clone    | 20 scripts using `node --env-file=.env`             | Blocker    |
+| `db:wizard` crashes on fresh clone    | 21 scripts using `node --env-file=.env`             | Blocker    |
 | Auth fails open when Clerk keys unset | `src/middleware.ts`                                 | Security   |
 | Unauthenticated service-role write    | `src/pages/api/test/sync-user.ts`                   | Security   |
 | Backup linked as authoritative        | `CLAUDE.md` → `CLAUDE.md.backup`                    | Truth      |

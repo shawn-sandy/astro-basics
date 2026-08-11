@@ -3,10 +3,10 @@ type: proposal
 intent: Convert astro-basics into a Claude Code-first agentic starter kit a non-developer can hand to an agent to set up, customize, extend, and deploy, with a repo-native AI-driven CMS.
 techniques: Long-context grounding, XML structure, Comparison tables, Positive framing, Output format
 created: 2026-08-10
-modified: 2026-08-10
+modified: 2026-08-11
 status: converged
 repo-name: astro-basics
-generated-sha: 6af59433c63ebb7943571260b4fa7dd84ff2a0ae050e3743234874851b26100a
+generated-sha: a1edaf1d31b68ce19f940e219eed48b70e86fd985672acbadde8b2007a5ebb64
 ---
 
 # Proposal: Build An Agentic Starter Kit From astro-basics
@@ -87,7 +87,8 @@ What already exists, grounded in measurement of the worktree at commit `ee23d1e`
 
 **The non-developer path is hard-broken at step one.**
 
-- **20 of 24** `db:*` / `setup:*` scripts run `node --env-file=.env`. Node
+- **21 scripts run `node --env-file=.env`** — 16 of the 22 `db:*` / `setup:*`
+  scripts (neither `setup:*` entry is affected), plus 5 `test:*` scripts. Node
   treats a missing `--env-file` target as a fatal startup error — verified
   directly.
 - Consequence: on a fresh clone with no `.env`, `npm run db:wizard` — described
@@ -161,7 +162,7 @@ here can be checked, and much of what it reads is false.
 | Dimension | What an agentic starter requires | astro-basics today (measured) |
 |---|---|---|
 | Verifiable gate | Agent can prove it broke nothing | **No.** 127 type errors, ~49 vitest failures, both `continue-on-error` in CI |
-| Executable setup | Agent *runs* setup, not reads about it | **No.** `db:wizard` ("for non-developers") crashes on fresh clone; 20 scripts fatal without `.env` |
+| Executable setup | Agent *runs* setup, not reads about it | **No.** `db:wizard` ("for non-developers") crashes on fresh clone; 21 scripts fatal without `.env` |
 | Content scaffolding | Agent creates a post/page from schema | **No.** Zero content generators; 0 of 16 commands touch content |
 | Component scaffolding | Agent scaffolds to house rules | **No.** 57 components, strict placement rules, only VS Code snippets as scaffolding |
 | Truthful instructions | Every path and command resolves | **No.** Backup linked as authoritative; `src/content/config.ts` does not exist; 3 phantom commands |
@@ -250,7 +251,7 @@ first-run path honest.
 
 Scope:
 
-- Guard the `--env-file=.env` crash across all 20 affected scripts — either a
+- Guard the `--env-file=.env` crash across all 21 affected scripts — either a
   preflight that copies `.env.example` to `.env` when absent, or dropping
   `--env-file` in favour of in-process loading. This is the single
   highest-leverage fix in the proposal and is roughly one line of shared code.
@@ -459,7 +460,7 @@ the stated goal, and it closes two security defects.
 
 | Defect                                | Location                                                           | Class      |
 | ------------------------------------- | ------------------------------------------------------------------ | ---------- |
-| `db:wizard` crashes on fresh clone    | 20 scripts using `node --env-file=.env`                            | Blocker    |
+| `db:wizard` crashes on fresh clone    | 21 scripts using `node --env-file=.env`                            | Blocker    |
 | Auth fails open when Clerk keys unset | `src/middleware.ts` (protected matcher bypassed)                   | Security   |
 | Unauthenticated service-role write    | `src/pages/api/test/sync-user.ts`                                  | Security   |
 | Backup linked as authoritative        | `CLAUDE.md` → `CLAUDE.md.backup`                                   | Truth      |
