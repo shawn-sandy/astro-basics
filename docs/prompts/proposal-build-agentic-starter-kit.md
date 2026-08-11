@@ -6,7 +6,7 @@ created: 2026-08-10
 modified: 2026-08-11
 status: converged
 repo-name: astro-basics
-generated-sha: a1edaf1d31b68ce19f940e219eed48b70e86fd985672acbadde8b2007a5ebb64
+generated-sha: 5614a6a2e46576bec4fa6f50bf4c0427d94baab68725259c79075076ce8a91f0
 ---
 
 # Proposal: Build An Agentic Starter Kit From astro-basics
@@ -473,6 +473,7 @@ the stated goal, and it closes two security defects.
 | Unregistered, commented-out hook      | `.claude/hooks/css-refactor-hook.js`                               | Dead       |
 | No committed shared config            | `.claude/settings.json` absent                                     | Onboarding |
 | Skill grant for a non-skill           | `Skill(design-token-extractor)` (ships as agent)                   | Phantom    |
+| Advertised skill never committed      | `wcag-compliance-reviewer` (`CLAUDE.md:150`, `:157`)               | Phantom    |
 | Dead paginated route                  | `src/pages/docs/[page].astro:13` filters undefined field           | Bug        |
 | Nonexistent redirect target           | `forum` / `organization` redirect to `/sign-in`; route is `/login` | Bug        |
 | Port drift                            | README 4321 vs `launch.json` 4330/4331                             | Truth      |

@@ -309,6 +309,7 @@ Phases 1 and 2 are independent and may run in parallel.
 | Unregistered, commented-out hook      | `.claude/hooks/css-refactor-hook.js`                | Dead       |
 | No committed shared config            | `.claude/settings.json` absent                      | Onboarding |
 | Skill grant for a non-skill           | `Skill(design-token-extractor)`                     | Phantom    |
+| Advertised skill never committed      | `wcag-compliance-reviewer` (CLAUDE.md:150)          | Phantom    |
 | Dead paginated route                  | `src/pages/docs/[page].astro:13`                    | Bug        |
 | Nonexistent redirect target           | `/sign-in` redirects; route is `/login`             | Bug        |
 | Port drift                            | README 4321 vs `launch.json` 4330/4331              | Truth      |
