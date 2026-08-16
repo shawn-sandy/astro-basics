@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fresh-clone setup and environment placeholder handling</title>
+<style>
+  html { color-scheme: light dark; }
+  .mermaid-diagram { background: #ffffff !important; }
+  .mermaid-diagram svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+</style>
+</head>
+<body>
+<title>Fresh-clone setup and environment placeholder handling</title>
+<style>
+  :root {
+    --paper: #fcfcfd;
+    --sunk: #f1f3f5;
+    --ink: #101418;
+    --ink-soft: #5a6472;
+    --rule: #dde1e6;
+    --accent: #0b6070;
+    --accent-wash: #e6f2f6;
+    --bad: #b42318;
+    --bad-wash: #fef3f2;
+    --good: #067647;
+    --good-wash: #ecfdf3;
+    --diagram-ground: #ffffff;
+
+    --step--1: 0.8125rem;
+    --step-0: 1rem;
+    --step-1: 1.1875rem;
+    --step-2: 1.4375rem;
+    --step-3: 1.875rem;
+
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0d1014;
+      --sunk: #151a20;
+      --ink: #e8eaed;
+      --ink-soft: #99a2ad;
+      --rule: #262c33;
+      --accent: #6bb9c9;
+      --accent-wash: #102a33;
+      --bad: #fca19b;
+      --bad-wash: #2a1414;
+      --good: #6ee7a8;
+      --good-wash: #0d2119;
+      --diagram-ground: #e9edf0;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #0d1014;
+    --sunk: #151a20;
+    --ink: #e8eaed;
+    --ink-soft: #99a2ad;
+    --rule: #262c33;
+    --accent: #6bb9c9;
+    --accent-wash: #102a33;
+    --bad: #fca19b;
+    --bad-wash: #2a1414;
+    --good: #6ee7a8;
+    --good-wash: #0d2119;
+    --diagram-ground: #e9edf0;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-0);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 54rem;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.25rem;
+  }
+
+  .prose { max-width: 68ch; }
+
+  h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 600; letter-spacing: -0.011em; }
+  h1 { font-size: var(--step-3); line-height: 1.15; }
+  h2 { font-size: var(--step-2); line-height: 1.25; }
+  h3 { font-size: var(--step-1); line-height: 1.3; }
+  p { margin: 0; }
+
+  header { display: flex; flex-direction: column; gap: 1rem; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--ink-soft);
+  }
+
+  .lede { font-size: var(--step-1); color: var(--ink-soft); line-height: 1.5; }
+
+  section { display: flex; flex-direction: column; gap: 1.125rem; }
+  section > .prose + .prose { margin-top: -0.25rem; }
+
+  .section-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .stat { background: var(--sunk); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat dt {
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+  }
+  .stat dd {
+    margin: 0;
+    font-size: var(--step-2);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .stat dd small { font-size: var(--step--1); font-weight: 400; color: var(--ink-soft); }
+
+  .cards { display: flex; flex-direction: column; gap: 1rem; }
+  .card {
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.25rem 1.375rem;
+    background: var(--sunk);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .card h3 { font-size: var(--step-1); }
+  .card p { max-width: 66ch; }
+
+  .chip {
+    align-self: flex-start;
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    background: var(--accent-wash);
+    color: var(--accent);
+    border: 1px solid color-mix(in oklch, var(--accent) 25%, transparent);
+  }
+
+  .reach {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+    padding-top: 0.55rem;
+    border-top: 1px dashed var(--rule);
+  }
+  .reach strong { color: var(--ink); font-weight: 600; }
+
+  .scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; }
+
+  table { border-collapse: collapse; width: 100%; font-size: var(--step--1); }
+  th, td { text-align: left; padding: 0.6rem 0.85rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    background: var(--sunk);
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-soft);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.was { color: var(--bad); }
+  td.now { color: var(--good); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.875em;
+    background: var(--accent-wash);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    overflow-wrap: anywhere;
+  }
+  td code, .reach code { background: transparent; padding: 0; }
+
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+  .entries { display: flex; flex-direction: column; gap: 1.375rem; }
+  .entry { display: flex; flex-direction: column; gap: 0.4rem; padding-left: 0.9rem; border-left: 2px solid var(--rule); }
+  .entry.flag { border-left-color: var(--accent); }
+  .entry h3 { font-size: var(--step-0); }
+  .entry p { max-width: 66ch; color: var(--ink-soft); }
+  .entry p strong { color: var(--ink); font-weight: 600; }
+  .rejected { font-size: var(--step--1); }
+  .rejected b { font-family: var(--mono); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--bad); font-weight: 600; }
+
+  .diagram-note { font-size: var(--step--1); color: var(--ink-soft); max-width: 66ch; font-style: italic; }
+
+  .mermaid-diagram {
+    background: var(--diagram-ground);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.25rem 1rem;
+    overflow-x: auto;
+  }
+  .mermaid-diagram svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+
+  .files { display: flex; flex-direction: column; gap: 1.25rem; }
+  .file-group h3 {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .file-group ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .file-group li { font-size: var(--step--1); padding-left: 0.9rem; border-left: 1px solid var(--rule); max-width: 70ch; }
+  .file-group li b { font-family: var(--mono); font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+  .file-group li span { color: var(--ink-soft); }
+
+  dl.glossary { margin: 0; display: flex; flex-direction: column; gap: 0.7rem; }
+  dl.glossary div { display: flex; flex-direction: column; gap: 0.1rem; max-width: 70ch; }
+  dl.glossary dt { font-weight: 600; font-size: var(--step--1); }
+  dl.glossary dd { margin: 0; font-size: var(--step--1); color: var(--ink-soft); }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.25rem;
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+  }
+
+  @media (max-width: 34rem) {
+    .wrap { padding: 2.5rem 1.1rem 4rem; gap: 2.5rem; }
+    h1 { font-size: var(--step-2); }
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Team recap &middot; 16 August 2026</p>
+    <h1>Fresh-clone setup and environment placeholder handling</h1>
+    <p class="lede">
+      A setup skill for non-technical teammates &mdash; and the fresh-clone bug that testing it
+      uncovered, where the settings template the README told you to copy was the thing that broke
+      the site.
+    </p>
+  </header>
+
+  <section>
+    <div class="section-head">
+      <h2>At a glance</h2>
+    </div>
+    <dl class="stats">
+      <div class="stat"><dt>Commits</dt><dd>2</dd></div>
+      <div class="stat"><dt>Files touched</dt><dd>5</dd></div>
+      <div class="stat"><dt>Services fixed</dt><dd>3 <small>of 4</small></dd></div>
+      <div class="stat"><dt>Decisions</dt><dd>6</dd></div>
+      <div class="stat"><dt>Open items</dt><dd>4</dd></div>
+    </dl>
+    <div class="prose">
+      <p>
+        The job was to write a setup skill so a non-technical person could clone this project and
+        get it running. Testing that skill against the project&rsquo;s own README uncovered a bug
+        that made a fresh clone unusable: the example settings file the README tells you to copy is
+        what broke the site. Three services were treating unfilled template values as if they were
+        real credentials.
+      </p>
+    </div>
+    <div class="prose">
+      <p>
+        All three are fixed, the setup skill exists, and the README no longer tells new users to do
+        the thing that breaks their install. Shipped as
+        <a href="https://github.com/shawn-sandy/astro-basics/pull/368">PR&nbsp;#368</a>.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>What changed</h2>
+      <p class="eyebrow">Five changes &middot; who each one affects</p>
+    </div>
+    <div class="cards">
+
+      <article class="card">
+        <span class="chip">Affects: new teammates</span>
+        <h3>A guided setup skill for non-technical users</h3>
+        <p>
+          Claude can now walk someone from &ldquo;I was sent a link&rdquo; to &ldquo;the website is
+          open in my browser&rdquo; without assuming they know git, package managers, or what an
+          environment variable is. It checks their machine, clones, installs, starts the site, and
+          confirms it rendered. It also carries a plain-language table of the failures people
+          actually hit, so a stack trace gets translated rather than pasted at them.
+        </p>
+        <p class="reach">
+          <strong>Reach it:</strong> <code>.claude/skills/project-setup/SKILL.md</code> &mdash;
+          triggers on requests like &ldquo;how do I set this project up&rdquo;
+        </p>
+      </article>
+
+      <article class="card">
+        <span class="chip">Affects: everyone cloning the repo</span>
+        <h3>The site no longer breaks when you copy the settings template</h3>
+        <p>
+          Following the README exactly &mdash; copy the template, start the site &mdash; used to
+          return an error page on <strong>every</strong> route. Now the site starts and runs, with
+          the un-configured features simply switched off.
+        </p>
+        <p class="reach">
+          <strong>Reach it:</strong> <code>cp .env.example .env &amp;&amp; npm run dev</code>
+        </p>
+      </article>
+
+      <article class="card">
+        <span class="chip">Affects: local development</span>
+        <h3>Logging no longer spams the terminal on a fresh clone</h3>
+        <p>
+          The app was trying to ship logs to an external service using the template&rsquo;s
+          placeholder token, producing a burst of <code>Error: forbidden</code> traces on every page
+          load. It now falls back to console logging silently.
+        </p>
+      </article>
+
+      <article class="card">
+        <span class="chip">Affects: contact form on a fresh clone</span>
+        <h3>The database picker no longer selects a database you never configured</h3>
+        <p>
+          With template values in place, the app&rsquo;s automatic database selection was choosing
+          Turso and handing it a fake connection string on the first database operation. Turso is
+          now correctly seen as un-configured.
+        </p>
+      </article>
+
+      <article class="card">
+        <span class="chip">Affects: new contributors</span>
+        <h3>README corrected</h3>
+        <p>
+          Two errors fixed: authentication was labelled <strong>required</strong> when the site runs
+          fine without it, and the placeholder guidance was missing. It now states that placeholders
+          are safe to leave in place.
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>How it works now</h2>
+      <p class="eyebrow">Two diagrams &middot; the paths that actually moved</p>
+    </div>
+
+    <div class="mermaid-diagram">
+      <svg id="claude-mermaid-0" width="825.755859375" xmlns="http://www.w3.org/2000/svg" class="flowchart" height="1062" viewBox="0.5 0 825.755859375 1062" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#claude-mermaid-0{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;fill:#f2f3f5;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#claude-mermaid-0 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#claude-mermaid-0 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#claude-mermaid-0 .error-icon{fill:hsl(38.5714285714, 15.5555555556%, 22.6470588235%);}#claude-mermaid-0 .error-text{fill:rgb(188.2666666667, 194.6833333334, 206.2333333334);stroke:rgb(188.2666666667, 194.6833333334, 206.2333333334);}#claude-mermaid-0 .edge-thickness-normal{stroke-width:1px;}#claude-mermaid-0 .edge-thickness-thick{stroke-width:3.5px;}#claude-mermaid-0 .edge-pattern-solid{stroke-dasharray:0;}#claude-mermaid-0 .edge-thickness-invisible{stroke-width:0;fill:none;}#claude-mermaid-0 .edge-pattern-dashed{stroke-dasharray:3;}#claude-mermaid-0 .edge-pattern-dotted{stroke-dasharray:2;}#claude-mermaid-0 .marker{fill:#a8adb8;stroke:#a8adb8;}#claude-mermaid-0 .marker.cross{stroke:#a8adb8;}#claude-mermaid-0 svg{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;}#claude-mermaid-0 p{margin:0;}#claude-mermaid-0 .label{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#f2f3f5;}#claude-mermaid-0 .cluster-label text{fill:#f2f3f5;}#claude-mermaid-0 .cluster-label span{color:#f2f3f5;}#claude-mermaid-0 .cluster-label span p{background-color:transparent;}#claude-mermaid-0 .label text,#claude-mermaid-0 span{fill:#f2f3f5;color:#f2f3f5;}#claude-mermaid-0 .node rect,#claude-mermaid-0 .node circle,#claude-mermaid-0 .node ellipse,#claude-mermaid-0 .node polygon,#claude-mermaid-0 .node path{fill:#262b34;stroke:#9aa4b8;stroke-width:1px;}#claude-mermaid-0 .rough-node .label text,#claude-mermaid-0 .node .label text,#claude-mermaid-0 .image-shape .label,#claude-mermaid-0 .icon-shape .label{text-anchor:middle;}#claude-mermaid-0 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#claude-mermaid-0 .rough-node .label,#claude-mermaid-0 .node .label,#claude-mermaid-0 .image-shape .label,#claude-mermaid-0 .icon-shape .label{text-align:center;}#claude-mermaid-0 .node.clickable{cursor:pointer;}#claude-mermaid-0 .root .anchor path{fill:#a8adb8!important;stroke-width:0;stroke:#a8adb8;}#claude-mermaid-0 .arrowheadPath{fill:#f2efeb;}#claude-mermaid-0 .edgePath .path{stroke:#a8adb8;stroke-width:1px;}#claude-mermaid-0 .flowchart-link{stroke:#a8adb8;fill:none;}#claude-mermaid-0 .edgeLabel{background-color:rgb(13, 16, 20);text-align:center;}#claude-mermaid-0 .edgeLabel p{background-color:rgb(13, 16, 20);}#claude-mermaid-0 .edgeLabel rect{opacity:0.5;background-color:rgb(13, 16, 20);fill:rgb(13, 16, 20);}#claude-mermaid-0 .labelBkg{background-color:rgba(13, 16, 20, 0.5);}#claude-mermaid-0 .cluster rect{fill:rgba(127,127,127,0.07);stroke:#9aa4b8;stroke-width:1px;}#claude-mermaid-0 .cluster text{fill:#f2f3f5;}#claude-mermaid-0 .cluster span{color:#f2f3f5;}#claude-mermaid-0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:12px;background:hsl(38.5714285714, 15.5555555556%, 22.6470588235%);border:1px solid hsl(38.5714285714, 0%, 32.6470588235%);border-radius:2px;pointer-events:none;z-index:100;}#claude-mermaid-0 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#f2f3f5;}#claude-mermaid-0 rect.text{fill:none;stroke-width:0;}#claude-mermaid-0 .icon-shape,#claude-mermaid-0 .image-shape{background-color:rgb(13, 16, 20);text-align:center;}#claude-mermaid-0 .icon-shape p,#claude-mermaid-0 .image-shape p{background-color:rgb(13, 16, 20);padding:2px;}#claude-mermaid-0 .icon-shape .label rect,#claude-mermaid-0 .image-shape .label rect{opacity:0.5;background-color:rgb(13, 16, 20);fill:rgb(13, 16, 20);}#claude-mermaid-0 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#claude-mermaid-0 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#claude-mermaid-0 .node .neo-node{stroke:#9aa4b8;}#claude-mermaid-0 [data-look="neo"].node rect,#claude-mermaid-0 [data-look="neo"].cluster rect,#claude-mermaid-0 [data-look="neo"].node polygon{stroke:url(#claude-mermaid-0-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#claude-mermaid-0 [data-look="neo"].node path{stroke:url(#claude-mermaid-0-gradient);stroke-width:1px;}#claude-mermaid-0 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#claude-mermaid-0 [data-look="neo"].node .neo-line path{stroke:#9aa4b8;filter:none;}#claude-mermaid-0 [data-look="neo"].node circle{stroke:url(#claude-mermaid-0-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#claude-mermaid-0 [data-look="neo"].node circle .state-start{fill:#000000;}#claude-mermaid-0 [data-look="neo"].icon-shape .icon{fill:url(#claude-mermaid-0-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#claude-mermaid-0 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#claude-mermaid-0-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#claude-mermaid-0 .node rect,#claude-mermaid-0 .node circle,#claude-mermaid-0 .node polygon,#claude-mermaid-0 .node path,#claude-mermaid-0 .cluster rect{stroke-width:2px;}#claude-mermaid-0 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="claude-mermaid-0_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="claude-mermaid-0_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="claude-mermaid-0_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></path></marker><marker id="claude-mermaid-0_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></polygon></marker><marker id="claude-mermaid-0_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="claude-mermaid-0_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="claude-mermaid-0_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></circle></marker><marker id="claude-mermaid-0_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></circle></marker><marker id="claude-mermaid-0_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="claude-mermaid-0_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="claude-mermaid-0_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"></path></marker><marker id="claude-mermaid-0_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"></g><g class="edgePaths"><path d="M253.247,86L235.539,90.167C217.831,94.333,182.416,102.667,164.708,110.333C147,118,147,125,147,128.5L147,132" id="claude-mermaid-0-L_A_B_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_A_B_0" data-points="W3sieCI6MjUzLjI0Njk0ODI0MjE4NzUsInkiOjg2fSx7IngiOjE0NywieSI6MTExfSx7IngiOjE0NywieSI6MTM2fV0=" data-look="classic" marker-end="url(#claude-mermaid-0_flowchart-v2-pointEnd)"></path><path d="M147,414L147,422.167C147,430.333,147,446.667,147,462.333C147,478,147,493,147,500.5L147,508" id="claude-mermaid-0-L_B_C_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_C_0" data-points="W3sieCI6MTQ3LCJ5Ijo0MTR9LHsieCI6MTQ3LCJ5Ijo0NjN9LHsieCI6MTQ3LCJ5Ijo1MTJ9XQ==" data-look="classic" marker-end="url(#claude-mermaid-0_flowchart-v2-pointEnd)"></path><path d="M147,566L147,570.167C147,574.333,147,582.667,147,590.333C147,598,147,605,147,608.5L147,612" id="claude-mermaid-0-L_C_D_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_C_D_0" data-points="W3sieCI6MTQ3LCJ5Ijo1NjZ9LHsieCI6MTQ3LCJ5Ijo1OTF9LHsieCI6MTQ3LCJ5Ijo2MTZ9XQ==" data-look="classic" marker-end="url(#claude-mermaid-0_flowchart-v2-pointEnd)"></path><path d="M147,694L147,698.167C147,702.333,147,710.667,147,718.333C147,726,147,733,147,736.5L147,740" id="claude-mermaid-0-L_D_E_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_D_E_0" data-points="W3sieCI6MTQ3LCJ5Ijo2OTR9LHsieCI6MTQ3LCJ5Ijo3MTl9LHsieCI6MTQ3LCJ5Ijo3NDR9XQ==" data-look="classic" marker-end="url(#claude-mermaid-0_flowchart-v2-pointEnd)"></path><path d="M147,822L147,826.167C147,830.333,147,838.667,147,846.333C147,854,147,861,147,864.5L147,868" id="claude-mermaid-0-L_E_F_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_E_F_0" data-points="W3sieCI6MTQ3LCJ5Ijo4MjJ9LHsieCI6MTQ3LCJ5Ijo4NDd9LHsieCI6MTQ3LCJ5Ijo4NzJ9XQ==" data-look="classic" marker-end="url(#claude-mermaid-0_flowchart-v2-pointEnd)"></path><path d="M147,926L147,930.167C147,934.333,147,942.667,147,950.333C147,958,147,965,147,968.5L147,972" id="claude-mermaid-0-L_F_G_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_F_G_0" data-points="W3sieCI6MTQ3LCJ5Ijo5MjZ9LHsieCI6MTQ3LCJ5Ijo5NTF9LHsieCI6MTQ3LCJ5Ijo5NzZ9XQ==" data-look="classic" marker-end="url(#claude-mermaid-0_flowchart-v2-pointEnd)"></path><path d="M518.93,86L529.607,90.167C540.284,94.333,561.638,102.667,572.315,110.333C582.992,118,582.992,125,582.992,128.5L582.992,132" id="claude-mermaid-0-L_A_H_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_A_H_0" data-points="W3sieCI6NTE4LjkyOTY4NzUsInkiOjg2fSx7IngiOjU4Mi45OTIxODc1LCJ5IjoxMTF9LHsieCI6NTgyLjk5MjE4NzUsInkiOjEzNn1d" data-look="classic" marker-end="url(#claude-mermaid-0_flowchart-v2-pointEnd)"></path><path d="M526.207,357.215L514.03,374.846C501.852,392.477,477.497,427.738,465.32,452.869C453.143,478,453.143,493,453.143,500.5L453.143,508" id="claude-mermaid-0-L_H_I_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_H_I_0" data-points="W3sieCI6NTI2LjIwNzE2OTc3MjIyNzMsInkiOjM1Ny4yMTQ5ODIyNzIyMjczfSx7IngiOjQ1My4xNDI1NzgxMjUsInkiOjQ2M30seyJ4Ijo0NTMuMTQyNTc4MTI1LCJ5Ijo1MTJ9XQ==" data-look="classic" marker-end="url(#claude-mermaid-0_flowchart-v2-pointEnd)"></path><path d="M453.143,566L453.143,570.167C453.143,574.333,453.143,582.667,453.143,592.333C453.143,602,453.143,613,453.143,618.5L453.143,624" id="claude-mermaid-0-L_I_J_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_I_J_0" data-points="W3sieCI6NDUzLjE0MjU3ODEyNSwieSI6NTY2fSx7IngiOjQ1My4xNDI1NzgxMjUsInkiOjU5MX0seyJ4Ijo0NTMuMTQyNTc4MTI1LCJ5Ijo2Mjh9XQ==" data-look="classic" marker-end="url(#claude-mermaid-0_flowchart-v2-pointEnd)"></path><path d="M453.143,682L453.143,688.167C453.143,694.333,453.143,706.667,465.056,718.705C476.97,730.744,500.797,742.488,512.71,748.36L524.624,754.232" id="claude-mermaid-0-L_J_K_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_J_K_0" data-points="W3sieCI6NDUzLjE0MjU3ODEyNSwieSI6NjgyfSx7IngiOjQ1My4xNDI1NzgxMjUsInkiOjcxOX0seyJ4Ijo1MjguMjExODgzNTQ0OTIxOSwieSI6NzU2fV0=" data-look="classic" marker-end="url(#claude-mermaid-0_flowchart-v2-pointEnd)"></path><path d="M639.777,357.215L651.955,374.846C664.132,392.477,688.487,427.738,700.664,458.036C712.842,488.333,712.842,513.667,712.842,535C712.842,556.333,712.842,573.667,712.842,587.833C712.842,602,712.842,613,712.842,618.5L712.842,624" id="claude-mermaid-0-L_H_C2_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_H_C2_0" data-points="W3sieCI6NjM5Ljc3NzIwNTIyNzc3MjcsInkiOjM1Ny4yMTQ5ODIyNzIyMjczfSx7IngiOjcxMi44NDE3OTY4NzUsInkiOjQ2M30seyJ4Ijo3MTIuODQxNzk2ODc1LCJ5Ijo1Mzl9LHsieCI6NzEyLjg0MTc5Njg3NSwieSI6NTkxfSx7IngiOjcxMi44NDE3OTY4NzUsInkiOjYyOH1d" data-look="classic" marker-end="url(#claude-mermaid-0_flowchart-v2-pointEnd)"></path><path d="M712.842,682L712.842,688.167C712.842,694.333,712.842,706.667,700.928,718.705C689.015,730.744,665.188,742.488,653.274,748.36L641.36,754.232" id="claude-mermaid-0-L_C2_K_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_C2_K_0" data-points="W3sieCI6NzEyLjg0MTc5Njg3NSwieSI6NjgyfSx7IngiOjcxMi44NDE3OTY4NzUsInkiOjcxOX0seyJ4Ijo2MzcuNzcyNDkxNDU1MDc4MSwieSI6NzU2fV0=" data-look="classic" marker-end="url(#claude-mermaid-0_flowchart-v2-pointEnd)"></path></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_A_B_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(147, 463)"><g class="label" data-id="L_B_C_0" transform="translate(-100, -24)"><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="edgeLabel"><p>Yes - it is anon-empty string</p></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_C_D_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_D_E_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_E_F_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_F_G_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_A_H_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(453.142578125, 463)"><g class="label" data-id="L_H_I_0" transform="translate(-10.3515625, -12)"><foreignObject width="20.703125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>No</p></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_I_J_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_J_K_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(712.841796875, 539)"><g class="label" data-id="L_H_C2_0" transform="translate(-12.8671875, -12)"><foreignObject width="25.734375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>Yes</p></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_C2_K_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default" id="claude-mermaid-0-flowchart-A-0" data-look="classic" transform="translate(418.9921875, 47)"><rect class="basic label-container" style="" x="-194.78125" y="-39" width="389.5625" height="78"></rect><g class="label" style="" transform="translate(-164.78125, -24)"><rect></rect><foreignObject width="329.5625" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Value in .envSUPABASE_URL=YOUR_SUPABASE_URL</p></span></div></foreignObject></g></g><g class="node default" id="claude-mermaid-0-flowchart-B-1" data-look="classic" transform="translate(147, 275)"><polygon points="139,0 278,-139 139,-278 0,-139" class="label-container" transform="translate(-138.5, 139)"></polygon><g class="label" style="" transform="translate(-100, -24)"><rect></rect><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Old guard:is the value non-empty?</p></span></div></foreignObject></g></g><g class="node default" id="claude-mermaid-0-flowchart-C-3" data-look="classic" transform="translate(147, 539)"><rect class="basic label-container" style="" x="-105.4140625" y="-27" width="210.828125" height="54"></rect><g class="label" style="" transform="translate(-75.4140625, -12)"><rect></rect><foreignObject width="150.828125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Build database client</p></span></div></foreignObject></g></g><g class="node default" id="claude-mermaid-0-flowchart-D-5" data-look="classic" transform="translate(147, 655)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"></rect><g class="label" style="" transform="translate(-100, -24)"><rect></rect><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Client rejects it:not a valid URL - throws</p></span></div></foreignObject></g></g><g class="node default" id="claude-mermaid-0-flowchart-E-7" data-look="classic" transform="translate(147, 783)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"></rect><g class="label" style="" transform="translate(-100, -24)"><rect></rect><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Throw happens while thefile is still loading</p></span></div></foreignObject></g></g><g class="node default" id="claude-mermaid-0-flowchart-F-9" data-look="classic" transform="translate(147, 899)"><rect class="basic label-container" style="" x="-116.85546875" y="-27" width="233.7109375" height="54"></rect><g class="label" style="" transform="translate(-86.85546875, -12)"><rect></rect><foreignObject width="173.7109375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Middleware never starts</p></span></div></foreignObject></g></g><g class="node default" id="claude-mermaid-0-flowchart-G-11" data-look="classic" transform="translate(147, 1015)"><rect class="basic label-container" style="fill:#fee4e2 !important;stroke:#b42318 !important" x="-130" y="-39" width="260" height="78"></rect><g class="label" style="color:#101418 !important" transform="translate(-100, -24)"><rect></rect><foreignObject width="200" height="48"><div style="color: rgb(16, 20, 24) !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;" xmlns="http://www.w3.org/1999/xhtml"><span style="color:#101418 !important" class="nodeLabel"><p>Every route returnsan error page</p></span></div></foreignObject></g></g><g class="node default" id="claude-mermaid-0-flowchart-H-13" data-look="classic" transform="translate(582.9921875, 275)"><polygon points="139,0 278,-139 139,-278 0,-139" class="label-container" transform="translate(-138.5, 139)"></polygon><g class="label" style="" transform="translate(-100, -24)"><rect></rect><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>New guard:is it a usable https URL?</p></span></div></foreignObject></g></g><g class="node default" id="claude-mermaid-0-flowchart-I-15" data-look="classic" transform="translate(453.142578125, 539)"><rect class="basic label-container" style="" x="-122.265625" y="-27" width="244.53125" height="54"></rect><g class="label" style="" transform="translate(-92.265625, -12)"><rect></rect><foreignObject width="184.53125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Report as'not configured'</p></span></div></foreignObject></g></g><g class="node default" id="claude-mermaid-0-flowchart-J-17" data-look="classic" transform="translate(453.142578125, 655)"><rect class="basic label-container" style="" x="-104.28515625" y="-27" width="208.5703125" height="54"></rect><g class="label" style="" transform="translate(-74.28515625, -12)"><rect></rect><foreignObject width="148.5703125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Feature switched off</p></span></div></foreignObject></g></g><g class="node default" id="claude-mermaid-0-flowchart-K-19" data-look="classic" transform="translate(582.9921875, 783)"><rect class="basic label-container" style="fill:#d1fadf !important;stroke:#067647 !important" x="-106.8046875" y="-27" width="213.609375" height="54"></rect><g class="label" style="color:#101418 !important" transform="translate(-76.8046875, -12)"><rect></rect><foreignObject width="153.609375" height="24"><div style="color: rgb(16, 20, 24) !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="color:#101418 !important" class="nodeLabel"><p>Site renders normally</p></span></div></foreignObject></g></g><g class="node default" id="claude-mermaid-0-flowchart-C2-21" data-look="classic" transform="translate(712.841796875, 655)"><rect class="basic label-container" style="" x="-105.4140625" y="-27" width="210.828125" height="54"></rect><g class="label" style="" transform="translate(-75.4140625, -12)"><rect></rect><foreignObject width="150.828125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Build database client</p></span></div></foreignObject></g></g></g></g></g><defs><filter id="claude-mermaid-0-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></feDropShadow></filter></defs><defs><filter id="claude-mermaid-0-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></feDropShadow></filter></defs><linearGradient id="claude-mermaid-0-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#9aa4b8" stop-opacity="1"></stop><stop offset="100%" stop-color="hsl(98.5714285714, 0%, 27.6470588235%)" stop-opacity="1"></stop></linearGradient></svg>
+    </div>
+    <p class="diagram-note">
+      The old path (top) and the new one (bottom). The fix is the single decision point: a value
+      that cannot be used is now reported as absent rather than passed along.
+    </p>
+
+    <div class="mermaid-diagram">
+      <svg id="claude-mermaid-1" width="1185" xmlns="http://www.w3.org/2000/svg" height="636" viewBox="-50 -10 1185 636" role="graphics-document document" aria-roledescription="sequence"><g><rect x="889" y="550" fill="#eaeaea" stroke="#666" width="150" height="65" name="L" rx="3" ry="3" class="actor actor-bottom"></rect><text x="964" y="582.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="964" dy="0">logger.ts</tspan></text></g><g><rect x="681" y="550" fill="#eaeaea" stroke="#666" width="158" height="65" name="S" rx="3" ry="3" class="actor actor-bottom"></rect><text x="760" y="582.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="760" dy="0">supabase-native.ts</tspan></text></g><g><rect x="348" y="550" fill="#eaeaea" stroke="#666" width="150" height="65" name="M" rx="3" ry="3" class="actor actor-bottom"></rect><text x="423" y="582.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="423" dy="0">middleware.ts</tspan></text></g><g><rect x="0" y="550" fill="#eaeaea" stroke="#666" width="150" height="65" name="R" rx="3" ry="3" class="actor actor-bottom"></rect><text x="75" y="582.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">Incoming request</tspan></text></g><g><line id="actor3" x1="964" y1="65" x2="964" y2="550" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="L" data-et="life-line" data-id="L"></line><g id="root-3" data-et="participant" data-type="participant" data-id="L"><rect x="889" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="L" rx="3" ry="3" class="actor actor-top"></rect><text x="964" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="964" dy="0">logger.ts</tspan></text></g></g><g><line id="actor2" x1="760" y1="65" x2="760" y2="550" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="S" data-et="life-line" data-id="S"></line><g id="root-2" data-et="participant" data-type="participant" data-id="S"><rect x="681" y="0" fill="#eaeaea" stroke="#666" width="158" height="65" name="S" rx="3" ry="3" class="actor actor-top"></rect><text x="760" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="760" dy="0">supabase-native.ts</tspan></text></g></g><g><line id="actor1" x1="423" y1="65" x2="423" y2="550" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="M" data-et="life-line" data-id="M"></line><g id="root-1" data-et="participant" data-type="participant" data-id="M"><rect x="348" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="M" rx="3" ry="3" class="actor actor-top"></rect><text x="423" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="423" dy="0">middleware.ts</tspan></text></g></g><g><line id="actor0" x1="75" y1="65" x2="75" y2="550" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="R" data-et="life-line" data-id="R"></line><g id="root-0" data-et="participant" data-type="participant" data-id="R"><rect x="0" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="R" rx="3" ry="3" class="actor actor-top"></rect><text x="75" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">Incoming request</tspan></text></g></g><style>#claude-mermaid-1{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;fill:#f2f3f5;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#claude-mermaid-1 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#claude-mermaid-1 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#claude-mermaid-1 .error-icon{fill:hsl(38.5714285714, 15.5555555556%, 22.6470588235%);}#claude-mermaid-1 .error-text{fill:rgb(188.2666666667, 194.6833333334, 206.2333333334);stroke:rgb(188.2666666667, 194.6833333334, 206.2333333334);}#claude-mermaid-1 .edge-thickness-normal{stroke-width:1px;}#claude-mermaid-1 .edge-thickness-thick{stroke-width:3.5px;}#claude-mermaid-1 .edge-pattern-solid{stroke-dasharray:0;}#claude-mermaid-1 .edge-thickness-invisible{stroke-width:0;fill:none;}#claude-mermaid-1 .edge-pattern-dashed{stroke-dasharray:3;}#claude-mermaid-1 .edge-pattern-dotted{stroke-dasharray:2;}#claude-mermaid-1 .marker{fill:#a8adb8;stroke:#a8adb8;}#claude-mermaid-1 .marker.cross{stroke:#a8adb8;}#claude-mermaid-1 svg{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;}#claude-mermaid-1 p{margin:0;}#claude-mermaid-1 .actor{stroke:#9aa4b8;fill:#262b34;stroke-width:1;}#claude-mermaid-1 rect.actor.outer-path[data-look="neo"]{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#claude-mermaid-1 rect.note[data-look="neo"]{stroke:hsl(52.6829268293, 60%, 93.9215686275%);fill:#fff5ad;filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#claude-mermaid-1 text.actor&gt;tspan{fill:#f2f3f5;stroke:none;}#claude-mermaid-1 .actor-line{stroke:#9aa4b8;}#claude-mermaid-1 .innerArc{stroke-width:1.5;stroke-dasharray:none;}#claude-mermaid-1 .messageLine0{stroke-width:1.5;stroke-dasharray:none;stroke:#f2f3f5;}#claude-mermaid-1 .messageLine1{stroke-width:1.5;stroke-dasharray:2,2;stroke:#f2f3f5;}#claude-mermaid-1 [id$="-arrowhead"] path{fill:#f2f3f5;stroke:#f2f3f5;}#claude-mermaid-1 .sequenceNumber{fill:#575247;}#claude-mermaid-1 [id$="-sequencenumber"]{fill:#f2f3f5;}#claude-mermaid-1 [id$="-crosshead"] path{fill:#f2f3f5;stroke:#f2f3f5;}#claude-mermaid-1 .messageText{fill:#f2f3f5;stroke:none;}#claude-mermaid-1 .labelBox{stroke:#9aa4b8;fill:#262b34;filter:none;}#claude-mermaid-1 .labelText,#claude-mermaid-1 .labelText&gt;tspan{fill:#f2f3f5;stroke:none;}#claude-mermaid-1 .loopText,#claude-mermaid-1 .loopText&gt;tspan{fill:#f2f3f5;stroke:none;}#claude-mermaid-1 .sectionTitle,#claude-mermaid-1 .sectionTitle&gt;tspan{fill:#f2f3f5;stroke:none;}#claude-mermaid-1 .loopLine{stroke-width:2px;stroke-dasharray:2,2;stroke:#9aa4b8;fill:#9aa4b8;}#claude-mermaid-1 .note{stroke:hsl(52.6829268293, 60%, 93.9215686275%);fill:#fff5ad;}#claude-mermaid-1 .noteText,#claude-mermaid-1 .noteText&gt;tspan{fill:#333;stroke:none;font-weight:normal;}#claude-mermaid-1 .activation0{fill:hsl(98.5714285714, 15.5555555556%, 17.6470588235%);stroke:hsl(98.5714285714, 15.5555555556%, 7.6470588235%);}#claude-mermaid-1 .activation1{fill:hsl(98.5714285714, 15.5555555556%, 17.6470588235%);stroke:hsl(98.5714285714, 15.5555555556%, 7.6470588235%);}#claude-mermaid-1 .activation2{fill:hsl(98.5714285714, 15.5555555556%, 17.6470588235%);stroke:hsl(98.5714285714, 15.5555555556%, 7.6470588235%);}#claude-mermaid-1 .actorPopupMenu{position:absolute;}#claude-mermaid-1 .actorPopupMenuPanel{position:absolute;fill:#262b34;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);filter:drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));}#claude-mermaid-1 .actor-man circle,#claude-mermaid-1 line{fill:#262b34;stroke-width:2px;}#claude-mermaid-1 g rect.rect{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));stroke:#9aa4b8;}#claude-mermaid-1 .node .neo-node{stroke:#9aa4b8;}#claude-mermaid-1 [data-look="neo"].node rect,#claude-mermaid-1 [data-look="neo"].cluster rect,#claude-mermaid-1 [data-look="neo"].node polygon{stroke:url(#claude-mermaid-1-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#claude-mermaid-1 [data-look="neo"].node path{stroke:url(#claude-mermaid-1-gradient);stroke-width:1px;}#claude-mermaid-1 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#claude-mermaid-1 [data-look="neo"].node .neo-line path{stroke:#9aa4b8;filter:none;}#claude-mermaid-1 [data-look="neo"].node circle{stroke:url(#claude-mermaid-1-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#claude-mermaid-1 [data-look="neo"].node circle .state-start{fill:#000000;}#claude-mermaid-1 [data-look="neo"].icon-shape .icon{fill:url(#claude-mermaid-1-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#claude-mermaid-1 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#claude-mermaid-1-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#claude-mermaid-1 .node rect,#claude-mermaid-1 .node circle,#claude-mermaid-1 .node polygon,#claude-mermaid-1 .node path,#claude-mermaid-1 .cluster rect{stroke-width:2px;}#claude-mermaid-1 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g></g><defs><symbol id="claude-mermaid-1-computer" width="24" height="24"><path transform="scale(.5)" d="M2 2v13h20v-13h-20zm18 11h-16v-9h16v9zm-10.228 6l.466-1h3.524l.467 1h-4.457zm14.228 3h-24l2-6h2.104l-1.33 4h18.45l-1.297-4h2.073l2 6zm-5-10h-14v-7h14v7z"></path></symbol></defs><defs><symbol id="claude-mermaid-1-database" fill-rule="evenodd" clip-rule="evenodd"><path transform="scale(.5)" d="M12.258.001l.256.004.255.005.253.008.251.01.249.012.247.015.246.016.242.019.241.02.239.023.236.024.233.027.231.028.229.031.225.032.223.034.22.036.217.038.214.04.211.041.208.043.205.045.201.046.198.048.194.05.191.051.187.053.183.054.18.056.175.057.172.059.168.06.163.061.16.063.155.064.15.066.074.033.073.033.071.034.07.034.069.035.068.035.067.035.066.035.064.036.064.036.062.036.06.036.06.037.058.037.058.037.055.038.055.038.053.038.052.038.051.039.05.039.048.039.047.039.045.04.044.04.043.04.041.04.04.041.039.041.037.041.036.041.034.041.033.042.032.042.03.042.029.042.027.042.026.043.024.043.023.043.021.043.02.043.018.044.017.043.015.044.013.044.012.044.011.045.009.044.007.045.006.045.004.045.002.045.001.045v17l-.001.045-.002.045-.004.045-.006.045-.007.045-.009.044-.011.045-.012.044-.013.044-.015.044-.017.043-.018.044-.02.043-.021.043-.023.043-.024.043-.026.043-.027.042-.029.042-.03.042-.032.042-.033.042-.034.041-.036.041-.037.041-.039.041-.04.041-.041.04-.043.04-.044.04-.045.04-.047.039-.048.039-.05.039-.051.039-.052.038-.053.038-.055.038-.055.038-.058.037-.058.037-.06.037-.06.036-.062.036-.064.036-.064.036-.066.035-.067.035-.068.035-.069.035-.07.034-.071.034-.073.033-.074.033-.15.066-.155.064-.16.063-.163.061-.168.06-.172.059-.175.057-.18.056-.183.054-.187.053-.191.051-.194.05-.198.048-.201.046-.205.045-.208.043-.211.041-.214.04-.217.038-.22.036-.223.034-.225.032-.229.031-.231.028-.233.027-.236.024-.239.023-.241.02-.242.019-.246.016-.247.015-.249.012-.251.01-.253.008-.255.005-.256.004-.258.001-.258-.001-.256-.004-.255-.005-.253-.008-.251-.01-.249-.012-.247-.015-.245-.016-.243-.019-.241-.02-.238-.023-.236-.024-.234-.027-.231-.028-.228-.031-.226-.032-.223-.034-.22-.036-.217-.038-.214-.04-.211-.041-.208-.043-.204-.045-.201-.046-.198-.048-.195-.05-.19-.051-.187-.053-.184-.054-.179-.056-.176-.057-.172-.059-.167-.06-.164-.061-.159-.063-.155-.064-.151-.066-.074-.033-.072-.033-.072-.034-.07-.034-.069-.035-.068-.035-.067-.035-.066-.035-.064-.036-.063-.036-.062-.036-.061-.036-.06-.037-.058-.037-.057-.037-.056-.038-.055-.038-.053-.038-.052-.038-.051-.039-.049-.039-.049-.039-.046-.039-.046-.04-.044-.04-.043-.04-.041-.04-.04-.041-.039-.041-.037-.041-.036-.041-.034-.041-.033-.042-.032-.042-.03-.042-.029-.042-.027-.042-.026-.043-.024-.043-.023-.043-.021-.043-.02-.043-.018-.044-.017-.043-.015-.044-.013-.044-.012-.044-.011-.045-.009-.044-.007-.045-.006-.045-.004-.045-.002-.045-.001-.045v-17l.001-.045.002-.045.004-.045.006-.045.007-.045.009-.044.011-.045.012-.044.013-.044.015-.044.017-.043.018-.044.02-.043.021-.043.023-.043.024-.043.026-.043.027-.042.029-.042.03-.042.032-.042.033-.042.034-.041.036-.041.037-.041.039-.041.04-.041.041-.04.043-.04.044-.04.046-.04.046-.039.049-.039.049-.039.051-.039.052-.038.053-.038.055-.038.056-.038.057-.037.058-.037.06-.037.061-.036.062-.036.063-.036.064-.036.066-.035.067-.035.068-.035.069-.035.07-.034.072-.034.072-.033.074-.033.151-.066.155-.064.159-.063.164-.061.167-.06.172-.059.176-.057.179-.056.184-.054.187-.053.19-.051.195-.05.198-.048.201-.046.204-.045.208-.043.211-.041.214-.04.217-.038.22-.036.223-.034.226-.032.228-.031.231-.028.234-.027.236-.024.238-.023.241-.02.243-.019.245-.016.247-.015.249-.012.251-.01.253-.008.255-.005.256-.004.258-.001.258.001zm-9.258 20.499v.01l.001.021.003.021.004.022.005.021.006.022.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.023.018.024.019.024.021.024.022.025.023.024.024.025.052.049.056.05.061.051.066.051.07.051.075.051.079.052.084.052.088.052.092.052.097.052.102.051.105.052.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.048.144.049.147.047.152.047.155.047.16.045.163.045.167.043.171.043.176.041.178.041.183.039.187.039.19.037.194.035.197.035.202.033.204.031.209.03.212.029.216.027.219.025.222.024.226.021.23.02.233.018.236.016.24.015.243.012.246.01.249.008.253.005.256.004.259.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.021.224-.024.22-.026.216-.027.212-.028.21-.031.205-.031.202-.034.198-.034.194-.036.191-.037.187-.039.183-.04.179-.04.175-.042.172-.043.168-.044.163-.045.16-.046.155-.046.152-.047.148-.048.143-.049.139-.049.136-.05.131-.05.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.053.083-.051.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.05.023-.024.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.023.01-.022.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.127l-.077.055-.08.053-.083.054-.085.053-.087.052-.09.052-.093.051-.095.05-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.045-.118.044-.12.043-.122.042-.124.042-.126.041-.128.04-.13.04-.132.038-.134.038-.135.037-.138.037-.139.035-.142.035-.143.034-.144.033-.147.032-.148.031-.15.03-.151.03-.153.029-.154.027-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.01-.179.008-.179.008-.181.006-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.006-.179-.008-.179-.008-.178-.01-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.027-.153-.029-.151-.03-.15-.03-.148-.031-.146-.032-.145-.033-.143-.034-.141-.035-.14-.035-.137-.037-.136-.037-.134-.038-.132-.038-.13-.04-.128-.04-.126-.041-.124-.042-.122-.042-.12-.044-.117-.043-.116-.045-.113-.045-.112-.046-.109-.047-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.05-.093-.052-.09-.051-.087-.052-.085-.053-.083-.054-.08-.054-.077-.054v4.127zm0-5.654v.011l.001.021.003.021.004.021.005.022.006.022.007.022.009.022.01.022.011.023.012.023.013.023.015.024.016.023.017.024.018.024.019.024.021.024.022.024.023.025.024.024.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.052.11.051.114.051.119.052.123.05.127.051.131.05.135.049.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.044.171.042.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.022.23.02.233.018.236.016.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.012.241-.015.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.048.139-.05.136-.049.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.051.051-.049.023-.025.023-.024.021-.025.02-.024.019-.024.018-.024.017-.024.015-.023.014-.023.013-.024.012-.022.01-.023.01-.023.008-.022.006-.022.006-.022.004-.021.004-.022.001-.021.001-.021v-4.139l-.077.054-.08.054-.083.054-.085.052-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.044-.118.044-.12.044-.122.042-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.035-.143.033-.144.033-.147.033-.148.031-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.009-.179.009-.179.007-.181.007-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.007-.179-.007-.179-.009-.178-.009-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.031-.146-.033-.145-.033-.143-.033-.141-.035-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.04-.126-.041-.124-.042-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.051-.093-.051-.09-.051-.087-.053-.085-.052-.083-.054-.08-.054-.077-.054v4.139zm0-5.666v.011l.001.02.003.022.004.021.005.022.006.021.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.024.018.023.019.024.021.025.022.024.023.024.024.025.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.051.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.043.171.043.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.021.23.02.233.018.236.017.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.013.241-.014.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.049.139-.049.136-.049.131-.051.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.049.023-.025.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.022.01-.023.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.153l-.077.054-.08.054-.083.053-.085.053-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.048-.105.048-.106.048-.109.046-.111.046-.114.046-.115.044-.118.044-.12.043-.122.043-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.034-.143.034-.144.033-.147.032-.148.032-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.024-.161.024-.162.023-.163.023-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.01-.178.01-.179.009-.179.007-.181.006-.182.006-.182.004-.184.003-.184.001-.185.001-.185-.001-.184-.001-.184-.003-.182-.004-.182-.006-.181-.006-.179-.007-.179-.009-.178-.01-.176-.01-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.023-.162-.023-.161-.024-.159-.024-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.032-.146-.032-.145-.033-.143-.034-.141-.034-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.041-.126-.041-.124-.041-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.048-.105-.048-.102-.048-.1-.05-.097-.049-.095-.051-.093-.051-.09-.052-.087-.052-.085-.053-.083-.053-.08-.054-.077-.054v4.153zm8.74-8.179l-.257.004-.254.005-.25.008-.247.011-.244.012-.241.014-.237.016-.233.018-.231.021-.226.022-.224.023-.22.026-.216.027-.212.028-.21.031-.205.032-.202.033-.198.034-.194.036-.191.038-.187.038-.183.04-.179.041-.175.042-.172.043-.168.043-.163.045-.16.046-.155.046-.152.048-.148.048-.143.048-.139.049-.136.05-.131.05-.126.051-.123.051-.118.051-.114.052-.11.052-.106.052-.101.052-.096.052-.092.052-.088.052-.083.052-.079.052-.074.051-.07.052-.065.051-.06.05-.056.05-.051.05-.023.025-.023.024-.021.024-.02.025-.019.024-.018.024-.017.023-.015.024-.014.023-.013.023-.012.023-.01.023-.01.022-.008.022-.006.023-.006.021-.004.022-.004.021-.001.021-.001.021.001.021.001.021.004.021.004.022.006.021.006.023.008.022.01.022.01.023.012.023.013.023.014.023.015.024.017.023.018.024.019.024.02.025.021.024.023.024.023.025.051.05.056.05.06.05.065.051.07.052.074.051.079.052.083.052.088.052.092.052.096.052.101.052.106.052.11.052.114.052.118.051.123.051.126.051.131.05.136.05.139.049.143.048.148.048.152.048.155.046.16.046.163.045.168.043.172.043.175.042.179.041.183.04.187.038.191.038.194.036.198.034.202.033.205.032.21.031.212.028.216.027.22.026.224.023.226.022.231.021.233.018.237.016.241.014.244.012.247.011.25.008.254.005.257.004.26.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.022.224-.023.22-.026.216-.027.212-.028.21-.031.205-.032.202-.033.198-.034.194-.036.191-.038.187-.038.183-.04.179-.041.175-.042.172-.043.168-.043.163-.045.16-.046.155-.046.152-.048.148-.048.143-.048.139-.049.136-.05.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.05.051-.05.023-.025.023-.024.021-.024.02-.025.019-.024.018-.024.017-.023.015-.024.014-.023.013-.023.012-.023.01-.023.01-.022.008-.022.006-.023.006-.021.004-.022.004-.021.001-.021.001-.021-.001-.021-.001-.021-.004-.021-.004-.022-.006-.021-.006-.023-.008-.022-.01-.022-.01-.023-.012-.023-.013-.023-.014-.023-.015-.024-.017-.023-.018-.024-.019-.024-.02-.025-.021-.024-.023-.024-.023-.025-.051-.05-.056-.05-.06-.05-.065-.051-.07-.052-.074-.051-.079-.052-.083-.052-.088-.052-.092-.052-.096-.052-.101-.052-.106-.052-.11-.052-.114-.052-.118-.051-.123-.051-.126-.051-.131-.05-.136-.05-.139-.049-.143-.048-.148-.048-.152-.048-.155-.046-.16-.046-.163-.045-.168-.043-.172-.043-.175-.042-.179-.041-.183-.04-.187-.038-.191-.038-.194-.036-.198-.034-.202-.033-.205-.032-.21-.031-.212-.028-.216-.027-.22-.026-.224-.023-.226-.022-.231-.021-.233-.018-.237-.016-.241-.014-.244-.012-.247-.011-.25-.008-.254-.005-.257-.004-.26-.001-.26.001z"></path></symbol></defs><defs><symbol id="claude-mermaid-1-clock" width="24" height="24"><path transform="scale(.5)" d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5.848 12.459c.202.038.202.333.001.372-1.907.361-6.045 1.111-6.547 1.111-.719 0-1.301-.582-1.301-1.301 0-.512.77-5.447 1.125-7.445.034-.192.312-.181.343.014l.985 6.238 5.394 1.011z"></path></symbol></defs><defs><marker id="claude-mermaid-1-arrowhead" refX="7.9" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M -1 0 L 10 5 L 0 10 z"></path></marker></defs><defs><marker id="claude-mermaid-1-crosshead" markerWidth="15" markerHeight="8" orient="auto" refX="4" refY="4.5"><path fill="none" stroke="#000000" stroke-width="1pt" d="M 1,2 L 6,7 M 6,2 L 1,7" style="stroke-dasharray: 0, 0;"></path></marker></defs><defs><marker id="claude-mermaid-1-filled-head" refX="15.5" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"></path></marker></defs><defs><marker id="claude-mermaid-1-sequencenumber" refX="15" refY="15" markerWidth="60" markerHeight="40" orient="auto"><circle cx="15" cy="15" r="6"></circle></marker></defs><defs><marker id="claude-mermaid-1-solidTopArrowHead" refX="7.9" refY="7.25" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 8 L 0 8 z"></path></marker></defs><defs><marker id="claude-mermaid-1-solidBottomArrowHead" refX="7.9" refY="0.75" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 0 L 0 8 z"></path></marker></defs><defs><marker id="claude-mermaid-1-stickTopArrowHead" refX="7.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 7 7" stroke="black" stroke-width="1.5" fill="none"></path></marker></defs><defs><marker id="claude-mermaid-1-stickBottomArrowHead" refX="7.5" refY="0" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 7 L 7 0" stroke="black" stroke-width="1.5" fill="none"></path></marker></defs><g data-et="note" data-id="i0"><rect x="398" y="75" fill="#EDF2AE" stroke="#666" width="387" height="39" class="note"></rect><text x="592" y="80" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="noteText" dy="1em" style="font-size: 16px; font-weight: 400;"><tspan x="592">Supabase - failed at import time</tspan></text></g><g data-et="note" data-id="i3"><rect x="285" y="220" fill="#EDF2AE" stroke="#666" width="276" height="39" class="note"></rect><text x="423" y="225" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="noteText" dy="1em" style="font-size: 16px; font-weight: 400;"><tspan x="423">middleware dead, every route 500s</tspan></text></g><g data-et="note" data-id="i4"><rect x="398" y="269" fill="#EDF2AE" stroke="#666" width="591" height="39" class="note"></rect><text x="694" y="274" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="noteText" dy="1em" style="font-size: 16px; font-weight: 400;"><tspan x="694">Axiom - failed at request time</tspan></text></g><text x="590" y="129" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">import (runs when the module loads)</text><line x1="424" y1="162" x2="756" y2="162" class="messageLine0" data-et="message" data-id="i1" data-from="M" data-to="S" stroke-width="2" stroke="none" marker-end="url(#claude-mermaid-1-arrowhead)" style="fill: none;"></line><text x="593" y="177" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">throws before any request is handled</text><line x1="759" y1="210" x2="427" y2="210" class="messageLine1" data-et="message" data-id="i2" data-from="S" data-to="M" stroke-width="2" stroke="none" marker-end="url(#claude-mermaid-1-crosshead)" style="stroke-dasharray: 3, 3; fill: none;"></line><text x="248" y="323" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">GET /</text><line x1="76" y1="356" x2="419" y2="356" class="messageLine0" data-et="message" data-id="i5" data-from="R" data-to="M" stroke-width="2" stroke="none" marker-end="url(#claude-mermaid-1-arrowhead)" style="fill: none;"></line><text x="692" y="371" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">flush logs</text><line x1="424" y1="404" x2="960" y2="404" class="messageLine0" data-et="message" data-id="i6" data-from="M" data-to="L" stroke-width="2" stroke="none" marker-end="url(#claude-mermaid-1-arrowhead)" style="fill: none;"></line><text x="965" y="419" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">rejected, caught inside a promise</text><path d="M 965,452 C 1025,442 1025,482 965,472" class="messageLine1" data-et="message" data-id="i7" data-from="L" data-to="L" stroke-width="2" stroke="none" marker-end="url(#claude-mermaid-1-crosshead)" style="stroke-dasharray: 3, 3; fill: none;"></path><text x="251" y="497" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">page renders, console shows the error</text><line x1="422" y1="530" x2="79" y2="530" class="messageLine1" data-et="message" data-id="i8" data-from="M" data-to="R" stroke-width="2" stroke="none" marker-end="url(#claude-mermaid-1-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"></line></svg>
+    </div>
+    <p class="diagram-note">
+      Why one placeholder caused an outage and the other only caused noise: where the failure fires
+      matters more than the failure itself.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Before and after</h2>
+      <p class="eyebrow">Changed behaviour, in the reader&rsquo;s words</p>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th scope="col">Situation</th><th scope="col">Before</th><th scope="col">After</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Copy the settings template, start the site</td><td class="was">Error page on every route</td><td class="now">Site renders</td></tr>
+          <tr><td>No settings file at all</td><td>Site renders</td><td>Site renders (unchanged)</td></tr>
+          <tr><td>Placeholder database URL</td><td class="was">Treated as configured, crashes</td><td class="now">Treated as not configured</td></tr>
+          <tr><td>Placeholder logging token</td><td class="was">Log shipping attempted, <code>forbidden</code> spam</td><td class="now">Console logging, silent</td></tr>
+          <tr><td>Placeholder Turso credentials</td><td class="was">Auto-selected as the active database</td><td class="now">Skipped as not configured</td></tr>
+          <tr><td>Database URL with a wrong scheme (<code>ftp://</code>)</td><td class="was">Accepted, then crashes</td><td class="now">Rejected as not configured</td></tr>
+          <tr><td>Local Supabase on plain <code>http://</code></td><td>Accepted</td><td>Still accepted</td></tr>
+          <tr><td>Turso&rsquo;s <code>libsql://</code> URLs</td><td>Accepted</td><td>Still accepted</td></tr>
+          <tr><td>README&rsquo;s authentication step</td><td class="was">Labelled &ldquo;required&rdquo;</td><td class="now">Labelled optional, with what you lose</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Decisions</h2>
+      <p class="eyebrow">With the options weighed and rejected</p>
+    </div>
+    <div class="entries">
+
+      <article class="entry">
+        <h3>Fix the shared getter, not the call sites</h3>
+        <p>
+          The bad value entered through one function, <code>getSupabaseUrl()</code> in
+          <code>src/utils/env-config.ts</code>, which four separate places consume.
+        </p>
+        <p class="rejected">
+          <b>Rejected</b> &mdash; adding a guard at each of the three client factories plus the
+          status check: four copies of one rule, and the fifth caller added next year gets it wrong.
+        </p>
+      </article>
+
+      <article class="entry">
+        <h3>Delete the eager export rather than make it lazy</h3>
+        <p>
+          <code>supabase-native.ts</code> built its database client at import time despite a comment
+          above it claiming lazy initialisation. It had zero consumers and was not in the
+          package&rsquo;s public exports.
+        </p>
+        <p class="rejected">
+          <b>Rejected</b> &mdash; wrapping it in a lazy getter: that preserves an API nobody calls,
+          and this line was the amplifier that turned a configuration mistake into a site-wide
+          outage.
+        </p>
+      </article>
+
+      <article class="entry">
+        <h3>Validate the URL scheme, not just that it parses</h3>
+        <p>
+          Raised by an automated reviewer and verified before acting:
+          <code>URL.canParse('ftp://example.com')</code> returns <code>true</code>, and the database
+          client accepts only <code>http(s)</code>. A scheme typo would have passed the new guard and
+          failed in exactly the place the guard exists to protect.
+        </p>
+      </article>
+
+      <article class="entry">
+        <h3>Share the pattern across services, not the rule</h3>
+        <p>
+          Supabase URLs must be <code>http(s)</code>; Turso&rsquo;s are <code>libsql://</code>.
+        </p>
+        <p class="rejected">
+          <b>Rejected</b> &mdash; copying the Supabase check to Turso: it would have rejected every
+          valid Turso configuration. What generalises is &ldquo;an unusable value reads as
+          absent&rdquo;, not the specific test.
+        </p>
+      </article>
+
+      <article class="entry">
+        <h3>Fix Turso rather than soften the documentation</h3>
+        <p>
+          The reviewer offered both. The setup skill had already promised that every untouched
+          placeholder is safe.
+        </p>
+        <p class="rejected">
+          <b>Rejected</b> &mdash; narrowing that promise to &ldquo;safe except this one&rdquo;: it
+          makes the document worse for exactly the audience it was written for.
+        </p>
+      </article>
+
+      <article class="entry">
+        <h3>Do not verify setup by running the test suite</h3>
+        <p>
+          The setup skill explicitly tells Claude not to run the tests or the type-checker as a
+          confirmation step, because both are red on a clean checkout for unrelated reasons. Showing
+          a non-technical user a wall of failures convinces them they broke something.
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Learnings</h2>
+      <p class="eyebrow">What was tried, abandoned, and discovered</p>
+    </div>
+    <div class="entries">
+
+      <article class="entry flag">
+        <h3>The bug was invisible from the source code</h3>
+        <p>
+          Reading <code>src/middleware.ts</code> showed a correct placeholder guard for Clerk, and it
+          was reasonable to assume the other services matched. <strong>They did not.</strong> Only
+          running the documented setup in a real browser exposed it &mdash; the first draft of the
+          setup skill was written around a false assumption and had to be rewritten twice.
+        </p>
+      </article>
+
+      <article class="entry flag">
+        <h3>Three of the tests passed for the wrong reason</h3>
+        <p>
+          <code>src/utils/env-config.ts</code> memoises the environment in a module-level cache on
+          first import, so stubbing an environment variable <em>after</em> import is silently
+          ignored. The initial test file asserted against an empty environment and reported green.
+          One failing test &mdash; the case expecting a <em>valid</em> URL to survive &mdash; is what
+          exposed it. The fix is to stub, then reset the module registry and re-import.
+          <strong>Existing suites such as <code>tests/integration/clerk-supabase.test.ts</code> have
+          this same shape</strong> and will mislead the next person the same way.
+        </p>
+      </article>
+
+      <article class="entry">
+        <h3>Every fix was checked by reintroducing the bug</h3>
+        <p>
+          Each assertion was confirmed to go red when the old behaviour was restored, rather than
+          assumed meaningful because it was green. The tests are also paired &mdash; each
+          &ldquo;rejects a bad value&rdquo; case sits next to an &ldquo;accepts a real value&rdquo;
+          one &mdash; so broken stubbing fails loudly instead of passing vacuously.
+        </p>
+      </article>
+
+      <article class="entry">
+        <h3>Red CI was not evidence of a code defect</h3>
+        <p>
+          The failing review check was an expired authentication token, established by reading the
+          job log rather than by inspecting the diff.
+        </p>
+      </article>
+
+      <article class="entry">
+        <h3>Formatting a whole file buries the real change</h3>
+        <p>
+          Running the formatter across the touched file stripped trailing whitespace from eleven
+          untouched lines, tripling the apparent diff. Reverted and reapplied the edit by hand to
+          keep the change reviewable.
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Open items</h2>
+      <p class="eyebrow">Enough context to pick up cold</p>
+    </div>
+    <div class="entries">
+
+      <article class="entry">
+        <h3>The review workflow cannot authenticate</h3>
+        <p>
+          It fails on every push with <code>API Error: 401 &mdash; OAuth access token has
+          expired</code>, and the API key is empty in the job environment. No code change fixes this;
+          the repo&rsquo;s Claude GitHub App needs re-authenticating, or the key needs setting as a
+          repository secret. <strong>Requires account access.</strong>
+        </p>
+      </article>
+
+      <article class="entry">
+        <h3>This PR has had no substantive automated review</h3>
+        <p>
+          CodeRabbit hit its fair-usage cap and posted a rate-limit notice instead of a review; the
+          Claude review check cannot authenticate. Codex was the only reviewer that actually ran.
+          Re-triggering CodeRabbit with <code>@coderabbitai review</code> once the limit resets would
+          close the gap.
+        </p>
+      </article>
+
+      <article class="entry">
+        <h3>43 pre-existing test failures remain untouched</h3>
+        <p>
+          Measured, not assumed: the same 43 fail with and without these changes, across
+          <code>tests/integration/</code> and <code>tests/scripts/</code>. They appear to need real
+          database credentials. Not investigated.
+        </p>
+      </article>
+
+      <article class="entry">
+        <h3>A tool cache file is untracked</h3>
+        <p>
+          <code>.impeccable/hook.cache.json</code> appeared mid-session and was deliberately kept out
+          of both commits. It will keep surfacing in <code>git status</code> until someone adds it to
+          <code>.gitignore</code>.
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Files touched</h2>
+      <p class="eyebrow">Grouped by area</p>
+    </div>
+    <div class="files">
+
+      <div class="file-group">
+        <h3>Application code</h3>
+        <ul>
+          <li>
+            <b>src/utils/env-config.ts</b>
+            <span>&mdash; the substance of the fix. The Supabase getter now requires a parseable
+            <code>http(s)</code> URL; the Turso and Axiom getters reject their template placeholders;
+            the three &ldquo;is configured&rdquo; checks delegate to those getters so they cannot
+            drift apart.</span>
+          </li>
+          <li>
+            <b>src/libs/supabase-native.ts</b>
+            <span>&mdash; removed the import-time client construction that turned a configuration
+            error into a site-wide outage.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="file-group">
+        <h3>Tests</h3>
+        <ul>
+          <li>
+            <b>tests/placeholder-env-config.test.ts</b>
+            <span>&mdash; new. Thirteen cases across Supabase, Turso, and Axiom, covering
+            placeholder, empty, unparseable, wrong-scheme, and valid values.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="file-group">
+        <h3>Documentation and tooling</h3>
+        <ul>
+          <li>
+            <b>README.md</b>
+            <span>&mdash; placeholders documented as safe to leave; authentication corrected from
+            &ldquo;required&rdquo; to optional.</span>
+          </li>
+          <li>
+            <b>.claude/skills/project-setup/SKILL.md</b>
+            <span>&mdash; new. The guided setup walkthrough.</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Glossary</h2>
+      <p class="eyebrow">Terms a new teammate would have to ask about</p>
+    </div>
+    <dl class="glossary">
+      <div><dt>Environment variable</dt><dd>A setting kept outside the code, in a file named <code>.env</code>, holding things like passwords and web addresses so they are not committed to the repository.</dd></div>
+      <div><dt>Settings template (<code>.env.example</code>)</dt><dd>A committed template of that file, with fake values such as <code>YOUR_SUPABASE_URL</code> standing in for the real ones. Copying it is normally the first setup step.</dd></div>
+      <div><dt>Placeholder</dt><dd>One of those fake values, left unreplaced. This whole recap is about what happens when code cannot tell a placeholder from a real setting.</dd></div>
+      <div><dt>Clerk</dt><dd>The third-party service handling sign-in and user accounts.</dd></div>
+      <div><dt>Supabase</dt><dd>One of the two supported databases, reached over <code>https://</code>.</dd></div>
+      <div><dt>Turso</dt><dd>The other supported database, reached over <code>libsql://</code>. The project can pick between the two automatically.</dd></div>
+      <div><dt>Axiom</dt><dd>The third-party service the app ships its logs to in production.</dd></div>
+      <div><dt>Middleware</dt><dd>Code that runs on every incoming request before the page is produced. If it fails to start, no page can be served &mdash; which is why one bad setting took down every route.</dd></div>
+      <div><dt>Import time / module load</dt><dd>When a file is first read by the program, before it handles any request. A failure here is fatal in a way the same failure later would not be.</dd></div>
+      <div><dt>URL.canParse</dt><dd>A built-in check for whether text is a valid web address. It accepts addresses like <code>ftp://</code>, which is why an extra check on the address type was needed.</dd></div>
+      <div><dt>Truthiness</dt><dd>Treating any non-empty text as a real value. <code>YOUR_SUPABASE_URL</code> is non-empty, so this check waved it through &mdash; the root cause of all three bugs.</dd></div>
+      <div><dt>Vacuous test</dt><dd>A test that passes without actually exercising the thing it claims to check.</dd></div>
+      <div><dt>CodeRabbit / Codex / claude-review</dt><dd>Automated reviewers that comment on pull requests.</dd></div>
+    </dl>
+  </section>
+
+  <footer>
+    <span>astro-basics</span>
+    <span>Branch <code>claude/setup-skill-non-tech-4bd334</code></span>
+    <span>Commits <code>3a2310a</code>, <code>ecca611</code></span>
+  </footer>
+
+</div>
+
+</body>
+</html>

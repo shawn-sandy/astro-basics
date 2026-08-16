@@ -1,85 +1,844 @@
 <!doctype html>
-<!-- ponytail: placeholder empty state so the Plans gallery's Artifacts tab resolves.
-     The artifact-tools generator overwrites this file once an artifact exists. -->
+<!--
+  plans-gallery.html — Plans library index for plan-agent.
+
+  Static variables (substituted by the plans-library skill and the
+  build-index.sh / build-artifacts-index.sh generators):
+    GALLERY_TITLE    — Heading noun: "Plans" or "Artifacts"
+    GALLERY_SUB      — Serif line under the heading
+    GALLERY_ENTRIES  — Repeated <a> blocks, one per item
+    PLAN_COUNT       — Total number of items displayed
+    GENERATED_AT     — Date and time of gallery generation
+    HREF_HOME / HREF_PLANS / HREF_PROTOTYPES / HREF_ARTIFACTS / HREF_SOCIAL
+                     — Topbar tab targets, each computed relative to THIS page's
+                       own output directory (the plans gallery is not always at
+                       docs/plans — plansDirectory is configurable)
+    COUNT_PLANS / COUNT_PROTOTYPES / COUNT_ARTIFACTS / COUNT_SOCIAL
+                     — Topbar tab counts, read off disk by the generator
+    CUR_HOME / CUR_PLANS / CUR_PROTOTYPES / CUR_ARTIFACTS / CUR_SOCIAL
+                     — Exactly one is replaced with aria-current="page";
+                       the rest with the empty string
+
+  Two contracts constrain edits here:
+
+  1. scripts/merge-plans-index.mjs is the git merge driver for the generated
+     index. It splices the union of the gallery-card anchors over
+     the region between the FIRST and LAST card, so anything sitting *between*
+     cards in the generated markup is destroyed by a merge and stays destroyed
+     until the next regeneration. That is why the In-flight band and the month
+     headings below are built by script at load time from a `data-month`
+     attribute rather than baked into the markup the generator emits.
+  2. The driver also patches the two count strings, `<p>N items</p>` and
+     `<span>N items</span>`. Keep both shapes verbatim.
+
+  The same driver is why row status is styled off [data-status] rather than the
+  prototype's .s-completed / .s-in-progress / .s-todo classes: CARD_RE matches
+  the opening anchor tag with the class attribute's closing quote included, so
+  a second class in that attribute makes every card invisible to the merge.
+
+  Nothing in this file may spell that opening tag out literally, comments
+  included — the driver reads the page as text, so a literal in the chrome
+  becomes the "first card" and the splice eats everything down to the last one.
+-->
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Artifacts Library</title>
+    <script>
+      /* Before first paint — see the same note in the plan shell. */
+      try {
+        var t = localStorage.getItem('plan-theme');
+        if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+      } catch (e) { /* no storage — prefers-color-scheme decides */ }
+    </script>
     <style>
+      /* ── Design tokens — the same palette the generated plans use ──── */
       :root {
-        --paper: #fcfcfa;
+        --paper: #fbfbfd;
         --panel: #ffffff;
-        --ink: #16151c;
-        --ink-3: #6e6a80;
-        --rule: #e6e3ec;
-        --accent: #4a2fe0;
+        --sunk: #f4f4f8;
+        --ink: #14141c;
+        --ink-2: #494959;
+        --ink-3: #63637a;
+        --rule: #e4e4ee;
+        --rule-soft: #f0f0f6;
+        --accent: #3730c4;
+        --accent-soft: #eeedfb;
+        --accent-line: #c6c2f0;
+        --on-accent: #ffffff;
+        --moss: #2c6a44;
+        --moss-soft: #ecf4ef;
+        --moss-line: #c0dccb;
+        --signal: #8a5209;
+        --signal-soft: #fbf3e6;
+        --signal-line: #e8d3ac;
+        --radius: 4px;
+        --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+        --ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        --prose: var(--ui);
         color-scheme: light;
       }
+      /* Written twice: an explicit choice has to beat the OS preference, and
+         plain CSS cannot share a block between an attribute selector and a
+         media query. Keep the two lists in sync. */
+      :root[data-theme="dark"] {
+        --paper: #0f0f16;
+        --panel: #17171f;
+        --sunk: #1d1d27;
+        --ink: #ecebf2;
+        --ink-2: #b2b0c2;
+        --ink-3: #8a889c;
+        --rule: #2a2a36;
+        --rule-soft: #22222c;
+        --accent: #a8a2f5;
+        --accent-soft: #1f1d33;
+        --accent-line: #454070;
+        --on-accent: #14141c;
+        --moss: #7cc099;
+        --moss-soft: #17271e;
+        --moss-line: #2e4838;
+        --signal: #e0a86a;
+        --signal-soft: #271e12;
+        --signal-line: #4a3820;
+        color-scheme: dark;
+      }
       @media (prefers-color-scheme: dark) {
-        :root {
-          --paper: #121118;
-          --panel: #1a1922;
-          --ink: #edebf3;
-          --ink-3: #8b87a0;
-          --rule: #2c2a38;
-          --accent: #a594ff;
+        :root:not([data-theme="light"]) {
+          --paper: #0f0f16;
+          --panel: #17171f;
+          --sunk: #1d1d27;
+          --ink: #ecebf2;
+          --ink-2: #b2b0c2;
+          --ink-3: #8a889c;
+          --rule: #2a2a36;
+          --rule-soft: #22222c;
+          --accent: #a8a2f5;
+          --accent-soft: #1f1d33;
+          --accent-line: #454070;
+          --on-accent: #14141c;
+          --moss: #7cc099;
+          --moss-soft: #17271e;
+          --moss-line: #2e4838;
+          --signal: #e0a86a;
+          --signal-soft: #271e12;
+          --signal-line: #4a3820;
           color-scheme: dark;
         }
       }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
       body {
-        margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        padding: 2rem;
         background: var(--paper);
         color: var(--ink);
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-family: var(--ui);
+        font-size: 16px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+        padding: 2rem 1.5rem 5rem;
       }
-      .empty {
-        max-width: 34rem;
-        text-align: center;
-        background: var(--panel);
-        border: 1px solid var(--rule);
-        border-radius: 4px;
-        padding: 2.5rem 2rem;
+      .wrap { max-width: 1200px; margin: 0 auto; }
+      :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+      /* Visually hidden, still announced — carries the status text for the
+         aria-hidden glyph in each row. */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
       }
-      h1 {
-        margin: 0 0 0.5rem;
-        font-size: 1.5rem;
-        font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+
+      /* ── Topbar ──────────────────────────────────────────────────────
+         Full-bleed against the body padding rather than restructuring every
+         section into a wrapper: the negative margins cancel `body`'s padding
+         so the bar spans the viewport while the content below stays inset. */
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        margin: -2rem -1.5rem 1.5rem;
+        border-bottom: 1px solid var(--rule);
+        /* Opaque first: a browser without color-mix drops the second
+           declaration, and a transparent sticky bar over scrolled text is
+           unreadable. */
+        background: var(--paper);
+        background: color-mix(in srgb, var(--paper) 88%, transparent);
+        backdrop-filter: blur(12px);
       }
-      p {
-        margin: 0 0 1.5rem;
-        color: var(--ink-3);
-        line-height: 1.6;
+      .topbar-in {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        min-height: 48px;
+        flex-wrap: wrap;
       }
-      code {
-        font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+      .mark {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        text-decoration: none;
         color: var(--ink);
       }
-      nav a {
-        color: var(--accent);
+      .mark::before { content: "\25A4 "; color: var(--accent); }
+      .tabs { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-left: auto; }
+      .tabs a {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.04em;
+        padding: 0.4rem 0.6rem;
+        border-radius: 3px;
         text-decoration: none;
-        margin: 0 0.5rem;
+        color: var(--ink-2);
       }
-      nav a:hover,
-      nav a:focus-visible {
-        text-decoration: underline;
+      .tabs a:hover { color: var(--ink); background: var(--sunk); }
+      .tabs a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
+      .tabs a .n { color: var(--ink-3); margin-left: 0.3rem; }
+      /* --ink-3 on the current tab's accent-soft chip clears AA since the 9.1.0
+         palette (5.04:1 light, 4.75:1 dark; it was 4.46:1 before). The count
+         still takes the tab's own colour — the chip reads as one unit that way,
+         which is now a look rather than a contrast workaround. */
+      .tabs a[aria-current="page"] .n { color: var(--accent); }
+
+      /* Every structural label speaks in mono. */
+      .lbl {
+        font-family: var(--mono);
+        font-size: 0.625rem;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+
+      /* ── Header ──────────────────────────────────────────────────── */
+      .gallery-header {
+        max-width: 1200px;
+        margin: 0 auto 1.5rem;
+        border-bottom: 1px solid var(--rule);
+        padding-bottom: 1rem;
+        display: flex;
+        align-items: flex-end;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .gallery-header h1 {
+        font-family: var(--mono);
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        font-weight: 600;
+        letter-spacing: -0.035em;
+        line-height: 1.12;
+      }
+      /* Serif under a mono heading — the one line on the page written to be
+         read as a sentence rather than scanned as data. */
+      .gallery-header p {
+        font-family: var(--prose);
+        font-size: 1.0625rem;
+        color: var(--ink-2);
+        max-width: 52ch;
+        line-height: 1.6;
+        margin-top: 0.5rem;
+      }
+      .theme-toggle {
+        margin-left: auto;
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0.4rem 0.9rem;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-2);
+        background: var(--panel);
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
+        cursor: pointer;
+      }
+      .theme-toggle:hover { color: var(--accent); border-color: var(--accent-line); }
+
+      /* ── Controls ────────────────────────────────────────────────── */
+      .controls {
+        max-width: 1200px;
+        margin: 0 auto 1.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .search-box {
+        flex: 1 1 16rem;
+        min-width: 12rem;
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+        background: var(--panel);
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
+        color: var(--ink);
+        font-family: var(--ui);
+        font-size: 0.875rem;
+      }
+      .search-box::placeholder { color: var(--ink-3); }
+      .search-box:focus { border-color: var(--accent); outline: none; }
+
+      /* Segmented status control — one row, counts inline. */
+      .seg {
+        display: flex;
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: var(--panel);
+      }
+      .seg button {
+        min-height: 44px;
+        padding: 0.4rem 0.75rem;
+        border: 0;
+        border-left: 1px solid var(--rule);
+        background: transparent;
+        color: var(--ink-2);
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .seg button:first-child { border-left: 0; }
+      .seg button .n { color: var(--ink-3); margin-left: 0.35rem; }
+      .seg button:hover { color: var(--ink); background: var(--sunk); }
+      .seg button[aria-pressed="true"] { color: var(--accent); background: var(--accent-soft); }
+      .seg button[aria-pressed="true"] .n { color: var(--accent); }
+
+      /* Type and effort live behind a disclosure — they are the rarely-used
+         half of the twenty filter targets that used to sit on screen. */
+      .more { position: relative; }
+      .more > summary {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        min-height: 44px;
+        padding: 0.4rem 0.85rem;
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
+        background: var(--panel);
+        color: var(--ink-2);
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+        white-space: nowrap;
+      }
+      .more > summary::-webkit-details-marker { display: none; }
+      .more > summary::after { content: "▾"; color: var(--ink-3); }
+      .more[open] > summary { color: var(--accent); border-color: var(--accent-line); }
+      .more-body {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+        padding: 0.75rem;
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
+        background: var(--panel);
+      }
+      @media (min-width: 700px) {
+        .more-body {
+          position: absolute;
+          z-index: 5;
+          right: 0;
+          width: 22rem;
+        }
+      }
+      .more-group { flex: 1 1 100%; }
+      .more-group + .more-group { margin-top: 0.5rem; }
+      .more-group .lbl { display: block; margin-bottom: 0.4rem; }
+      .more-group .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+      .chip {
+        min-height: 32px;
+        padding: 0.25rem 0.6rem;
+        border: 1px solid var(--rule);
+        border-radius: 999px;
+        background: var(--panel);
+        color: var(--ink-2);
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+      }
+      .chip:hover { color: var(--ink); border-color: var(--accent-line); }
+      .chip[aria-pressed="true"] {
+        color: var(--accent);
+        background: var(--accent-soft);
+        border-color: var(--accent-line);
+      }
+
+      .visible-count {
+        max-width: 1200px;
+        margin: 0 auto 0.75rem;
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--ink-3);
+        min-height: 1rem;
+      }
+
+      /* ── Row list ────────────────────────────────────────────────────
+         One column of rows, not a card grid: every row is a direct grid item
+         so the merge driver's splice region stays a flat run of anchors with
+         nothing (no <li>, no wrapper) between them. */
+      .gallery-grid {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      /* Separators are inserted by script and always span the full row. */
+      .gallery-sep {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 1.25rem 0 0.25rem;
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .gallery-sep:first-child { margin-top: 0; }
+      .gallery-sep .rule { flex: 1; height: 1px; background: var(--rule); }
+      .gallery-sep.flight { color: var(--signal); }
+      .gallery-sep.flight .rule { background: var(--signal-line); }
+
+      .gallery-card {
+        display: grid;
+        grid-template-columns: 1.25rem minmax(0, 1fr) 9rem 3.5rem;
+        gap: 0.25rem 0.9rem;
+        align-items: baseline;
+        padding: 0.65rem 0.5rem;
+        text-decoration: none;
+        color: inherit;
+        border-bottom: 1px solid var(--rule-soft);
+      }
+      .gallery-card:hover { background: var(--sunk); }
+      /* The artifacts gallery carries no status on any card — collapse the
+         glyph column rather than rendering an empty one. */
+      .gallery-card[data-status=""] { grid-template-columns: minmax(0, 1fr) 9rem 3.5rem; }
+
+      /* Status is a glyph, not a coloured pill — the row stays quiet and the
+         one accent keeps its meaning. Selected on [data-status] because the
+         class attribute is the merge driver's splice key (see the top of this
+         file). The prototype's .5 opacity on the queued glyph is dropped: it
+         puts --ink-3 under 4.5:1 against the page. */
+      .glyph {
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        text-align: center;
+        color: var(--ink-3);
+      }
+      .gallery-card[data-status="completed"] .glyph { color: var(--moss); }
+      .gallery-card[data-status="in-progress"] .glyph { color: var(--signal); }
+
+      .r-title { font-size: 0.95rem; line-height: 1.4; color: var(--ink); }
+      .gallery-card[data-status="completed"] .r-title { color: var(--ink-2); }
+      .gallery-card[data-status="in-progress"] .r-title { font-weight: 600; }
+      .r-meta {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--ink-3);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .r-meta .hi { color: var(--signal); }
+      /* A plan that has a prototype is worth spotting in a scan. Inline text,
+         never an <a> — the row is already one anchor. */
+      .r-meta .proto-chip { color: var(--accent); }
+      .r-date {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--ink-3);
+        text-align: right;
+      }
+
+      /* ── In flight ───────────────────────────────────────────────────
+         A band applied to the rows in place, not a separate container: the
+         merge driver would destroy anything wrapped around them. */
+      .gallery-card[data-status="in-progress"] {
+        border-left: 2px solid var(--signal);
+        padding-left: 0.85rem;
+      }
+      .r-steps {
+        grid-column: 2 / -1;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--ink-3);
+      }
+      /* Drawn by script from data-steps-done / data-steps-total; the
+         "N / M steps" text beside it is server-rendered and survives with
+         JavaScript off. */
+      .bar { display: flex; gap: 2px; flex: 0 0 7rem; }
+      .bar i { flex: 1; height: 4px; border-radius: 1px; background: var(--rule); }
+      .bar i.on { background: var(--accent); }
+
+      @media (max-width: 700px) {
+        /* The four status buttons overflow one row at 375px, and .seg clips
+           rather than scrolls — so "Shipped" lost its count until this. */
+        .seg { flex-wrap: wrap; }
+        .gallery-card { grid-template-columns: 1.25rem minmax(0, 1fr) 3.5rem; }
+        .gallery-card[data-status=""] { grid-template-columns: minmax(0, 1fr) 3.5rem; }
+        .r-meta { grid-column: 2 / -1; }
+        .gallery-card[data-status=""] .r-meta { grid-column: 1 / -1; }
+      }
+
+      .no-results {
+        display: none;
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 2rem;
+        text-align: center;
+        border: 1px dashed var(--rule);
+        border-radius: var(--radius);
+        color: var(--ink-3);
+      }
+
+      .gallery-footer {
+        max-width: 1200px;
+        margin: 3rem auto 0;
+        padding-top: 1rem;
+        border-top: 1px solid var(--rule);
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--ink-3);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
       }
     </style>
   </head>
   <body>
-    <main class="empty">
-      <h1>Artifacts Library</h1>
-      <p>
-        No artifacts yet. Publish one with the <code>artifact-tools</code> skills to list it here.
-      </p>
-      <nav aria-label="Collections">
-        <a href="../index.html">Home</a>
-        <a href="../plans/index.html">Plans</a>
-      </nav>
-    </main>
+    <header class="topbar">
+      <div class="topbar-in">
+        <a class="mark" href="../index.html">agentics</a>
+        <nav class="tabs" aria-label="Collections">
+          <a href="../index.html" >Home</a>
+          <a href="../plans/index.html" >Plans<span class="n">6</span></a>
+          <a href="../prototypes/index.html" >Prototypes<span class="n">1</span></a>
+          <a href="index.html" aria-current="page">Artifacts<span class="n">1</span></a>
+          <a href="../media/social/index.html" >Social<span class="n">0</span></a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="gallery-header">
+      <div>
+        <h1>Artifacts Library</h1>
+        <!-- The bare <p> and the leading number are load-bearing: the merge
+             driver's COUNT_RE rewrites `<p>N items`. The prose after it is
+             free text. -->
+        <p>1 items &mdash; pages published from a working session, newest first.</p>
+      </div>
+      <button
+        class="theme-toggle"
+        type="button"
+        id="themeToggle"
+        aria-pressed="false"
+        aria-label="Use dark theme"
+      >
+        Dark
+      </button>
+    </div>
+
+    <div class="controls">
+      <input
+        type="search"
+        class="search-box"
+        id="searchBox"
+        placeholder="Search by title..."
+        aria-label="Search by title"
+      />
+
+      <div class="seg" id="statusSeg" role="group" aria-label="Filter by status">
+        <button type="button" data-status="all" aria-pressed="true">
+          All<span class="n" data-count="all"></span>
+        </button>
+        <button type="button" data-status="in-progress" aria-pressed="false">
+          In flight<span class="n" data-count="in-progress"></span>
+        </button>
+        <button type="button" data-status="todo" aria-pressed="false">
+          Queued<span class="n" data-count="todo"></span>
+        </button>
+        <button type="button" data-status="completed" aria-pressed="false">
+          Shipped<span class="n" data-count="completed"></span>
+        </button>
+      </div>
+
+      <details class="more" id="moreFilters">
+        <summary>Type &amp; effort</summary>
+        <div class="more-body">
+          <div class="more-group">
+            <span class="lbl">Type</span>
+            <div class="chips" id="typeChips">
+              <button class="chip" type="button" data-type="all" aria-pressed="true">all</button>
+              <button class="chip" type="button" data-type="feature" aria-pressed="false">feature</button>
+              <button class="chip" type="button" data-type="fix" aria-pressed="false">fix</button>
+              <button class="chip" type="button" data-type="refactor" aria-pressed="false">refactor</button>
+              <button class="chip" type="button" data-type="docs" aria-pressed="false">docs</button>
+              <button class="chip" type="button" data-type="chore" aria-pressed="false">chore</button>
+              <button class="chip" type="button" data-type="artifact" aria-pressed="false">artifact</button>
+            </div>
+          </div>
+          <div class="more-group">
+            <span class="lbl">Effort</span>
+            <div class="chips" id="effortChips">
+              <button class="chip" type="button" data-effort="all" aria-pressed="true">all</button>
+              <button class="chip" type="button" data-effort="low" aria-pressed="false">low</button>
+              <button class="chip" type="button" data-effort="medium" aria-pressed="false">medium</button>
+              <button class="chip" type="button" data-effort="high" aria-pressed="false">high</button>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <div class="visible-count" id="visibleCount" aria-live="polite"></div>
+
+    <div class="gallery-grid" id="galleryGrid"><a class="gallery-card" href="team-recap-2026-08-16.html"
+   data-status="" data-type="artifact" data-effort="" data-month="2026-08" data-title="fresh-clone setup and environment placeholder handling">
+  <span class="r-title">Fresh-clone setup and environment placeholder handling</span>
+  <span class="r-meta">artifact</span>
+  <span class="r-date">2026-08-16</span>
+</a></div>
+
+    <div class="no-results" id="noResults">No items match your search.</div>
+
+    <div class="gallery-footer">
+      <span>1 items</span>
+      <span>Generated 2026-08-16 17:06</span>
+    </div>
+
+    <script>
+      var activeStatus = "all";
+      var activeType = "all";
+      var activeEffort = "all";
+      var searchText = "";
+      var grid = document.getElementById("galleryGrid");
+      var cards = [].slice.call(grid.querySelectorAll(".gallery-card"));
+      var noResults = document.getElementById("noResults");
+      var visibleCount = document.getElementById("visibleCount");
+      var statusSeg = document.getElementById("statusSeg");
+
+      var MONTHS = ["January","February","March","April","May","June",
+                    "July","August","September","October","November","December"];
+
+      function monthLabel(key) {
+        var parts = String(key).split("-");
+        var m = parseInt(parts[1], 10);
+        if (!parts[0] || isNaN(m) || m < 1 || m > 12) return "Undated";
+        return MONTHS[m - 1] + " " + parts[0];
+      }
+
+      /* Status counts drive the segmented control's labels. A gallery whose
+         cards carry no status at all (the artifacts library) hides the whole
+         control rather than showing four zeroes. */
+      function wireStatusCounts() {
+        var counts = { all: cards.length, "in-progress": 0, todo: 0, completed: 0 };
+        var anyStatus = false;
+        for (var i = 0; i < cards.length; i++) {
+          var st = cards[i].getAttribute("data-status") || "";
+          if (st) anyStatus = true;
+          if (counts[st] !== undefined && st !== "all") counts[st]++;
+        }
+        if (!anyStatus) {
+          statusSeg.style.display = "none";
+          return;
+        }
+        var spans = statusSeg.querySelectorAll("[data-count]");
+        for (var j = 0; j < spans.length; j++) {
+          var key = spans[j].getAttribute("data-count");
+          spans[j].textContent = counts[key] === undefined ? "0" : String(counts[key]);
+        }
+      }
+
+      /* Separators are built here, never emitted by the generator: the merge
+         driver splices over everything between the first and last card, so a
+         static heading would be destroyed by the first concurrent merge. */
+      function rebuildSeparators(visible) {
+        var old = grid.querySelectorAll(".gallery-sep");
+        for (var i = 0; i < old.length; i++) old[i].parentNode.removeChild(old[i]);
+        if (visible.length === 0) return;
+
+        var sep = function (cls, label, count) {
+          var el = document.createElement("div");
+          el.className = "gallery-sep" + (cls ? " " + cls : "");
+          var a = document.createElement("span");
+          a.textContent = label;
+          var r = document.createElement("span");
+          r.className = "rule";
+          var b = document.createElement("span");
+          b.textContent = count + (count === 1 ? " item" : " items");
+          el.appendChild(a);
+          el.appendChild(r);
+          el.appendChild(b);
+          return el;
+        };
+
+        /* The generator sorts in-progress plans first, so the in-flight run is
+           a prefix of the visible list — no reordering needed here. */
+        var flight = 0;
+        while (flight < visible.length &&
+               visible[flight].getAttribute("data-status") === "in-progress") flight++;
+        if (flight > 0) {
+          grid.insertBefore(sep("flight", "In flight", flight), visible[0]);
+        }
+
+        var month = null;
+        for (var k = flight; k < visible.length; k++) {
+          var key = visible[k].getAttribute("data-month") || "";
+          if (key === month) continue;
+          month = key;
+          var n = 0;
+          for (var m = k; m < visible.length; m++) {
+            if ((visible[m].getAttribute("data-month") || "") !== month) break;
+            n++;
+          }
+          grid.insertBefore(sep("", monthLabel(month), n), visible[k]);
+        }
+      }
+
+      function applyFilters() {
+        var visible = [];
+        for (var i = 0; i < cards.length; i++) {
+          var card = cards[i];
+          var status = card.getAttribute("data-status") || "";
+          var type = card.getAttribute("data-type") || "";
+          var effort = card.getAttribute("data-effort") || "";
+          var title = card.getAttribute("data-title") || "";
+          var matchStatus = activeStatus === "all" || status === activeStatus;
+          var matchType = activeType === "all" || type === activeType;
+          // Plans with no effort tag pass every effort filter.
+          var matchEffort =
+            activeEffort === "all" || effort === "" || effort === activeEffort;
+          var matchSearch = !searchText || title.indexOf(searchText) !== -1;
+          if (matchStatus && matchType && matchEffort && matchSearch) {
+            card.style.display = "";
+            visible.push(card);
+          } else {
+            card.style.display = "none";
+          }
+        }
+        rebuildSeparators(visible);
+        noResults.style.display = visible.length === 0 ? "block" : "none";
+        visibleCount.textContent =
+          visible.length === cards.length
+            ? ""
+            : "Showing " + visible.length + " of " + cards.length + " items";
+      }
+
+      function wireGroup(container, prop, set) {
+        var buttons = [].slice.call(container.querySelectorAll("button"));
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].addEventListener("click", function () {
+            for (var j = 0; j < buttons.length; j++) {
+              buttons[j].setAttribute("aria-pressed", String(buttons[j] === this));
+            }
+            set(this.getAttribute("data-" + prop));
+            applyFilters();
+          });
+        }
+      }
+
+      wireGroup(statusSeg, "status", function (v) { activeStatus = v; });
+      wireGroup(document.getElementById("typeChips"), "type", function (v) { activeType = v; });
+      wireGroup(document.getElementById("effortChips"), "effort", function (v) { activeEffort = v; });
+
+      document
+        .getElementById("searchBox")
+        .addEventListener("input", function () {
+          searchText = this.value.trim().toLowerCase();
+          applyFilters();
+        });
+
+      /* The step bar is drawn here rather than emitted: a dozen <i> tags per
+         in-flight card would bloat every generated index, and the bar is
+         decorative — the "N / M steps" text beside it is server-rendered and
+         is what a reader without JavaScript (or a screen reader) gets. */
+      function drawStepBars() {
+        for (var i = 0; i < cards.length; i++) {
+          var slot = cards[i].querySelector(".r-steps");
+          if (!slot) continue;
+          var done = parseInt(cards[i].getAttribute("data-steps-done"), 10);
+          var total = parseInt(cards[i].getAttribute("data-steps-total"), 10);
+          if (isNaN(done) || isNaN(total) || total < 1) continue;
+          var bar = document.createElement("span");
+          bar.className = "bar";
+          bar.setAttribute("aria-hidden", "true");
+          for (var s = 0; s < total; s++) {
+            var seg = document.createElement("i");
+            if (s < done) seg.className = "on";
+            bar.appendChild(seg);
+          }
+          slot.insertBefore(bar, slot.firstChild);
+        }
+      }
+
+      var themeBtn = document.getElementById("themeToggle");
+      function resolvedTheme() {
+        var set = document.documentElement.getAttribute("data-theme");
+        if (set === "dark" || set === "light") return set;
+        return window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      }
+      function syncThemeButton() {
+        var dark = resolvedTheme() === "dark";
+        themeBtn.setAttribute("aria-pressed", dark ? "true" : "false");
+        themeBtn.setAttribute("aria-label", dark ? "Use light theme" : "Use dark theme");
+        themeBtn.textContent = dark ? "Light" : "Dark";
+      }
+      themeBtn.addEventListener("click", function () {
+        var next = resolvedTheme() === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem("plan-theme", next); } catch (e) { /* not persisted */ }
+        syncThemeButton();
+      });
+      syncThemeButton();
+
+      wireStatusCounts();
+      drawStepBars();
+      applyFilters();
+    </script>
   </body>
 </html>
