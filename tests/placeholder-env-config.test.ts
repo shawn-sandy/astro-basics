@@ -48,6 +48,22 @@ describe('Supabase configuration with placeholder values', () => {
     expect(config.getSupabaseUrl()).toBeNull()
   })
 
+  it.each(['ftp://example.com', 'javascript:alert(1)', 'libsql://wrong-provider.turso.io'])(
+    'rejects the parseable but non-HTTP URL %s',
+    async url => {
+      // `URL.canParse` accepts these; Supabase only accepts HTTP(S) and would throw.
+      const config = await loadConfigWithEnv({ SUPABASE_URL: url })
+
+      expect(config.getSupabaseUrl()).toBeNull()
+    }
+  )
+
+  it('accepts a plain http URL, for local Supabase instances', async () => {
+    const config = await loadConfigWithEnv({ SUPABASE_URL: 'http://localhost:54321' })
+
+    expect(config.getSupabaseUrl()).toBe('http://localhost:54321')
+  })
+
   it('passes a real project URL and keys through untouched', async () => {
     const config = await loadConfigWithEnv({
       SUPABASE_URL: 'https://abcdefgh.supabase.co',
@@ -71,6 +87,41 @@ describe('Supabase configuration with placeholder values', () => {
 
     expect(supabase.isSupabaseConfigured()).toBe(false)
     expect(supabase.getSupabaseServiceRole()).toBeNull()
+  })
+})
+
+/**
+ * The same defect in the database config. Left unfixed, `cp .env.example .env` makes
+ * Turso look configured, so provider auto-detection selects it and the placeholder URL
+ * reaches `createClient` on the first database operation.
+ */
+describe('Turso configuration with placeholder values', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.resetModules()
+  })
+
+  it('treats the .env.example placeholders as unconfigured', async () => {
+    const config = await loadConfigWithEnv({
+      TURSO_DATABASE_URL: 'YOUR_TURSO_DATABASE_URL',
+      TURSO_AUTH_TOKEN: 'YOUR_TURSO_AUTH_TOKEN',
+    })
+
+    expect(config.getTursoDatabaseUrl()).toBeNull()
+    expect(config.getTursoAuthToken()).toBeNull()
+    expect(config.isTursoConfigured()).toBe(false)
+  })
+
+  it('passes a real libsql URL and token through untouched', async () => {
+    // No HTTP(S) scheme check here - unlike Supabase, Turso URLs are libsql://.
+    const config = await loadConfigWithEnv({
+      TURSO_DATABASE_URL: 'libsql://my-db.turso.io',
+      TURSO_AUTH_TOKEN: 'real-auth-token',
+    })
+
+    expect(config.getTursoDatabaseUrl()).toBe('libsql://my-db.turso.io')
+    expect(config.getTursoAuthToken()).toBe('real-auth-token')
+    expect(config.isTursoConfigured()).toBe(true)
   })
 })
 

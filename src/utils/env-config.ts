@@ -265,14 +265,19 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
    * `.env.example` ships `SUPABASE_URL=YOUR_SUPABASE_URL`, which is truthy but not a
    * URL. `createClient` throws on it, and that throw used to happen while this module
    * graph was still loading - taking middleware, and so every route, down with it.
-   * Treating an unparseable value as "not configured" keeps an unconfigured project
+   * Treating an unusable value as "not configured" keeps an unconfigured project
    * running with Supabase features simply switched off.
+   *
+   * The scheme check matters as much as the parse: `URL.canParse` accepts `ftp://` and
+   * `javascript:`, but Supabase rejects anything that is not HTTP(S), so a scheme typo
+   * would otherwise sail through this guard and throw exactly where it used to.
    */
   getSupabaseUrl(): string | null {
     const url = this.env.SUPABASE_URL
-    if (!url) return null
+    if (!url || !URL.canParse(url)) return null
 
-    return URL.canParse(url) ? url : null
+    const { protocol } = new URL(url)
+    return protocol === 'http:' || protocol === 'https:' ? url : null
   }
 
   getSupabaseAnonKey(): string | null {
@@ -287,15 +292,25 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
 
   // Turso
   isTursoConfigured(): boolean {
-    return !!(this.env.TURSO_DATABASE_URL && this.env.TURSO_AUTH_TOKEN)
+    return !!(this.getTursoDatabaseUrl() && this.getTursoAuthToken())
   }
 
+  /**
+   * Returns the Turso URL only when it is a real one.
+   *
+   * `.env.example` ships `TURSO_DATABASE_URL=YOUR_TURSO_DATABASE_URL`. Left in place it
+   * reads as configured, so provider auto-detection picks Turso and hands the
+   * placeholder to `createClient` on the first database operation. No scheme check here:
+   * Turso URLs are `libsql://`, not HTTP(S) like Supabase's.
+   */
   getTursoDatabaseUrl(): string | null {
-    return this.env.TURSO_DATABASE_URL || null
+    const url = this.env.TURSO_DATABASE_URL
+    return url && url !== 'YOUR_TURSO_DATABASE_URL' ? url : null
   }
 
   getTursoAuthToken(): string | null {
-    return this.env.TURSO_AUTH_TOKEN || null
+    const token = this.env.TURSO_AUTH_TOKEN
+    return token && token !== 'YOUR_TURSO_AUTH_TOKEN' ? token : null
   }
 
   // Axiom Logging

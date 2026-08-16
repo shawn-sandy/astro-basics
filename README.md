@@ -100,9 +100,9 @@ functionality, and enterprise-grade security features.
    ```
 
    The site runs on a fresh clone with no accounts and no keys — leave the `YOUR_*`
-   placeholders in place. Clerk, Supabase, and Axiom each read an unreplaced placeholder
-   as "not configured" and switch that feature off, so logging falls back to the console
-   and auth-protected routes stay unavailable until you add real keys.
+   placeholders in place. Clerk, Supabase, Turso, and Axiom each read an unreplaced
+   placeholder as "not configured" and switch that feature off, so logging falls back to
+   the console and auth-protected routes stay unavailable until you add real keys.
 
 2. **Configure authentication** (optional, needed for sign-in and `/dashboard`):
    - Get Clerk keys from [clerk.com](https://clerk.com)
