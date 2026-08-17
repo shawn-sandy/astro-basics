@@ -49,13 +49,13 @@ export interface EnvironmentConfig {
 
   // Database Configuration
   getDatabaseProvider(): 'turso' | 'supabase' | 'auto' | null
-  
+
   // Supabase
   isSupabaseConfigured(): boolean
   getSupabaseUrl(): string | null
   getSupabaseAnonKey(): string | null
   getSupabaseServiceRoleKey(): string | null
-  
+
   // Turso
   isTursoConfigured(): boolean
   getTursoDatabaseUrl(): string | null
@@ -104,7 +104,7 @@ interface CachedEnvironment {
   DEV: boolean
   PROD: boolean
   MODE: string
-  
+
   // Astro adapter
   ASTRO_ADAPTER: string | undefined
   PUBLIC_SITE_URL: string | undefined
@@ -221,7 +221,7 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
   isClerkConfigured(): boolean {
     const publishableKey = this.env.PUBLIC_CLERK_PUBLISHABLE_KEY
     const secretKey = this.env.CLERK_SECRET_KEY
-    
+
     return !!(
       publishableKey &&
       publishableKey !== 'YOUR_CLERK_PUBLISHABLE_KEY' &&
@@ -256,41 +256,79 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
 
   // Supabase
   isSupabaseConfigured(): boolean {
-    return !!(this.env.SUPABASE_URL && this.env.SUPABASE_ANON_KEY)
+    return !!(this.getSupabaseUrl() && this.getSupabaseAnonKey())
   }
 
+  /**
+   * Returns the Supabase URL only when it is actually usable as one.
+   *
+   * `.env.example` ships `SUPABASE_URL=YOUR_SUPABASE_URL`, which is truthy but not a
+   * URL. `createClient` throws on it, and that throw used to happen while this module
+   * graph was still loading - taking middleware, and so every route, down with it.
+   * Treating an unusable value as "not configured" keeps an unconfigured project
+   * running with Supabase features simply switched off.
+   *
+   * The scheme check matters as much as the parse: `URL.canParse` accepts `ftp://` and
+   * `javascript:`, but Supabase rejects anything that is not HTTP(S), so a scheme typo
+   * would otherwise sail through this guard and throw exactly where it used to.
+   */
   getSupabaseUrl(): string | null {
-    return this.env.SUPABASE_URL || null
+    const url = this.env.SUPABASE_URL
+    if (!url || !URL.canParse(url)) return null
+
+    const { protocol } = new URL(url)
+    return protocol === 'http:' || protocol === 'https:' ? url : null
   }
 
   getSupabaseAnonKey(): string | null {
-    return this.env.SUPABASE_ANON_KEY || null
+    const key = this.env.SUPABASE_ANON_KEY
+    return key && key !== 'YOUR_SUPABASE_ANON_KEY' ? key : null
   }
 
   getSupabaseServiceRoleKey(): string | null {
-    return this.env.SUPABASE_SERVICE_ROLE_KEY || null
+    const key = this.env.SUPABASE_SERVICE_ROLE_KEY
+    return key && key !== 'YOUR_SUPABASE_SERVICE_ROLE_KEY' ? key : null
   }
 
   // Turso
   isTursoConfigured(): boolean {
-    return !!(this.env.TURSO_DATABASE_URL && this.env.TURSO_AUTH_TOKEN)
+    return !!(this.getTursoDatabaseUrl() && this.getTursoAuthToken())
   }
 
+  /**
+   * Returns the Turso URL only when it is a real one.
+   *
+   * `.env.example` ships `TURSO_DATABASE_URL=YOUR_TURSO_DATABASE_URL`. Left in place it
+   * reads as configured, so provider auto-detection picks Turso and hands the
+   * placeholder to `createClient` on the first database operation. No scheme check here:
+   * Turso URLs are `libsql://`, not HTTP(S) like Supabase's.
+   */
   getTursoDatabaseUrl(): string | null {
-    return this.env.TURSO_DATABASE_URL || null
+    const url = this.env.TURSO_DATABASE_URL
+    return url && url !== 'YOUR_TURSO_DATABASE_URL' ? url : null
   }
 
   getTursoAuthToken(): string | null {
-    return this.env.TURSO_AUTH_TOKEN || null
+    const token = this.env.TURSO_AUTH_TOKEN
+    return token && token !== 'YOUR_TURSO_AUTH_TOKEN' ? token : null
   }
 
   // Axiom Logging
   isAxiomConfigured(): boolean {
-    return !!(this.env.AXIOM_TOKEN && this.env.AXIOM_DATASET)
+    return !!(this.getAxiomToken() && this.getAxiomDataset())
   }
 
+  /**
+   * Returns the Axiom token only when it is a real one.
+   *
+   * `.env.example` ships `AXIOM_TOKEN=YOUR_AXIOM_API_TOKEN` alongside a real-looking
+   * `AXIOM_DATASET`, so the logger used to consider itself configured and ship every
+   * request's logs to an endpoint that answers `forbidden`. The console-only fallback in
+   * `initializeAxiom` is the intended behaviour here; it just never got the chance.
+   */
   getAxiomToken(): string | null {
-    return this.env.AXIOM_TOKEN || null
+    const token = this.env.AXIOM_TOKEN
+    return token && token !== 'YOUR_AXIOM_API_TOKEN' ? token : null
   }
 
   getAxiomDataset(): string | null {
@@ -304,7 +342,7 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
   // Configuration status
   getConfigurationStatus(): EnvironmentStatus {
     const missingConfig: string[] = []
-    
+
     // Check essential services
     if (!this.isClerkConfigured()) {
       missingConfig.push('Clerk Authentication (PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY)')
@@ -312,7 +350,7 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
 
     const hasSupabase = this.isSupabaseConfigured()
     const hasTurso = this.isTursoConfigured()
-    
+
     if (!hasSupabase && !hasTurso) {
       missingConfig.push('Database Provider (Supabase or Turso configuration)')
     }
@@ -349,7 +387,7 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
 /**
  * Factory function for environment configuration with singleton pattern.
  * Primary entry point for all environment variable access throughout the application.
- * 
+ *
  * @returns {EnvironmentConfig} Configured environment instance ready for use
  * @example
  * const config = getEnvironmentConfig();
@@ -364,7 +402,7 @@ export function getEnvironmentConfig(): EnvironmentConfig {
 /**
  * Environment system introspection and health monitoring utility.
  * Provides comprehensive information about the current environment configuration.
- * 
+ *
  * @returns {EnvironmentStatus} Complete environment status information
  * @example
  * const status = getEnvironmentStatus();
@@ -381,7 +419,7 @@ export function getEnvironmentStatus(): EnvironmentStatus {
 /**
  * Validate essential environment configuration and throw descriptive errors.
  * Useful for startup validation and debugging.
- * 
+ *
  * @throws {Error} When essential configuration is missing
  * @example
  * // In middleware or startup code
@@ -393,7 +431,7 @@ export function getEnvironmentStatus(): EnvironmentStatus {
  */
 export function validateEnvironmentConfig(): void {
   const status = getEnvironmentStatus()
-  
+
   if (!status.isFullyConfigured) {
     throw new Error(
       `Environment configuration incomplete. Missing: ${status.missingConfiguration.join(', ')}`

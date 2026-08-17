@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+
 import { getEnvironmentConfig } from '#utils/env-config'
 
 import type { Database } from './database.types'
@@ -30,9 +31,6 @@ export function getSupabaseServiceRole(): SupabaseClient<Database> | null {
 
   return _serviceRoleClient
 }
-
-// For backward compatibility
-export const supabaseServiceRole = getSupabaseServiceRole()
 
 // Client factory with Clerk session token
 export function createAuthenticatedSupabaseClient(
