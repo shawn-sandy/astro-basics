@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-status="todo" data-effort="medium">
+<html lang="en" data-status="todo" data-effort="high">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +15,7 @@ try {
 } catch (e) { /* no storage — prefers-color-scheme decides */ }
 </script>
 <meta name="plan-status" content="todo">
-<meta name="plan-effort" content="medium">
+<meta name="plan-effort" content="high">
 <meta name="plan-type" content="feature">
 <meta name="plan-created" content="2026-08-18">
 <meta name="plan-repo" content="astro-basics">
@@ -1524,7 +1524,7 @@ img, video { max-width: 100%; height: auto; }
                 aria-label="Save this plan as PDF">Save as PDF</button>
         <button class="theme-toggle" type="button" id="theme-toggle" onclick="toggleTheme(this)"
                 aria-pressed="false" aria-label="Use dark theme">Dark</button>
-        <span class="effort-badge" aria-label="Effort level">Medium</span>
+        <span class="effort-badge" aria-label="Effort level">High</span>
         <a class="issue-link" href="https://github.com/shawn-sandy/astro-basics/issues/369"
            aria-label="View the tracking issue for this plan">Issue #369</a>
         <span class="status-badge">todo</span>
@@ -1534,7 +1534,7 @@ img, video { max-width: 100%; height: auto; }
       <span><svg class="icon" aria-hidden="true"><use href="#ic-calendar"/></svg> 2026-08-18</span>
       <span><svg class="icon" aria-hidden="true"><use href="#ic-code-bracket"/></svg> astro-basics</span>
       <span><svg class="icon" aria-hidden="true"><use href="#ic-tag"/></svg> feature</span>
-      <span><svg class="icon" aria-hidden="true"><use href="#ic-bolt"/></svg> Medium effort</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#ic-bolt"/></svg> High effort</span>
     </div>
   </div>
 </header>
@@ -1557,15 +1557,16 @@ img, video { max-width: 100%; height: auto; }
       <li><a href="#next-steps"><svg class="icon" aria-hidden="true"><use href="#ic-arrow-right-circle"/></svg> Next steps</a></li>
     </ul>
     <details class="rail-disclosure" open>
-      <summary>6 steps</summary>
+      <summary>7 steps</summary>
       <div class="rail-heading">Steps</div>
       <ul class="rail-steps">
-        <li><a class="rail-step" href="#step-1"><span class="rail-no">1</span><span class="rail-text">Create <code class="md">.claude/skills/site-config/SKILL.md</code> with <code class="md">name: site-config</code>, <code class="md">version: 0.1.0</code>, and a description scoped to site title, description, logo, navigation labels, contact link and site URL, deliberately excluding <code class="md">install</code>, <code class="md">clone</code>, <code class="md">npm</code>, <code class="md">database</code> and <code class="md">.env</code> phrasing</span><span class="rail-state">step 1 of 6</span></a></li>
-        <li><a class="rail-step" href="#step-2"><span class="rail-no">2</span><span class="rail-text">Write the skill&#39;s Scan phase — read <code class="md">src/utils/site-config.ts</code>, <code class="md">astro.config.mjs</code>, the <code class="md">name</code> and <code class="md">description</code> fields of <code class="md">package.json</code>, and <code class="md">.env.example</code>, then print one table row per field with its current value and an <code class="md">unconfigured</code> marker when the value still equals its shipped placeholder</span><span class="rail-state">step 2 of 6</span></a></li>
-        <li><a class="rail-step" href="#step-3"><span class="rail-no">3</span><span class="rail-text">Write the Ask phase as four batched <code class="md">AskUserQuestion</code> rounds — identity (<code class="md">SITE_TITLE</code>, <code class="md">SITE_DESCRIPTION</code>, package <code class="md">name</code>, the Starlight docs title), address (<code class="md">SITE_URL</code>, <code class="md">SITE_LOGO</code>), navigation (<code class="md">BREADCRUMB_ROUTE</code> entries, <code class="md">PAGINATION_COUNT</code>), contact (<code class="md">CONTACT_INFO</code> name/url/isNetlify) — with each field&#39;s current value offered as an explicit keep-it option</span><span class="rail-state">step 3 of 6</span></a></li>
-        <li><a class="rail-step" href="#step-4"><span class="rail-no">4</span><span class="rail-text">Write the Write-back phase with the shape guard and per-field literal rules — values only and never a renamed, added or removed export; <code class="md">PAGINATION_COUNT</code> stays an unquoted number; strings stay single-quoted; <code class="md">CONTACT_INFO.isNetlify</code> stays a bare boolean; <code class="md">BREADCRUMB_ROUTE</code> entries keep their <code class="md">{name, url, path}</code> triple; the Starlight <code class="md">title</code> is replaced inside the <code class="md">starlight({ ... })</code> call without disturbing its sibling keys; <code class="md">SITE_URL</code> is written to <code class="md">.env</code> and appended to <code class="md">.env.example</code> if the key is missing, with <code class="md">astro.config.mjs:15</code>&#39;s literal fallback changed only on explicit confirmation</span><span class="rail-state">step 4 of 6</span></a></li>
-        <li><a class="rail-step" href="#step-5"><span class="rail-no">5</span><span class="rail-text">Add <code class="md">tests/site-config-skill.test.ts</code> covering both halves — the skill contract (file present, frontmatter keys present, all ten fields and the shape-guard sentence named in the body, none of the four excluded trigger words in the description) and the config shape guard (the module still exports all six names with their expected runtime types)</span><span class="rail-state">step 5 of 6</span></a></li>
-        <li><a class="rail-step" href="#step-6"><span class="rail-no">6</span><span class="rail-text">Dry-run the skill end to end — run its Scan phase against the checkout, then run its Write phase against a copy of <code class="md">src/utils/site-config.ts</code> in the scratchpad, and diff the copy</span><span class="rail-state">step 6 of 6</span></a></li>
+        <li><a class="rail-step" href="#step-1"><span class="rail-no">1</span><span class="rail-text">Create <code class="md">.claude/skills/site-config/SKILL.md</code> with <code class="md">name: site-config</code>, <code class="md">version: 0.1.0</code>, and a description scoped to site title, description, logo, navigation labels, contact link and site URL, deliberately excluding <code class="md">install</code>, <code class="md">clone</code>, <code class="md">npm</code>, <code class="md">database</code> and <code class="md">.env</code> phrasing</span><span class="rail-state">step 1 of 7</span></a></li>
+        <li><a class="rail-step" href="#step-2"><span class="rail-no">2</span><span class="rail-text">Write the skill&#39;s Scan phase — read <code class="md">src/utils/site-config.ts</code>, <code class="md">astro.config.mjs</code>, the <code class="md">name</code> field of <code class="md">package.json</code>, and <code class="md">.env.example</code>, then print one table row per field with its current value and an <code class="md">unconfigured</code> marker when the value still equals its shipped placeholder</span><span class="rail-state">step 2 of 7</span></a></li>
+        <li><a class="rail-step" href="#step-3"><span class="rail-no">3</span><span class="rail-text">Write the Ask phase as four batched <code class="md">AskUserQuestion</code> rounds — identity (<code class="md">SITE_TITLE</code>, <code class="md">SITE_DESCRIPTION</code>, package <code class="md">name</code>, the Starlight docs title), address (<code class="md">SITE_URL</code>, <code class="md">SITE_LOGO</code>), navigation (<code class="md">BREADCRUMB_ROUTE</code> entries, <code class="md">PAGINATION_COUNT</code>), contact (<code class="md">CONTACT_INFO</code> name/url/isNetlify) — with each field&#39;s current value offered as an explicit keep-it option</span><span class="rail-state">step 3 of 7</span></a></li>
+        <li><a class="rail-step" href="#step-4"><span class="rail-no">4</span><span class="rail-text">Teach <code class="md">astro.config.mjs</code> to read <code class="md">.env</code> — import <code class="md">loadEnv</code> from <code class="md">vite</code>, call it as <code class="md">loadEnv(process.env.NODE_ENV ?? &#39;development&#39;, process.cwd(), &#39;&#39;)</code>, and resolve the site option as <code class="md">process.env.SITE_URL || env.SITE_URL || &#39;https://example.com&#39;</code></span><span class="rail-state">step 4 of 7</span></a></li>
+        <li><a class="rail-step" href="#step-5"><span class="rail-no">5</span><span class="rail-text">Write the Write-back phase with the shape guard and per-field literal rules — values only and never a renamed, added or removed export; <code class="md">PAGINATION_COUNT</code> stays an unquoted number; strings stay single-quoted; <code class="md">CONTACT_INFO.isNetlify</code> stays a bare boolean; <code class="md">BREADCRUMB_ROUTE</code> entries keep their <code class="md">{name, url, path}</code> triple; the Starlight <code class="md">title</code> is replaced inside the <code class="md">starlight({ ... })</code> call without disturbing its sibling keys; <code class="md">SITE_URL</code> is written to <code class="md">.env</code> and appended to <code class="md">.env.example</code> if the key is missing, with <code class="md">astro.config.mjs</code>&#39;s literal fallback changed only on explicit confirmation</span><span class="rail-state">step 5 of 7</span></a></li>
+        <li><a class="rail-step" href="#step-6"><span class="rail-no">6</span><span class="rail-text">Add <code class="md">tests/site-config-skill.test.ts</code> covering both halves — the skill contract (file present, frontmatter keys present, all ten fields and the shape-guard sentence named in the body, none of the four excluded trigger words in the description) and the config shape guard (the module still exports all six names with their expected runtime types)</span><span class="rail-state">step 6 of 7</span></a></li>
+        <li><a class="rail-step" href="#step-7"><span class="rail-no">7</span><span class="rail-text">Dry-run the skill end to end — run its Scan phase against the checkout, then run its Write phase against a copy of <code class="md">src/utils/site-config.ts</code> in the scratchpad, and diff the copy</span><span class="rail-state">step 7 of 7</span></a></li>
       </ul>
     </details>
   </nav>
@@ -1628,7 +1629,7 @@ img, video { max-width: 100%; height: auto; }
     <div class="progress-wrap" id="progress">
       <div class="progress-header">
         <span>Definition of done</span>
-        <span id="progress-label">0 / 7 done</span>
+        <span id="progress-label">0 / 9 done</span>
       </div>
       <div class="progress-bar-bg">
         <div class="progress-bar-fill" id="progress-bar"
@@ -1644,7 +1645,7 @@ img, video { max-width: 100%; height: auto; }
       </h2>
       <p class="section-intro">The story behind this plan — what prompted the work and why it matters now.</p>
       <p>Site identity is spread across three files with three different shapes. <code class="md">src/utils/site-config.ts</code> holds six exported constants, <code class="md">astro.config.mjs:15</code> holds the canonical site URL, and <code class="md">package.json</code> holds the project name. A new site owner has to find all three and edit each by hand, and the shipped values (<code class="md">Astro Kit</code>, <code class="md">https://example.com</code>, <code class="md">astro-basics-website</code>) give no signal about which ones still need attention.</p>
-      <p>Two constraints shape the approach. First, <code class="md">src/utils/index.ts:2</code> re-exports the config module and 18 files import from it, so changing an exported <strong class="md">name</strong> is a build break while changing its <strong class="md">value</strong> is safe — the skill must be allowed to do only the second. Second, <code class="md">astro.config.mjs:15</code> reads <code class="md">process.env.SITE_URL || &#39;https://example.com&#39;</code>, so the URL is already env-delegated: a skill that &quot;sets the site URL&quot; by editing that literal would work locally and silently do nothing on any deployment where <code class="md">SITE_URL</code> is set. <code class="md">SITE_URL</code> is also absent from <code class="md">.env.example</code>, so the key is currently undocumented.</p>
+      <p>Two constraints shape the approach. First, <code class="md">src/utils/index.ts:2</code> re-exports the config module and 18 files import from it, so changing an exported <strong class="md">name</strong> is a build break while changing its <strong class="md">value</strong> is safe — the skill must be allowed to do only the second. Second, <code class="md">astro.config.mjs:15</code> reads <code class="md">process.env.SITE_URL || &#39;https://example.com&#39;</code>, so the URL is env-delegated — but only to <em class="md">real</em> environment variables. Astro evaluates its config before Vite loads <code class="md">.env</code> files (&quot;<code class="md">.env</code> files are not loaded inside configuration files&quot; — [Astro docs](https://docs.astro.build/en/guides/environment-variables/#in-the-astro-config-file)), and this repo&#39;s <code class="md">dev</code> and <code class="md">build</code> scripts are a bare <code class="md">astro dev</code> / <code class="md">astro build</code> with no <code class="md">--env-file</code>. So a <code class="md">SITE_URL</code> written to <code class="md">.env</code> reaches Netlify and Vercel, where it is a real environment variable, and is silently ignored by <code class="md">npm run dev</code> and <code class="md">npm run build</code>. Editing only the literal has the mirror-image failure. Neither surface works alone, which is why this plan makes the config read <code class="md">.env</code> through Vite&#39;s <code class="md">loadEnv</code> before the skill writes anything. <code class="md">SITE_URL</code> is also absent from <code class="md">.env.example</code>, so the key is currently undocumented.</p>
       <p>The repo already has a convention for this problem shape: PR #368 taught the config layer to treat <code class="md">.env.example</code> placeholders as unconfigured, with <code class="md">tests/placeholder-env-config.test.ts</code> guarding it. This skill applies the same placeholder-equals-unconfigured rule to branding values.</p>
       <p><code class="md">astro.config.mjs</code> carries a second branding value too: <code class="md">starlight({ title: &#39;Astro-Basics Guide&#39; })</code>, which names the documentation section on every <code class="md">/guide</code> page and stays visibly wrong on a rebranded site.</p>
       <p>Scope boundary: <code class="md">.claude/skills/project-setup/SKILL.md</code> already owns the clone/install/<code class="md">.env</code>/database walkthrough. This skill must not compete for those trigger words.</p>
@@ -1662,6 +1663,7 @@ img, video { max-width: 100%; height: auto; }
         <div class="file-tree-root"><svg class="icon" aria-hidden="true"><use href="#ic-folder"/></svg> astro-basics/</div>
         <ul class="file-list">
           <li><code>.claude/skills/site-config/SKILL.md</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">the scan, ask, and write-back instructions</span></li>
+          <li><code>astro.config.mjs</code> <span class="file-badge file-badge-modified">modified</span> <span class="file-note">resolve <code class="md">site</code> through Vite&#39;s <code class="md">loadEnv</code> so a written <code class="md">SITE_URL</code> actually applies locally</span></li>
           <li><code>tests/site-config-skill.test.ts</code> <span class="file-badge file-badge-new">new</span> <span class="file-note">skill contract check plus the config shape guard</span></li>
         </ul>
       </div>
@@ -1701,15 +1703,15 @@ img, video { max-width: 100%; height: auto; }
             <div class="step-body">
               <div class="step-action">
                 <span class="step-chip">todo</span>
-                <span class="step-chip-text">Write the skill&#39;s Scan phase — read <code class="md">src/utils/site-config.ts</code>, <code class="md">astro.config.mjs</code>, the <code class="md">name</code> and <code class="md">description</code> fields of <code class="md">package.json</code>, and <code class="md">.env.example</code>, then print one table row per field with its current value and an <code class="md">unconfigured</code> marker when the value still equals its shipped placeholder</span>
+                <span class="step-chip-text">Write the skill&#39;s Scan phase — read <code class="md">src/utils/site-config.ts</code>, <code class="md">astro.config.mjs</code>, the <code class="md">name</code> field of <code class="md">package.json</code>, and <code class="md">.env.example</code>, then print one table row per field with its current value and an <code class="md">unconfigured</code> marker when the value still equals its shipped placeholder</span>
               </div>
               <div class="step-note step-why-note">
                 <span class="step-note-label">Why</span>
-                <div class="step-why">the objective is to show what is already set before asking anything, and treating a shipped placeholder as unconfigured is the convention PR #368 established for env values</div>
+                <div class="step-why">the objective is to show what is already set before asking anything, and the scan reads exactly the fields the Ask and Write phases cover so nothing is displayed that the user cannot then change</div>
               </div>
               <div class="step-note step-verify">
                 <span class="step-note-label">Verify</span>
-                <div class="verify-body">run the Scan phase against the current checkout and confirm it marks <code class="md">SITE_TITLE</code>, the astro site URL and the package name as unconfigured while leaving <code class="md">PAGINATION_COUNT</code> unmarked.</div>
+                <div class="verify-body">run the Scan phase against the current checkout, confirm it marks <code class="md">SITE_TITLE</code>, the astro site URL and the package name as unconfigured while leaving <code class="md">PAGINATION_COUNT</code> unmarked, and confirm every row it prints maps to a question in step 3.</div>
               </div>
             </div>
           </div>
@@ -1725,7 +1727,7 @@ img, video { max-width: 100%; height: auto; }
               </div>
               <div class="step-note step-why-note">
                 <span class="step-note-label">Why</span>
-                <div class="step-why"><code class="md">AskUserQuestion</code> accepts at most four questions per call, and offering the current value as a choice turns the flow into a review of nine fields rather than a re-entry of all nine</div>
+                <div class="step-why"><code class="md">AskUserQuestion</code> accepts at most four questions per call, and offering the current value as a choice turns the flow into a review of ten fields rather than a re-entry of all ten</div>
               </div>
               <div class="step-note step-verify">
                 <span class="step-note-label">Verify</span>
@@ -1741,15 +1743,15 @@ img, video { max-width: 100%; height: auto; }
             <div class="step-body">
               <div class="step-action">
                 <span class="step-chip">todo</span>
-                <span class="step-chip-text">Write the Write-back phase with the shape guard and per-field literal rules — values only and never a renamed, added or removed export; <code class="md">PAGINATION_COUNT</code> stays an unquoted number; strings stay single-quoted; <code class="md">CONTACT_INFO.isNetlify</code> stays a bare boolean; <code class="md">BREADCRUMB_ROUTE</code> entries keep their <code class="md">{name, url, path}</code> triple; the Starlight <code class="md">title</code> is replaced inside the <code class="md">starlight({ ... })</code> call without disturbing its sibling keys; <code class="md">SITE_URL</code> is written to <code class="md">.env</code> and appended to <code class="md">.env.example</code> if the key is missing, with <code class="md">astro.config.mjs:15</code>&#39;s literal fallback changed only on explicit confirmation</span>
+                <span class="step-chip-text">Teach <code class="md">astro.config.mjs</code> to read <code class="md">.env</code> — import <code class="md">loadEnv</code> from <code class="md">vite</code>, call it as <code class="md">loadEnv(process.env.NODE_ENV ?? &#39;development&#39;, process.cwd(), &#39;&#39;)</code>, and resolve the site option as <code class="md">process.env.SITE_URL || env.SITE_URL || &#39;https://example.com&#39;</code></span>
               </div>
               <div class="step-note step-why-note">
                 <span class="step-note-label">Why</span>
-                <div class="step-why">18 files import these names through <code class="md">src/utils/index.ts</code>, so a name change breaks the build, and editing the astro literal alone is a no-op wherever <code class="md">SITE_URL</code> is already set in the environment</div>
+                <div class="step-why">Astro evaluates its config before Vite loads <code class="md">.env</code>, so without this a <code class="md">SITE_URL</code> the skill writes to <code class="md">.env</code> is ignored by <code class="md">npm run dev</code> and <code class="md">npm run build</code> while a host-set variable still works — the exact silently-does-nothing failure this plan exists to prevent, and keeping <code class="md">process.env</code> first preserves the precedence Netlify and Vercel rely on</div>
               </div>
               <div class="step-note step-verify">
                 <span class="step-note-label">Verify</span>
-                <div class="verify-body">after a write, <code class="md">npx tsc --noEmit src/utils/site-config.ts</code> reports no error and <code class="md">git diff src/utils/site-config.ts</code> shows changes only to the right of an <code class="md">=</code>.</div>
+                <div class="verify-body">with <code class="md">SITE_URL=https://verify.example</code> in a local <code class="md">.env</code> and no such shell variable set, <code class="md">npx astro build</code> emits <code class="md">https://verify.example</code> as the sitemap host in <code class="md">dist/sitemap-0.xml</code>.</div>
               </div>
             </div>
           </div>
@@ -1758,6 +1760,26 @@ img, video { max-width: 100%; height: auto; }
         <div class="step-card" id="step-5">
           <div class="step-card-header">
             <div class="step-number">5</div>
+            <div class="step-body">
+              <div class="step-action">
+                <span class="step-chip">todo</span>
+                <span class="step-chip-text">Write the Write-back phase with the shape guard and per-field literal rules — values only and never a renamed, added or removed export; <code class="md">PAGINATION_COUNT</code> stays an unquoted number; strings stay single-quoted; <code class="md">CONTACT_INFO.isNetlify</code> stays a bare boolean; <code class="md">BREADCRUMB_ROUTE</code> entries keep their <code class="md">{name, url, path}</code> triple; the Starlight <code class="md">title</code> is replaced inside the <code class="md">starlight({ ... })</code> call without disturbing its sibling keys; <code class="md">SITE_URL</code> is written to <code class="md">.env</code> and appended to <code class="md">.env.example</code> if the key is missing, with <code class="md">astro.config.mjs</code>&#39;s literal fallback changed only on explicit confirmation</span>
+              </div>
+              <div class="step-note step-why-note">
+                <span class="step-note-label">Why</span>
+                <div class="step-why">18 files import these names through <code class="md">src/utils/index.ts</code>, so a name change breaks the build, while nested edits to <code class="md">BREADCRUMB_ROUTE</code> and <code class="md">CONTACT_INFO</code> land on property lines carrying no <code class="md">=</code> and must not be mistaken for structural changes</div>
+              </div>
+              <div class="step-note step-verify">
+                <span class="step-note-label">Verify</span>
+                <div class="verify-body">after a write, <code class="md">npx tsc --noEmit src/utils/site-config.ts</code> reports no error and <code class="md">git diff -U0 src/utils/site-config.ts | grep -E &#39;^[+-]export&#39;</code> prints nothing, proving no export line was added, removed or renamed.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" id="step-6">
+          <div class="step-card-header">
+            <div class="step-number">6</div>
             <div class="step-body">
               <div class="step-action">
                 <span class="step-chip">todo</span>
@@ -1775,9 +1797,9 @@ img, video { max-width: 100%; height: auto; }
           </div>
         </div>
 
-        <div class="step-card" id="step-6">
+        <div class="step-card" id="step-7">
           <div class="step-card-header">
-            <div class="step-number">6</div>
+            <div class="step-number">7</div>
             <div class="step-body">
               <div class="step-action">
                 <span class="step-chip">todo</span>
@@ -1785,11 +1807,11 @@ img, video { max-width: 100%; height: auto; }
               </div>
               <div class="step-note step-why-note">
                 <span class="step-note-label">Why</span>
-                <div class="step-why">the literal-formatting rules are the only non-trivial logic in this plan and reviewing them as prose will not catch a mis-quoted value</div>
+                <div class="step-why">the literal-formatting rules are the only non-trivial logic in this plan and reviewing them as prose will not catch a mis-quoted value or a nested edit written at the wrong depth</div>
               </div>
               <div class="step-note step-verify">
                 <span class="step-note-label">Verify</span>
-                <div class="verify-body">the scratch diff shows only right-hand-side changes, and <code class="md">git diff --quiet src/utils/site-config.ts astro.config.mjs package.json</code> exits 0 because the real tree was never touched.</div>
+                <div class="verify-body">the scratch diff adds, removes and renames no <code class="md">export</code> line and leaves every <code class="md">{name, url, path}</code> key present, and <code class="md">git diff --quiet src/utils/site-config.ts package.json</code> exits 0 because the real tree was never touched.</div>
               </div>
             </div>
           </div>
@@ -1836,15 +1858,23 @@ img, video { max-width: 100%; height: auto; }
         </li>
         <li>
           <input type="checkbox" id="ac5">
-          <label for="ac5">The skill body routes SITE_URL to <code class="md">.env</code> rather than treating the astro.config literal as the deployed value</label>
+          <label for="ac5"><code class="md">astro.config.mjs</code> resolves <code class="md">site</code> as <code class="md">process.env.SITE_URL</code>, then <code class="md">.env</code> via Vite&#39;s <code class="md">loadEnv</code>, then the literal fallback</label>
         </li>
         <li>
           <input type="checkbox" id="ac6">
-          <label for="ac6"><code class="md">npx vitest run tests/site-config-skill.test.ts</code> exits 0</label>
+          <label for="ac6">With <code class="md">SITE_URL</code> set only in a local <code class="md">.env</code>, <code class="md">npx astro build</code> writes that host into <code class="md">dist/sitemap-0.xml</code></label>
         </li>
         <li>
           <input type="checkbox" id="ac7">
-          <label for="ac7">A dry run of the skill leaves <code class="md">git diff --quiet src/utils/site-config.ts astro.config.mjs package.json</code> exiting 0</label>
+          <label for="ac7">The skill body routes SITE_URL to <code class="md">.env</code> rather than treating the astro.config literal as the deployed value</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac8">
+          <label for="ac8"><code class="md">npx vitest run tests/site-config-skill.test.ts</code> exits 0</label>
+        </li>
+        <li>
+          <input type="checkbox" id="ac9">
+          <label for="ac9">A dry run of the skill adds, removes or renames no <code class="md">export</code> line in <code class="md">src/utils/site-config.ts</code></label>
         </li>
       </ul>
       <span id="criteria-status" aria-live="polite" aria-atomic="true"
@@ -1858,7 +1888,8 @@ img, video { max-width: 100%; height: auto; }
       </h2>
       <p class="section-intro">One last pass to confirm the whole change works end to end.</p>
       <p>Invoke the skill in a fresh session with a branding request such as &quot;set up my site details&quot;. It should read the three config surfaces without being told where they are, print a table in which <code class="md">SITE_TITLE</code>, the astro site URL and the package name are marked unconfigured while <code class="md">PAGINATION_COUNT</code> is not, and then ask its four rounds with each current value offered as a keep-it option, the identity round carrying exactly four questions including the Starlight docs title.</p>
-      <p>Answer one round with new values and decline the rest. Then confirm three things: <code class="md">git diff src/utils/site-config.ts</code> shows only right-hand-side changes with every <code class="md">export const</code> name unchanged; <code class="md">npx tsc --noEmit src/utils/site-config.ts</code> reports no error; and <code class="md">npx vitest run tests/site-config-skill.test.ts</code> exits 0, which proves both the skill contract and the config shape guard still hold.</p>
+      <p>Answer one round with new values, including a renamed <code class="md">BREADCRUMB_ROUTE</code> entry, and decline the rest. Then confirm three things: <code class="md">git diff -U0 src/utils/site-config.ts | grep -E &#39;^[+-]export&#39;</code> prints nothing, proving the nav edit changed property lines without disturbing any export identifier; <code class="md">npx tsc --noEmit src/utils/site-config.ts</code> reports no error; and <code class="md">npx vitest run tests/site-config-skill.test.ts</code> exits 0, which proves both the skill contract and the config shape guard still hold.</p>
+      <p>Then prove the site URL actually applies. With <code class="md">SITE_URL=https://verify.example</code> present only in a local <code class="md">.env</code> and no such shell variable exported, run <code class="md">npx astro build</code> and confirm <code class="md">dist/sitemap-0.xml</code> uses <code class="md">https://verify.example</code> as its host — the check that fails if the config ever stops loading <code class="md">.env</code> through <code class="md">loadEnv</code>.</p>
       <p>Finally run <code class="md">grep -o &#39;install\|clone\|database&#39; .claude/skills/site-config/SKILL.md | head</code> against the frontmatter description block and confirm no match, so the new skill cannot steal <code class="md">project-setup</code>&#39;s routing.</p>
     </section>
 
