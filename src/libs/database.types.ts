@@ -6,21 +6,24 @@ export type Database = {
         Row: {
           id: string
           clerk_id: string
-          email: string
+          email: string | null
           username: string | null
           full_name: string | null
           avatar_url: string | null
           role: string
-          metadata: Record<string, unknown>
+          app_metadata: Record<string, unknown>
           created_at: string
           updated_at: string
           last_sign_in_at: string | null
         }
-        Insert: Omit<
-          Database['public']['Tables']['users']['Row'],
-          'id' | 'created_at' | 'updated_at'
+        Insert: { clerk_id: string } & Partial<
+          Omit<
+            Database['public']['Tables']['users']['Row'],
+            'id' | 'clerk_id' | 'created_at' | 'updated_at'
+          >
         >
         Update: Partial<Database['public']['Tables']['users']['Insert']>
+        Relationships: []
       }
       messages: {
         Row: {
@@ -38,11 +41,65 @@ export type Database = {
           created_at: string
           updated_at: string
         }
-        Insert: Omit<
+        Insert: Pick<
           Database['public']['Tables']['messages']['Row'],
-          'id' | 'created_at' | 'updated_at'
+          'name' | 'email' | 'message'
+        > &
+          Partial<
+            Omit<
+              Database['public']['Tables']['messages']['Row'],
+              'id' | 'created_at' | 'updated_at'
+            >
+          >
+        Update: Partial<
+          Omit<Database['public']['Tables']['messages']['Row'], 'id' | 'created_at' | 'updated_at'>
         >
-        Update: Partial<Database['public']['Tables']['messages']['Insert']>
+        Relationships: []
+      }
+      organization_memberships: {
+        Row: {
+          id: string
+          user_id: string | null
+          clerk_org_id: string
+          clerk_org_role: string
+          org_name: string | null
+          org_slug: string | null
+          joined_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<
+          Database['public']['Tables']['organization_memberships']['Row'],
+          'id' | 'joined_at' | 'created_at' | 'updated_at'
+        >
+        Update: Partial<Database['public']['Tables']['organization_memberships']['Insert']>
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          id: string
+          user_id: string | null
+          theme: string
+          notifications_email: boolean
+          notifications_push: boolean
+          language: string
+          timezone: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: { user_id: string } & Partial<
+          Omit<
+            Database['public']['Tables']['user_preferences']['Row'],
+            'id' | 'user_id' | 'created_at' | 'updated_at'
+          >
+        >
+        Update: Partial<
+          Omit<
+            Database['public']['Tables']['user_preferences']['Row'],
+            'id' | 'created_at' | 'updated_at'
+          >
+        >
+        Relationships: []
       }
     }
     Views: {

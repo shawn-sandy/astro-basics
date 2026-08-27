@@ -331,7 +331,7 @@ export function parseCsrfTokenFromCookie(
       return { ok: true, value: null }
     }
 
-    const [token, expiresAtString] = parts
+    const [token = '', expiresAtString = ''] = parts
     const expiresAt = new Date(expiresAtString)
 
     if (isNaN(expiresAt.getTime())) {

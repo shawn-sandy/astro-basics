@@ -46,7 +46,7 @@ interface RateLimitResult {
   /** Timestamp when the window resets */
   resetTime: number
   /** Number of seconds until reset (for Retry-After header) */
-  retryAfter?: number
+  retryAfter?: number | undefined
 }
 
 /**
@@ -359,7 +359,7 @@ export function getClientIP(request: Request): string {
   const forwardedFor = request.headers.get('x-forwarded-for')
   if (forwardedFor) {
     // X-Forwarded-For can contain multiple IPs, use the first one
-    return forwardedFor.split(',')[0].trim()
+    return forwardedFor.split(',')[0]!.trim()
   }
 
   const realIP = request.headers.get('x-real-ip')

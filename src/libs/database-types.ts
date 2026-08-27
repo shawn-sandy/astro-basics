@@ -30,10 +30,10 @@ export interface Message {
 export interface MessageData {
   name: string
   email: string
-  subject?: string
+  subject?: string | undefined
   message: string
-  ip_address?: string
-  user_agent?: string
+  ip_address?: string | undefined
+  user_agent?: string | undefined
 }
 
 /**

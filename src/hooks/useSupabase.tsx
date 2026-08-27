@@ -317,7 +317,7 @@ export function useSupabaseSubscription<T = unknown>(
     const setupSubscription = async () => {
       try {
         // Initial data fetch
-        let query = client.from(tableName).select('*')
+        let query = (client as SupabaseClient).from(tableName).select('*')
 
         if (filter && isAuthenticated) {
           query = query.or(filter)

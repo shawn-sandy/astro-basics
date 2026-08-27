@@ -477,22 +477,3 @@ export function tokenToCssVar(tokenPath: string): TokenName {
 export function tokenToVarFunction(tokenPath: string): TokenValue {
   return `var(${tokenToCssVar(tokenPath)})` as TokenValue
 }
-
-// =============================================================================
-// Type Exports for External Use
-// =============================================================================
-
-export type {
-  ColorPalette,
-  AccentColors,
-  SemanticColors,
-  ColorTokens,
-  SpacingTokens,
-  TypographyTokens,
-  BorderTokens,
-  ShadowTokens,
-  OpacityTokens,
-  TransitionTokens,
-  DesignTokens,
-  ComponentTokens,
-}

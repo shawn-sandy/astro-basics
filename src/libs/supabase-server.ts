@@ -29,8 +29,8 @@ export function createServerSupabaseClient(): SupabaseClient<Database> | null {
  */
 export async function getAuthenticatedSupabase(_context: {
   locals: {
-    userId?: string
-    clerkToken?: string
+    userId?: string | null
+    clerkToken?: string | null
   }
 }): Promise<SupabaseClient<Database> | null> {
   // For now, use service role key for all operations

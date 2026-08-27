@@ -140,7 +140,7 @@ export async function fetchUserWithRole(
         // Build user data object using existing utility
         const newUser = {
           clerk_id: userId,
-          email: primaryEmail?.emailAddress || user.emailAddresses?.[0]?.emailAddress,
+          email: primaryEmail?.emailAddress || user.emailAddresses?.[0]?.emailAddress || null,
           username: user.username,
           full_name: user.fullName || `${user.firstName} ${user.lastName}`.trim() || null,
           avatar_url: user.imageUrl,

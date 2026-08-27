@@ -50,7 +50,7 @@ export function isValidEmail(email: string, strict: boolean = false): boolean {
     return false
   }
 
-  const [localPart, domainPart] = parts
+  const [localPart = '', domainPart = ''] = parts
 
   // Check local part length (64 characters max per RFC 5321)
   if (localPart.length === 0 || localPart.length > 64) {
@@ -93,7 +93,7 @@ export function validateEmailWithMessage(email: string): { valid: boolean; messa
     return { valid: false, message: 'Email must contain exactly one @ symbol' }
   }
 
-  const [localPart, domainPart] = parts
+  const [localPart = '', domainPart = ''] = parts
 
   if (localPart.length === 0) {
     return { valid: false, message: 'Email must have a local part before @' }

@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro'
 
+import type { Database } from '#libs/database.types'
 import { createServerSupabaseClient, isSupabaseConfigured } from '#libs/supabase-native'
 import { logger, logApiRequest, logApiResponse, logApiError } from '#utils/logger'
 
@@ -180,12 +181,12 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     }
 
     // Prepare update data (only allow certain fields to be updated)
-    const allowedFields = ['username', 'full_name', 'avatar_url', 'metadata']
-    const updateData: Record<string, unknown> = {}
+    const allowedFields = ['username', 'full_name', 'avatar_url', 'app_metadata']
+    const updateData: Database['public']['Tables']['users']['Update'] = {}
 
     for (const field of allowedFields) {
       if (field in body) {
-        updateData[field] = body[field]
+        ;(updateData as Record<string, unknown>)[field] = body[field]
       }
     }
 

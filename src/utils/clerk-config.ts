@@ -13,17 +13,17 @@ export type ClerkConfigStatus = {
   publishableKey: {
     exists: boolean
     isValid: boolean
-    value?: string
+    value?: string | undefined
   }
   secretKey: {
     exists: boolean
     isValid: boolean
-    value?: string
+    value?: string | undefined
   }
   webhookSecret: {
     exists: boolean
     isValid: boolean
-    value?: string
+    value?: string | undefined
   }
   isFullyConfigured: boolean
   hasBasicConfig: boolean

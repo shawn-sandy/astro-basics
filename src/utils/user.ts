@@ -102,7 +102,7 @@ export function buildUserData(user: ClerkUser, email: string) {
     full_name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || null,
     avatar_url: user.imageUrl,
     role, // User-level role from Clerk
-    metadata: user.publicMetadata || {},
+    app_metadata: user.publicMetadata || {},
     last_sign_in_at: user.lastSignInAt ? new Date(user.lastSignInAt).toISOString() : null,
   }
 }

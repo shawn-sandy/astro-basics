@@ -36,6 +36,7 @@ export function MessagesList() {
       return
     }
 
+    const uid = userId
     let subscription: ReturnType<typeof client.channel> | undefined
 
     // Fetch and subscribe to messages
@@ -49,7 +50,7 @@ export function MessagesList() {
         const { data: directMessages, error: directError } = await client!
           .from('messages')
           .select('*')
-          .eq('clerk_user_id', userId)
+          .eq('clerk_user_id', uid)
 
         if (directError) throw directError
 
@@ -60,17 +61,20 @@ export function MessagesList() {
           .select(
             `
             id, subject, message, name, email, created_at, updated_at,
-            is_read, is_archived, user_id, clerk_user_id,
+            is_read, is_archived, user_id, clerk_user_id, ip_address, user_agent,
             users!inner(clerk_id)
           `
           )
-          .eq('users.clerk_id', userId)
+          .eq('users.clerk_id', uid)
           .is('clerk_user_id', null) // Only get messages without direct clerk_user_id to avoid duplicates
 
         if (relatedError) throw relatedError
 
         // Combine messages and sort
-        const allMessages = [...(directMessages || []), ...(relatedMessages || [])]
+        const allMessages = [
+          ...(directMessages || []),
+          ...(relatedMessages || []).map(({ users: _users, ...message }) => message),
+        ]
         const { data, error: fetchError } = {
           data: allMessages
             .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -133,7 +137,7 @@ export function MessagesList() {
   }, [client, userId, isAuthenticated])
 
   const markAsRead = async (messageId: number) => {
-    if (!client) return
+    if (!client || !userId) return
 
     try {
       const { error } = await client
@@ -149,7 +153,7 @@ export function MessagesList() {
   }
 
   const archiveMessage = async (messageId: number) => {
-    if (!client) return
+    if (!client || !userId) return
 
     try {
       const { error } = await client
@@ -165,7 +169,8 @@ export function MessagesList() {
   }
 
   const deleteMessage = async (messageId: number) => {
-    if (!client || !window.confirm('Are you sure you want to delete this message?')) return
+    if (!client || !userId || !window.confirm('Are you sure you want to delete this message?'))
+      return
 
     try {
       const { error } = await client

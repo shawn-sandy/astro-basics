@@ -111,7 +111,7 @@ export const POST: APIRoute = async context => {
         email: body.email,
         subject: body.subject || null,
         message: body.message,
-        user_id: user?.id,
+        user_id: user?.id ?? null,
         clerk_user_id: auth.userId,
         is_read: false,
         is_archived: false,
@@ -182,7 +182,7 @@ export const PATCH: APIRoute = async context => {
     }
 
     // Update the message (RLS will ensure user owns it)
-    const updateData: Record<string, boolean> = {}
+    const updateData: { is_read?: boolean; is_archived?: boolean } = {}
     if (typeof body.is_read === 'boolean') updateData.is_read = body.is_read
     if (typeof body.is_archived === 'boolean') updateData.is_archived = body.is_archived
 
@@ -263,7 +263,7 @@ export const DELETE: APIRoute = async context => {
     const { error } = await supabase
       .from('messages')
       .delete()
-      .eq('id', messageId)
+      .eq('id', Number(messageId))
       .eq('clerk_user_id', auth.userId)
 
     if (error) {

@@ -120,7 +120,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // This removes dangerous characters, normalizes input, and detects suspicious content
     let sanitizedData
     try {
-      sanitizedData = sanitizeMessageData(data)
+      sanitizedData = sanitizeMessageData(
+        data as { name: unknown; email: unknown; subject?: unknown; message: unknown }
+      )
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Invalid input data'
 

@@ -2,6 +2,14 @@
 /// <reference types="astro/client" />
 /// <reference types="@clerk/astro/client" />
 
+// Bare `tsc` cannot resolve .astro modules (astro check is not in this repo);
+// this ambient declaration types .astro imports from .ts barrel files.
+declare module '*.astro' {
+  import type { AstroComponentFactory } from 'astro/runtime/server/index.js'
+  const Component: AstroComponentFactory
+  export default Component
+}
+
 declare namespace App {
   interface Locals {
     // Custom properties added to the Clerk Locals interface

@@ -9,6 +9,7 @@
 
 import type { APIRoute } from 'astro'
 
+import type { Database } from '#libs/database.types'
 import { createServerClerkSupabaseClient } from '#libs/supabase-auth'
 import { logger } from '#utils/logger'
 
@@ -271,7 +272,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     if (Object.keys(sanitizedProfileUpdates).length > 0) {
       const { data, error } = await supabase
         .from('users')
-        .update(sanitizedProfileUpdates)
+        .update(sanitizedProfileUpdates as Database['public']['Tables']['users']['Update'])
         .eq('clerk_id', locals.userId)
         .select('id')
         .single()
@@ -319,7 +320,9 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
       if (Object.keys(sanitizedPreferences).length > 0) {
         const { error: prefError } = await supabase
           .from('user_preferences')
-          .update(sanitizedPreferences)
+          .update(
+            sanitizedPreferences as Database['public']['Tables']['user_preferences']['Update']
+          )
           .eq('user_id', userData.id)
 
         if (prefError) {

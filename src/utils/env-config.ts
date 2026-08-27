@@ -49,13 +49,13 @@ export interface EnvironmentConfig {
 
   // Database Configuration
   getDatabaseProvider(): 'turso' | 'supabase' | 'auto' | null
-  
+
   // Supabase
   isSupabaseConfigured(): boolean
   getSupabaseUrl(): string | null
   getSupabaseAnonKey(): string | null
   getSupabaseServiceRoleKey(): string | null
-  
+
   // Turso
   isTursoConfigured(): boolean
   getTursoDatabaseUrl(): string | null
@@ -104,7 +104,7 @@ interface CachedEnvironment {
   DEV: boolean
   PROD: boolean
   MODE: string
-  
+
   // Astro adapter
   ASTRO_ADAPTER: string | undefined
   PUBLIC_SITE_URL: string | undefined
@@ -221,7 +221,7 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
   isClerkConfigured(): boolean {
     const publishableKey = this.env.PUBLIC_CLERK_PUBLISHABLE_KEY
     const secretKey = this.env.CLERK_SECRET_KEY
-    
+
     return !!(
       publishableKey &&
       publishableKey !== 'YOUR_CLERK_PUBLISHABLE_KEY' &&
@@ -304,7 +304,7 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
   // Configuration status
   getConfigurationStatus(): EnvironmentStatus {
     const missingConfig: string[] = []
-    
+
     // Check essential services
     if (!this.isClerkConfigured()) {
       missingConfig.push('Clerk Authentication (PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY)')
@@ -312,7 +312,7 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
 
     const hasSupabase = this.isSupabaseConfigured()
     const hasTurso = this.isTursoConfigured()
-    
+
     if (!hasSupabase && !hasTurso) {
       missingConfig.push('Database Provider (Supabase or Turso configuration)')
     }
@@ -349,7 +349,7 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
 /**
  * Factory function for environment configuration with singleton pattern.
  * Primary entry point for all environment variable access throughout the application.
- * 
+ *
  * @returns {EnvironmentConfig} Configured environment instance ready for use
  * @example
  * const config = getEnvironmentConfig();
@@ -364,7 +364,7 @@ export function getEnvironmentConfig(): EnvironmentConfig {
 /**
  * Environment system introspection and health monitoring utility.
  * Provides comprehensive information about the current environment configuration.
- * 
+ *
  * @returns {EnvironmentStatus} Complete environment status information
  * @example
  * const status = getEnvironmentStatus();
@@ -381,7 +381,7 @@ export function getEnvironmentStatus(): EnvironmentStatus {
 /**
  * Validate essential environment configuration and throw descriptive errors.
  * Useful for startup validation and debugging.
- * 
+ *
  * @throws {Error} When essential configuration is missing
  * @example
  * // In middleware or startup code
@@ -393,13 +393,10 @@ export function getEnvironmentStatus(): EnvironmentStatus {
  */
 export function validateEnvironmentConfig(): void {
   const status = getEnvironmentStatus()
-  
+
   if (!status.isFullyConfigured) {
     throw new Error(
       `Environment configuration incomplete. Missing: ${status.missingConfiguration.join(', ')}`
     )
   }
 }
-
-// Export types for use in other files
-export type { EnvironmentConfig, EnvironmentStatus }

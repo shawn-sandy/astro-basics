@@ -25,12 +25,13 @@ function createMockClerkUser(emailAddresses: { id: string; emailAddress: string 
 }
 
 // Mock the Clerk client and Supabase dependencies
+const mockGetUser = vi.fn()
 vi.mock('@clerk/astro/server', () => ({
-  clerkClient: {
+  clerkClient: vi.fn(() => ({
     users: {
-      getUser: vi.fn(),
+      getUser: mockGetUser,
     },
-  },
+  })),
 }))
 
 vi.mock('#libs/supabase-native', () => ({
@@ -53,10 +54,8 @@ describe('User Sync Endpoints Email Validation Integration', () => {
 
   describe('User sync endpoint (/api/user/sync)', () => {
     it('should return error when user has no email addresses', async () => {
-      const { clerkClient } = await import('@clerk/astro/server')
-
       // Mock user with empty email addresses
-      vi.mocked(clerkClient.users.getUser).mockResolvedValue(
+      mockGetUser.mockResolvedValue(
         createMockClerkUser([]) // No email addresses
       )
 
@@ -75,10 +74,8 @@ describe('User Sync Endpoints Email Validation Integration', () => {
     })
 
     it('should succeed when user has valid email addresses', async () => {
-      const { clerkClient } = await import('@clerk/astro/server')
-
       // Mock user with valid email addresses
-      vi.mocked(clerkClient.users.getUser).mockResolvedValue(
+      mockGetUser.mockResolvedValue(
         createMockClerkUser([{ id: 'email_1', emailAddress: 'test@example.com' }])
       )
 
@@ -97,10 +94,8 @@ describe('User Sync Endpoints Email Validation Integration', () => {
 
   describe('Test sync endpoint (/api/test/sync-user)', () => {
     it('should return error when user has no email addresses', async () => {
-      const { clerkClient } = await import('@clerk/astro/server')
-
       // Mock user with empty email addresses
-      vi.mocked(clerkClient.users.getUser).mockResolvedValue(
+      mockGetUser.mockResolvedValue(
         createMockClerkUser([]) // No email addresses
       )
 
@@ -121,10 +116,8 @@ describe('User Sync Endpoints Email Validation Integration', () => {
     })
 
     it('should succeed when user has valid email addresses', async () => {
-      const { clerkClient } = await import('@clerk/astro/server')
-
       // Mock user with valid email addresses
-      vi.mocked(clerkClient.users.getUser).mockResolvedValue(
+      mockGetUser.mockResolvedValue(
         createMockClerkUser([{ id: 'email_1', emailAddress: 'test@example.com' }])
       )
 

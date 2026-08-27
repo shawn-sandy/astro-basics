@@ -50,7 +50,9 @@ const content = defineCollection({
   schema: baseSchema,
 })
 
-export const collections = {
+// Explicit annotation: with `declaration: true` tsc otherwise rejects the inferred
+// type as non-portable (TS2742, via Starlight's sidebar schema).
+export const collections: Record<string, ReturnType<typeof defineCollection>> = {
   posts,
   docs,
   content,

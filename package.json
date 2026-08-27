@@ -174,5 +174,8 @@
     "tsx": "^4.20.6",
     "vitest": "^3.2.4",
     "zod": "^4.0.0"
+  },
+  "overrides": {
+    "nanostores": "$nanostores"
   }
 }

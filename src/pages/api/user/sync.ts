@@ -9,7 +9,8 @@ import { extractPrimaryEmail, buildUserData } from '#utils/user'
  * Syncs current user data from Clerk to Supabase
  * Useful when webhooks are not properly configured
  */
-export const POST: APIRoute = async ({ locals }) => {
+export const POST: APIRoute = async context => {
+  const { locals } = context
   console.log('🔄 User sync - userId:', locals.userId)
 
   if (!locals.userId) {
@@ -56,7 +57,7 @@ export const POST: APIRoute = async ({ locals }) => {
 
   try {
     // Fetch user data from Clerk
-    const user = await clerkClient.users.getUser(locals.userId)
+    const user = await clerkClient(context).users.getUser(locals.userId)
 
     if (!user) {
       return new Response(

@@ -143,12 +143,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
         const userData = {
           clerk_id: id,
           email: validEmail,
-          username,
           full_name: `${first_name || ''} ${last_name || ''}`.trim() || null,
-          avatar_url: image_url,
           role, // User-level role from Clerk
           app_metadata: public_metadata || {},
           last_sign_in_at: last_sign_in_at ? new Date(last_sign_in_at).toISOString() : null,
+          ...(username !== undefined ? { username } : {}),
+          ...(image_url !== undefined ? { avatar_url: image_url } : {}),
         }
 
         const { data: user, error: userError } = await supabase
@@ -190,11 +190,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         if (user) {
           const { error: prefsError } = await supabase
             .from('user_preferences')
-            .insert({
-              user_id: user.id,
-            })
-            .onConflict('user_id')
-            .ignoreDuplicates()
+            .upsert({ user_id: user.id }, { onConflict: 'user_id', ignoreDuplicates: true })
 
           if (prefsError) {
             logger.warn('Failed to create default preferences', {
@@ -232,13 +228,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
         const role = (public_metadata?.role as string) || 'member'
 
         const userData = {
-          email: validEmail,
-          username,
           full_name: `${first_name || ''} ${last_name || ''}`.trim() || null,
-          avatar_url: image_url,
           role, // User-level role from Clerk
           app_metadata: public_metadata || {},
           last_sign_in_at: last_sign_in_at ? new Date(last_sign_in_at).toISOString() : null,
+          ...(validEmail ? { email: validEmail } : {}),
+          ...(username !== undefined ? { username } : {}),
+          ...(image_url !== undefined ? { avatar_url: image_url } : {}),
         }
 
         const { error } = await supabase.from('users').update(userData).eq('clerk_id', id)

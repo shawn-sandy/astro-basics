@@ -8,7 +8,8 @@ import { extractPrimaryEmail, buildUserData } from '#utils/user'
  * Test endpoint to manually sync a specific user by their Clerk ID
  * This is useful for testing the full sync functionality
  */
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async context => {
+  const { request } = context
   try {
     const { userId } = await request.json()
 
@@ -51,7 +52,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Fetch user data from Clerk
-    const user = await clerkClient.users.getUser(userId)
+    const user = await clerkClient(context).users.getUser(userId)
 
     if (!user) {
       return new Response(

@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.ts|*.tsx|*.astro) npx eslint --no-warn-ignored --max-warnings=0 \"$f\" >&2 || exit 2;; esac",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ \"$(jq -r '.stop_hook_active')\" = \"true\" ] && exit 0; git status --porcelain 2>/dev/null | grep -qE '\\.(ts|tsx|astro)$' || exit 0; npm run type-check >&2 || exit 2",
+            "timeout": 180
+          }
+        ]
+      }
+    ]
+  }
+}

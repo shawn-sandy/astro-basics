@@ -260,8 +260,8 @@ async function seedMessages() {
   try {
     // Prepare queries for batch transaction
     const queries = messages.map((msg, index) => {
-      const userAgent = userAgents[index % userAgents.length]
-      const ipAddress = ipAddresses[index % ipAddresses.length]
+      const userAgent = userAgents[index % userAgents.length]!
+      const ipAddress = ipAddresses[index % ipAddresses.length]!
       const createdAt = generateDate(msg.daysAgo)
 
       return {
@@ -283,7 +283,7 @@ async function seedMessages() {
           msg.is_archived === true ? 1 : 0,
           createdAt,
           createdAt,
-        ] as const,
+        ],
       }
     })
 
@@ -296,7 +296,7 @@ async function seedMessages() {
     console.log(`   - Read messages: ${messages.filter(m => m.is_read).length}`)
     console.log(`   - Archived messages: ${messages.filter(m => m.is_archived).length}`)
     console.log(
-      `   - Date range: ${messages[messages.length - 1].daysAgo} to ${messages[0].daysAgo} days ago`
+      `   - Date range: ${messages[messages.length - 1]!.daysAgo} to ${messages[0]!.daysAgo} days ago`
     )
   } catch (error) {
     console.error('❌ Error seeding messages:', error)
