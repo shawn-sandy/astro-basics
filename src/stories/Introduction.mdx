@@ -1,0 +1,55 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Introduction" />
+
+# astro-basics component library
+
+This Storybook documents the **React** side of the `astro-basics` component
+library — the components under `src/components/react/` that ship interactive
+behaviour to the browser.
+
+## What is and is not here
+
+| Location                    | Rendering           | Documented in                        |
+| --------------------------- | ------------------- | ------------------------------------ |
+| `src/components/react/`     | Client (hydrated)   | **Storybook** (this site)            |
+| `src/components/astro/`     | Server only (SSR)   | Starlight guide, `/guide/components` |
+| `src/components/dashboard/` | Server only, auth'd | Starlight guide                      |
+
+`.astro` components have no client-side runtime for Storybook to mount, so they
+are not rendered here. Astro components that wrap a React component — such as
+`ContactForm.astro` — are covered indirectly by the React story for the component
+they hydrate.
+
+One React component is deliberately left out: `astro-breadcrumb`. The underlying
+`@fpkit/react` `Breadcrumb` builds its trail from `window.location.pathname` and
+uses the `routes` prop only as a segment-to-label lookup table. Inside Storybook's
+`iframe.html` that pathname is always Storybook's own, so any story would render a
+misleading trail rather than the component's real output.
+
+## Styling
+
+Stories load the exact stylesheet stack that `src/layouts/Base.astro` uses:
+
+- `@fpkit/acss/styles` — the design-system base
+- `src/styles/index.scss` — project design tokens and component styles
+
+The SCSS entry point is imported directly, so editing a partial under
+`src/styles/` hot-reloads the canvas without running `npm run sass`.
+
+## Conventions for new stories
+
+- Colocate the story next to its component: `src/components/react/Thing.stories.tsx`.
+- Import the component through the mandatory `#` alias
+  (`import Thing from '#components/react/Thing'`), never a relative path.
+- Type the default export with `satisfies Meta<typeof Thing>` and stories with
+  `StoryObj<typeof meta>` so `args` stay checked against the component's props.
+- Title stories `React/<ComponentName>` to keep the sidebar grouped.
+- Autodocs is enabled globally, so the JSDoc on the component, on `meta`, and on
+  each exported story becomes the docs page — write those comments as the docs.
+
+## Accessibility
+
+The **Accessibility** panel runs axe against every story. This project targets
+WCAG 2.1 Level AA, so treat violations reported there as defects in the
+component, not in the story.

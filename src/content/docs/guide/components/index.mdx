@@ -38,6 +38,7 @@ Specialized components for authenticated areas.
 The project provides flexible page layouts that support custom headers through Astro's slot pattern. Learn how to customize page headers, use different header components, and create custom layouts.
 
 **Key Features:**
+
 - Default header with standard props
 - Custom header components via named slots
 - Optional header visibility control
@@ -282,6 +283,18 @@ import InteractiveComponent from '#components/react/Interactive.tsx'
 2. **Define clear props**: Use TypeScript interfaces
 3. **Follow naming conventions**: PascalCase for component names
 4. **Add to exports**: Update `src/components/index.ts`
+5. **Add a story** (React components): see **[Storybook](/guide/components/storybook/)**
+
+### Previewing Components
+
+React components are developed and documented in Storybook, which renders each one
+in isolation with live prop controls and an accessibility audit:
+
+```bash
+npm run storybook
+```
+
+See **[Storybook](/guide/components/storybook/)** for the full guide.
 
 ### Testing Components
 
@@ -298,6 +311,7 @@ describe('Component', () => {
 
 ## Related Documentation
 
+- **[Storybook](/guide/components/storybook/)** - Interactive workshop for React components
 - **[API Reference](/guide/api/)** - Detailed component APIs
 - **[Styling](/guide/styling/)** - Design system and theming
 - **[Testing](/guide/testing/)** - Component testing strategies

@@ -12,6 +12,13 @@ This directory contains technical documentation for third-party service integrat
   - Includes troubleshooting and migration guide
   - **Status:** Current (as of April 2025)
 
+### Development Tooling
+
+- **[Storybook](./storybook.md)**
+  - Isolated workshop and living documentation for the React component library
+  - Storybook 10 + `@storybook/react-vite`, configured in `.storybook/`
+  - Commands: `npm run storybook`, `npm run build-storybook`
+
 ### Deprecated Guides
 
 The following guides use outdated methods and are kept for reference only:
