@@ -161,6 +161,33 @@ components, which no React render test would cover.
 > **Adding an alert?** Put `data-visible="true"` on it. If you need the fade-in
 > instead, use acss's own `<Alert>` component rather than hand-rolling `role="alert"`.
 
+## SCSS partials: two resolvers, two answers
+
+`preview.ts` imports `src/styles/index.scss` directly so style edits hot-reload.
+That routes the project's SCSS through **Vite's** sass resolver, while
+`npm run sass:build` — which produces the `index.css` the site actually ships —
+routes it through the **sass CLI**. The two disagree about extension-less loads.
+
+Given `@use "./components/alert"` with both `_alert.scss` and `alert.css` present:
+
+| Toolchain                                   | Resolves to   |
+| ------------------------------------------- | ------------- |
+| sass CLI (`npm run sass:build`, `prebuild`) | `_alert.scss` |
+| Vite (Storybook, `.scss` through Astro)     | `alert.css`   |
+
+Neither warns. `src/styles/components/alert.css` was a stale build artifact
+committed by accident, and it meant edits to `_alert.scss` silently did nothing in
+Storybook. It has been deleted.
+
+`tests/components/alert-stylesheet.test.ts` fails if a `.css` file reappears beside
+a same-named `_*.scss` partial. It currently allows one documented exception:
+`src/styles/design-tokens.css` shadows `_design-tokens.scss` the same way, so
+Storybook compiles a 293-line token set where the site ships 399 lines. Removing it
+changes how stories render and wants its own change.
+
+`index.scss` → `index.css` is not an instance of this: both are imported with an
+explicit extension, so no resolver has to guess.
+
 ## Troubleshooting
 
 | Symptom                                                         | Cause                                                              |
@@ -170,3 +197,4 @@ components, which no React render test would cover.
 | `No story files found for the specified pattern`                | A glob in `main.ts` matches nothing; remove it or add the file     |
 | Story renders unstyled                                          | `preview.ts` failed to import the SCSS — check `sass` is installed |
 | A story renders blank but has DOM content                       | A stylesheet is hiding it; see the visibility contract above       |
+| A SCSS partial edit does not show up in Storybook               | A same-named `.css` file is shadowing it under Vite; see above     |
