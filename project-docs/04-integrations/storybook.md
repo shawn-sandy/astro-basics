@@ -124,7 +124,7 @@ surfaced but do not fail a story.
 This project targets WCAG 2.1 Level AA, so treat anything reported there as a
 defect in the component rather than in the story.
 
-## Known issue: alerts render invisible
+## The acss alert visibility contract
 
 `@fpkit/acss` v6 ships this rule:
 
@@ -134,15 +134,32 @@ defect in the component rather than in the story.
 }
 ```
 
-`src/components/react/Alert.tsx` renders `role="alert"` and never sets
-`data-visible`, and the project's own `.alert` rules in
-`src/styles/components/_alert.scss` lose to it on specificity. Every alert
-therefore renders fully transparent — in the application as well as in Storybook,
-since `src/layouts/Base.astro` loads the same two stylesheets.
+It exists so acss's own dismissible `<Alert>` can fade in — that component renders
+`data-visible={isVisible}` alongside the very same `alert alert-{severity}` classes
+this project uses. The selector is (0,2,0), so it outranks the project's `.alert`
+rules in `src/styles/components/_alert.scss` (0,1,0) regardless of load order.
 
-The Alert stories render the markup faithfully; the blank canvas is the bug, not a
-Storybook problem. Inspect the DOM to confirm the content is present. This is
-pre-existing and has not been changed here.
+**Any `role="alert"` element rendered without `data-visible="true"` is fully
+transparent** — present in the DOM and announced by screen readers, but invisible
+to sighted users. In the application as much as in Storybook, since
+`src/layouts/Base.astro` loads the same two stylesheets.
+
+Storybook surfaced this as a live bug affecting four components. All four now
+declare `data-visible="true"`:
+
+- `src/components/react/Alert.tsx`
+- `src/components/astro/Alert.astro`
+- `src/components/react/RoleGuard.tsx` (access-denied fallback)
+- `src/components/astro/RoleGuard.astro` (access-denied fallback)
+
+`tests/components/alert-visibility.test.tsx` locks this in. Alongside rendered-output
+assertions it scans `src/components/` for `role="alert"` elements missing the
+attribute, so a newly added alert cannot reintroduce the bug — including in `.astro`
+components, which no React render test would cover.
+
+<!-- prettier-ignore -->
+> **Adding an alert?** Put `data-visible="true"` on it. If you need the fade-in
+> instead, use acss's own `<Alert>` component rather than hand-rolling `role="alert"`.
 
 ## Troubleshooting
 
@@ -152,4 +169,4 @@ pre-existing and has not been changed here.
 | `Unable to index … two component docs pages with the same name` | An MDX glob is matching `src/content/docs/`                        |
 | `No story files found for the specified pattern`                | A glob in `main.ts` matches nothing; remove it or add the file     |
 | Story renders unstyled                                          | `preview.ts` failed to import the SCSS — check `sass` is installed |
-| A story renders blank but has DOM content                       | A stylesheet is hiding it; see the alert issue above               |
+| A story renders blank but has DOM content                       | A stylesheet is hiding it; see the visibility contract above       |

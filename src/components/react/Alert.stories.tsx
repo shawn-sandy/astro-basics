@@ -7,12 +7,10 @@ import Alert from '#components/react/Alert'
  * technology announces it as soon as it appears. Styling comes from the
  * `.alert` / `.alert-{type}` rules in `src/styles/components/_alert.scss`.
  *
- * > **Known issue — alerts render invisible.** `@fpkit/acss` v6 ships
- * > `[role=alert]:not([data-visible=true]) { opacity: 0 }`, which outranks the
- * > project's `.alert` rules on specificity. `Alert.tsx` never sets
- * > `data-visible`, so every alert is transparent — in the app as well as here.
- * > These stories render the markup faithfully; the blank canvas is the bug, not
- * > a Storybook problem. Inspect the DOM to confirm the content is present.
+ * The component renders `data-visible="true"` by necessity: `@fpkit/acss` v6 ships
+ * `[role=alert]:not([data-visible=true]) { opacity: 0 }` so its own dismissible
+ * `<Alert>` can fade in, and that selector outranks the project's `.alert` rules.
+ * Without the attribute every alert renders fully transparent.
  */
 const meta = {
   title: 'React/Alert',

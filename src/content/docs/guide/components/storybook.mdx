@@ -138,12 +138,17 @@ The **Accessibility** panel runs axe on every story. This project targets WCAG 2
 Level AA, so treat reported violations as defects in the component rather than in
 the story. Violations are surfaced but do not fail a story.
 
-<Aside type="danger" title="Known issue: alerts render invisible">
-  `@fpkit/acss` v6 ships `[role="alert"]:not([data-visible="true"]) { opacity: 0 }`, which
-  outranks this project's `.alert` styles on specificity. `Alert.tsx` never sets
-  `data-visible`, so alerts render fully transparent — in the application as much as in
-  Storybook. The Alert stories reproduce the markup faithfully; the blank canvas is the
-  bug. Inspect the DOM to confirm the content is there.
+<Aside type="caution" title="Alerts must declare data-visible">
+  `@fpkit/acss` v6 ships `[role="alert"]:not([data-visible="true"]) { opacity: 0 }` so its
+  own dismissible `<Alert>` can fade in. That selector outranks this project's `.alert`
+  styles on specificity, so **any `role="alert"` element without `data-visible="true"`
+  renders fully transparent** — visible to screen readers, invisible to everyone else.
+
+Storybook caught this as a live bug in four components; all four now set the attribute,
+and `tests/components/alert-visibility.test.tsx` scans the component sources so a new
+alert cannot reintroduce it. If you add an alert, set `data-visible="true"` — or use
+acss's own `<Alert>` component if you actually want the fade-in.
+
 </Aside>
 
 ## Configuration
