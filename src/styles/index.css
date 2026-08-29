@@ -686,6 +686,13 @@ nav[data-site-nav]:has(> [popover]:popover-open) button[popovertarget] {
   padding: 1rem;
   padding-inline-start: 1.5rem;
 }
+.alert[role='alert'] {
+  --alert-gap: 0.5rem;
+  flex-direction: column;
+}
+.alert[role='alert'] > * {
+  margin-block: 0;
+}
 .alert a {
   color: inherit;
   text-decoration: underline;
