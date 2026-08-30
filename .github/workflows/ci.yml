@@ -66,6 +66,11 @@ jobs:
       # painting consumers, so excluding it would leave the defect this plan
       # fixed free to return unnoticed.
       - run: npx vitest run tests/integration/design-tokens.test.ts tests/components/FeatureCards.astro.test.ts
+      # Hard gate: the email integration. These suites pass today, and they cover
+      # the parts that fail silently in production if they regress — placeholder
+      # config read as "configured", header injection through the contact-form
+      # subject, and an unbounded provider call inside the request path.
+      - run: npx vitest run tests/email.test.ts tests/send-email.test.ts
       # Informational, not blocking: the rest of the suite carries ~49
       # pre-existing failures unrelated to Astro (role-validator, csrf,
       # ip-validation, etc.), plus tests/integration/** needs live

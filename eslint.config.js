@@ -38,6 +38,8 @@ export default [
         clearInterval: 'readonly',
         File: 'readonly',
         Request: 'readonly',
+        Response: 'readonly',
+        AbortSignal: 'readonly',
         NodeJS: 'readonly',
       },
     },

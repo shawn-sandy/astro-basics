@@ -7,6 +7,7 @@ import sitemap from '@astrojs/sitemap'
 import embeds from 'astro-embed/integration'
 import node from '@astrojs/node'
 import clerk from '@clerk/astro'
+import { astroEmail } from '#integrations/email/index.ts'
 
 import starlight from '@astrojs/starlight'
 
@@ -41,6 +42,13 @@ export default defineConfig({
             { label: 'Logging System', link: '/guide/logging-system' },
             { label: 'Role Guard System', link: '/guide/role-guard-usage' },
             { label: 'Page Level Guards', link: '/guide/page-level-protection/' },
+          ],
+        },
+        {
+          label: 'Integrations',
+          items: [
+            { label: 'Email', link: '/guide/integrations/email' },
+            { label: 'Clerk + Supabase', link: '/guide/integrations/clerk-supabase' },
           ],
         },
         {
@@ -83,6 +91,7 @@ export default defineConfig({
     }),
     mdx(),
     clerk(),
+    astroEmail(),
   ],
   output: 'server',
   vite: {
