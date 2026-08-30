@@ -1,7 +1,7 @@
 /**
  * Tests for Supabase Test feature
  */
-import { beforeEach, describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest'
 
 // Mock DOM elements
 const mockConnectionButton = {
@@ -56,6 +56,10 @@ describe('Supabase Test Feature', () => {
     mockConnectionResult.textContent = ''
     mockQueryResult.className = ''
     mockQueryResult.textContent = ''
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   describe('Test Initialization', () => {

@@ -4,8 +4,18 @@ export interface Props {
 }
 
 const { type } = Astro.props
+
+/**
+ * `data-visible="true"` below is required, not decorative.
+ *
+ * `@fpkit/acss` v6 ships `[role="alert"]:not([data-visible="true"]) { opacity: 0 }`
+ * so its own dismissible `<Alert>` can fade in. That selector outranks this
+ * project's `.alert` rules on specificity, so any `role="alert"` element without
+ * the attribute renders fully transparent. This alert is rendered only when it
+ * should already be on screen, so it declares itself visible up front.
+ */
 ---
 
-<div class={`alert alert-${type}`} role="alert">
+<div class={`alert alert-${type}`} role="alert" data-visible="true">
   <slot />
 </div>

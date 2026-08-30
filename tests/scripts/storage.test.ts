@@ -1,7 +1,7 @@
 /**
  * Tests for Storage utilities module
  */
-import { beforeEach, describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest'
 
 // Mock localStorage
 const mockLocalStorage = {
@@ -15,6 +15,10 @@ global.localStorage = mockLocalStorage as any
 
 describe('Storage Module', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
     vi.clearAllMocks()
   })
 

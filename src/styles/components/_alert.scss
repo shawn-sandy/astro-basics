@@ -4,6 +4,23 @@
   padding: 1rem;
   padding-inline-start: 1.5rem;
 
+  // @fpkit/acss v6 lays [role="alert"] out as a row, sized for its own
+  // `[icon] [message]` child structure. This project's Alert passes arbitrary
+  // children straight through, so a row puts the error heading beside its list
+  // instead of above it. Stack them. Qualified with [role="alert"] to reach
+  // (0,2,0) and outrank the acss rule on specificity rather than on load order.
+  &[role="alert"] {
+    --alert-gap: 0.5rem;
+
+    flex-direction: column;
+
+    // Flexbox disables margin collapsing, so a child's own block margins would
+    // stack on top of the gap. Let the gap own the vertical rhythm instead.
+    > * {
+      margin-block: 0;
+    }
+  }
+
   a {
     color: inherit;
     text-decoration: underline;

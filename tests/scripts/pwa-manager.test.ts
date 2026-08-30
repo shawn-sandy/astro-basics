@@ -1,7 +1,7 @@
 /**
  * Tests for PWA Manager feature
  */
-import { beforeEach, describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest'
 
 // Mock DOM elements
 const mockInstallPrompt = {
@@ -70,6 +70,10 @@ describe('PWA Manager Feature', () => {
     mockOfflineIndicator.style.display = ''
     mockOfflineText.textContent = ''
     mockWindow.navigator.onLine = true
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   describe('PWA Install Prompt', () => {

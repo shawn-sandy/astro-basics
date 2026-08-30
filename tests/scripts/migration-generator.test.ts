@@ -6,7 +6,7 @@
  * @module tests/scripts/migration-generator.test
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   generatePostgresMigration,
   generatePostgresRollback,
@@ -16,6 +16,14 @@ import {
 import type { RoleConfig } from '../../config/roles.config'
 
 describe('Migration Generator', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('generatePostgresMigration', () => {
     it('should generate valid PostgreSQL migration', () => {
       const config: RoleConfig = {

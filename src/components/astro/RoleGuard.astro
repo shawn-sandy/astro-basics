@@ -113,6 +113,14 @@ if (debug && isDev) {
     useHierarchy,
   })
 }
+
+/**
+ * The fallback below carries `data-visible="true"` by necessity, not decoration.
+ *
+ * `@fpkit/acss` v6 ships `[role="alert"]:not([data-visible="true"]) { opacity: 0 }`,
+ * which outranks this component's own styles on specificity. Without the attribute
+ * the access-denied message renders fully transparent.
+ */
 ---
 
 {
@@ -150,7 +158,7 @@ if (debug && isDev) {
   canView ? (
     <slot />
   ) : fallback ? (
-    <div class="role-guard-fallback" role="alert">
+    <div class="role-guard-fallback" role="alert" data-visible="true">
       <p>{fallback}</p>
     </div>
   ) : null
@@ -164,8 +172,9 @@ if (debug && isDev) {
     padding: 0.75rem;
     margin-bottom: 1rem;
     font-size: 0.875rem;
-    font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas,
-      'DejaVu Sans Mono', monospace;
+    font-family:
+      ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono',
+      monospace;
   }
 
   .role-guard-debug p {

@@ -143,6 +143,8 @@ export function RoleGuard({
           className={`role-guard-fallback ${className}`.trim()}
           data-testid={testId ? `${testId}-fallback` : undefined}
           role="alert"
+          // Required: @fpkit/acss v6 hides [role="alert"] without it. See Alert.tsx.
+          data-visible="true"
         >
           {fallback}
         </div>

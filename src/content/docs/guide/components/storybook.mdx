@@ -1,0 +1,186 @@
+---
+title: Storybook
+description: Develop, preview and document the React components of the astro-basics library in an isolated Storybook workshop.
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components'
+
+Storybook is the interactive workshop for the **React** components in this
+library. Every component is rendered in isolation with live controls for its
+props, an auto-generated API table, and an accessibility audit.
+
+## Running Storybook
+
+<Steps>
+
+1. Install dependencies, if you have not already:
+
+   ```bash
+   npm install
+   ```
+
+2. Start the Storybook dev server:
+
+   ```bash
+   npm run storybook
+   ```
+
+3. Open [http://localhost:6006](http://localhost:6006).
+
+</Steps>
+
+To produce a static build — for deploying the component documentation, or for a
+CI artifact:
+
+```bash
+npm run build-storybook
+```
+
+The output lands in `storybook-static/`, which is gitignored.
+
+## What you get
+
+Pick a component in the sidebar and you land on its **Docs** page, which
+assembles:
+
+- The component description, taken from the JSDoc on the story file.
+- An **API table** generated from the exported `Props` type, including each
+  prop's JSDoc comment, its accepted values, and its default.
+- Every story, each with its own description.
+
+Switch to the **Canvas** tab for a single story and you get:
+
+- **Controls** — change any prop live and watch the component re-render.
+- **Accessibility** — an axe audit of the rendered output.
+- **Show code** — the exact JSX for the current prop combination.
+
+## What is covered
+
+Storybook renders `src/components/react/` only.
+
+<Aside type="note" title="Why no .astro components?">
+  `.astro` components are server-rendered and have no browser runtime for Storybook to mount, so
+  there is no renderer that can display them. Document those on the pages under this **Components**
+  section instead. Astro components that exist purely to hydrate a React component —
+  `ContactForm.astro`, for example — are covered indirectly by the story for the React component
+  they wrap.
+</Aside>
+
+`astro-breadcrumb` is also excluded. The `@fpkit/react` `Breadcrumb` it wraps
+builds its trail from `window.location.pathname` and uses the `routes` prop only
+as a segment-to-label lookup, so inside Storybook's iframe it would always show
+Storybook's own path rather than a realistic trail.
+
+## Adding a story
+
+Colocate the story next to its component as `Thing.stories.tsx`:
+
+```tsx title="src/components/react/Thing.stories.tsx"
+import type { Meta, StoryObj } from '@storybook/react-vite'
+
+import Thing from '#components/react/Thing'
+
+/** This JSDoc becomes the component's description on the Docs page. */
+const meta = {
+  title: 'React/Thing',
+  component: Thing,
+  argTypes: {
+    variant: {
+      control: 'inline-radio',
+      options: ['primary', 'secondary'],
+      description: 'Visual style of the component.',
+    },
+  },
+  args: { variant: 'primary' },
+} satisfies Meta<typeof Thing>
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+/** This JSDoc becomes the story's description. */
+export const Primary: Story = {}
+
+export const Secondary: Story = {
+  args: { variant: 'secondary' },
+}
+```
+
+Follow these conventions so stories stay consistent with the rest of the codebase:
+
+- Import through the mandatory `#` alias, never a relative path.
+- Type `meta` with `satisfies Meta<typeof Thing>` and stories with
+  `StoryObj<typeof meta>`, so `args` are checked against the real props.
+- Title stories `React/<ComponentName>` to keep the sidebar grouped.
+- Treat the JSDoc as the documentation — autodocs renders it verbatim.
+
+<Aside type="caution" title="Demonstrating an omitted optional prop">
+  This project enables `exactOptionalPropertyTypes`, so `args: { token: undefined }` is a
+  type error. To show a prop being left out, omit it from both `meta.args` and the story's
+  `args`, and set it only in the stories that need it. `ContactForm.stories.tsx` uses this
+  pattern for its `csrfToken`.
+</Aside>
+
+## Styling
+
+Stories load the same stylesheets as `src/layouts/Base.astro`, so what you see
+matches the real site:
+
+1. `@fpkit/acss/styles`
+2. `src/styles/index.scss`
+
+The SCSS entry point is imported directly, so editing any partial under
+`src/styles/` hot-reloads the canvas — no separate `npm run sass` needed.
+
+## Accessibility
+
+The **Accessibility** panel runs axe on every story. This project targets WCAG 2.1
+Level AA, so treat reported violations as defects in the component rather than in
+the story. Violations are surfaced but do not fail a story.
+
+<Aside type="caution" title="Alerts must declare data-visible">
+  `@fpkit/acss` v6 ships `[role="alert"]:not([data-visible="true"]) { opacity: 0 }` so its
+  own dismissible `<Alert>` can fade in. That selector outranks this project's `.alert`
+  styles on specificity, so **any `role="alert"` element without `data-visible="true"`
+  renders fully transparent** — visible to screen readers, invisible to everyone else.
+
+Storybook caught this as a live bug in four components; all four now set the attribute,
+and `tests/components/alert-visibility.test.tsx` scans the component sources so a new
+alert cannot reintroduce it. If you add an alert, set `data-visible="true"` — or use
+acss's own `<Alert>` component if you actually want the fade-in.
+
+</Aside>
+
+## Configuration
+
+Configuration lives in `.storybook/`:
+
+<Tabs>
+  <TabItem label="main.ts">
+    Story discovery, addons, the `@storybook/react-vite` framework, and
+    `react-docgen-typescript` for prop tables.
+
+    The MDX glob is scoped to `src/stories/` deliberately — a broad `src/**/*.mdx` also
+    matches the Starlight content collection you are reading right now, and Storybook
+    refuses to index it.
+
+  </TabItem>
+  <TabItem label="vite.config.ts">
+    A Vite config used only by Storybook, wired up through `viteConfigPath`.
+
+    This is load-bearing. The repository root has a `vite.config.ts` that wraps
+    `getViteConfig()` from `astro/config` for Vitest. Left to auto-discovery, Vite would
+    load that file and pull the whole Astro pipeline into the Storybook build — which
+    still exits zero but emits no `iframe.html` and renders no stories.
+
+    It also mirrors the `#*` subpath imports from `package.json`.
+
+  </TabItem>
+  <TabItem label="preview.ts">
+    Global stylesheets, control matchers, sidebar ordering, the a11y addon, and the
+    global `autodocs` tag.
+  </TabItem>
+</Tabs>
+
+For the full technical reference, including troubleshooting, see
+`project-docs/04-integrations/storybook.md`.

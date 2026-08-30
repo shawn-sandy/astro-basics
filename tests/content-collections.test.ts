@@ -1,10 +1,18 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { getCollection } from 'astro:content'
 
 // Guards the v7 content-layer API: collections must still resolve,
 // Zod schemas must still validate, and the publish filter must still work.
 describe('content collections', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('resolves entries for posts, docs, and content collections', async () => {
     const posts = await getCollection('posts')
     const docs = await getCollection('docs')

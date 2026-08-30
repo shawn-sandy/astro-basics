@@ -10,11 +10,19 @@
  * - New users without explicit role get 'member'
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#libs/database.types'
 
 describe('Default Role Assignment - Post Migration 006', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   let supabase: SupabaseClient<Database>
   const testUserIds: string[] = []
 

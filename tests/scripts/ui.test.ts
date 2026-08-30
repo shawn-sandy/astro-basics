@@ -1,7 +1,7 @@
 /**
  * Tests for UI utilities module
  */
-import { beforeEach, describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest'
 
 // Mock DOM
 const mockElement = {
@@ -30,6 +30,10 @@ describe('UI Module', () => {
     mockElement.style.display = ''
     mockElement.dataset = {}
     mockElement.disabled = false
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   describe('showMessage', () => {

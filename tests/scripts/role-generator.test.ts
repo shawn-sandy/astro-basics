@@ -6,11 +6,19 @@
  * @module tests/scripts/role-generator.test
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { generateRoleTypes, validateGeneratedTypes } from '../../scripts/lib/role-generator'
 import type { RoleConfig } from '../../config/roles.config'
 
 describe('Role Generator', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('generateRoleTypes', () => {
     it('should generate valid TypeScript for default 3-tier config', () => {
       const config: RoleConfig = {

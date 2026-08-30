@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 /**
  * Test validation logic for user sync endpoints
@@ -7,6 +7,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 describe('User Sync Email Validation', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
     vi.clearAllMocks()
   })
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   InMemoryRateLimiter,
   MESSAGE_RATE_LIMIT_CONFIG,
@@ -132,6 +132,14 @@ describe('InMemoryRateLimiter', () => {
 })
 
 describe('getClientIP', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should extract IP from x-forwarded-for header', () => {
     const request = new Request('http://example.com', {
       headers: {
@@ -187,6 +195,14 @@ describe('getClientIP', () => {
 })
 
 describe('createRateLimitResponse', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should create proper 429 response', async () => {
     const result = {
       allowed: false,
@@ -244,6 +260,14 @@ describe('createRateLimitResponse', () => {
 })
 
 describe('MESSAGE_RATE_LIMIT_CONFIG', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should have correct configuration', () => {
     expect(MESSAGE_RATE_LIMIT_CONFIG.maxRequests).toBe(5)
     expect(MESSAGE_RATE_LIMIT_CONFIG.windowMs).toBe(60 * 1000) // 1 minute
@@ -252,6 +276,10 @@ describe('MESSAGE_RATE_LIMIT_CONFIG', () => {
 })
 
 describe('messageRateLimiter instance', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   afterEach(() => {
     // Clean up the global instance after each test
     messageRateLimiter.destroy()

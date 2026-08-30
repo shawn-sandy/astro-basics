@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, vi } from 'vitest'
+import { describe, it, expect, afterEach, vi, beforeEach } from 'vitest'
 
 /**
  * Regression cover for the `.env.example` placeholder outage.
@@ -24,6 +24,10 @@ async function loadConfigWithEnv(vars: Record<string, string>) {
 }
 
 describe('Supabase configuration with placeholder values', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   afterEach(() => {
     vi.unstubAllEnvs()
     vi.resetModules()
@@ -96,6 +100,10 @@ describe('Supabase configuration with placeholder values', () => {
  * reaches `createClient` on the first database operation.
  */
 describe('Turso configuration with placeholder values', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   afterEach(() => {
     vi.unstubAllEnvs()
     vi.resetModules()
@@ -133,6 +141,10 @@ describe('Turso configuration with placeholder values', () => {
  * clone should log to the console and stay quiet.
  */
 describe('Axiom configuration with placeholder values', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   afterEach(() => {
     vi.unstubAllEnvs()
     vi.resetModules()

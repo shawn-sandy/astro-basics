@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   generateCsrfToken,
   validateCsrfToken,
@@ -11,6 +11,14 @@ import {
 } from '#utils/csrf'
 
 describe('generateCsrfToken', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should generate a valid CSRF token with default options', async () => {
     const result = await generateCsrfToken()
     expect(result.ok).toBe(true)
@@ -59,6 +67,14 @@ describe('generateCsrfToken', () => {
 })
 
 describe('validateCsrfToken', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should validate matching tokens that are not expired', () => {
     const token = 'valid-token'
     const expiresAt = new Date(Date.now() + 60000) // 1 minute from now
@@ -133,6 +149,14 @@ describe('validateCsrfToken', () => {
 })
 
 describe('extractCsrfTokenFromForm', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should extract CSRF token from form data with default field name', () => {
     const formData = new FormData()
     formData.append(CSRF_CONFIG.FIELD_NAME, 'test-token')
@@ -169,6 +193,14 @@ describe('extractCsrfTokenFromForm', () => {
 })
 
 describe('extractCsrfTokenFromJson', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should extract CSRF token from JSON body with default field name', () => {
     const body = { [CSRF_CONFIG.FIELD_NAME]: 'test-token' }
 
@@ -200,6 +232,14 @@ describe('extractCsrfTokenFromJson', () => {
 })
 
 describe('parseCsrfTokenFromCookie', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should parse valid cookie value', () => {
     const token = 'test-token'
     const expiresAt = new Date('2024-01-01T12:00:00.000Z')
@@ -241,6 +281,14 @@ describe('parseCsrfTokenFromCookie', () => {
 })
 
 describe('serializeCsrfTokenForCookie', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should serialize token for cookie storage', () => {
     const token = 'test-token'
     const expiresAt = new Date('2024-01-01T12:00:00.000Z')
@@ -252,6 +300,14 @@ describe('serializeCsrfTokenForCookie', () => {
 })
 
 describe('createCsrfCookieOptions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should create secure cookie options', () => {
     const expiresAt = new Date('2024-01-01T12:00:00.000Z')
 

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 // `URL` is imported rather than taken from the global scope: the ESLint test
 // override declares no Node globals, so the bare global trips `no-undef`.
 import { URL, fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
 /**
  * Guards the defect this plan fixes: `src/styles/_design-tokens.scss` declared a
@@ -107,6 +107,14 @@ function consumersOf(token: string): Array<Rule & { declaration: Declaration }> 
 const PAINTED = new Set(['background', 'background-color', 'color'])
 
 describe('compiled design tokens', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('parses compressed and expanded stylesheets identically', () => {
     // `npm run sass:build` writes this file compressed on one line; lint-staged
     // then runs Prettier over it and expands it again. Both forms reach the

@@ -1,7 +1,15 @@
-import { describe, it, expect, beforeAll, vi } from 'vitest'
+import { describe, it, expect, beforeAll, vi, beforeEach, afterEach } from 'vitest'
 import { createServerSupabaseClient, validateSupabaseConfig } from '#libs/supabase-server'
 
 describe('Clerk-Supabase Integration', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   beforeAll(() => {
     // Mock environment variables for testing
     vi.stubEnv('SUPABASE_URL', 'https://test.supabase.co')
@@ -63,6 +71,14 @@ describe('Clerk-Supabase Integration', () => {
 })
 
 describe('Webhook Signature Verification', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should verify valid webhook signatures', async () => {
     // This would require mocking the Svix library
     // Simplified test to check webhook endpoint exists
@@ -73,6 +89,14 @@ describe('Webhook Signature Verification', () => {
 })
 
 describe('API Endpoints', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('Messages API', () => {
     it('should export GET handler', async () => {
       const messagesModule = await import('#pages/api/messages')

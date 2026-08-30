@@ -8,12 +8,20 @@
  * - Accessibility attributes
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { RoleGuard } from '#components/react/RoleGuard'
 import type { AnyRole } from '#utils/role-types'
 
 describe('RoleGuard (React)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('Access Control', () => {
     it('should render children when user has allowed role', () => {
       render(
