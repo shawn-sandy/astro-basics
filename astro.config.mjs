@@ -7,6 +7,7 @@ import sitemap from '@astrojs/sitemap'
 import embeds from 'astro-embed/integration'
 import node from '@astrojs/node'
 import clerk from '@clerk/astro'
+import astroEmail from './src/integrations/email/index.ts'
 
 import starlight from '@astrojs/starlight'
 
@@ -83,6 +84,7 @@ export default defineConfig({
     }),
     mdx(),
     clerk(),
+    astroEmail(),
   ],
   output: 'server',
   vite: {

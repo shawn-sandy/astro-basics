@@ -2,7 +2,9 @@ import type { APIRoute } from 'astro'
 import { Webhook } from 'svix'
 
 import { getSupabaseServiceRole, isSupabaseConfigured } from '#libs/supabase-native'
+import { isEmailConfigured, sendEmail } from '#utils/email'
 import { logger } from '#utils/logger'
+import { SITE_TITLE } from '#utils/site-config'
 
 const webhookSecret = import.meta.env.CLERK_WEBHOOK_SECRET
 
@@ -202,6 +204,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
               error: prefsError.message,
             })
           }
+        }
+
+        // Welcome the new user. Clerk already sends its own verification mail;
+        // this is the product welcome on top of it.
+        //
+        // Deliberately not allowed to affect the response: Clerk retries any
+        // non-2xx, and a mail failure that produced a 500 would have Clerk
+        // redeliver user.created - re-running the upsert and sending a second
+        // welcome. `sendEmail` reports failure rather than throwing, which is
+        // what keeps that safe.
+        if (isEmailConfigured()) {
+          await sendEmail({
+            template: 'welcome',
+            to: validEmail,
+            subject: `Welcome to ${SITE_TITLE}`,
+            parameters: {
+              name: `${first_name || ''} ${last_name || ''}`.trim() || username || 'there',
+              dashboardUrl: new URL('/dashboard', request.url).toString(),
+            },
+          })
         }
 
         logger.info('User created and synced', { userId: id, email: validEmail })

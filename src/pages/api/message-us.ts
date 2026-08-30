@@ -9,6 +9,7 @@ import {
   parseCsrfTokenFromCookie,
   CSRF_CONFIG,
 } from '#utils/csrf'
+import { isEmailConfigured, sendEmail } from '#utils/email'
 import { sanitizeMessageData } from '#utils/input-sanitization'
 import { extractClientIP } from '#utils/ip-validation'
 
@@ -193,6 +194,29 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     // Insert message into database
     const messageId = await db.insertMessage(messageData)
+
+    // Notify the site owner. Best-effort by design: the message is already
+    // persisted, so a mail outage must not turn a successful submission into an
+    // error for the sender. `sendEmail` reports failure instead of throwing.
+    const notificationAddress = process.env.EMAIL_TO_ADDRESS
+    if (notificationAddress && isEmailConfigured()) {
+      // `subject` is optional on MessageData, so give it a stand-in rather than
+      // letting "undefined" reach the subject line of a real email.
+      const subject = sanitizedData.subject || '(no subject)'
+      await sendEmail({
+        template: 'contact-notification',
+        to: notificationAddress,
+        subject: `New contact message: ${subject}`,
+        parameters: {
+          name: sanitizedData.name,
+          email: sanitizedData.email,
+          subject,
+          message: sanitizedData.message,
+          messageId: String(messageId),
+          receivedAt: new Date().toISOString(),
+        },
+      })
+    }
 
     return new Response(
       JSON.stringify({
