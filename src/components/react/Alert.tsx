@@ -1,6 +1,6 @@
 import React from 'react'
 
-interface AlertProps {
+export interface AlertProps {
   type: 'error' | 'success' | 'info'
   children: React.ReactNode
 }

@@ -28,6 +28,11 @@ import { describe, expect, it } from 'vitest'
 
 const STYLES_DIR = 'src/styles'
 
+/** Removes `//` line comments and block comments so prose is not scanned as code. */
+function stripComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+}
+
 /** Every file under `src/styles`, recursively, as a repo-relative path. */
 function styleFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
@@ -38,15 +43,19 @@ function styleFiles(dir: string): string[] {
 
 describe('alert stylesheet', () => {
   it('compiles the stacked-layout rule into index.scss output', () => {
-    const css = compile(`${STYLES_DIR}/index.scss`).css.replace(/\s+/g, ' ')
+    // Quotes and whitespace are Sass output details, not the thing under test —
+    // normalise both away so a formatting change cannot fail this spuriously.
+    const css = compile(`${STYLES_DIR}/index.scss`).css.replace(/['"]/g, '').replace(/\s+/g, '')
 
     // Qualified with [role=alert] so it outranks the acss row layout on
     // specificity rather than on stylesheet order.
-    expect(css).toMatch(/\.alert\[role=alert\] \{[^}]*flex-direction: column/)
+    expect(css).toMatch(/\.alert\[role=alert\]\{[^}]*flex-direction:column/)
   })
 
   it('has no extensionless @use that two resolvers could read differently', () => {
-    const entry = readFileSync(`${STYLES_DIR}/index.scss`, 'utf8')
+    // Comments are stripped first: index.scss documents this very hazard by quoting a
+    // bare `@use "./design-tokens"`, and scanning raw text would flag that prose.
+    const entry = stripComments(readFileSync(`${STYLES_DIR}/index.scss`, 'utf8'))
     const files = new Set(styleFiles(STYLES_DIR))
 
     const ambiguous = [...entry.matchAll(/@use\s+['"]\.\/([^'"]+)['"]/g)]
