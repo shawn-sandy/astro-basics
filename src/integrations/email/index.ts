@@ -16,7 +16,7 @@
  * @see project-docs/04-integrations/netlify-email/README.md
  * @example
  * // astro.config.mjs
- * import { astroEmail } from './src/integrations/email/index.ts'
+ * import { astroEmail } from '#integrations/email/index.ts'
  * export default defineConfig({ integrations: [astroEmail()] })
  */
 import { fileURLToPath } from 'node:url'

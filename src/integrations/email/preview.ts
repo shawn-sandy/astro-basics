@@ -16,7 +16,10 @@ export const prerender = false
 
 /** Substitute `[placeholder]` markers so the layout is visible without real data. */
 function sampleParameters(html: string): TemplateParameters {
-  const parameters: TemplateParameters = {}
+  // Null prototype: the placeholder grammar accepts `__proto__`, and assigning
+  // that key on a plain object hits the prototype setter instead of creating an
+  // own property, so the preview would render it empty.
+  const parameters: TemplateParameters = Object.create(null)
   for (const name of extractPlaceholders(html)) {
     parameters[name] = `[${name}]`
   }
@@ -56,7 +59,9 @@ export const GET: APIRoute = ({ params }) => {
     ? templates[requested as keyof typeof templates]
     : undefined
 
-  if (!html) {
+  // `=== undefined`, not falsy: an empty index.html compiles to '' and is a
+  // real template, so only an unknown name is a 404.
+  if (html === undefined) {
     return new Response(`Unknown template "${requested}". Known: ${templateNames.join(', ')}`, {
       status: 404,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },

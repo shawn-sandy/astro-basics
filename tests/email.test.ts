@@ -29,14 +29,15 @@ describe('renderTemplate', () => {
     expect(html).not.toContain('<script>')
   })
 
-  it('escapes a triple-brace placeholder, so there is no raw-output syntax', () => {
-    // Handlebars would render {{{value}}} unescaped. Here the inner {{value}}
-    // matches, so it interpolates the *escaped* value and leaves the outer
-    // braces as literal text. Asserting the exact string matters: a weaker
-    // `not.toContain('<img')` would also pass if the value were dropped.
+  it('leaves a triple-brace expression untouched, so raw output has no syntax', () => {
+    // Handlebars renders {{{value}}} unescaped. The brace boundaries in
+    // PLACEHOLDER_PATTERN stop the inner {{value}} matching, so the whole
+    // expression renders literally rather than half-substituting. Asserting the
+    // exact string matters: `not.toContain('<img')` would also pass if the
+    // value had been interpolated and escaped.
     const html = renderTemplate('<p>{{{value}}}</p>', { value: '<img onerror=x>' })
 
-    expect(html).toBe('<p>{&lt;img onerror=x&gt;}</p>')
+    expect(html).toBe('<p>{{{value}}}</p>')
   })
 
   it('renders an unknown placeholder as empty rather than throwing', () => {

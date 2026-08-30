@@ -15,7 +15,7 @@ import { join } from 'node:path'
 
 // Re-exported so the placeholder syntax has exactly one definition (render.ts),
 // shared by build-time discovery, the dev preview, and runtime substitution.
-export { extractPlaceholders } from './render.js'
+export { extractPlaceholders } from '#integrations/email/render'
 
 /** A template discovered on disk, already compiled to HTML. */
 export type CompiledTemplate = {

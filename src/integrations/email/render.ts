@@ -13,17 +13,17 @@
 /**
  * Matches `{{ name }}` / `{{name}}`.
  *
- * Note that `{{{ name }}}` still matches the inner `{{ name }}`, so it
- * interpolates and leaves the outer braces as literal text. The value is
- * escaped either way - there is no unescaped path - so the Handlebars raw-output
- * footgun does not exist here, but the triple form is a template typo rather
- * than a no-op.
+ * The brace boundaries matter: without them the inner `{{ name }}` of a
+ * Handlebars-style `{{{ name }}}` would match, interpolating the value and
+ * leaving stray braces around it. Requiring a non-brace on each side makes the
+ * triple form inert, so a template carrying Handlebars' raw-output syntax
+ * renders it literally instead of silently half-substituting.
  *
  * This is the single definition of the placeholder syntax. Build-time discovery
  * (`templates.ts`) and the dev preview both read it from here, so the syntax
  * cannot drift between what a template is scanned for and what is substituted.
  */
-const PLACEHOLDER_PATTERN = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g
+const PLACEHOLDER_PATTERN = /(?<!\{)\{\{\s*([a-zA-Z0-9_]+)\s*\}\}(?!\})/g
 
 /**
  * Collect the placeholder names a template refers to.

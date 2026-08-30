@@ -161,7 +161,9 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
 
   const html = templates[options.template]
 
-  if (!html) {
+  // `=== undefined`, not falsy: an empty template compiles to '' and is still a
+  // real template, so only a genuinely missing one is an error.
+  if (html === undefined) {
     // Reachable when a template directory is deleted but a call site is not,
     // since the generated types only refresh on `astro sync`.
     await logger.error('Email template not found', { template: options.template })
