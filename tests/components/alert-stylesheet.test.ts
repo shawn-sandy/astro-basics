@@ -59,7 +59,7 @@ describe('alert stylesheet', () => {
     const files = new Set(styleFiles(STYLES_DIR))
 
     const ambiguous = [...entry.matchAll(/@use\s+['"]\.\/([^'"]+)['"]/g)]
-      .map(match => match[1])
+      .flatMap(match => (match[1] === undefined ? [] : [match[1]]))
       .filter(spec => !spec.endsWith('.scss') && !spec.endsWith('.css'))
       .filter(spec => {
         const dir = spec.includes('/') ? `/${spec.slice(0, spec.lastIndexOf('/') + 1)}` : '/'

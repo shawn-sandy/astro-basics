@@ -1,8 +1,8 @@
 import React from 'react'
 
-export interface AlertProps {
-  type: 'error' | 'success' | 'info'
-  children: React.ReactNode
+export type Props = {
+  readonly type: 'error' | 'success' | 'info'
+  readonly children: React.ReactNode
 }
 
 /**
@@ -12,7 +12,7 @@ export interface AlertProps {
  * dismiss or fade-in behaviour of its own.
  *
  * @component Alert
- * @param {AlertProps} props - Component properties
+ * @param {Props} props - Component properties
  * @returns {JSX.Element} A `role="alert"` region styled for the given type
  *
  * @example
@@ -29,7 +29,7 @@ export interface AlertProps {
  *
  * @accessibility Uses `role="alert"`, so the content is announced on insertion.
  */
-const Alert: React.FC<AlertProps> = ({ type, children }) => {
+const Alert: React.FC<Props> = ({ type, children }) => {
   return (
     // data-visible is required, not decorative: @fpkit/acss v6 ships
     // `[role="alert"]:not([data-visible="true"]) { opacity: 0 }` for its own
