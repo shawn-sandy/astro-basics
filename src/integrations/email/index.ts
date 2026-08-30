@@ -16,14 +16,15 @@
  * @see project-docs/04-integrations/netlify-email/README.md
  * @example
  * // astro.config.mjs
- * import astroEmail from './src/integrations/email/index.ts'
+ * import { astroEmail } from './src/integrations/email/index.ts'
  * export default defineConfig({ integrations: [astroEmail()] })
  */
 import { fileURLToPath } from 'node:url'
 
 import type { AstroIntegration } from 'astro'
 
-import { loadTemplates, type CompiledTemplate } from './templates.js'
+import { loadTemplates } from '#integrations/email/templates'
+import type { CompiledTemplate } from '#integrations/email/templates'
 
 /** Options accepted by the integration factory. */
 export type AstroEmailOptions = {
@@ -79,7 +80,7 @@ function buildTypeDeclaration(templates: CompiledTemplate[]): string {
  *
  * @param options See {@link AstroEmailOptions}.
  */
-export default function astroEmail(options: AstroEmailOptions = {}): AstroIntegration {
+export function astroEmail(options: AstroEmailOptions = {}): AstroIntegration {
   const directoryName = options.directory ?? 'emails'
   const wantsPreview = options.preview ?? true
 

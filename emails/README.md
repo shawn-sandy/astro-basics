@@ -11,7 +11,8 @@ is read from disk at request time.
 
 Use `{{ name }}`. Values are **always** HTML-escaped, and there is no raw/unescaped
 form — contact-form values reach these templates unverified, so escaping is not
-optional. Arrays join with `, `; an unknown placeholder renders as empty.
+optional. Arrays are joined with a comma and a space; an unknown placeholder
+renders as empty.
 
 ## Previewing
 

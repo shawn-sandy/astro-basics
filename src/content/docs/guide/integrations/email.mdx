@@ -104,12 +104,15 @@ unescaped form.
 <Aside type="danger" title="Why there is no raw form">
 Handlebars — which the Netlify email integration uses — renders `{{{value}}}`
 unescaped. Contact-form values reach these templates unverified, so an
-unescaped form would be an HTML injection vector in outbound mail. This
-renderer does not implement triple braces at all, so the syntax simply does not
-interpolate.
+unescaped form would be an HTML injection vector in outbound mail. This renderer
+implements no unescaped form at all, so every value is escaped on every path.
+
+Writing `{{{value}}}` does not opt out of that: the inner `{{value}}` still
+matches, so it interpolates the escaped value and leaves the outer braces as
+literal text. It is a template typo, not an escape hatch.
 </Aside>
 
-Arrays join with `, `. An unknown placeholder renders as empty rather than
+Arrays are joined with a comma and a space. An unknown placeholder renders as empty rather than
 throwing, so a template and a call site drifting apart degrades the email
 instead of breaking the request.
 

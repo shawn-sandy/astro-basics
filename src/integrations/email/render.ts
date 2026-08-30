@@ -11,7 +11,13 @@
  */
 
 /**
- * Matches `{{ name }}` / `{{name}}`. Deliberately does not match `{{{ raw }}}`.
+ * Matches `{{ name }}` / `{{name}}`.
+ *
+ * Note that `{{{ name }}}` still matches the inner `{{ name }}`, so it
+ * interpolates and leaves the outer braces as literal text. The value is
+ * escaped either way - there is no unescaped path - so the Handlebars raw-output
+ * footgun does not exist here, but the triple form is a template typo rather
+ * than a no-op.
  *
  * This is the single definition of the placeholder syntax. Build-time discovery
  * (`templates.ts`) and the dev preview both read it from here, so the syntax

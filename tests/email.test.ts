@@ -29,12 +29,14 @@ describe('renderTemplate', () => {
     expect(html).not.toContain('<script>')
   })
 
-  it('leaves a triple-brace placeholder untouched, so raw injection has no syntax', () => {
-    // Handlebars would render {{{value}}} unescaped. Contact-form values are
-    // attacker-controlled, so this form must never interpolate at all.
+  it('escapes a triple-brace placeholder, so there is no raw-output syntax', () => {
+    // Handlebars would render {{{value}}} unescaped. Here the inner {{value}}
+    // matches, so it interpolates the *escaped* value and leaves the outer
+    // braces as literal text. Asserting the exact string matters: a weaker
+    // `not.toContain('<img')` would also pass if the value were dropped.
     const html = renderTemplate('<p>{{{value}}}</p>', { value: '<img onerror=x>' })
 
-    expect(html).not.toContain('<img')
+    expect(html).toBe('<p>{&lt;img onerror=x&gt;}</p>')
   })
 
   it('renders an unknown placeholder as empty rather than throwing', () => {

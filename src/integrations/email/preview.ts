@@ -9,7 +9,8 @@
 import type { APIRoute } from 'astro'
 import { templates, templateNames } from 'virtual:astro-email/templates'
 
-import { extractPlaceholders, renderTemplate, type TemplateParameters } from './render.js'
+import { extractPlaceholders, renderTemplate } from '#integrations/email/render'
+import type { TemplateParameters } from '#integrations/email/render'
 
 export const prerender = false
 
@@ -30,6 +31,14 @@ function indexPage(): string {
     ${templateNames.length > 0 ? `<ul>${items}</ul>` : '<p>No templates found in <code>emails/</code>.</p>'}`
 }
 
+/**
+ * Render the template index, or one template with placeholder stand-ins.
+ *
+ * @route GET /_email/[...template]
+ * @param params.template Template directory name; absent renders the index.
+ * @returns 200 with HTML for the index or a known template; 404 when the
+ * template name has no compiled template.
+ */
 export const GET: APIRoute = ({ params }) => {
   const requested = params.template
 

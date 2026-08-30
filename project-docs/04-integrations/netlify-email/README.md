@@ -31,7 +31,7 @@ from the Netlify UI under `app.netlify.com/integrations/{site}/emails`. It does 
 
 ### Architecture as it would sit in this repo
 
-```
+```text
 Browser
   └─> POST /api/message-us              (Astro SSR fn, .netlify/v1/functions/ssr)
         ├─> db.insertMessage()          (existing — Turso/Supabase)
@@ -188,7 +188,7 @@ integration design below is deliberately built so that swapping the transport is
 
 ### 3.1 Templates
 
-```
+```text
 emails/
 ├── contact-notification/index.mjml   # to the site owner, on contact form submit
 ├── contact-confirmation/index.mjml   # auto-reply to the submitter
@@ -398,7 +398,7 @@ inserted rather than updated, or record a `welcome_email_sent_at` on the user ro
 > **Superseded**, as above — in particular the `NETLIFY_EMAILS_*` variables below
 > are _not_ the ones the project uses. See `.env.example` for the live set.
 
-**Phase 0 — prerequisites (blocking, owner action)**
+### Phase 0 — prerequisites (blocking, owner action)
 
 1. Choose a provider (Mailgun / SendGrid / Postmark), verify the sending domain, add SPF/DKIM.
 2. Enable the integration at `app.netlify.com/integrations/{site}/emails`.
@@ -407,15 +407,26 @@ inserted rather than updated, or record a `welcome_email_sent_at` on the user ro
 4. Fix `deploy:preview` / `deploy:prod` to run `netlify build` so build plugins execute (concern 3),
    and confirm the SSR function still deploys.
 
-**Phase 1 — plumbing** 5. Add `src/utils/email.ts` and unit tests (mock `fetch`: success, non-2xx, throw, unconfigured). 6. Add `emails/` templates + an `emails/README.md` noting the double-brace rule. 7. Add the new variables to `.env.example`, and email accessors to `src/utils/env-config.ts`
-alongside the existing Clerk/Supabase/Axiom ones.
+### Phase 1 — plumbing
 
-**Phase 2 — contact form** 8. Wire `contact-notification` into `POST /api/message-us`. Verify on a deploy preview. 9. Decide on `contact-confirmation` separately (§3.3).
+1. Add `src/utils/email.ts` and unit tests (mock `fetch`: success, non-2xx, throw, unconfigured).
+2. Add `emails/` templates + an `emails/README.md` noting the double-brace rule.
+3. Add the new variables to `.env.example`, and email accessors to `src/utils/env-config.ts`
+   alongside the existing Clerk/Supabase/Axiom ones.
 
-**Phase 3 — signup** 10. Wire `welcome` into the Clerk `user.created` handler, with the duplicate-send guard.
+### Phase 2 — contact form
 
-**Phase 4 — documentation** 11. Write the Starlight guide page at `src/content/docs/guide/integrations/netlify-email.mdx` and
-add it to the Integrations sidebar in `astro.config.mjs`.
+1. Wire `contact-notification` into `POST /api/message-us`. Verify on a deploy preview.
+2. Decide on `contact-confirmation` separately (§3.3).
+
+### Phase 3 — signup
+
+1. Wire `welcome` into the Clerk `user.created` handler, with the duplicate-send guard.
+
+### Phase 4 — documentation
+
+1. Write the Starlight guide page at `src/content/docs/guide/integrations/netlify-email.mdx` and
+   add it to the Integrations sidebar in `astro.config.mjs`.
 
 ### Testing
 
