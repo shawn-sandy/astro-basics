@@ -1,0 +1,144 @@
+---
+title: Email
+description: Send templated email from the contact form and on signup, using the astro-email integration with version-controlled templates.
+---
+
+import { Aside, Steps, FileTree } from '@astrojs/starlight/components'
+
+Email is handled by `astro-email`, a project-local Astro integration in
+`src/integrations/email/`. Templates live in the repository, compile during
+`astro build`, and are inlined into the server bundle — nothing is read from
+disk at request time, so the same build runs on the `netlify`, `node` and
+`vercel` adapters.
+
+## Quick start
+
+<Steps>
+
+1. Pick a provider (Postmark, SendGrid or Mailgun), verify your sending domain,
+   and add SPF/DKIM records.
+
+2. Set the environment variables:
+
+   ```env
+   EMAIL_PROVIDER=postmark
+   EMAIL_PROVIDER_API_KEY=your-key
+   EMAIL_FROM_ADDRESS=no-reply@yourdomain.com
+   EMAIL_TO_ADDRESS=hello@yourdomain.com
+   ```
+
+3. Run `npm run dev` and open `/_email` to preview templates.
+
+</Steps>
+
+<Aside type="tip">
+With `EMAIL_PROVIDER` unset, email is simply off: `sendEmail()` returns
+`{ sent: false, reason: 'not-configured' }` and logs at debug level. Local
+development and forks work with no email configuration at all.
+</Aside>
+
+## Sending
+
+```ts
+import { isEmailConfigured, sendEmail } from '#utils/email'
+
+const result = await sendEmail({
+  template: 'welcome',
+  to: 'user@example.com',
+  subject: 'Welcome',
+  parameters: { name: 'Ada', dashboardUrl: 'https://example.com/dashboard' },
+})
+
+if (!result.sent) {
+  // 'not-configured' | 'unknown-template' | 'provider-error' | 'network-error'
+}
+```
+
+`sendEmail` never throws and never rejects. Every call site runs after its
+primary work has already succeeded — a contact message is already saved, a user
+is already synced — and a mail failure must not turn that into an error
+response. Check `result.sent` if you care; ignore it if you do not.
+
+<Aside type="caution" title="Do not throw on the Clerk webhook">
+Clerk retries any non-2xx response. If a mail failure produced a 500, Clerk
+would redeliver `user.created` and send a second welcome email. Never surface a
+send failure as a webhook error.
+</Aside>
+
+## Templates
+
+<FileTree>
+- emails/
+  - contact-notification/
+    - index.html
+  - welcome/
+    - index.html
+</FileTree>
+
+Each directory is one template, named by the directory. The file must be
+`index.html`, or `index.mjml` if you install `mjml` as a dev dependency.
+
+Template names are **type-checked**. `astro:config:done` generates an
+`EmailTemplate` union from the directories that exist, so a typo or a deleted
+template is a compile error rather than a runtime one. After adding a template,
+run `npx astro sync` to regenerate the union.
+
+### Placeholders
+
+Use `{{ name }}`. Values are always HTML-escaped, and there is deliberately no
+unescaped form.
+
+<Aside type="danger" title="Why there is no raw form">
+Handlebars — which the Netlify email integration uses — renders `{{{value}}}`
+unescaped. Contact-form values reach these templates unverified, so an
+unescaped form would be an HTML injection vector in outbound mail. This
+renderer does not implement triple braces at all, so the syntax simply does not
+interpolate.
+</Aside>
+
+Arrays join with `, `. An unknown placeholder renders as empty rather than
+throwing, so a template and a call site drifting apart degrades the email
+instead of breaking the request.
+
+## Where email is sent
+
+| Trigger | Template | Recipient |
+| --- | --- | --- |
+| `POST /api/message-us` | `contact-notification` | `EMAIL_TO_ADDRESS` |
+| Clerk `user.created` | `welcome` | The new user |
+
+### On auto-replying to the sender
+
+There is deliberately **no** confirmation email back to the contact-form
+submitter. That address is unverified, which would make the endpoint a
+reflector: anyone could submit the form with a victim's address and have your
+domain mail them. The per-IP rate limiter on `POST /api/message-us` and the
+honeypot field reduce the volume but do not remove the problem. If you add one,
+keep the template free of submitter-controlled content beyond a name, so a
+reflected message cannot carry an attacker's payload.
+
+## Previewing
+
+`npm run dev`, then `/_email` for the index and `/_email/<name>` for one
+template, rendered with `[placeholder]` stand-ins.
+
+The preview route is injected only when `command === 'dev'`, so it cannot reach
+a deployed environment — including deploy previews.
+
+## Adding a provider
+
+Add an adapter to `src/integrations/email/providers.ts` and extend
+`ProviderName`. Each adapter is a single `fetch` returning
+`{ ok: true }` or `{ ok: false, status, detail }`; adapters report failure
+rather than throwing.
+
+## Design notes
+
+Templates reach the runtime through a virtual module, `virtual:astro-email/templates`,
+built by a Vite plugin the integration registers in `astro:config:setup`. That
+is what removes the filesystem read, and with it the per-adapter file-inclusion
+configuration a disk-reading approach would need.
+
+For why this exists instead of Netlify's email integration — including the
+deploy-preview secret exposure that ruled that option out — see
+`project-docs/04-integrations/netlify-email/README.md`.

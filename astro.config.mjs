@@ -45,6 +45,13 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Integrations',
+          items: [
+            { label: 'Email', link: '/guide/integrations/email' },
+            { label: 'Clerk + Supabase', link: '/guide/integrations/clerk-supabase' },
+          ],
+        },
+        {
           label: 'Utilities',
           items: [
             { label: 'User Sync', link: '/guide/utilities/user-sync' },

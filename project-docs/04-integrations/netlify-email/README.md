@@ -1,6 +1,9 @@
 # Netlify Email Integration — Review & Adoption Plan
 
-**Status:** Assessment / proposal — not implemented
+**Status:** Assessed and **not adopted**. Email was instead implemented as a
+project-local Astro integration (`src/integrations/email/`), which resolves the
+blocking findings below. See [§6](#6-outcome-implemented-as-an-astro-integration)
+and the [Email guide](../../../src/content/docs/guide/integrations/email.mdx).
 **Scope:** Contact form (`POST /api/message-us`) and signup (Clerk `user.created`)
 **Reviewed against:** `@netlify/plugin-emails@1.1.1` (source read directly from the published
 tarball, since <https://docs.netlify.com/extend/install-and-use/setup-guides/email-integration/>
@@ -24,7 +27,7 @@ from the Netlify UI under `app.netlify.com/integrations/{site}/emails`. It does 
    - `POST /.netlify/functions/send` — sends your **provider API key**, the rendered HTML, and the
      recipient addresses; that service calls Mailgun/SendGrid/Postmark on your behalf
 
-**Supported providers:** Mailgun, SendGrid, Postmark. (Resend is *not* supported.)
+**Supported providers:** Mailgun, SendGrid, Postmark. (Resend is _not_ supported.)
 
 ### Architecture as it would sit in this repo
 
@@ -46,15 +49,15 @@ waiting on unless we make it non-blocking.
 
 ### Required configuration
 
-| Variable | Required | Notes |
-| --- | --- | --- |
-| `NETLIFY_EMAILS_PROVIDER` | yes | `mailgun` \| `sendgrid` \| `postmark` |
-| `NETLIFY_EMAILS_PROVIDER_API_KEY` | yes | Provider key — leaves our infra on every send |
-| `NETLIFY_EMAILS_SECRET` | yes | Shared secret for the `netlify-emails-secret` header |
-| `NETLIFY_EMAILS_DIRECTORY` | no | Defaults to `./emails` |
-| `NETLIFY_EMAILS_MAILGUN_DOMAIN` | Mailgun only | |
-| `NETLIFY_EMAILS_MAILGUN_HOST_REGION` | Mailgun only | |
-| `SITE_ID`, `URL`, `CONTEXT` | injected | Provided by Netlify at build/runtime |
+| Variable                             | Required     | Notes                                                |
+| ------------------------------------ | ------------ | ---------------------------------------------------- |
+| `NETLIFY_EMAILS_PROVIDER`            | yes          | `mailgun` \| `sendgrid` \| `postmark`                |
+| `NETLIFY_EMAILS_PROVIDER_API_KEY`    | yes          | Provider key — leaves our infra on every send        |
+| `NETLIFY_EMAILS_SECRET`              | yes          | Shared secret for the `netlify-emails-secret` header |
+| `NETLIFY_EMAILS_DIRECTORY`           | no           | Defaults to `./emails`                               |
+| `NETLIFY_EMAILS_MAILGUN_DOMAIN`      | Mailgun only |                                                      |
+| `NETLIFY_EMAILS_MAILGUN_HOST_REGION` | Mailgun only |                                                      |
+| `SITE_ID`, `URL`, `CONTEXT`          | injected     | Provided by Netlify at build/runtime                 |
 
 If any required variable is missing, `POST` returns **400** with a message naming exactly which
 ones are absent, and `GET` returns a configuration-help page. It fails loudly, which is good.
@@ -177,6 +180,11 @@ integration design below is deliberately built so that swapping the transport is
 ---
 
 ## 3. Proposed integration
+
+> **Superseded.** This section proposes wiring for the _Netlify_ integration and
+> is kept as the record of what adopting it would have involved. The shipped
+> implementation uses the Astro integration described in [§6](#6-outcome-implemented-as-an-astro-integration);
+> for current usage see the [Email guide](../../../src/content/docs/guide/integrations/email.mdx).
 
 ### 3.1 Templates
 
@@ -387,7 +395,11 @@ inserted rather than updated, or record a `welcome_email_sent_at` on the user ro
 
 ## 4. Adoption plan
 
+> **Superseded**, as above — in particular the `NETLIFY_EMAILS_*` variables below
+> are _not_ the ones the project uses. See `.env.example` for the live set.
+
 **Phase 0 — prerequisites (blocking, owner action)**
+
 1. Choose a provider (Mailgun / SendGrid / Postmark), verify the sending domain, add SPF/DKIM.
 2. Enable the integration at `app.netlify.com/integrations/{site}/emails`.
 3. **Set a production-only `NETLIFY_EMAILS_SECRET`** using Netlify's per-context env values, so
@@ -395,22 +407,15 @@ inserted rather than updated, or record a `welcome_email_sent_at` on the user ro
 4. Fix `deploy:preview` / `deploy:prod` to run `netlify build` so build plugins execute (concern 3),
    and confirm the SSR function still deploys.
 
-**Phase 1 — plumbing**
-5. Add `src/utils/email.ts` and unit tests (mock `fetch`: success, non-2xx, throw, unconfigured).
-6. Add `emails/` templates + an `emails/README.md` noting the double-brace rule.
-7. Add the new variables to `.env.example`, and email accessors to `src/utils/env-config.ts`
-   alongside the existing Clerk/Supabase/Axiom ones.
+**Phase 1 — plumbing** 5. Add `src/utils/email.ts` and unit tests (mock `fetch`: success, non-2xx, throw, unconfigured). 6. Add `emails/` templates + an `emails/README.md` noting the double-brace rule. 7. Add the new variables to `.env.example`, and email accessors to `src/utils/env-config.ts`
+alongside the existing Clerk/Supabase/Axiom ones.
 
-**Phase 2 — contact form**
-8. Wire `contact-notification` into `POST /api/message-us`. Verify on a deploy preview.
-9. Decide on `contact-confirmation` separately (§3.3).
+**Phase 2 — contact form** 8. Wire `contact-notification` into `POST /api/message-us`. Verify on a deploy preview. 9. Decide on `contact-confirmation` separately (§3.3).
 
-**Phase 3 — signup**
-10. Wire `welcome` into the Clerk `user.created` handler, with the duplicate-send guard.
+**Phase 3 — signup** 10. Wire `welcome` into the Clerk `user.created` handler, with the duplicate-send guard.
 
-**Phase 4 — documentation**
-11. Write the Starlight guide page at `src/content/docs/guide/integrations/netlify-email.mdx` and
-    add it to the Integrations sidebar in `astro.config.mjs`.
+**Phase 4 — documentation** 11. Write the Starlight guide page at `src/content/docs/guide/integrations/netlify-email.mdx` and
+add it to the Integrations sidebar in `astro.config.mjs`.
 
 ### Testing
 
@@ -443,16 +448,70 @@ EMAIL_FROM_ADDRESS=no-reply@yourdomain.com
 
 ## 5. Alternative, for comparison
 
-| | Netlify Email Integration | Direct provider SDK |
-| --- | --- | --- |
-| Templates in git | ✅ | ✅ (needs own renderer) |
-| MJML | ✅ hosted | ➖ add `mjml` dep + build step |
-| Provider key stays with us | ❌ posted to Netlify service | ✅ |
-| Message content stays with us | ❌ | ✅ |
-| Works on node/vercel adapters | ❌ Netlify only | ✅ |
-| Network hops per send | 4 | 1 |
-| Setup effort | Low (UI + env vars) | Medium |
-| Secret exposed on deploy previews | ⚠️ yes, unless context-scoped | ✅ n/a |
+|                                   | Netlify Email Integration     | Direct provider SDK            |
+| --------------------------------- | ----------------------------- | ------------------------------ |
+| Templates in git                  | ✅                            | ✅ (needs own renderer)        |
+| MJML                              | ✅ hosted                     | ➖ add `mjml` dep + build step |
+| Provider key stays with us        | ❌ posted to Netlify service  | ✅                             |
+| Message content stays with us     | ❌                            | ✅                             |
+| Works on node/vercel adapters     | ❌ Netlify only               | ✅                             |
+| Network hops per send             | 4                             | 1                              |
+| Setup effort                      | Low (UI + env vars)           | Medium                         |
+| Secret exposed on deploy previews | ⚠️ yes, unless context-scoped | ✅ n/a                         |
 
 The `src/utils/email.ts` interface in §3.2 is identical under either choice, so this decision can be
 revisited later without touching the call sites.
+
+---
+
+## 6. Outcome: implemented as an Astro integration
+
+The comparison in §5 was settled by building the right-hand column as an Astro
+integration rather than a standalone module. Astro's `astro:config:setup` and
+`astro:config:done` hooks cover everything the Netlify build plugin does, and
+doing the work inside the Astro build turns out to answer the blocking findings
+directly.
+
+### How each finding is resolved
+
+| Finding                                         | Resolution                                                                                                                                                                |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔴 1. Deploy previews leak the secret           | No hosted preview and no shared secret. The preview route is injected only when `command === 'dev'`, so it cannot exist in any deployed context.                          |
+| 🟠 2. Content and API key transit a third party | Adapters call the provider directly. Nothing leaves our function except the provider request itself.                                                                      |
+| 🟠 3. Deploy scripts skip the build plugin      | Runs during `astro build`, so it does not depend on `netlify build` executing Netlify's plugin pipeline. (The `deploy:*` scripts should still be reviewed independently.) |
+| 🟡 4. Availability of a single hosted service   | No runtime dependency beyond the provider.                                                                                                                                |
+| 🟡 5. Netlify lock-in                           | Templates are inlined into the server bundle, so the same build works on the `netlify`, `node` and `vercel` adapters.                                                     |
+| 🟡 6. Four network hops                         | One: our function to the provider.                                                                                                                                        |
+| 🟢 7. Handlebars escaping footgun               | Removed rather than documented. The renderer implements only `{{ name }}`, always escaped; `{{{ raw }}}` has no meaning and does not interpolate.                         |
+
+### What was verified
+
+- `astro sync` generates `EmailTemplate = "contact-notification" | "welcome"`
+  from the template directories, so call sites type-check against templates
+  that actually exist.
+- `npm run build` inlines both templates into
+  `.netlify/v1/functions/ssr/.netlify/build/chunks/email_*.mjs`, and that chunk
+  contains **no** `readFileSync` or `node:fs` reference. No `emails/` directory
+  is emitted into the build output, and the preview route is absent from it.
+- 22 unit tests pass, covering the escaping guarantees and the never-throws
+  contract on every failure path.
+- Provider request shapes were checked against the official SDKs (`postmark`,
+  `@sendgrid/mail` with `@sendgrid/helpers`, `mailgun.js`): endpoints, auth
+  headers, body field names, Mailgun's `api` basic-auth username and its EU
+  host all match the adapters.
+- `npm run type-check` reports 124 errors against 130 on the base branch. This
+  work adds none; restoring the `.astro/types.d.ts` entry to tsconfig `include`
+  fixes six pre-existing ones. Note that type-check was already failing before
+  this change.
+
+### Cost of owning it
+
+Roughly 500 lines of integration and runtime code, plus tests, that are now
+ours to maintain: template compilation, escaping, and one adapter per provider.
+In exchange we drop a hosted dependency, a shared secret, a third-party data
+hop, and the Netlify-only constraint. MJML support is optional and pulled in
+lazily, so projects using HTML templates add no dependency at all.
+
+The transport boundary in `src/integrations/email/providers.ts` is narrow, so
+switching to a provider SDK later — or back to the Netlify integration — is a
+single-file change that leaves every call site untouched.
