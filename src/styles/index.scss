@@ -1,4 +1,10 @@
-@use "./design-tokens";
+// The explicit extension is deliberate. `design-tokens.css` is a published artifact
+// (see DESIGN-TOKENS-README.md) that sits beside `_design-tokens.scss`, and the two
+// toolchains resolve a bare `@use "./design-tokens"` differently: the sass CLI picks
+// the partial, Vite picks the .css. Naming the file pins both to the partial, so
+// Storybook and the Astro build compile the same tokens.
+// stylelint-disable-next-line scss/load-partial-extension
+@use "./design-tokens.scss";
 @use "./base";
 @use "./components/card";
 @use "./components/form";

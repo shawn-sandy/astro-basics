@@ -6,16 +6,35 @@ interface AlertProps {
 }
 
 /**
- * `data-visible="true"` is required, not decorative.
+ * Inline status message, announced by assistive technology as soon as it appears.
  *
- * `@fpkit/acss` v6 ships `[role="alert"]:not([data-visible="true"]) { opacity: 0 }`
- * so its own dismissible `<Alert>` can fade in. That selector outranks this
- * project's `.alert` rules on specificity, so any `role="alert"` element without
- * the attribute renders fully transparent. These alerts are mounted only when they
- * should already be on screen, so they declare themselves visible up front.
+ * Render it only when the message should already be on screen — it has no
+ * dismiss or fade-in behaviour of its own.
+ *
+ * @component Alert
+ * @param {AlertProps} props - Component properties
+ * @returns {JSX.Element} A `role="alert"` region styled for the given type
+ *
+ * @example
+ * ```tsx
+ * <Alert type="error">We could not reach the server.</Alert>
+ *
+ * <Alert type="error">
+ *   <h6>Please correct the following errors</h6>
+ *   <ul data-list="unstyled">
+ *     <li><a href="#email">Please enter a valid email address</a></li>
+ *   </ul>
+ * </Alert>
+ * ```
+ *
+ * @accessibility Uses `role="alert"`, so the content is announced on insertion.
  */
 const Alert: React.FC<AlertProps> = ({ type, children }) => {
   return (
+    // data-visible is required, not decorative: @fpkit/acss v6 ships
+    // `[role="alert"]:not([data-visible="true"]) { opacity: 0 }` for its own
+    // dismissible Alert, and that selector outranks this project's `.alert` rules.
+    // Without it the alert renders fully transparent. See tests/components/alert-visibility.
     <div className={`alert alert-${type} `} role="alert" data-visible="true">
       {children}
     </div>

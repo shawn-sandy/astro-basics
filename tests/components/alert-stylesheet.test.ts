@@ -13,10 +13,15 @@
  *
  * So edits to `_alert.scss` silently did nothing in Vite-built output, with no
  * warning from either tool. The stale duplicate is gone; these tests keep it gone.
+ *
+ * The invariant that actually matters is not "no .css sits beside a partial" — some
+ * of those, like `design-tokens.css`, are deliberate published artifacts documented
+ * in DESIGN-TOKENS-README.md. It is that no extensionless `@use` in index.scss can
+ * resolve two different ways, which is what makes the toolchains disagree.
  */
 
-import { readdirSync } from 'node:fs'
-import { basename, extname, join } from 'node:path'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
 
 import { compile } from 'sass'
 import { describe, expect, it } from 'vitest'
@@ -40,26 +45,24 @@ describe('alert stylesheet', () => {
     expect(css).toMatch(/\.alert\[role=alert\] \{[^}]*flex-direction: column/)
   })
 
-  it('has no new .css file shadowing a same-named .scss partial', () => {
-    const files = styleFiles(STYLES_DIR)
+  it('has no extensionless @use that two resolvers could read differently', () => {
+    const entry = readFileSync(`${STYLES_DIR}/index.scss`, 'utf8')
+    const files = new Set(styleFiles(STYLES_DIR))
 
-    // Only partials matter. `index.scss` -> `index.css` is the documented output of
-    // `npm run sass:build`, and both are imported with an explicit extension, so
-    // there is nothing for a resolver to guess at.
-    const partials = new Set(
-      files
-        .filter(file => extname(file) === '.scss' && basename(file).startsWith('_'))
-        .map(file => basename(file, '.scss').slice(1))
-    )
+    const ambiguous = [...entry.matchAll(/@use\s+['"]\.\/([^'"]+)['"]/g)]
+      .map(match => match[1])
+      .filter(spec => !spec.endsWith('.scss') && !spec.endsWith('.css'))
+      .filter(spec => {
+        const dir = spec.includes('/') ? `/${spec.slice(0, spec.lastIndexOf('/') + 1)}` : '/'
+        const name = spec.slice(spec.lastIndexOf('/') + 1)
+        return (
+          files.has(`${STYLES_DIR}${dir}_${name}.scss`) &&
+          files.has(`${STYLES_DIR}${dir}${name}.css`)
+        )
+      })
 
-    const shadowing = files.filter(
-      file => extname(file) === '.css' && partials.has(basename(file, '.css'))
-    )
-
-    // Pre-existing, and the same trap: `@use "./design-tokens"` reaches the stale
-    // 293-line `design-tokens.css` under Vite and the 399-line `_design-tokens.scss`
-    // under the sass CLI. Removing it changes which tokens Storybook compiles, so it
-    // wants its own change rather than riding along with an alert layout fix.
-    expect(shadowing).toEqual(['src/styles/design-tokens.css'])
+    // Each of these resolves to `_name.scss` under the sass CLI and `name.css` under
+    // Vite. Give the @use an explicit filename instead of removing the .css file.
+    expect(ambiguous).toEqual([])
   })
 })

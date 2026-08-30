@@ -4,7 +4,7 @@ import type { Preview } from '@storybook/react-vite'
 // production look. The SCSS entry point is imported directly (rather than the compiled
 // index.css) so style edits hot-reload in Storybook.
 import '@fpkit/acss/styles'
-import '../src/styles/index.scss'
+import '#styles/index.scss'
 
 const preview: Preview = {
   parameters: {

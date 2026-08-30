@@ -19,7 +19,7 @@ const config: StorybookConfig = {
   // `src/stories/`. The MDX glob is scoped deliberately — `src/content/` holds
   // Starlight documentation pages that are not Storybook docs and must not be
   // indexed here.
-  stories: ['../src/stories/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
+  stories: ['../src/stories/**/*.mdx', '../src/components/react/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
 
   addons: ['@storybook/addon-docs', '@storybook/addon-a11y', '@storybook/addon-links'],
 
