@@ -5,6 +5,15 @@ import { escapeHtml, renderTemplate } from '#integrations/email/render'
 import { isProviderName, sendViaProvider } from '#integrations/email/providers'
 
 describe('renderTemplate', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+    vi.unstubAllGlobals()
+  })
+
   it('substitutes placeholders, with or without inner spacing', () => {
     expect(renderTemplate('<p>{{name}} / {{ other }}</p>', { name: 'Ada', other: 'Grace' })).toBe(
       '<p>Ada / Grace</p>'
@@ -42,12 +51,30 @@ describe('renderTemplate', () => {
 })
 
 describe('escapeHtml', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+    vi.unstubAllGlobals()
+  })
+
   it('escapes every character that could break out of markup', () => {
     expect(escapeHtml(`&<>"'`)).toBe('&amp;&lt;&gt;&quot;&#39;')
   })
 })
 
 describe('extractPlaceholders', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+    vi.unstubAllGlobals()
+  })
+
   it('returns each referenced name once, sorted', () => {
     expect(extractPlaceholders('{{b}} {{a}} {{ b }}')).toEqual(['a', 'b'])
   })
@@ -58,6 +85,15 @@ describe('extractPlaceholders', () => {
 })
 
 describe('isProviderName', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+    vi.unstubAllGlobals()
+  })
+
   it('accepts supported providers and rejects anything else', () => {
     expect(isProviderName('postmark')).toBe(true)
     expect(isProviderName('sendgrid')).toBe(true)
@@ -76,11 +112,12 @@ describe('sendViaProvider', () => {
   }
 
   beforeEach(() => {
-    vi.restoreAllMocks()
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
-    vi.restoreAllMocks()
+    vi.clearAllMocks()
+    vi.unstubAllGlobals()
   })
 
   it('posts to Postmark with the server token header', async () => {

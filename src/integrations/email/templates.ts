@@ -10,8 +10,12 @@
  *
  * @see project-docs/04-integrations/netlify-email/README.md
  */
-import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs'
+import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
+
+// Re-exported so the placeholder syntax has exactly one definition (render.ts),
+// shared by build-time discovery, the dev preview, and runtime substitution.
+export { extractPlaceholders } from './render.js'
 
 /** A template discovered on disk, already compiled to HTML. */
 export type CompiledTemplate = {
@@ -19,26 +23,6 @@ export type CompiledTemplate = {
   name: string
   /** Fully compiled HTML, still containing `{{ placeholder }}` markers. */
   html: string
-  /** Placeholder names referenced by the template. */
-  placeholders: string[]
-}
-
-/** Matches `{{ name }}` / `{{name}}`. Deliberately does not match `{{{ raw }}}`. */
-const PLACEHOLDER_PATTERN = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g
-
-/**
- * Collect the placeholder names a template refers to.
- *
- * Used to warn at build time when a template and its call site have drifted
- * apart, which is otherwise only discoverable by sending a real email.
- */
-export function extractPlaceholders(html: string): string[] {
-  const found = new Set<string>()
-  for (const match of html.matchAll(PLACEHOLDER_PATTERN)) {
-    const name = match[1]
-    if (name) found.add(name)
-  }
-  return [...found].sort()
 }
 
 /**
@@ -90,23 +74,26 @@ export async function loadTemplates(directory: string): Promise<CompiledTemplate
 
   const compiled: CompiledTemplate[] = []
 
-  for (const entry of readdirSync(directory)) {
-    const templateDir = join(directory, entry)
-    if (!statSync(templateDir).isDirectory()) continue
+  // `withFileTypes`, not a `statSync` per entry: `statSync` follows symlinks and
+  // throws ENOENT on a dangling one, which would abort `astro build` with a bare
+  // path and no reason. A `Dirent` reports a broken link as "not a directory".
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue
+    const templateDir = join(directory, entry.name)
 
     const mjmlPath = join(templateDir, 'index.mjml')
     const htmlPath = join(templateDir, 'index.html')
 
     let html: string
     if (existsSync(mjmlPath)) {
-      html = await compileMjml(readFileSync(mjmlPath, 'utf8'), entry)
+      html = await compileMjml(readFileSync(mjmlPath, 'utf8'), entry.name)
     } else if (existsSync(htmlPath)) {
       html = readFileSync(htmlPath, 'utf8')
     } else {
       continue
     }
 
-    compiled.push({ name: entry, html, placeholders: extractPlaceholders(html) })
+    compiled.push({ name: entry.name, html })
   }
 
   return compiled.sort((a, b) => a.name.localeCompare(b.name))

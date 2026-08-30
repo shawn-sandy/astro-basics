@@ -44,6 +44,8 @@ export type SendEmailOptions = {
   from?: string | undefined
   cc?: string | undefined
   bcc?: string | undefined
+  /** Where a reply should go, when that is not the sending address. */
+  replyTo?: string | undefined
 }
 
 /** Why a send did not happen, when it did not. */
@@ -62,6 +64,46 @@ type EmailEnvironment = {
 }
 
 /**
+ * Read an environment value, treating `.env.example` placeholders as absent.
+ *
+ * Matches how `#utils/env-config` handles `YOUR_SUPABASE_URL` and friends:
+ * copying `.env.example` to `.env` must leave a feature off rather than
+ * configured-but-broken. Without this, `EMAIL_PROVIDER_API_KEY=YOUR_...` counts
+ * as configured and every send fails at the provider with a 401.
+ */
+function configuredValue(value: string | undefined): string | undefined {
+  if (!value) return undefined
+  const trimmed = value.trim()
+  if (!trimmed || trimmed.startsWith('YOUR_')) return undefined
+  return trimmed
+}
+
+/**
+ * Strip CR/LF from a value destined for an email header.
+ *
+ * The contact form's subject reaches here unverified, and `sanitizeName` in
+ * `#utils/input-sanitization` collapses runs of whitespace but leaves a lone
+ * newline intact — so `Subject: ...\nBcc: victim@example.com` survives to the
+ * provider call. Providers generally reject this, but the guarantee belongs
+ * here rather than in three provider APIs we do not control.
+ */
+function headerSafe<T extends string | undefined>(value: T): T {
+  return (value === undefined ? value : value.replace(/[\r\n]+/g, ' ').trim()) as T
+}
+
+/**
+ * Where contact-form notifications go.
+ *
+ * Lives here rather than being read from `process.env` at the call site so the
+ * feature has one configuration surface.
+ *
+ * @returns The configured address, or `null` when notifications are disabled.
+ */
+export function getNotificationAddress(): string | null {
+  return configuredValue(process.env.EMAIL_TO_ADDRESS) ?? null
+}
+
+/**
  * Read email configuration from the runtime environment.
  *
  * `process.env` rather than `import.meta.env`: Astro inlines `import.meta.env`
@@ -73,19 +115,27 @@ type EmailEnvironment = {
  * a normal state in local development and in unconfigured forks.
  */
 function readEnvironment(): EmailEnvironment | null {
-  const provider = process.env.EMAIL_PROVIDER
-  const apiKey = process.env.EMAIL_PROVIDER_API_KEY
-  const from = process.env.EMAIL_FROM_ADDRESS
+  const provider = configuredValue(process.env.EMAIL_PROVIDER)
+  const apiKey = configuredValue(process.env.EMAIL_PROVIDER_API_KEY)
+  const from = configuredValue(process.env.EMAIL_FROM_ADDRESS)
 
   if (!isProviderName(provider) || !apiKey || !from) return null
+
+  const mailgunDomain = configuredValue(process.env.EMAIL_MAILGUN_DOMAIN)
+
+  // Mailgun cannot send without a domain, and its adapter can only report that
+  // per-send. Failing the configuration check instead keeps `isEmailConfigured()`
+  // honest, so callers do not take the send path on every submission just to
+  // log an error.
+  if (provider === 'mailgun' && !mailgunDomain) return null
 
   return {
     provider,
     from,
     config: {
       apiKey,
-      mailgunDomain: process.env.EMAIL_MAILGUN_DOMAIN,
-      mailgunRegion: process.env.EMAIL_MAILGUN_REGION,
+      mailgunDomain,
+      mailgunRegion: configuredValue(process.env.EMAIL_MAILGUN_REGION),
     },
   }
 }
@@ -122,11 +172,12 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
     const result = await sendViaProvider(
       environment.provider,
       {
-        from: options.from ?? environment.from,
-        to: options.to,
-        cc: options.cc,
-        bcc: options.bcc,
-        subject: options.subject,
+        from: headerSafe(options.from ?? environment.from),
+        to: headerSafe(options.to),
+        cc: headerSafe(options.cc),
+        bcc: headerSafe(options.bcc),
+        replyTo: headerSafe(options.replyTo),
+        subject: headerSafe(options.subject),
         html: renderTemplate(html, options.parameters),
       },
       environment.config

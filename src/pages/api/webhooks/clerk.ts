@@ -190,13 +190,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
         // Create default preferences for new users
         if (user) {
-          const { error: prefsError } = await supabase
-            .from('user_preferences')
-            .insert({
+          // `upsert(values, { onConflict })`, not `insert(...).onConflict(...)`:
+          // there is no chained `onConflict` in supabase-js, so the old form
+          // threw `TypeError: ....onConflict is not a function` on every
+          // `user.created`. That aborted the handler into the outer catch,
+          // returned 500, and had Clerk retry the event forever - and nothing
+          // after this point (including the welcome email) ever ran.
+          const { error: prefsError } = await supabase.from('user_preferences').upsert(
+            {
               user_id: user.id,
-            })
-            .onConflict('user_id')
-            .ignoreDuplicates()
+            },
+            { onConflict: 'user_id', ignoreDuplicates: true }
+          )
 
           if (prefsError) {
             logger.warn('Failed to create default preferences', {
@@ -221,7 +226,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
             subject: `Welcome to ${SITE_TITLE}`,
             parameters: {
               name: `${first_name || ''} ${last_name || ''}`.trim() || username || 'there',
-              dashboardUrl: new URL('/dashboard', request.url).toString(),
+              // `import.meta.env.SITE` (the configured `site`) rather than
+              // `request.url`: the latter is built from the Host header this
+              // function happened to receive, so behind a proxy or an alias
+              // domain the welcome mail would link users at the wrong origin.
+              dashboardUrl: new URL('/dashboard', import.meta.env.SITE ?? request.url).toString(),
             },
           })
         }

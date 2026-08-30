@@ -39,7 +39,7 @@ export default [
         File: 'readonly',
         Request: 'readonly',
         Response: 'readonly',
-        btoa: 'readonly',
+        AbortSignal: 'readonly',
         NodeJS: 'readonly',
       },
     },

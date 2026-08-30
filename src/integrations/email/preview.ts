@@ -9,16 +9,15 @@
 import type { APIRoute } from 'astro'
 import { templates, templateNames } from 'virtual:astro-email/templates'
 
-import { renderTemplate, type TemplateParameters } from './render.js'
+import { extractPlaceholders, renderTemplate, type TemplateParameters } from './render.js'
 
 export const prerender = false
 
 /** Substitute `[placeholder]` markers so the layout is visible without real data. */
 function sampleParameters(html: string): TemplateParameters {
   const parameters: TemplateParameters = {}
-  for (const match of html.matchAll(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g)) {
-    const name = match[1]
-    if (name) parameters[name] = `[${name}]`
+  for (const name of extractPlaceholders(html)) {
+    parameters[name] = `[${name}]`
   }
   return parameters
 }
@@ -41,7 +40,12 @@ export const GET: APIRoute = ({ params }) => {
     })
   }
 
-  const html = templates[requested as keyof typeof templates]
+  // `Object.hasOwn`, not a bare lookup: `templates` is an object literal, so
+  // `templates.constructor` / `.toString` resolve on the prototype chain and
+  // would hand a function to the renderer instead of returning 404.
+  const html = Object.hasOwn(templates, requested)
+    ? templates[requested as keyof typeof templates]
+    : undefined
 
   if (!html) {
     return new Response(`Unknown template "${requested}". Known: ${templateNames.join(', ')}`, {

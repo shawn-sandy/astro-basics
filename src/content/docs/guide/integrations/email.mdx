@@ -25,6 +25,8 @@ disk at request time, so the same build runs on the `netlify`, `node` and
    EMAIL_PROVIDER_API_KEY=your-key
    EMAIL_FROM_ADDRESS=no-reply@yourdomain.com
    EMAIL_TO_ADDRESS=hello@yourdomain.com
+   # Mailgun only — required when EMAIL_PROVIDER=mailgun
+   EMAIL_MAILGUN_DOMAIN=mg.yourdomain.com
    ```
 
 3. Run `npm run dev` and open `/_email` to preview templates.
@@ -35,6 +37,18 @@ disk at request time, so the same build runs on the `netlify`, `node` and
 With `EMAIL_PROVIDER` unset, email is simply off: `sendEmail()` returns
 `{ sent: false, reason: 'not-configured' }` and logs at debug level. Local
 development and forks work with no email configuration at all.
+
+The same is true of the `YOUR_*` placeholders `.env.example` ships — matching
+how `#utils/env-config` handles Supabase and Turso, a copied `.env.example`
+reads as "email off", never as configured-but-broken.
+
+</Aside>
+
+<Aside type="caution" title="Sends happen inside the request">
+  `sendEmail` is awaited by its callers, so each provider call is bounded by a 5s timeout
+  (`REQUEST_TIMEOUT_MS` in `src/integrations/email/providers.ts`). A serverless function is killed
+  at around 10s; without that bound a slow provider would turn an already-saved contact message into
+  a gateway error for the submitter, who would then send it again.
 </Aside>
 
 ## Sending
@@ -60,9 +74,8 @@ is already synced — and a mail failure must not turn that into an error
 response. Check `result.sent` if you care; ignore it if you do not.
 
 <Aside type="caution" title="Do not throw on the Clerk webhook">
-Clerk retries any non-2xx response. If a mail failure produced a 500, Clerk
-would redeliver `user.created` and send a second welcome email. Never surface a
-send failure as a webhook error.
+  Clerk retries any non-2xx response. If a mail failure produced a 500, Clerk would redeliver
+  `user.created` and send a second welcome email. Never surface a send failure as a webhook error.
 </Aside>
 
 ## Templates
@@ -102,10 +115,21 @@ instead of breaking the request.
 
 ## Where email is sent
 
-| Trigger | Template | Recipient |
-| --- | --- | --- |
+| Trigger                | Template               | Recipient          |
+| ---------------------- | ---------------------- | ------------------ |
 | `POST /api/message-us` | `contact-notification` | `EMAIL_TO_ADDRESS` |
-| Clerk `user.created` | `welcome` | The new user |
+| Clerk `user.created`   | `welcome`              | The new user       |
+
+The contact notification is sent **from** `EMAIL_FROM_ADDRESS` with `Reply-To`
+set to the submitter, so replying reaches them. The submitter's address is
+unverified, which is exactly why it is the reply address and never the sender —
+letting a public form choose who your domain sends as is a spoofing vector.
+
+Values bound for a header (`subject`, `to`, `from`, `cc`, `bcc`, `replyTo`) have
+CR/LF stripped in `sendEmail` before they reach a provider. `sanitizeName`
+collapses runs of whitespace but leaves a lone newline intact, so a submitted
+subject can carry one; header injection is defended here rather than trusted to
+three provider APIs.
 
 ### On auto-replying to the sender
 

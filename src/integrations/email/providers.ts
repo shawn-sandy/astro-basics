@@ -19,7 +19,19 @@ export type ProviderMessage = {
   html: string
   cc?: string | undefined
   bcc?: string | undefined
+  /** Where a reply should go, when that is not the sending address. */
+  replyTo?: string | undefined
 }
+
+/**
+ * How long to wait on a provider before giving up.
+ *
+ * Sends happen inside the request the user is waiting on, and serverless
+ * platforms kill a function at ~10s. Without a bound, a slow provider turns an
+ * already-persisted contact message into a gateway error for the submitter,
+ * who then submits again. Five seconds leaves room for the rest of the handler.
+ */
+const REQUEST_TIMEOUT_MS = 5000
 
 /** Configuration a provider needs, read from the environment at send time. */
 export type ProviderConfig = {
@@ -48,6 +60,7 @@ async function toResult(response: Response): Promise<ProviderResult> {
 const postmark: Adapter = async (message, config) => {
   const response = await fetch('https://api.postmarkapp.com/email', {
     method: 'POST',
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     headers: {
       'X-Postmark-Server-Token': config.apiKey,
       'Content-Type': 'application/json',
@@ -58,6 +71,7 @@ const postmark: Adapter = async (message, config) => {
       To: message.to,
       Cc: message.cc,
       Bcc: message.bcc,
+      ReplyTo: message.replyTo,
       Subject: message.subject,
       HtmlBody: message.html,
     }),
@@ -72,6 +86,7 @@ const sendgrid: Adapter = async (message, config) => {
 
   const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
     method: 'POST',
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     headers: {
       Authorization: `Bearer ${config.apiKey}`,
       'Content-Type': 'application/json',
@@ -79,6 +94,7 @@ const sendgrid: Adapter = async (message, config) => {
     body: JSON.stringify({
       personalizations: [personalization],
       from: { email: message.from },
+      ...(message.replyTo ? { reply_to: { email: message.replyTo } } : {}),
       subject: message.subject,
       content: [{ type: 'text/html', value: message.html }],
     }),
@@ -100,11 +116,17 @@ const mailgun: Adapter = async (message, config) => {
   })
   if (message.cc) form.set('cc', message.cc)
   if (message.bcc) form.set('bcc', message.bcc)
+  if (message.replyTo) form.set('h:Reply-To', message.replyTo)
 
-  const response = await fetch(`https://${host}/v3/${config.mailgunDomain}/messages`, {
+  const domain = encodeURIComponent(config.mailgunDomain)
+  const response = await fetch(`https://${host}/v3/${domain}/messages`, {
     method: 'POST',
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     headers: {
-      Authorization: `Basic ${btoa(`api:${config.apiKey}`)}`,
+      // `Buffer`, not `btoa`: `btoa` throws InvalidCharacterError on any code
+      // point above U+00FF, so a key pasted with a stray non-Latin-1 character
+      // would crash the adapter instead of failing as an auth error.
+      Authorization: `Basic ${Buffer.from(`api:${config.apiKey}`).toString('base64')}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: form.toString(),

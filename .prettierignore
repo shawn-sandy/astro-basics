@@ -21,3 +21,7 @@ docs/LINTING_GUIDE.md
 docs/PRD/authentication-system-prd.md
 src/content/docs/2-customizing.mdx
 src/content/posts/mdx-example.mdx
+
+# Prettier flattens the <FileTree> block to a single line, which stops Starlight
+# parsing it as a nested list and renders the tree as one run-on paragraph.
+src/content/docs/guide/integrations/email.mdx

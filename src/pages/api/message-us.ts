@@ -9,7 +9,7 @@ import {
   parseCsrfTokenFromCookie,
   CSRF_CONFIG,
 } from '#utils/csrf'
-import { isEmailConfigured, sendEmail } from '#utils/email'
+import { getNotificationAddress, sendEmail } from '#utils/email'
 import { sanitizeMessageData } from '#utils/input-sanitization'
 import { extractClientIP } from '#utils/ip-validation'
 
@@ -197,15 +197,21 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     // Notify the site owner. Best-effort by design: the message is already
     // persisted, so a mail outage must not turn a successful submission into an
-    // error for the sender. `sendEmail` reports failure instead of throwing.
-    const notificationAddress = process.env.EMAIL_TO_ADDRESS
-    if (notificationAddress && isEmailConfigured()) {
+    // error for the sender. `sendEmail` reports failure instead of throwing, and
+    // the provider call is bounded by a timeout so a hung provider cannot push
+    // this handler past the platform's function limit.
+    const notificationAddress = getNotificationAddress()
+    if (notificationAddress) {
       // `subject` is optional on MessageData, so give it a stand-in rather than
       // letting "undefined" reach the subject line of a real email.
       const subject = sanitizedData.subject || '(no subject)'
       await sendEmail({
         template: 'contact-notification',
         to: notificationAddress,
+        // The submitter's address is unverified, so it must not be the sender.
+        // As Reply-To it makes the notification answerable without letting the
+        // form choose who our domain sends as.
+        replyTo: sanitizedData.email,
         subject: `New contact message: ${subject}`,
         parameters: {
           name: sanitizedData.name,

@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
-import { isEmailConfigured, sendEmail } from '#utils/email'
+import { getNotificationAddress, isEmailConfigured, sendEmail } from '#utils/email'
 
 /**
  * `sendEmail` is called from handlers whose primary work has already succeeded,
@@ -26,13 +26,19 @@ describe('sendEmail', () => {
     delete process.env.EMAIL_PROVIDER
     delete process.env.EMAIL_PROVIDER_API_KEY
     delete process.env.EMAIL_FROM_ADDRESS
+    delete process.env.EMAIL_TO_ADDRESS
     delete process.env.EMAIL_MAILGUN_DOMAIN
-    vi.restoreAllMocks()
+    delete process.env.EMAIL_MAILGUN_REGION
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
     process.env = { ...original }
-    vi.restoreAllMocks()
+    // `unstubAllGlobals`, not `restoreAllMocks`: `restoreAllMocks` leaves
+    // `vi.stubGlobal('fetch', ...)` installed, so one test's stub would still
+    // be answering calls in the next.
+    vi.clearAllMocks()
+    vi.unstubAllGlobals()
   })
 
   it('reports not-configured without attempting a request', async () => {
@@ -55,6 +61,57 @@ describe('sendEmail', () => {
     configure()
     process.env.EMAIL_PROVIDER = 'resend'
     expect(isEmailConfigured()).toBe(false)
+  })
+
+  it('treats the .env.example placeholders as unconfigured', async () => {
+    // Copying .env.example to .env must leave email off, not configured-but-broken.
+    process.env.EMAIL_PROVIDER = 'postmark'
+    process.env.EMAIL_PROVIDER_API_KEY = 'YOUR_EMAIL_PROVIDER_API_KEY'
+    process.env.EMAIL_FROM_ADDRESS = 'YOUR_EMAIL_FROM_ADDRESS'
+    process.env.EMAIL_TO_ADDRESS = 'YOUR_EMAIL_TO_ADDRESS'
+
+    expect(isEmailConfigured()).toBe(false)
+    expect(getNotificationAddress()).toBeNull()
+    await expect(sendEmail(options)).resolves.toEqual({ sent: false, reason: 'not-configured' })
+  })
+
+  it('treats mailgun without a domain as unconfigured, not as a per-send failure', async () => {
+    process.env.EMAIL_PROVIDER = 'mailgun'
+    process.env.EMAIL_PROVIDER_API_KEY = 'key'
+    process.env.EMAIL_FROM_ADDRESS = 'no-reply@example.com'
+
+    expect(isEmailConfigured()).toBe(false)
+
+    process.env.EMAIL_MAILGUN_DOMAIN = 'mg.example.com'
+    expect(isEmailConfigured()).toBe(true)
+  })
+
+  it('strips CR/LF from header fields so a subject cannot inject a header', async () => {
+    configure()
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await sendEmail({
+      ...options,
+      subject: 'Hello\nBcc: victim@example.com',
+      replyTo: 'sender@example.com\r\nX-Evil: 1',
+    })
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(body.Subject).toBe('Hello Bcc: victim@example.com')
+    expect(body.Subject).not.toMatch(/[\r\n]/)
+    expect(body.ReplyTo).toBe('sender@example.com X-Evil: 1')
+    expect(body.ReplyTo).not.toMatch(/[\r\n]/)
+  })
+
+  it('bounds the provider call so a hung provider cannot hang the request', async () => {
+    configure()
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await sendEmail(options)
+
+    expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal)
   })
 
   it('sends the rendered template when configured', async () => {
