@@ -7,7 +7,7 @@
  * @group integration
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 import { getSupabaseServiceRole, isSupabaseConfigured } from '#libs/supabase-native'
 import {
@@ -22,6 +22,14 @@ import {
 } from '#utils/clerk-roles'
 
 describe('Clerk-Supabase Integration', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('Database Schema', () => {
     const supabase = getSupabaseServiceRole()
 

@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { experimental_AstroContainer as AstroContainer } from 'astro/container'
 import Navigation from '#components/astro/Navigation.astro'
 
@@ -42,6 +42,14 @@ function findPanel(html: string): { tag: string; inner: string } {
 }
 
 describe('Navigation.astro popover markup contract', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   const render = async (props?: Record<string, unknown>) => {
     const container = await AstroContainer.create()
     return container.renderToString(Navigation, props ? { props } : undefined)

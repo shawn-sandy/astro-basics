@@ -1,7 +1,15 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { validateImageUrl, sanitizeImageUrl, validateTrustedImageUrl } from '#/utils/security'
 
 describe('validateImageUrl', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should validate valid HTTP URLs', () => {
     const result = validateImageUrl('http://example.com/image.jpg')
     expect(result.ok).toBe(true)
@@ -148,6 +156,14 @@ describe('validateImageUrl', () => {
 })
 
 describe('sanitizeImageUrl', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should return valid URL when validation passes', () => {
     const url = 'https://example.com/image.jpg'
     const result = sanitizeImageUrl(url)
@@ -180,6 +196,14 @@ describe('sanitizeImageUrl', () => {
 })
 
 describe('validateTrustedImageUrl', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should validate URLs from default trusted domains', () => {
     const clerkUrls = ['https://images.clerk.dev/user123.jpg', 'https://img.clerk.com/avatar.png']
 

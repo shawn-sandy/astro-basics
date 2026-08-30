@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   isTursoConfigured,
   validateTursoConfig,
@@ -11,6 +11,10 @@ describe('Turso error handling and validation', () => {
   beforeEach(() => {
     // Reset client state before each test
     resetTursoClient()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   describe('isTursoConfigured', () => {

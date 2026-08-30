@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { POST, GET } from '../../src/pages/api/message-us'
 
 // Mock the dependencies
@@ -50,6 +50,10 @@ describe('POST /api/message-us', () => {
   }
 
   beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
     vi.clearAllMocks()
   })
 
@@ -382,6 +386,14 @@ describe('POST /api/message-us', () => {
 })
 
 describe('GET /api/message-us', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should return API status', async () => {
     const response = await GET({} as any)
     const result = await response.json()

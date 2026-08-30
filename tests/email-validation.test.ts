@@ -1,7 +1,15 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { isValidEmail, validateEmailWithMessage } from '#utils/email-validation'
 
 describe('Email Validation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('isValidEmail', () => {
     it('should validate basic email formats', () => {
       const validEmails = [

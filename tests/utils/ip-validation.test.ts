@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { normalizeIPAddress, extractClientIP } from '../../src/utils/ip-validation'
 
 describe('normalizeIPAddress', () => {
@@ -6,6 +6,10 @@ describe('normalizeIPAddress', () => {
     // Reset console.warn mock
     vi.clearAllMocks()
     vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   describe('IPv4 addresses', () => {
@@ -118,6 +122,14 @@ describe('normalizeIPAddress', () => {
 })
 
 describe('extractClientIP', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   const createMockRequest = (headers: Record<string, string>) =>
     ({
       headers: new Map(Object.entries(headers)),

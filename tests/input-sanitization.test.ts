@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   sanitizeText,
   sanitizeEmail,
@@ -9,6 +9,14 @@ import {
 } from '../src/utils/input-sanitization'
 
 describe('sanitizeText', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should remove control characters while preserving newlines and tabs', () => {
     const input = `Hello\x00\x01World\nLine2\tTabbed`
     const result = sanitizeText(input)
@@ -47,6 +55,14 @@ describe('sanitizeText', () => {
 })
 
 describe('sanitizeEmail', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should lowercase and trim email addresses', () => {
     const input = '  TEST@EXAMPLE.COM  '
     const result = sanitizeEmail(input)
@@ -80,6 +96,14 @@ describe('sanitizeEmail', () => {
 })
 
 describe('sanitizeName', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should remove HTML tags', () => {
     const input = 'John <script>alert(1)</script> Doe'
     const result = sanitizeName(input)
@@ -125,6 +149,14 @@ describe('sanitizeName', () => {
 })
 
 describe('sanitizeMessage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should remove HTML tags completely', () => {
     const input = 'Hello <b>world</b>! <script>alert(1)</script>'
     const result = sanitizeMessage(input)
@@ -173,6 +205,14 @@ Thank you!`
 })
 
 describe('detectSuspiciousContent', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should detect script injection patterns', () => {
     const suspiciousInputs = [
       '<script>alert(1)</script>',
@@ -233,6 +273,14 @@ describe('detectSuspiciousContent', () => {
 })
 
 describe('sanitizeMessageData', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   const validData = {
     name: 'John Doe',
     email: 'john@example.com',

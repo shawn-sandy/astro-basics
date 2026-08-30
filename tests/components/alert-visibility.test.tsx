@@ -20,12 +20,20 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 import Alert from '#components/react/Alert'
 import { RoleGuard } from '#components/react/RoleGuard'
 
 describe('Alert visibility contract (@fpkit/acss v6)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('React Alert', () => {
     it.each(['error', 'success', 'info'] as const)(
       'marks the %s alert visible so acss does not hide it',
@@ -104,6 +112,14 @@ function openingTagAt(source: string, index: number): string {
 }
 
 describe('every role="alert" element opts out of the acss fade-in', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   const offenders = componentSources('src/components').flatMap(file => {
     const source = stripComments(readFileSync(file, 'utf8'))
     const tags: string[] = []

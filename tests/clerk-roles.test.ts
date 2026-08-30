@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   ClerkRole,
   isOrgAdmin,
@@ -10,6 +10,14 @@ import {
 } from '../src/utils/clerk-roles'
 
 describe('Clerk Roles Utility', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('isOrgAdmin', () => {
     it('returns true for org:admin role', () => {
       expect(isOrgAdmin('org:admin')).toBe(true)

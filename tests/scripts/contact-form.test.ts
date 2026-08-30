@@ -1,7 +1,7 @@
 /**
  * Tests for Contact Form feature
  */
-import { beforeEach, describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest'
 
 // Mock DOM elements
 const mockForm = {
@@ -55,6 +55,10 @@ describe('Contact Form Feature', () => {
     mockSubmitButton.disabled = false
     mockSubmitButton.textContent = 'Send Message'
     mockSubmitButton.dataset = {}
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   describe('Form Initialization', () => {

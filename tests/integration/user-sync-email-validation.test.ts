@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 /**
  * Integration tests for the user sync endpoints with email validation
@@ -48,6 +48,10 @@ vi.mock('#libs/supabase-native', () => ({
 
 describe('User Sync Endpoints Email Validation Integration', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
     vi.clearAllMocks()
   })
 

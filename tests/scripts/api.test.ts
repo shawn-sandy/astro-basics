@@ -1,7 +1,7 @@
 /**
  * Tests for API utilities module
  */
-import { beforeEach, describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest'
 
 // Mock fetch
 const mockFetch = vi.fn()
@@ -17,6 +17,10 @@ describe('API Module', () => {
     // Dynamically import the module for testing
     // In a real test environment, we'd need to serve these files or copy them to a testable location
     // For now, we'll test the logic patterns
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   describe('apiRequest', () => {

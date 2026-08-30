@@ -6,11 +6,19 @@
  * @module tests/scripts/role-validator.test
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { validateRoleConfig, validateRoleConfigOrThrow } from '../../scripts/lib/role-validator'
 import type { RoleConfig } from '../../config/roles.config'
 
 describe('Role Validator', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('validateRoleConfig', () => {
     it('should accept valid default configuration', () => {
       const config: RoleConfig = {

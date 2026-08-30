@@ -24,7 +24,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { compile } from 'sass'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
 const STYLES_DIR = 'src/styles'
 
@@ -42,6 +42,14 @@ function styleFiles(dir: string): string[] {
 }
 
 describe('alert stylesheet', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('compiles the stacked-layout rule into index.scss output', () => {
     // Quotes and whitespace are Sass output details, not the thing under test —
     // normalise both away so a formatting change cannot fail this spuriously.

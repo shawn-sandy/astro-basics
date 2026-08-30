@@ -13,7 +13,7 @@
  */
 
 import { experimental_AstroContainer as AstroContainer } from 'astro/container'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
 import Alert from '#components/astro/Alert.astro'
 
@@ -26,6 +26,14 @@ const render = async (type: 'error' | 'success' | 'info'): Promise<string> => {
 }
 
 describe('Alert.astro visibility contract', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   it.each(['error', 'success', 'info'] as const)(
     'renders the %s alert with data-visible="true"',
     async type => {

@@ -1,7 +1,7 @@
 /**
  * Tests for Connection Status feature
  */
-import { beforeEach, describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest'
 
 // Mock window and document
 const mockWindow = {
@@ -32,6 +32,10 @@ describe('Connection Status Feature', () => {
     vi.clearAllMocks()
     mockDocument.body.style.borderTop = ''
     mockWindow.navigator.onLine = true
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   describe('Connection Status Monitoring', () => {

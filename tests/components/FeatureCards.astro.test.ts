@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { experimental_AstroContainer as AstroContainer } from 'astro/container'
 import { loadRenderers } from 'astro:container'
 import { getContainerRenderer } from '@astrojs/react/container-renderer'
@@ -44,6 +44,14 @@ function escapeText(text: string): string {
 }
 
 describe('FeatureCards.astro', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('sectionTitle', () => {
     it('renders the supplied title as a section heading', async () => {
       // The prop was destructured but never used before this plan, so a passing
