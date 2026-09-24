@@ -195,6 +195,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`db:migrate` scripts never loaded `.env`** (`package.json`): `db:migrate`,
+  `db:migrate:status`, `db:migrate:create` and `db:migrate:rollback` ran
+  `node scripts/migrate.js`, and the `--env-file=.env` in that file's shebang does not apply under
+  `node <file>`. With Turso configured in `.env` they still reported "Missing required environment
+  variables". They now pass `--env-file=.env` like the other `db:*` scripts, so like those
+  scripts they need a `.env` file to exist. `scripts/migrate.js` treats `YOUR_...` placeholders as
+  missing, so a fresh copy of `.env.example` gets the missing-variables message instead of a libsql stack trace
+- **`db:status` reported `.env.example` placeholders as set** (`scripts/database-status.js`): any
+  truthy value printed "✓ Set", so an unedited `YOUR_...` placeholder counted as a configured
+  database. Values starting with `YOUR_` now count as not set, as they do in
+  `src/utils/env-config.ts`. `tests/scripts/db-scripts.test.ts` covers both fixes
 - **Horizontal rules out-shouted the content they separated**: `@fpkit/acss` colours `hr` through
   `--color-border-subtle`, a legacy neutral step that the inverted dark palette turned near-white
   (#f4f4f5 on the dark blog list). `hr` now uses the `--rule` hairline token in both themes;
