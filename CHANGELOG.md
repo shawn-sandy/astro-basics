@@ -182,6 +182,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`db:migrate` scripts never loaded `.env`** (`package.json`): `db:migrate`,
+  `db:migrate:status`, `db:migrate:create` and `db:migrate:rollback` ran
+  `node scripts/migrate.js`, and the `--env-file=.env` in that file's shebang does not apply under
+  `node <file>`. With Turso configured in `.env` they still reported "Missing required environment
+  variables". They now pass `--env-file=.env` like the other `db:*` scripts, so like those
+  scripts they need a `.env` file to exist. `scripts/migrate.js` treats `YOUR_...` placeholders as
+  missing, so a fresh copy of `.env.example` gets the missing-variables message instead of a libsql stack trace
+- **`db:status` reported `.env.example` placeholders as set** (`scripts/database-status.js`): any
+  truthy value printed "✓ Set", so an unedited `YOUR_...` placeholder counted as a configured
+  database. Values starting with `YOUR_` now count as not set, as they do in
+  `src/utils/env-config.ts`. `tests/scripts/db-scripts.test.ts` covers both fixes
 - **Design tokens had no consumers, so dark mode could not change a pixel**:
   `src/styles/_design-tokens.scss` declared a full alias layer that nothing read.
   `--card-background` and `--header-background` each had zero `var()` consumers, so every card and

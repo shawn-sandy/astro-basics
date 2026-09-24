@@ -67,9 +67,15 @@ console.log()
 // Check environment variables
 log.header('2. Database Configuration Status')
 
+/**
+ * Reads an env var, treating an unreplaced `YOUR_...` placeholder from .env.example
+ * as not set, as src/utils/env-config.ts does. Format is not checked here.
+ */
+const envValue = key => (process.env[key]?.startsWith('YOUR_') ? undefined : process.env[key])
+
 // Turso configuration
-const tursoUrl = process.env.TURSO_DATABASE_URL
-const tursoToken = process.env.TURSO_AUTH_TOKEN
+const tursoUrl = envValue('TURSO_DATABASE_URL')
+const tursoToken = envValue('TURSO_AUTH_TOKEN')
 const tursoConfigured = !!(tursoUrl && tursoToken)
 
 console.log(`   ${colors.cyan}Turso Configuration:${colors.reset}`)
@@ -84,9 +90,9 @@ console.log(
 )
 
 // Supabase configuration
-const supabaseUrl = process.env.SUPABASE_URL
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const supabaseUrl = envValue('SUPABASE_URL')
+const supabaseAnonKey = envValue('SUPABASE_ANON_KEY')
+const supabaseServiceKey = envValue('SUPABASE_SERVICE_ROLE_KEY')
 const supabaseConfigured = !!(supabaseUrl && supabaseAnonKey)
 const supabaseFullyConfigured = !!(supabaseUrl && supabaseAnonKey && supabaseServiceKey)
 

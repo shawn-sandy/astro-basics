@@ -42,9 +42,11 @@ Examples:
   process.exit(0)
 }
 
-// Validate environment
-const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL
-const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN
+// Validate environment. An unreplaced `YOUR_...` placeholder from .env.example counts as
+// missing - otherwise createClient throws on it with a stack trace.
+const envValue = key => (process.env[key]?.startsWith('YOUR_') ? undefined : process.env[key])
+const TURSO_DATABASE_URL = envValue('TURSO_DATABASE_URL')
+const TURSO_AUTH_TOKEN = envValue('TURSO_AUTH_TOKEN')
 
 if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
   console.error('❌ Missing required environment variables:')
