@@ -7,13 +7,21 @@ import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { parseEnv } from 'util'
 
 /**
+ * Read .env text, or '' when missing. Drops a leading BOM, which parseEnv would
+ * otherwise glue onto the first key (dotenv, used by Vite, strips it).
+ * @param {string} path
+ */
+const readEnvText = path =>
+  existsSync(path) ? readFileSync(path, 'utf-8').replace(/^\uFEFF/, '') : ''
+
+/**
  * Parse a .env file the same way `node --env-file` does (inline `# comments` stripped).
  * Returns {} when the file is missing.
  * @param {string} path
  * @returns {Record<string, string>}
  */
 export function readEnvFile(path) {
-  return existsSync(path) ? parseEnv(readFileSync(path, 'utf-8')) : {}
+  return parseEnv(readEnvText(path))
 }
 
 /**
@@ -25,7 +33,7 @@ export function readEnvFile(path) {
  * @param {Record<string, string | undefined>} envVars
  */
 export function updateEnvFile(path, envVars) {
-  const content = existsSync(path) ? readFileSync(path, 'utf-8') : ''
+  const content = readEnvText(path)
   const eol = content.includes('\r\n') ? '\r\n' : '\n'
   const current = parseEnv(content)
   let lines = content.split(/\r?\n/)
@@ -34,6 +42,8 @@ export function updateEnvFile(path, envVars) {
     if (value === current[key]) continue
 
     // KEY=value [# comment], with optional `export` and a quoted or unquoted value.
+    // ponytail: line-based, so multi-line quoted values are not handled; none of the wizard's
+    // keys are multi-line. Rewrite by parsed line ranges if this helper gets other callers.
     const keyLine = new RegExp(
       `^(\\s*(?:export\\s+)?${key}\\s*=)(?:"(?:\\\\.|[^"\\\\])*"|'[^']*'|[^#]*?)(\\s*#.*)?$`
     )
