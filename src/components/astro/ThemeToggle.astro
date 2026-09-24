@@ -114,6 +114,9 @@ const { label = 'Dark theme' } = Astro.props
     --btn-bg: transparent;
 
     align-items: center;
+
+    /* Loses to the vendor rule above on this site; kept for consumers of the
+       exported component that do not load @fpkit/acss. */
     background-color: transparent;
 
     /* Mirrors the hamburger in `_navigation.scss`: a bare icon whose border
