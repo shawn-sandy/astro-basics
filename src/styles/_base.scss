@@ -38,6 +38,15 @@ body {
   }
 }
 
+// Separators stay quiet. @fpkit/acss colours `hr` through
+// `--color-border-subtle`, a legacy neutral step that the inverted dark palette
+// turns light (#f4f4f5 measured on the dark blog list). `--rule` is the
+// direction's hairline token, so rules match every other divider in both
+// themes. Same specificity as the vendor `hr`; this sheet loads after it.
+hr {
+  --hr-border-color: var(--rule);
+}
+
 main {
   margin: auto;
   padding-block: 2rem;

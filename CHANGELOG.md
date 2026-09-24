@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Theme toggle** (`src/components/astro/ThemeToggle.astro`, `src/layouts/Base.astro`): a
+  light/dark button in the site navigation bar
+  - Stamps `:root[data-theme]`, which the token layer already honours over `prefers-color-scheme`;
+    until a visitor chooses, nothing is stamped and the OS preference stays in charge
+  - Stores the choice under Starlight's `starlight-theme` key, so the site and the docs routes
+    share one preference
+  - An inline `<head>` script in `Base.astro` restores the choice before first paint, so a stored
+    theme never flashes the OS theme first
+  - Native `<button>` with `aria-pressed`; the sun/moon icon is keyed off the root theme in CSS so
+    it is correct before any script runs
+  - `e2e/theme-toggle.spec.ts` covers both switch directions, persistence before first paint, OS
+    fallback and the Starlight hand-off
+
 - **Design System Record** (`DESIGN.md`, `PRODUCT.md`, `.impeccable/design.json`): the incumbent
   visual system and durable product context captured as machine-readable records
   - `DESIGN.md` follows the DESIGN.md format spec — YAML frontmatter carrying the eleven colour
@@ -182,6 +195,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`db:migrate` scripts never loaded `.env`** (`package.json`): `db:migrate`,
+  `db:migrate:status`, `db:migrate:create` and `db:migrate:rollback` ran
+  `node scripts/migrate.js`, and the `--env-file=.env` in that file's shebang does not apply under
+  `node <file>`. With Turso configured in `.env` they still reported "Missing required environment
+  variables". They now pass `--env-file=.env` like the other `db:*` scripts, so like those
+  scripts they need a `.env` file to exist. `scripts/migrate.js` treats `YOUR_...` placeholders as
+  missing, so a fresh copy of `.env.example` gets the missing-variables message instead of a libsql stack trace
+- **`db:status` reported `.env.example` placeholders as set** (`scripts/database-status.js`): any
+  truthy value printed "✓ Set", so an unedited `YOUR_...` placeholder counted as a configured
+  database. Values starting with `YOUR_` now count as not set, as they do in
+  `src/utils/env-config.ts`. `tests/scripts/db-scripts.test.ts` covers both fixes
+- **Horizontal rules out-shouted the content they separated**: `@fpkit/acss` colours `hr` through
+  `--color-border-subtle`, a legacy neutral step that the inverted dark palette turned near-white
+  (#f4f4f5 on the dark blog list). `hr` now uses the `--rule` hairline token in both themes;
+  `e2e/dividers.spec.ts` asserts it on `/` and `/posts/1`
+- **`resetTursoClient()` threw `ReferenceError: cachedEnv is not defined`**: the variable was
+  removed with the environment-config abstraction but its reset line was left behind, crashing
+  every `tests/turso-crash.test.ts` hook
+- **`useSupabase` lint warnings**: `catch (err: any)` replaced with `unknown` and a narrow
+  `ClerkApiError` type for the JWT-template check
 - **Design tokens had no consumers, so dark mode could not change a pixel**:
   `src/styles/_design-tokens.scss` declared a full alias layer that nothing read.
   `--card-background` and `--header-background` each had zero `var()` consumers, so every card and

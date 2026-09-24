@@ -6,6 +6,12 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 
 import type { Database } from '#libs/database.types'
 
+/** A structured Clerk API error: only the fields the JWT-template check reads. */
+type ClerkApiError = {
+  clerkError?: boolean
+  errors?: { code?: string; longMessage?: string }[]
+}
+
 /**
  * Custom React hook for managing authenticated Supabase client with Clerk integration.
  *
@@ -96,7 +102,8 @@ export function useSupabase() {
         try {
           token = await session.getToken({ template: 'supabase' })
           tokenRef.current = token
-        } catch (err: any) {
+        } catch (err: unknown) {
+          const apiError = err as ClerkApiError | null
           /**
            * Dual error detection pattern for Clerk JWT template availability.
            *
@@ -109,9 +116,9 @@ export function useSupabase() {
            */
           const isJwtTemplateError =
             (err instanceof Error && err.message.includes('No JWT template exists with name')) ||
-            (err?.clerkError &&
-              err?.errors?.[0]?.code === 'resource_not_found' &&
-              err?.errors?.[0]?.longMessage?.includes('No JWT template exists with name'))
+            (apiError?.clerkError &&
+              apiError?.errors?.[0]?.code === 'resource_not_found' &&
+              apiError?.errors?.[0]?.longMessage?.includes('No JWT template exists with name'))
 
           if (isJwtTemplateError) {
             console.warn(
@@ -200,13 +207,14 @@ export function useSupabase() {
             tokenRef.current = newToken
             await initClient()
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
+          const apiError = err as ClerkApiError | null
           // Silently handle JWT template errors to avoid spamming logs
           const isJwtTemplateError =
             (err instanceof Error && err.message.includes('No JWT template exists with name')) ||
-            (err?.clerkError &&
-              err?.errors?.[0]?.code === 'resource_not_found' &&
-              err?.errors?.[0]?.longMessage?.includes('No JWT template exists with name'))
+            (apiError?.clerkError &&
+              apiError?.errors?.[0]?.code === 'resource_not_found' &&
+              apiError?.errors?.[0]?.longMessage?.includes('No JWT template exists with name'))
 
           if (!isJwtTemplateError) {
             console.error('Failed to refresh Supabase token:', err)

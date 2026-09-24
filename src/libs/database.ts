@@ -27,6 +27,8 @@
  * console.log(`Using: ${status.current} (${status.provider_name})`);
  */
 
+import { getEnvironmentConfig } from '#utils/env-config'
+
 import type {
   Database,
   DatabaseProvider,
@@ -35,7 +37,6 @@ import type {
   MessageData,
   MessageQueryOptions,
 } from './database-types'
-import { getEnvironmentConfig } from '#utils/env-config'
 import { isSupabaseConfigured } from './supabase'
 import { getSupabaseServiceRole } from './supabase-native'
 import {
