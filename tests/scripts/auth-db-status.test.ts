@@ -48,15 +48,55 @@ describe('auth-and-database-setup status report', () => {
     expect(output).not.toContain(clerk.CLERK_SECRET_KEY)
   })
 
-  it('keeps login OFF when the secret key is pasted into the publishable slot', async () => {
+  it('agrees with the app on swapped Clerk keys, flagging the format instead', async () => {
     const lines = await report({
       ...template,
       PUBLIC_CLERK_PUBLISHABLE_KEY: clerk.CLERK_SECRET_KEY,
-      CLERK_SECRET_KEY: clerk.CLERK_SECRET_KEY,
+      CLERK_SECRET_KEY: clerk.PUBLIC_CLERK_PUBLISHABLE_KEY,
     })
+    const output = lines.join('\n')
 
-    expect(lines).toContain('Login (Clerk): OFF')
-    expect(lines.join('\n')).not.toContain(clerk.CLERK_SECRET_KEY)
+    // env-config.ts only rejects placeholders, so the app switches Clerk on here.
+    expect(lines).toContain('Login (Clerk): ON')
+    expect(lines.find(l => l.includes('PUBLIC_CLERK_PUBLISHABLE_KEY'))).toContain('expected pk_')
+    expect(lines.find(l => l.includes(' CLERK_SECRET_KEY'))).toContain('expected sk_')
+    expect(output).not.toContain(clerk.CLERK_SECRET_KEY)
+    expect(output).not.toContain(clerk.PUBLIC_CLERK_PUBLISHABLE_KEY)
+  })
+
+  it('accepts every Turso URL scheme the libsql client does', async () => {
+    const local = { TURSO_DATABASE_URL: 'http://127.0.0.1:8080', TURSO_AUTH_TOKEN: 'x' }
+    const lines = await report(local, neverCalled)
+
+    expect(lines).toContain('Database: Turso: ON')
+    expect(lines).toContain('Database used for messages: turso')
+    expect(lines.find(l => l.includes('TURSO_DATABASE_URL'))).toMatch(/ ok$/)
+
+    const ok = async () => new Response('[]', { status: 200 })
+    const both = { ...supabase, ...turso, TURSO_DATABASE_URL: 'wss://db.example.io' }
+    expect(await report({ ...both, DATABASE_PROVIDER: 'turso' }, ok)).toContain(
+      'Database used for messages: turso'
+    )
+  })
+
+  it('ignores DATABASE_PROVIDER when it names a database that is not set up', async () => {
+    expect(await report({ ...turso, DATABASE_PROVIDER: 'supabase' }, neverCalled)).toContain(
+      'Database used for messages: turso'
+    )
+  })
+
+  it('does not probe Supabase while it is OFF', async () => {
+    const spy = vi.fn(async () => new Response('[]', { status: 200 }))
+    const lines = await report({ ...supabase, SUPABASE_ANON_KEY: template.SUPABASE_ANON_KEY }, spy)
+
+    expect(spy).not.toHaveBeenCalled()
+    expect(lines.some(l => l.includes('users table'))).toBe(false)
+  })
+
+  it('reports a rejected Supabase key', async () => {
+    const lines = await report(supabase, async () => new Response('{}', { status: 401 }))
+
+    expect(lines.some(l => l.includes('users table') && l.includes('key rejected'))).toBe(true)
   })
 
   it('keeps a database OFF while any required value is still a placeholder', async () => {

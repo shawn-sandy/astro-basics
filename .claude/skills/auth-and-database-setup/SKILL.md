@@ -36,9 +36,10 @@ Then run the status script:
 node --env-file=.env .claude/skills/auth-and-database-setup/scripts/status.mjs
 ```
 
-Each feature shows `ON` or `OFF`, and each setting shows `ok`, `placeholder`,
-`missing`, or `wrong format`. Tell them in plain words what is on, then ask what they
-want: login, a database, or both.
+Each feature shows `ON` or `OFF`, using the app's own rules. Each setting shows `ok`,
+`placeholder`, `missing`, `unusable` (the app will ignore it), or `set, but expected
+...` (the app accepts it, but it is probably pasted in the wrong place). Tell them in
+plain words what is on, then ask what they want: login, a database, or both.
 
 ## Part A - Login (Clerk)
 
@@ -47,8 +48,9 @@ want: login, a database, or both.
 2. In `.env` they replace `YOUR_CLERK_PUBLISHABLE_KEY` with the key that starts
    `pk_`, and `YOUR_CLERK_SECRET_KEY` with the one that starts `sk_`. The trailing
    `# comment` on each line can stay.
-3. Run the status script. `Login (Clerk): ON` is the goal. `wrong format` usually
-   means the two keys were swapped.
+3. Run the status script. `Login (Clerk): ON` with both keys `ok` is the goal.
+   `set, but expected pk_...` usually means the two keys were swapped. Login still
+   shows ON because the app accepts the values, but sign-in will fail.
 4. Restart `npm run dev`. The terminal should no longer print "Using dummy Clerk
    keys". Open `http://localhost:4321/dashboard`. It should send them to a Clerk
    sign-in page, and after they sign up it should bring them back to the dashboard.
@@ -61,8 +63,7 @@ Supabase `users` table. Clerk cannot reach `localhost`, so this only works on a
 deployed site. In the Clerk dashboard, go to **Webhooks** and add the endpoint
 `https://<their-site>/api/webhooks/clerk`. Subscribe it to the `user.*` and
 `organizationMembership.*` events. Then they paste its Signing Secret (`whsec_...`)
-into `CLERK_WEBHOOK_SECRET`. Locally, `npm run db:sync-user` does the same copy
-once, on demand.
+into `CLERK_WEBHOOK_SECRET`.
 
 ## Part B - Database
 

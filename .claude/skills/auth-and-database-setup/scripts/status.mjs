@@ -3,8 +3,10 @@
  * Reports whether login (Clerk) and the database (Turso / Supabase) are switched on,
  * without ever printing a key, token, or URL.
  *
- * Mirrors the "configured" rules in src/utils/env-config.ts: a missing value or an
- * unreplaced `YOUR_...` placeholder from .env.example means that feature is off.
+ * ON/OFF follows the "configured" rules in src/utils/env-config.ts: a missing value, an
+ * unreplaced `YOUR_...` placeholder from .env.example, or (for Supabase) a URL that is
+ * not http(s) means that feature is off. Key-prefix checks such as `pk_` are only hints:
+ * the app accepts those values, so a swapped key still counts as ON, flagged.
  *
  * Run from the project root:
  *   node --env-file=.env .claude/skills/auth-and-database-setup/scripts/status.mjs
@@ -13,7 +15,10 @@ import { pathToFileURL, URL } from 'node:url'
 
 const isHttpUrl = v => URL.canParse(v) && ['http:', 'https:'].includes(new URL(v).protocol)
 
-/** @typedef {{ key: string, looks?: (v: string) => boolean, expect?: string, note?: string }} Field */
+/**
+ * `valid` is an app rule and failing it turns the feature OFF; `looks` is only a hint.
+ * @typedef {{ key: string, valid?: (v: string) => boolean, looks?: (v: string) => boolean, expect?: string, note?: string }} Field
+ */
 
 /** @type {{ name: string, required: Field[], optional?: Field[] }[]} */
 const GROUPS = [
@@ -37,7 +42,8 @@ const GROUPS = [
     required: [
       {
         key: 'TURSO_DATABASE_URL',
-        looks: v => /^(libsql|https):\/\//.test(v),
+        // Every scheme @libsql/client accepts, including `turso dev`'s http://127.0.0.1.
+        looks: v => /^(libsql|https?|wss?|file):/.test(v),
         expect: 'libsql://...',
       },
       { key: 'TURSO_AUTH_TOKEN' },
@@ -46,12 +52,12 @@ const GROUPS = [
   {
     name: 'Database: Supabase',
     required: [
-      { key: 'SUPABASE_URL', looks: isHttpUrl, expect: 'https://...' },
+      { key: 'SUPABASE_URL', valid: isHttpUrl, expect: 'https://...' },
       { key: 'SUPABASE_ANON_KEY' },
     ],
     optional: [
       { key: 'SUPABASE_SERVICE_ROLE_KEY', note: 'needed to sync Clerk users' },
-      { key: 'PUBLIC_SUPABASE_URL', looks: isHttpUrl, expect: 'https://...', note: 'browser' },
+      { key: 'PUBLIC_SUPABASE_URL', valid: isHttpUrl, expect: 'https://...', note: 'browser' },
       { key: 'PUBLIC_SUPABASE_ANON_KEY', note: 'browser' },
     ],
   },
@@ -66,9 +72,13 @@ const GROUPS = [
 function fieldState(value, field) {
   if (!value) return 'missing'
   if (value.startsWith('YOUR_')) return 'placeholder'
-  if (field.looks && !field.looks(value)) return `wrong format (expected ${field.expect})`
+  if (field.valid && !field.valid(value)) return `unusable (expected ${field.expect})`
+  if (field.looks && !field.looks(value)) return `set, but expected ${field.expect}`
   return 'ok'
 }
+
+/** Whether the app would treat a field in this state as configured. */
+const counts = state => state === 'ok' || state.startsWith('set, but')
 
 /**
  * Asks Supabase whether the `users` table from scripts/migrations/001_core_schema.sql exists.
@@ -103,7 +113,7 @@ export async function report(env, fetchImpl = fetch) {
 
   for (const group of GROUPS) {
     const states = group.required.map(f => fieldState(env[f.key], f))
-    on[group.name] = states.every(s => s === 'ok')
+    on[group.name] = states.every(counts)
     lines.push(`${group.name}: ${on[group.name] ? 'ON' : 'OFF'}`)
     group.required.forEach((f, i) => lines.push(`  ${f.key.padEnd(30)} ${states[i]}`))
     for (const f of group.optional ?? []) {
