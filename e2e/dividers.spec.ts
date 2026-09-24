@@ -12,31 +12,37 @@ import { test, expect } from '@playwright/test'
  *
  * Uses relative `page.goto` so the suite follows `use.baseURL`.
  */
-for (const colorScheme of ['light', 'dark'] as const) {
-  test(`dividers paint in the --rule token (${colorScheme})`, async ({ page }) => {
-    await page.emulateMedia({ colorScheme })
-
-    for (const path of ['/', '/posts/1']) {
-      await page.goto(path)
-
-      const measured = await page.evaluate(() => {
-        // Resolve the token through a probe so both sides are `rgb()` strings.
-        const probe = document.createElement('span')
-        probe.style.color = 'var(--rule)'
-        document.body.appendChild(probe)
-        const rule = getComputedStyle(probe).color
-        probe.remove()
-
-        const rules = [...document.querySelectorAll('main hr, aside hr')].map(
-          hr => getComputedStyle(hr).borderBottomColor
-        )
-        return { rule, rules }
+test.describe('Dividers', () => {
+  for (const colorScheme of ['light', 'dark'] as const) {
+    test.describe(`${colorScheme} scheme`, () => {
+      test.beforeEach(async ({ page }) => {
+        await page.emulateMedia({ colorScheme })
       })
 
-      expect(measured.rules.length, `${path} rendered no <hr> to check`).toBeGreaterThan(0)
-      for (const color of measured.rules) {
-        expect(color, `${colorScheme} ${path}: <hr> is not --rule`).toBe(measured.rule)
-      }
-    }
-  })
-}
+      test('paint in the --rule token', async ({ page }) => {
+        for (const path of ['/', '/posts/1']) {
+          await page.goto(path)
+
+          const measured = await page.evaluate(() => {
+            // Resolve the token through a probe so both sides are `rgb()` strings.
+            const probe = document.createElement('span')
+            probe.style.color = 'var(--rule)'
+            document.body.appendChild(probe)
+            const rule = getComputedStyle(probe).color
+            probe.remove()
+
+            const rules = [...document.querySelectorAll('main hr, aside hr')].map(
+              hr => getComputedStyle(hr).borderBottomColor
+            )
+            return { rule, rules }
+          })
+
+          expect(measured.rules.length, `${path} rendered no <hr> to check`).toBeGreaterThan(0)
+          for (const color of measured.rules) {
+            expect(color, `${colorScheme} ${path}: <hr> is not --rule`).toBe(measured.rule)
+          }
+        }
+      })
+    })
+  }
+})

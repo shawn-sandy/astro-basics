@@ -72,6 +72,22 @@ const { label = 'Dark theme' } = Astro.props
   </svg>
 </button>
 
+<!--
+  Sets the button's state during parsing. The bundled script below is a
+  deferred module, so without this a restored dark theme is announced as "not
+  pressed" until it runs. Mirrors `isDark()`; the static `aria-pressed="false"`
+  above remains the no-JS fallback.
+-->
+<script is:inline>
+  {
+    const root = document.documentElement
+    const dark =
+      (root.dataset.theme ??
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark'
+    document.currentScript?.previousElementSibling?.setAttribute('aria-pressed', String(dark))
+  }
+</script>
+
 <script>
   const STORAGE_KEY = 'starlight-theme'
   const root = document.documentElement

@@ -71,6 +71,30 @@ test.describe('Theme toggle', () => {
     expect(themeAtBody).toBe('dark')
   })
 
+  test('states a restored dark theme before the bundled script runs', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.goto('/')
+    await toggle(page).click()
+
+    // `readyState` turns `interactive` when parsing ends and BEFORE deferred
+    // module scripts run, so this reads what the markup and any parse-time
+    // script left behind -- not what the bundled script corrected later.
+    await page.addInitScript(() => {
+      const probe = window as unknown as { pressedAtParse?: string | null }
+      document.addEventListener('readystatechange', () => {
+        if (document.readyState !== 'interactive') return
+        probe.pressedAtParse =
+          document.querySelector('[data-theme-toggle]')?.getAttribute('aria-pressed') ?? null
+      })
+    })
+    await page.reload()
+
+    const pressedAtParse = await page.evaluate(
+      () => (window as unknown as { pressedAtParse?: string | null }).pressedAtParse
+    )
+    expect(pressedAtParse).toBe('true')
+  })
+
   test('follows the OS preference until the visitor chooses', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' })
     await page.goto('/')
