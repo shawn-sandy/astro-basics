@@ -248,6 +248,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the start of the panel's 150ms opacity fade, so the WCAG scan could sample a
   still-transparent panel and report a colour-contrast violation that no user ever
   sees. The scan now waits for the fade to settle before running
+- **`npm run db:wizard` wiped unrelated `.env` settings** (`scripts/setup-wizard.js`): the wizard
+  rebuilt `.env` from a fixed list of Clerk, Turso, Supabase server, `ENABLE_COMMENTS` and
+  `DATABASE_PROVIDER` keys, silently dropping `PUBLIC_SUPABASE_*`, `AXIOM_*`, `EMAIL_*`,
+  `PWA_ENABLED`, `ASTRO_ADAPTER` and every comment. It also kept inline `# comments` as part of the
+  values it read. The read/write logic now lives in `scripts/lib/env-file.js`: values are parsed
+  with Node's `util.parseEnv` (the same parser as `node --env-file`), and only keys whose value
+  changed are rewritten in place, keeping their inline comments. Every other line is left as is,
+  and a leading BOM no longer hides the first key. `tests/scripts/setup-wizard-env.test.ts` runs
+  the write path, and the real wizard with scripted answers, on `.env.example` plus an extra key,
+  and fails if any unmanaged key, comment or blank line is lost or reordered
 
 ## [0.2.0] - 2025-08-15
 
