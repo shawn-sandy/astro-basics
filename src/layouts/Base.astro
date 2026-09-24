@@ -3,6 +3,7 @@
 import Navigation from '#components/astro/Navigation.astro'
 import Footer from '#components/astro/Footer.astro'
 import Header from '#components/astro/Header.astro'
+import ThemeToggle from '#components/astro/ThemeToggle.astro'
 // import PWAInstallPrompt from '#components/astro/PWAInstallPrompt.astro'
 // import OfflineIndicator from '#components/astro/OfflineIndicator.astro'
 
@@ -37,6 +38,22 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+
+    <!--
+      Restores the visitor's theme choice before first paint. `ThemeToggle`
+      writes it under Starlight's `starlight-theme` key so the docs and the site
+      share one preference; Starlight stores `''` for "auto", which leaves the
+      attribute unset and `prefers-color-scheme` in charge. `is:inline` keeps it
+      out of the bundle -- a deferred module would run after the first paint
+      and flash the OS theme. `try` because storage access can throw.
+    -->
+    <script is:inline>
+      try {
+        const theme = localStorage.getItem('starlight-theme')
+        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme
+      } catch {}
+    </script>
+
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
@@ -95,6 +112,9 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
       }
 
       <ul slot="login">
+        <li>
+          <ThemeToggle />
+        </li>
         <li class="clerk-user-button">
           <Show when="signed-in">
             <UserButton />
