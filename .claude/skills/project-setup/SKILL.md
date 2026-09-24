@@ -112,24 +112,9 @@ what you are trying next. Do not paste the raw error at them.
 Only go here if they say they need it. Both cost time and require signing up for an
 outside service, and neither is needed to browse the site.
 
-They already have `.env` from Step 3. Each service is switched on by replacing its
-placeholders there; placeholders left alone stay off. Restart the site after any edit -
-`.env` is only read at startup.
-
-**Login (Clerk).** They create a free account at [clerk.com](https://clerk.com), make
-an application, and copy two keys from the API Keys page. Those replace
-`YOUR_CLERK_PUBLISHABLE_KEY` and `YOUR_CLERK_SECRET_KEY`.
-
-Never ask them to paste their secret key into the chat. Ask them to put it in the
-`.env` file themselves, then confirm the placeholder is gone.
-
-**Database.** Run the guided wizard and let it ask the questions:
-
-```bash
-npm run db:wizard
-```
-
-`npm run db:status` afterwards shows whether it connected.
+Hand off to the `auth-and-database-setup` skill. It covers both, keeps secrets out of
+the chat, and avoids `npm run db:wizard`, which rewrites `.env` and drops keys it does
+not know.
 
 ## Done
 

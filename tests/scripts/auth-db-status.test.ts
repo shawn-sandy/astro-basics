@@ -1,0 +1,122 @@
+/**
+ * Tests for the auth-and-database-setup skill's status script.
+ *
+ * The script must agree with the app about what counts as "configured", and must
+ * never echo a secret, since its output lands in an AI chat transcript.
+ */
+import { readFileSync } from 'node:fs'
+import { parseEnv } from 'node:util'
+import { describe, it, expect, vi } from 'vitest'
+import { report } from '../../.claude/skills/auth-and-database-setup/scripts/status.mjs'
+
+const template = parseEnv(readFileSync('.env.example', 'utf-8'))
+
+const clerk = {
+  PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_publishableSECRETish',
+  CLERK_SECRET_KEY: 'sk_test_topSECRETvalue',
+}
+const turso = {
+  TURSO_DATABASE_URL: 'libsql://my-db-hostname.turso.io',
+  TURSO_AUTH_TOKEN: 'turso-token-SECRET',
+}
+const supabase = {
+  SUPABASE_URL: 'https://projectref-hostname.supabase.co',
+  SUPABASE_ANON_KEY: 'anon-key-SECRET',
+}
+
+const neverCalled = vi.fn(() => {
+  throw new Error('fetch should not be called')
+})
+
+describe('auth-and-database-setup status report', () => {
+  it('reports everything OFF for an untouched copy of .env.example', async () => {
+    const lines = await report(template, neverCalled)
+
+    expect(lines).toContain('Login (Clerk): OFF')
+    expect(lines).toContain('Database: Turso: OFF')
+    expect(lines).toContain('Database: Supabase: OFF')
+    expect(lines).toContain('Database used for messages: none')
+    expect(neverCalled).not.toHaveBeenCalled()
+  })
+
+  it('turns login ON with real-looking keys and never prints them', async () => {
+    const lines = await report({ ...template, ...clerk }, neverCalled)
+    const output = lines.join('\n')
+
+    expect(lines).toContain('Login (Clerk): ON')
+    expect(output).not.toContain(clerk.PUBLIC_CLERK_PUBLISHABLE_KEY)
+    expect(output).not.toContain(clerk.CLERK_SECRET_KEY)
+  })
+
+  it('keeps login OFF when the secret key is pasted into the publishable slot', async () => {
+    const lines = await report({
+      ...template,
+      PUBLIC_CLERK_PUBLISHABLE_KEY: clerk.CLERK_SECRET_KEY,
+      CLERK_SECRET_KEY: clerk.CLERK_SECRET_KEY,
+    })
+
+    expect(lines).toContain('Login (Clerk): OFF')
+    expect(lines.join('\n')).not.toContain(clerk.CLERK_SECRET_KEY)
+  })
+
+  it('keeps a database OFF while any required value is still a placeholder', async () => {
+    const lines = await report(
+      { ...turso, TURSO_AUTH_TOKEN: template.TURSO_AUTH_TOKEN },
+      neverCalled
+    )
+
+    expect(lines).toContain('Database: Turso: OFF')
+    expect(lines).toContain('Database used for messages: none')
+  })
+
+  it('treats a non-URL SUPABASE_URL as not configured, like env-config does', async () => {
+    const lines = await report({ ...supabase, SUPABASE_URL: 'projectref.supabase.co' }, neverCalled)
+
+    expect(lines).toContain('Database: Supabase: OFF')
+  })
+
+  it('picks the messages database with the same precedence as the app', async () => {
+    const both = { ...turso, ...supabase }
+    const ok = vi.fn(async () => new Response('[]', { status: 200 }))
+
+    expect(await report(both, ok)).toContain('Database used for messages: supabase')
+    expect(await report({ ...both, DATABASE_PROVIDER: 'turso' }, ok)).toContain(
+      'Database used for messages: turso'
+    )
+    expect(await report(turso, neverCalled)).toContain('Database used for messages: turso')
+  })
+
+  it('reports a missing Supabase schema when the users table 404s', async () => {
+    const notFound = vi.fn(async () => new Response('{}', { status: 404 }))
+    const lines = await report(supabase, notFound)
+
+    expect(lines.some(l => l.includes('users table') && l.includes('MISSING'))).toBe(true)
+    const [url, init] = notFound.mock.calls[0] as unknown as [
+      { pathname: string },
+      { headers: unknown },
+    ]
+    expect(url.pathname).toBe('/rest/v1/users')
+    expect(init.headers).toEqual({ apikey: supabase.SUPABASE_ANON_KEY })
+  })
+
+  it('reports the schema as found when the users table answers', async () => {
+    const lines = await report(supabase, async () => new Response('[]', { status: 200 }))
+
+    expect(lines).toContain('Supabase users table: found')
+  })
+
+  it('does not leak the Supabase hostname when the network call fails', async () => {
+    const offline = async () => {
+      throw new TypeError('fetch failed', {
+        cause: Object.assign(new Error(`getaddrinfo ENOTFOUND ${supabase.SUPABASE_URL}`), {
+          code: 'ENOTFOUND',
+        }),
+      })
+    }
+    const output = (await report(supabase, offline)).join('\n')
+
+    expect(output).toContain('ENOTFOUND')
+    expect(output).not.toContain('projectref-hostname')
+    expect(output).not.toContain(supabase.SUPABASE_ANON_KEY)
+  })
+})
