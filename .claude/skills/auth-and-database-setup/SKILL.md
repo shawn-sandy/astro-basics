@@ -19,8 +19,6 @@ verified". If the site does not run yet, do the `project-setup` skill first.
   status script.
 - **Do not use `npm run db:wizard`.** It rewrites `.env` from scratch and drops every
   key it does not know, including `PUBLIC_SUPABASE_*`, email, and Axiom settings.
-- **Do not use `npm run db:migrate`.** It does not load `.env`, so it always reports
-  missing Turso variables. Use `npm run db:setup` instead.
 - `.env` is only read at startup. Restart `npm run dev` after every edit.
 
 ## Step 0 - Where things stand
@@ -141,7 +139,6 @@ uses the service role key and does not need it. The steps are in
 | `Supabase users table: key rejected`              | The anon key was copied wrong or belongs to another project | Recopy `SUPABASE_ANON_KEY`                                          |
 | `could not reach SUPABASE_URL (ENOTFOUND)`        | Typo in the URL, or the project is paused                   | Check the Project URL; resume the project in the Supabase dashboard |
 | `db:setup` fails with `fetch failed`              | The Turso URL or token is wrong                             | Rerun `turso db show astro-basics --url` and create a new token     |
-| `npm run db:status` says "Set" for everything     | That script counts placeholders as set                      | Trust the status script instead                                     |
 
 ## Done
 
