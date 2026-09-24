@@ -1,5 +1,6 @@
 import { createClient } from '@libsql/client'
 import type { Client, InArgs, ResultSet } from '@libsql/client'
+
 import { getEnvironmentConfig } from '#utils/env-config'
 
 // Use environment configuration abstraction
@@ -145,7 +146,6 @@ export function resetTursoClient(): void {
   }
   client = null
   initializationError = null
-  cachedEnv = null
 }
 
 // Message insertion types

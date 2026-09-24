@@ -344,6 +344,9 @@ body > nav ul {
 body > nav ul li:hover:has(img, button) {
   background-color: rgba(0, 0, 0, 0);
 }
+hr {
+  --hr-border-color: var(--rule);
+}
 main {
   margin: auto;
   padding-block: 2rem;

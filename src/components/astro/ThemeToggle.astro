@@ -1,0 +1,189 @@
+---
+/**
+ * Light/dark theme toggle.
+ *
+ * `_design-tokens.scss` repaints every surface under `:root[data-theme]`, and
+ * that attribute beats `prefers-color-scheme` on specificity, so this control
+ * only stamps the attribute and remembers the choice. Until a visitor clicks,
+ * nothing is stamped and the OS preference stays in charge -- including a
+ * mid-visit OS switch.
+ *
+ * The choice is stored under Starlight's own `starlight-theme` key with the
+ * same `'light' | 'dark'` values, so the docs routes and the rest of the site
+ * share one preference. `Base.astro` restores it in `<head>` before first
+ * paint; this component only reflects and changes it.
+ *
+ * Interactive, so it may carry the accent: the focus ring uses `--island`.
+ *
+ * @component ThemeToggle
+ * @example
+ * ```astro
+ * <ul slot="login">
+ *   <li><ThemeToggle /></li>
+ * </ul>
+ * ```
+ */
+export type Props = {
+  /** Accessible name. The on/off state is carried by `aria-pressed`, not the name. */
+  label?: string
+}
+
+const { label = 'Dark theme' } = Astro.props
+---
+
+<button
+  type="button"
+  class="theme-toggle"
+  aria-label={label}
+  aria-pressed="false"
+  data-theme-toggle
+>
+  <svg
+    class="theme-toggle__sun"
+    aria-hidden="true"
+    focusable="false"
+    viewBox="0 0 24 24"
+    width="22"
+    height="22"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path
+      d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+    ></path>
+  </svg>
+  <svg
+    class="theme-toggle__moon"
+    aria-hidden="true"
+    focusable="false"
+    viewBox="0 0 24 24"
+    width="22"
+    height="22"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"></path>
+  </svg>
+</button>
+
+<!--
+  Sets the button's state during parsing. The bundled script below is a
+  deferred module, so without this a restored dark theme is announced as "not
+  pressed" until it runs. Mirrors `isDark()`; the static `aria-pressed="false"`
+  above remains the no-JS fallback.
+-->
+<script is:inline>
+  {
+    const root = document.documentElement
+    const dark =
+      (root.dataset.theme ??
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark'
+    document.currentScript?.previousElementSibling?.setAttribute('aria-pressed', String(dark))
+  }
+</script>
+
+<script>
+  const STORAGE_KEY = 'starlight-theme'
+  const root = document.documentElement
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]')
+
+  /** The theme actually painted: the stamped choice, else the OS preference. */
+  const isDark = () => (root.dataset.theme ?? (prefersDark.matches ? 'dark' : 'light')) === 'dark'
+
+  const sync = () => {
+    for (const button of buttons) button.setAttribute('aria-pressed', String(isDark()))
+  }
+
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      const next = isDark() ? 'light' : 'dark'
+      root.dataset.theme = next
+      try {
+        localStorage.setItem(STORAGE_KEY, next)
+      } catch {
+        // Storage blocked (private mode, disabled site data): the choice holds
+        // for this page view only.
+      }
+      sync()
+    })
+  }
+
+  prefersDark.addEventListener('change', sync)
+  sync()
+</script>
+
+<style>
+  .theme-toggle {
+    /*
+     * @fpkit/acss paints `button[type]` with `var(--btn-bg, var(--color-primary))`
+     * at (0,1,1). Astro scopes this block with `:where()`, so the class alone is
+     * (0,1,0) and loses -- the toggle rendered as a blue primary button. Setting
+     * the vendor's own hook wins at any specificity.
+     */
+    --btn-bg: transparent;
+
+    align-items: center;
+
+    /* Loses to the vendor rule above on this site; kept for consumers of the
+       exported component that do not load @fpkit/acss. */
+    background-color: transparent;
+
+    /* Mirrors the hamburger in `_navigation.scss`: a bare icon whose border
+       only appears on hover and focus, kept at 1px so it costs no layout shift. */
+    border: 1px solid transparent;
+    border-radius: var(--card-radius, 0.5rem);
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    justify-content: center;
+
+    /* WCAG 2.2 SC 2.5.8; --space-11 is 44px. */
+    min-height: var(--space-11, 44px);
+    min-width: var(--space-11, 44px);
+    padding: 0;
+  }
+
+  .theme-toggle:hover,
+  .theme-toggle:focus-visible {
+    border-color: color-mix(in srgb, currentcolor 30%, transparent);
+  }
+
+  .theme-toggle:focus-visible {
+    outline: 2px solid var(--island);
+    outline-offset: 2px;
+  }
+
+  /*
+   * The icon shows the theme currently painted. It is keyed off the root
+   * rather than `aria-pressed` so it is right on first paint, before the
+   * script runs: the stamped choice first, then the OS preference.
+   */
+  .theme-toggle__moon {
+    display: none;
+  }
+
+  :global(:root[data-theme='dark']) .theme-toggle__sun {
+    display: none;
+  }
+
+  :global(:root[data-theme='dark']) .theme-toggle__moon {
+    display: block;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .theme-toggle__sun {
+      display: none;
+    }
+
+    :global(:root:not([data-theme='light'])) .theme-toggle__moon {
+      display: block;
+    }
+  }
+</style>
