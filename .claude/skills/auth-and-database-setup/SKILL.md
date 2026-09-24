@@ -17,8 +17,9 @@ verified". If the site does not run yet, do the `project-setup` skill first.
   service's dashboard. The old one is now in the chat history.
 - **Never read `.env`.** No `cat`, no Read tool, no `grep` that prints lines. Use the
   status script.
-- **Do not use `npm run db:wizard`.** It rewrites `.env` from scratch and drops every
-  key it does not know, including `PUBLIC_SUPABASE_*`, email, and Axiom settings.
+- `npm run db:wizard` is an alternative for the database keys, but it is interactive,
+  so only the person can run it, in their own terminal. It does not set
+  `PUBLIC_SUPABASE_*`, so those still need editing by hand.
 - `.env` is only read at startup. Restart `npm run dev` after every edit.
 
 ## Step 0 - Where things stand

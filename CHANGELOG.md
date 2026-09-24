@@ -118,6 +118,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Responsive design with accessibility features (ARIA labels, keyboard navigation)
   - Server-side rendering with client-side interactivity
 - Documentation improvements and updates
+- **Auth and database setup skill** (`.claude/skills/auth-and-database-setup/`): a Claude skill
+  that turns on Clerk login and a Turso or Supabase database
+  - The person pastes every key into `.env` themselves, so no secret passes through the chat
+  - `scripts/status.mjs` reports each feature as ON or OFF using the same rules as
+    `src/utils/env-config.ts`, and never prints a key, URL or hostname
+  - When Supabase is configured, it also checks that the `users` table from
+    `scripts/migrations/001_core_schema.sql` exists
+  - The `project-setup` skill now hands login and database setup off to it
 
 ### Changed
 

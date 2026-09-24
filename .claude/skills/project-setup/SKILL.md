@@ -113,8 +113,7 @@ Only go here if they say they need it. Both cost time and require signing up for
 outside service, and neither is needed to browse the site.
 
 Hand off to the `auth-and-database-setup` skill. It covers both, keeps secrets out of
-the chat, and avoids `npm run db:wizard`, which rewrites `.env` and drops keys it does
-not know.
+the chat, and verifies the result without printing any key.
 
 ## Done
 
