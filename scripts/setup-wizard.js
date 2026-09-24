@@ -10,6 +10,7 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { parseArgs } from 'util'
 import { createInterface } from 'readline'
+import { readEnvFile, updateEnvFile } from './lib/env-file.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -89,25 +90,8 @@ ${colors.cyan}Examples:${colors.reset}
  * Read current .env file and parse variables
  */
 function readCurrentEnv() {
-  if (!existsSync(envPath)) {
-    return {}
-  }
-
   try {
-    const envContent = readFileSync(envPath, 'utf-8')
-    const envVars = {}
-
-    envContent.split('\n').forEach(line => {
-      const trimmed = line.trim()
-      if (trimmed && !trimmed.startsWith('#')) {
-        const [key, ...valueParts] = trimmed.split('=')
-        if (key && valueParts.length > 0) {
-          envVars[key.trim()] = valueParts.join('=').trim()
-        }
-      }
-    })
-
-    return envVars
+    return readEnvFile(envPath)
   } catch (error) {
     log.error(`Failed to read .env file: ${error.message}`)
     return {}
@@ -119,42 +103,7 @@ function readCurrentEnv() {
  */
 function writeEnvFile(envVars) {
   try {
-    let envContent = ''
-
-    // Add Clerk configuration
-    envContent += '# Clerk Authentication\n'
-    envContent += `PUBLIC_CLERK_PUBLISHABLE_KEY=${envVars.PUBLIC_CLERK_PUBLISHABLE_KEY || ''}\n`
-    envContent += `CLERK_SECRET_KEY=${envVars.CLERK_SECRET_KEY || ''}\n`
-    envContent += `CLERK_WEBHOOK_SECRET=${envVars.CLERK_WEBHOOK_SECRET || ''}\n\n`
-
-    // Add database configuration section
-    envContent += '# Database Configuration\n'
-
-    // Add Turso configuration if provided
-    if (envVars.TURSO_DATABASE_URL || envVars.TURSO_AUTH_TOKEN) {
-      envContent += '# Turso (LibSQL)\n'
-      envContent += `TURSO_DATABASE_URL=${envVars.TURSO_DATABASE_URL || ''}\n`
-      envContent += `TURSO_AUTH_TOKEN=${envVars.TURSO_AUTH_TOKEN || ''}\n\n`
-    }
-
-    // Add Supabase configuration if provided
-    if (envVars.SUPABASE_URL || envVars.SUPABASE_ANON_KEY || envVars.SUPABASE_SERVICE_ROLE_KEY) {
-      envContent += '# Supabase\n'
-      envContent += `SUPABASE_URL=${envVars.SUPABASE_URL || ''}\n`
-      envContent += `SUPABASE_ANON_KEY=${envVars.SUPABASE_ANON_KEY || ''}\n`
-      envContent += `SUPABASE_SERVICE_ROLE_KEY=${envVars.SUPABASE_SERVICE_ROLE_KEY || ''}\n\n`
-    }
-
-    // Add other configuration
-    envContent += '# Application Settings\n'
-    envContent += `ENABLE_COMMENTS=${envVars.ENABLE_COMMENTS || 'true'}\n`
-
-    // Add database provider if specified
-    if (envVars.DATABASE_PROVIDER) {
-      envContent += `DATABASE_PROVIDER=${envVars.DATABASE_PROVIDER}\n`
-    }
-
-    writeFileSync(envPath, envContent)
+    updateEnvFile(envPath, envVars)
     return true
   } catch (error) {
     log.error(`Failed to write .env file: ${error.message}`)
@@ -437,11 +386,11 @@ ${colors.cyan}Available options:${colors.reset}
         envVars.DATABASE_PROVIDER = 'supabase'
         break
       case '3':
-        delete envVars.DATABASE_PROVIDER // Auto-detect
+        envVars.DATABASE_PROVIDER = undefined // Auto-detect: updateEnvFile removes the line
         break
       default:
         log.warning('Invalid choice, using auto-detect')
-        delete envVars.DATABASE_PROVIDER
+        envVars.DATABASE_PROVIDER = undefined
     }
   } else if (configureProviders.length === 1) {
     // Set explicit provider if only one configured

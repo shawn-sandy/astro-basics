@@ -182,6 +182,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`npm run db:wizard` wiped unrelated `.env` settings** (`scripts/setup-wizard.js`): the wizard
+  rebuilt `.env` from a fixed list of Clerk, Turso, Supabase server, `ENABLE_COMMENTS` and
+  `DATABASE_PROVIDER` keys, silently dropping `PUBLIC_SUPABASE_*`, `AXIOM_*`, `EMAIL_*`,
+  `PWA_ENABLED`, `ASTRO_ADAPTER` and every comment. It also kept inline `# comments` as part of the
+  values it read. The read/write logic now lives in `scripts/lib/env-file.js`: values are parsed
+  with Node's `util.parseEnv` (the same parser as `node --env-file`), and only keys whose value
+  changed are rewritten in place, keeping their inline comments. Every other line is left as is.
+  `tests/scripts/setup-wizard-env.test.ts` runs the write path on `.env.example` plus an extra key
+  and fails if any unmanaged key or comment is lost
 - **Design tokens had no consumers, so dark mode could not change a pixel**:
   `src/styles/_design-tokens.scss` declared a full alias layer that nothing read.
   `--card-background` and `--header-background` each had zero `var()` consumers, so every card and
