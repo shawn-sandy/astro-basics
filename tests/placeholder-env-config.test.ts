@@ -95,6 +95,53 @@ describe('Supabase configuration with placeholder values', () => {
 })
 
 /**
+ * The status report has to agree with `getDatabase()`, which requires the service role key
+ * on top of the URL and anon key: every query runs through the service role client. Saying
+ * the database is configured without it promises queries that throw.
+ */
+describe('database readiness in the configuration status', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.resetModules()
+  })
+
+  it('reports the database as configured only with all three keys', async () => {
+    const config = await loadConfigWithEnv({
+      SUPABASE_URL: 'https://abcdefgh.supabase.co',
+      SUPABASE_ANON_KEY: 'real-anon-key',
+      SUPABASE_SERVICE_ROLE_KEY: 'real-service-key',
+    })
+
+    const status = config.getConfigurationStatus()
+
+    expect(status.services.database).toMatchObject({ provider: 'supabase', configured: true })
+    expect(status.missingConfiguration.join(' ')).not.toContain('SUPABASE')
+  })
+
+  it('does not report the database as configured without the service role key', async () => {
+    const config = await loadConfigWithEnv({
+      SUPABASE_URL: 'https://abcdefgh.supabase.co',
+      SUPABASE_ANON_KEY: 'real-anon-key',
+      SUPABASE_SERVICE_ROLE_KEY: '',
+    })
+
+    const status = config.getConfigurationStatus()
+
+    expect(status.services.database).toMatchObject({
+      provider: null,
+      configured: false,
+      availableProviders: [],
+    })
+    expect(status.isFullyConfigured).toBe(false)
+    expect(status.missingConfiguration.join(' ')).toContain('SUPABASE_SERVICE_ROLE_KEY')
+  })
+})
+
+/**
  * The same defect in the logging config. `.env.example` pairs a placeholder token with a
  * real-looking `AXIOM_DATASET=astro-basics`, so the logger considered itself configured
  * and shipped every request's logs to an endpoint that answers `forbidden`. This one only

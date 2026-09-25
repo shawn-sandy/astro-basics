@@ -316,10 +316,13 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
       missingConfig.push('Clerk Authentication (PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY)')
     }
 
-    const hasSupabase = this.isSupabaseConfigured()
+    // The same three keys `getDatabase()` requires: every query in `#libs/database` runs
+    // through the service role client, so reporting the database ready without that key
+    // would promise queries that throw.
+    const hasSupabase = this.isSupabaseConfigured() && !!this.getSupabaseServiceRoleKey()
 
     if (!hasSupabase) {
-      missingConfig.push('Database (SUPABASE_URL, SUPABASE_ANON_KEY)')
+      missingConfig.push('Database (SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY)')
     }
 
     return {

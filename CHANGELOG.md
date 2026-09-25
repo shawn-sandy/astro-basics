@@ -269,6 +269,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     service role client, so `getDatabase()`, `db:status` and the setup skill's status script treat
     Supabase as unconfigured without it, and `db:wizard` asks for it instead of offering to skip.
     Before, the contact form passed its configuration check and then answered 500
+  - `getEnvironmentStatus()` applies the same rule: `services.database.configured` and
+    `isFullyConfigured` were true with only the URL and anon key set, which reported a database
+    ready for queries that `getDatabase()` refuses to make
 
 ### Fixed
 
