@@ -111,6 +111,26 @@ describe('FeatureCards.astro', () => {
       expect(specimen).toContain('#components/astro/Card.astro')
       expect(specimen).toContain(escapeText(first.title))
     })
+
+    it('prints the body the rendered card shows, not a bare title', async () => {
+      // A self-closing `<Card cardTitle="..." />` renders an empty card, so a
+      // snippet without the description does not reproduce the card beside it.
+      const [first] = getTopFeatures(6)
+      const html = await render({ promoted: 1 })
+      const specimen = /<pre\b[^>]*\sdata-card-code[^>]*>([\s\S]*?)<\/pre>/.exec(html)?.[1] ?? ''
+
+      expect(specimen).toContain(escapeText(`<p>${first.description}</p>`))
+    })
+
+    it('lets a keyboard reach the specimen, which scrolls sideways', async () => {
+      // The printed body is wider than the card, so the <pre> is a scroll
+      // region; without a tab stop a keyboard user cannot scroll it (axe
+      // scrollable-region-focusable, WCAG 2.1.1).
+      const html = await render({ promoted: 1 })
+      const pre = /<pre\b[^>]*\sdata-card-code[^>]*>/.exec(html)?.[0] ?? ''
+
+      expect(pre).toMatch(/\stabindex="0"/)
+    })
   })
 
   describe('backward compatibility of the public signature', () => {
