@@ -18,15 +18,11 @@ import { messageRateLimiter, getClientIP, createRateLimitResponse } from '#utils
 /**
  * Validates Clerk authentication keys to prevent runtime failures.
  *
- * Allows dummy values in development mode to support local development without
- * requiring production Clerk keys. This prevents build failures while making
- * authentication behavior predictable in different environments.
+ * Missing or placeholder keys let the site run without Clerk, but protected routes
+ * then fail closed with a 503 setup notice (see authNotConfiguredMiddleware).
  *
- * @constant {boolean} hasValidClerkKeys - True if production-ready Clerk keys are present
- * @security Critical for preventing authentication bypass in production
- * @example
- * // Development: Uses dummy keys, auth features disabled
- * // Production: Requires real keys, full auth protection active
+ * @constant {boolean} hasValidClerkKeys - True if real Clerk keys are present
+ * @security Decides whether protected routes are gated by Clerk or refused outright
  */
 const hasValidClerkKeys =
   import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY &&
@@ -35,7 +31,7 @@ const hasValidClerkKeys =
   import.meta.env.CLERK_SECRET_KEY !== 'YOUR_CLERK_SECRET_KEY'
 
 if (!hasValidClerkKeys) {
-  logger.warn('Using dummy Clerk keys - authentication will not work properly in development')
+  logger.warn('Clerk keys missing or placeholders - protected routes will return 503')
 }
 
 /**
@@ -50,10 +46,10 @@ if (!hasValidClerkKeys) {
  * @returns {boolean} True if route requires authentication
  * @security Prevents unauthorized access to sensitive application areas
  * @example
- * // Protected: /dashboard, /dashboard/settings, /forum/posts/123
+ * // Protected: /dashboard, /dashboard/users, /organization
  * // Public: /, /posts, /api/public
  */
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)', '/organization(.*)'])
+const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/organization(.*)'])
 
 /**
  * Synchronizes user activity from Clerk to Supabase for analytics and user tracking.
@@ -424,6 +420,19 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
 })
 
 /**
+ * Stands in for authMiddleware when Clerk keys are missing or placeholders.
+ *
+ * Protected routes fail closed: they render the /auth-setup notice (HTTP 503)
+ * in place of the page, so a deploy made before auth is configured never
+ * serves them. Every other route passes through.
+ *
+ * @type {MiddlewareHandler} Astro middleware function
+ * @security Without this, a keyless deploy would serve protected routes to anyone
+ */
+const authNotConfiguredMiddleware: MiddlewareHandler = (context, next) =>
+  isProtectedRoute(context.request) ? next('/auth-setup') : next()
+
+/**
  * Main middleware pipeline combining security, rate limiting, and authentication.
  *
  * Middleware execution order is critical for security and performance:
@@ -432,21 +441,25 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
  * 3. CSRF protection (lightweight token management)
  * 4. Authentication (most complex, only when needed)
  *
- * Conditionally includes authentication based on environment configuration
- * to support development with dummy keys while maintaining security in production.
+ * Without valid Clerk keys, authNotConfiguredMiddleware takes the auth slot so
+ * protected routes are refused rather than left open.
  *
  * @constant {MiddlewareHandler} onRequest - Astro's middleware export
  * @security Correlation → Rate limiting → CSRF → Authentication provides defense in depth
  * @performance Early rejection of malicious requests reduces processing overhead
  * @example
- * // Production: All middlewares active with real Clerk keys
- * // Development: Rate limiting + CSRF only, auth disabled with dummy keys
+ * // Real Clerk keys: all middlewares active
+ * // Missing/placeholder keys: protected routes return the 503 setup notice
  * @see {@link correlationMiddleware} for distributed request tracing
  * @see {@link rateLimitMiddleware} for API abuse prevention
  * @see {@link csrfMiddleware} for form submission protection
  * @see {@link authMiddleware} for route protection and session management
+ * @see {@link authNotConfiguredMiddleware} for the fail-closed path without Clerk keys
  * @since 1.0.0
  */
-export const onRequest = hasValidClerkKeys
-  ? sequence(correlationMiddleware, rateLimitMiddleware, csrfMiddleware, authMiddleware)
-  : sequence(correlationMiddleware, rateLimitMiddleware, csrfMiddleware)
+export const onRequest = sequence(
+  correlationMiddleware,
+  rateLimitMiddleware,
+  csrfMiddleware,
+  hasValidClerkKeys ? authMiddleware : authNotConfiguredMiddleware
+)

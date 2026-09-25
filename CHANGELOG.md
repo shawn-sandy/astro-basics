@@ -333,6 +333,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the write path, and the real wizard with scripted answers, on `.env.example` plus an extra key,
   and fails if any unmanaged key, comment or blank line is lost or reordered
 
+### Security
+
+- **Protected routes no longer fail open without Clerk keys** (`src/middleware.ts`): with the Clerk
+  keys missing or still the `YOUR_*` placeholders, `/dashboard` and `/organization` (and their
+  sub-paths) used to be served to anyone. They now render a setup notice (`/auth-setup`) with HTTP 503. With real keys, unauthenticated visitors are still redirected to sign-in. The stale
+  `/forum(.*)` entry is gone from the route matcher
+- **Removed `POST /api/test/sync-user`**: it upserted any Clerk user into `users` with the
+  service-role client and returned their profile, with no authentication. The authenticated
+  `POST /api/user/sync` still syncs the signed-in user
+- `e2e/auth-fail-closed.spec.ts` covers both, and CI runs it against the keyless production build
+
 ## [0.2.0] - 2025-08-15
 
 ### Added

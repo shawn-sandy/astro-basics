@@ -85,4 +85,6 @@ jobs:
       # Hard gate: only the spec that verifies this upgrade. The rest of
       # e2e/ (logging-correlation.spec.ts, etc.) needs webhook secrets and
       # other env this workflow doesn't have — pre-existing, unrelated.
-      - run: npm run test:e2e -- astro-v7-upgrade --project=chromium
+      # auth-fail-closed needs no env either: this preview build has no Clerk
+      # keys, which is exactly the case it asserts fails closed.
+      - run: npm run test:e2e -- astro-v7-upgrade auth-fail-closed --project=chromium
