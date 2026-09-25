@@ -1,10 +1,19 @@
 /**
- * .env file helpers for the database setup wizard (scripts/setup-wizard.js).
+ * .env file helpers for the database scripts (setup wizard, status, schema, seed).
  * Kept separate from the wizard so they can be imported without starting its prompts.
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { parseEnv } from 'util'
+
+/**
+ * Reads an env var, treating an unreplaced `YOUR_...` placeholder from .env.example
+ * as not set, as src/utils/env-config.ts does. Format is not checked here.
+ * @param {string} key
+ * @returns {string | undefined}
+ */
+export const envValue = key =>
+  process.env[key]?.startsWith('YOUR_') ? undefined : process.env[key]
 
 /**
  * Read .env text, or '' when missing. Drops a leading BOM, which parseEnv would

@@ -1,12 +1,11 @@
-Run comprehensive database health check including performance metrics, configuration validation, and provider-specific diagnostics.
+Run comprehensive database health check including performance metrics, configuration validation, and Supabase diagnostics.
 
-This command provides detailed health analysis:
+This command runs `npm run db:manage health`, which:
 
-- Configuration file integrity and environment setup
-- Network latency and connection stability testing
-- Database schema validation and table accessibility
-- Performance benchmarking with response time analysis
-- Provider dashboard links and maintenance status
-- Recommendations for optimization or troubleshooting
+- checks the configuration through `getDatabase()` from `#libs/database` (URL, anon key and
+  service role key)
+- times a one-row read of the `messages` table and rates the response time
+- links to the Supabase dashboard for anything it cannot see from here
 
-The health check leverages both the unified database abstraction layer and provider-specific diagnostic tools to ensure optimal database performance across Turso and Supabase configurations.
+The command exits non-zero when the database is not configured or the read fails. It does not
+validate the schema (use `/db-schema`) or inspect any other table.

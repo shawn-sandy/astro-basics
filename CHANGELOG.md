@@ -119,7 +119,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Server-side rendering with client-side interactivity
 - Documentation improvements and updates
 - **Auth and database setup skill** (`.claude/skills/auth-and-database-setup/`): a Claude skill
-  that turns on Clerk login and a Turso or Supabase database
+  that turns on Clerk login and the Supabase database
   - The person pastes every key into `.env` themselves, so no secret passes through the chat
   - `scripts/status.mjs` reports each feature as ON or OFF using the same rules as
     `src/utils/env-config.ts`, and never prints a key, URL or hostname
@@ -128,7 +128,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     user sync is ready (login on plus `SUPABASE_SERVICE_ROLE_KEY`)
   - The `project-setup` skill now hands login and database setup off to it
 
+- **`messages` table migration** (`scripts/migrations/006_messages.sql`,
+  `rollback_006_messages.sql`): the contact form and `/dashboard/messages` read and write a
+  `messages` table that no migration created, so both failed on a fresh Supabase project even with
+  valid credentials
+  - 13 columns matching the `Database` contract, four indexes for the dashboard's newest-first
+    listing and its state filters, and an `updated_at` trigger
+  - `created_at` and `updated_at` default to `now()`, so an insert may omit them and a seed may set
+    them to keep the original submission date
+  - RLS enabled with one `service_role` policy: `anon` and `authenticated` get no access, since
+    messages hold personal data and every read and write goes through the service role client
+  - Documented at `/guide/messages-table` and `project-docs/05-database/messages-table.md`; the
+    fresh-install instructions and `scripts/migrations/README.md` now list it
+
+- **`insertMessages()` on the database abstraction** (`src/libs/database.ts`,
+  `src/libs/database-types.ts`): a bulk insert that writes rows verbatim, keeping the
+  `is_read`, `is_archived`, `created_at` and `updated_at` values they carry, and returns the new
+  ids. One statement per batch, so a failure leaves no partial write behind.
+  `insertMessage()` keeps its always-unread, always-now behaviour
+
 ### Changed
+
+- **The `db:*` scripts now query Supabase through `getDatabase()`** (`scripts/database-manager.js`,
+  `scripts/schema-validator.js`, `scripts/seed-messages.js`): they no longer construct a Supabase
+  client or answer from a stub, so their results reflect the database
+  - `db:manage test`, `db:manage tables` and `db:manage health` used to answer from a stub whose
+    `getMessages()` returned `[]` without a request. Any non-empty key and an `https://` URL
+    reported "Connection successful", even with credentials Supabase rejects or no `messages`
+    table. Each command now performs a bounded read and exits non-zero when it fails
+  - `db:schema` used to print "All configured database schemas are valid" from a credential check
+    alone. It now reads the table and checks the NOT NULL columns the app reads, reports an empty
+    table as unconfirmed rather than valid, and states what it cannot check: column types,
+    defaults, constraints, indexes, and the nullable columns
+  - `db:seed:messages` writes through the new `insertMessages()` instead of importing
+    `@supabase/supabase-js` itself
+  - Because they import the TypeScript abstraction layer, these three scripts run under the `tsx`
+    loader: `node --import tsx --env-file=.env <script>`. The npm scripts already do this
+  - `#utils/env-config` reads `process.env` when `import.meta.env` is absent, which is what lets a
+    plain Node script share the app's one configuration abstraction
+  - `/db-test`, `/db-schema`, `/db-tables` and `/db-health` describe what their commands actually
+    verify, replacing the "does not connect to the database" wording
 
 - **Accent repointed from violet to petrol** (`src/styles/_design-tokens.scss`): `--island` and
   `--island-bg` move off the violet/indigo family that generated palettes converge on
@@ -202,7 +241,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     there; it is no longer the current behaviour
 - Minor updates and refinements
 
+### Removed
+
+- **Turso (LibSQL) database support**: Supabase is now the only database. `getDatabase()` from
+  `#libs/database` is still the single entry point and throws with the Supabase keys to set when
+  Supabase is not configured
+  - Deleted `src/libs/turso.ts`, `src/libs/schema-setup.ts`, the SQLite `db/` directory and the
+    `@libsql/client` dependency
+  - Provider switching went with it: `DATABASE_PROVIDER`, `TURSO_DATABASE_URL` and
+    `TURSO_AUTH_TOKEN` are no longer read, and the `db:switch*`, `db:backup` and `db:restore`
+    scripts are gone, as are the `/db-switch`, `/db-backup`, `/db-restore` and `/db-migrate` slash
+    commands
+  - Removed the SQLite-only `db:setup`, `db:reset`, `db:check`, `db:migrate*` and
+    `test:db:connection` scripts. Supabase migrations live in `scripts/migrations/` and are applied
+    with `psql` or the Supabase SQL editor (see `scripts/migrations/README.md`)
+  - `db:wizard`, `db:status`, `db:schema` and `db:manage` now cover Supabase only;
+    `db:seed:messages` seeds the Supabase `messages` table (needs `SUPABASE_SERVICE_ROLE_KEY`);
+    `setup:roles` always generates a PostgreSQL migration
+  - Removed the Turso and provider-switching docs, including the `/guide/database-switching` page
+  - **Upgrading a Turso deployment**: set `SUPABASE_URL`, `SUPABASE_ANON_KEY` and
+    `SUPABASE_SERVICE_ROLE_KEY` before deploying, or `getDatabase()` throws "No database
+    configured" and the contact form answers 503. Messages stored in Turso are not migrated;
+    export them first if you need them
+  - `db:schema` no longer counts `.env.example` `YOUR_...` placeholders as configured, and
+    `db:seed:messages` reports a malformed `SUPABASE_URL` without a stack trace
+  - `SUPABASE_SERVICE_ROLE_KEY` is now required for the database: every query goes through the
+    service role client, so `getDatabase()`, `db:status` and the setup skill's status script treat
+    Supabase as unconfigured without it, and `db:wizard` asks for it instead of offering to skip.
+    Before, the contact form passed its configuration check and then answered 500
+  - `getEnvironmentStatus()` applies the same rule: `services.database.configured` and
+    `isFullyConfigured` were true with only the URL and anon key set, which reported a database
+    ready for queries that `getDatabase()` refuses to make
+
 ### Fixed
+
+- **`setup:roles` generated a `CREATE TYPE` PostgreSQL rejects** (`scripts/lib/migration-generator.ts`):
+  each ENUM value's comma came after its `-- Level ...` comment, so the comment swallowed it
+  and the values had no separators. The comma now comes first
+- **`db:wizard` rejected Supabase publishable keys**: it only accepted legacy `eyJ...` anon keys;
+  it now also accepts `sb_publishable_...`, which newer Supabase projects issue
+- **Docs**: migration commands pass `-v ON_ERROR_STOP=1` so a failing statement stops `psql`
+  with an error, backups pass `"$DATABASE_URL"` to `pg_dump`, troubleshooting steps no longer
+  print Supabase keys to the terminal, and the `.env` permission fix is owner-only (`600`)
 
 - **`db:migrate` scripts never loaded `.env`** (`package.json`): `db:migrate`,
   `db:migrate:status`, `db:migrate:create` and `db:migrate:rollback` ran

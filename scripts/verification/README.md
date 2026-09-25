@@ -58,7 +58,7 @@ Run verification scripts after applying database migrations to ensure they were 
 
 ```bash
 # Apply migration
-npm run db:migrate
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
 
 # Verify migration
 node --env-file=.env scripts/verification/simple-verify-migration.js

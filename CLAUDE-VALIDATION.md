@@ -193,7 +193,7 @@ Need to access database?
 **Validation:**
 
 - [ ] Uses `getDatabase()` abstraction
-- [ ] No direct Supabase/Turso client imports
+- [ ] No direct Supabase client imports
 - [ ] Input validated before DB operation
 - [ ] Error handling present
 - [ ] Appropriate query options used
@@ -525,7 +525,7 @@ These rules are **MANDATORY** and must **NEVER** be violated:
 - [ ] Input validated
 - [ ] Error handling present
 - [ ] Results properly typed
-- [ ] No direct Supabase/Turso imports
+- [ ] No direct Supabase imports
 
 ---
 

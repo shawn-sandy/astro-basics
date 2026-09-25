@@ -9,7 +9,7 @@
 
 ## Overview
 
-The astro-basics project now includes **12 Claude slash commands** that provide a streamlined interface to the robust database management system. These commands leverage the existing unified database abstraction layer and comprehensive management infrastructure.
+The astro-basics project includes **8 Claude slash commands** that provide a streamlined interface to the Supabase database management scripts. These commands leverage the existing database abstraction layer and management infrastructure.
 
 ## Quick Command Reference
 
@@ -17,34 +17,30 @@ The astro-basics project now includes **12 Claude slash commands** that provide 
 
 ```
 /db-status    # Show current database configuration and status
-/db-test      # Test connectivity to your active database
-/db-switch    # Change between Turso and Supabase providers
+/db-test      # Test connectivity to your Supabase database
+/db-health    # Run a full health check
 ```
 
 ### Complete Command Set
 
 #### 🔧 Core Operations
 
-- `/db-status` - Comprehensive database status and provider info
-- `/db-switch` - Safe provider switching (Turso ↔ Supabase) with backup
+- `/db-status` - Comprehensive database status and configuration info
 - `/db-test` - Connection testing and performance metrics
 - `/db-health` - Complete health check with diagnostics
 
 #### 💾 Data Management
 
-- `/db-backup` - Create configuration backup (.env → .env.backup)
-- `/db-restore` - Restore from backup with validation
 - `/db-tables` - List tables with sample data and row counts
 
 #### 🛠️ Setup & Maintenance
 
 - `/db-setup` - Interactive setup wizard for new configurations
-- `/db-migrate` - Migration status and execution
 - `/db-cleanup` - Database optimization and cleanup (with dry-run)
 
 #### 🔍 Development Tools
 
-- `/db-schema` - Schema validation between providers
+- `/db-schema` - Schema validation against application expectations
 - `/db-debug` - Advanced debugging with verbose logging
 
 ---
@@ -54,15 +50,8 @@ The astro-basics project now includes **12 Claude slash commands** that provide 
 ### New to the Project?
 
 1. **Check Status**: Use `/db-status` to see current configuration
-2. **Setup Database**: Use `/db-setup` if no providers are configured
+2. **Setup Database**: Use `/db-setup` if Supabase is not configured
 3. **Test Connection**: Use `/db-test` to verify everything works
-
-### Switching Between Providers?
-
-1. **Check Current Status**: `/db-status` shows active provider and alternatives
-2. **Switch Safely**: `/db-switch` creates backup and switches providers
-3. **Verify Switch**: `/db-test` confirms new provider works correctly
-4. **Rollback if Needed**: `/db-restore` recovers from backup
 
 ### Troubleshooting Issues?
 
@@ -76,7 +65,7 @@ The astro-basics project now includes **12 Claude slash commands** that provide 
 
 ### Unified Abstraction Layer
 
-The commands work with a **sophisticated database abstraction system**:
+The commands work with the **database abstraction layer**:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -88,27 +77,15 @@ The commands work with a **sophisticated database abstraction system**:
 ├─────────────────────────────────────────┤
 │ Database Abstraction (src/libs/)        │
 ├─────────────────────────────────────────┤
-│ Turso (LibSQL) │ Supabase (PostgreSQL) │
+│ Supabase (PostgreSQL)                   │
 └─────────────────────────────────────────┘
 ```
 
-### Provider Selection Priority
+### Configuration
 
-The system automatically selects databases using this logic:
-
-1. **Explicit Choice** - `DATABASE_PROVIDER=turso` or `DATABASE_PROVIDER=supabase`
-2. **Supabase Priority** - If both configured, defaults to Supabase
-3. **Turso Fallback** - Uses Turso if only it's available
-4. **Error Guidance** - Clear instructions if neither is configured
-
-### Safe Switching Process
-
-Every switch operation includes:
-
-- **Automatic backup** of current configuration
-- **Connection testing** before committing the switch
-- **Rollback capability** if issues occur
-- **Validation** of the new configuration
+Supabase is the only database. `getDatabase()` from `#libs/database` returns the Supabase
+implementation when `SUPABASE_URL` and `SUPABASE_ANON_KEY` are set, and throws a clear error
+telling you to set them when they are not.
 
 ---
 
@@ -120,15 +97,6 @@ Every switch operation includes:
 /db-status     # Check what's configured
 /db-test       # Verify connectivity
 /db-tables     # Explore available data
-```
-
-### Provider Experimentation
-
-```bash
-/db-backup     # Save current config
-/db-switch     # Try different provider
-/db-test       # Verify it works
-/db-restore    # Go back if needed
 ```
 
 ### Troubleshooting Issues
@@ -144,8 +112,11 @@ Every switch operation includes:
 ```bash
 /db-setup      # Interactive configuration
 /db-test       # Verify setup
-/db-migrate    # Apply schema if needed
 ```
+
+Apply schema changes from `scripts/migrations/` with
+`psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql`, or paste the
+SQL into the Supabase SQL editor. See `scripts/migrations/README.md`.
 
 ---
 
@@ -157,15 +128,14 @@ Using these commands provides insights into:
 
 **Database Abstraction Patterns**
 
-- How to design provider-agnostic database interfaces
-- Unified type systems across different database engines
-- Configuration management for multi-provider systems
+- How to hide a database client behind a single typed interface
+- Typed query options and results shared across the codebase
+- Environment-based configuration management
 
 **Operational Best Practices**
 
-- Safe database switching with backup strategies
 - Health monitoring and performance diagnostics
-- Schema compatibility across database types
+- Schema validation against application expectations
 
 **Production-Ready Infrastructure**
 
@@ -184,11 +154,11 @@ Commands work alongside existing npm scripts:
 ```bash
 # Claude commands
 /db-status
-/db-switch
+/db-setup
 
 # Equivalent npm scripts
 npm run db:status
-npm run db:switch:turso
+npm run db:wizard
 ```
 
 ### Direct Script Access
@@ -202,14 +172,14 @@ npm run db:manage tables --verbose
 
 # Individual scripts
 node scripts/database-status.js
-node scripts/switch-database.js --to supabase
+node scripts/schema-validator.js
 ```
 
 ### Documentation Integration
 
 Commands reference the comprehensive guides:
 
-- **Database Switching Guide** - Complete user manual
+- **Clerk + Supabase Setup Guide** - Database setup
 - **Database Troubleshooting Guide** - Technical problem resolution
 - **Implementation Documentation** - Developer technical details
 
@@ -220,7 +190,6 @@ Commands reference the comprehensive guides:
 ### For Development
 
 - Use `/db-status` regularly to understand your current setup
-- Always run `/db-backup` before experimenting
 - Use `/db-test` after any configuration changes
 
 ### for Troubleshooting
@@ -231,8 +200,7 @@ Commands reference the comprehensive guides:
 
 ### For Team Collaboration
 
-- Document provider choices with `/db-status` output
-- Share backup/restore procedures for consistency
+- Share `/db-status` output when reporting configuration issues
 - Use setup wizard (`/db-setup`) for new team members
 
 ---
@@ -243,7 +211,6 @@ Commands reference the comprehensive guides:
 
 ```bash
 /db-cleanup    # Preview cleanup operations
-/db-migrate    # Check migration status before running
 ```
 
 ### Verbose Diagnostics
@@ -251,13 +218,6 @@ Commands reference the comprehensive guides:
 ```bash
 /db-debug      # Detailed connection analysis
 /db-health     # Performance metrics and recommendations
-```
-
-### Cross-Provider Operations
-
-```bash
-/db-schema     # Compare Turso and Supabase schemas
-/db-switch     # Safe transitions between providers
 ```
 
 ---
@@ -272,8 +232,8 @@ Commands reference the comprehensive guides:
 
 ### Additional Resources
 
-- **`docs/guides/database-switching-guide.md`** - Complete switching manual
-- **`docs/guides/database-troubleshooting-guide.md`** - Technical problem solving
+- **`project-docs/02-guides/clerk-supabase-setup.md`** - Database setup
+- **`project-docs/02-guides/database-troubleshooting-guide.md`** - Technical problem solving
 - **`scripts/database-manager.js --help`** - CLI tool documentation
 
 ---

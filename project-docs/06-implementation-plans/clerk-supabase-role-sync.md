@@ -277,25 +277,21 @@ export type Database = {
 **New Event Handlers**:
 
 1. **`organization.created`**
-
    - Extract: `id`, `name`, `slug`, `public_metadata`
    - Action: Insert into `organizations` table
    - Error handling: Handle duplicate `clerk_org_id`
 
 2. **`organization.updated`**
-
    - Extract: `id`, `name`, `slug`, `public_metadata`
    - Action: Update `organizations` table by `clerk_org_id`
    - Error handling: Warn if organization doesn't exist
 
 3. **`organization.deleted`**
-
    - Extract: `id`
    - Action: Delete from `organizations` table (cascade to memberships)
    - Error handling: Log successful deletion
 
 4. **`organizationMembership.created`**
-
    - Extract: `organization.id`, `public_user_data.user_id`, `role`, `id`
    - Action:
      - Upsert organization
@@ -303,7 +299,6 @@ export type Database = {
    - Error handling: Handle missing user, duplicate membership
 
 5. **`organizationMembership.updated`**
-
    - Extract: `id`, `role` (only field that can be updated)
    - Action: Update `role` in `organization_memberships`
    - Error handling: Warn if membership doesn't exist
@@ -576,14 +571,12 @@ describe('Organization Sync', () => {
 **Files to Update**:
 
 1. **`docs/integration/clerk-supabase-integration.md`**
-
    - Add organization sync section
    - Document webhook event types
    - Add schema diagrams
    - Include query examples
 
 2. **`docs/clerk-roles-reset-guide.md`**
-
    - Add section on Supabase role sync
    - Explain how roles propagate to database
    - Troubleshooting for sync issues
@@ -618,12 +611,11 @@ describe('Organization Sync', () => {
 
    ```bash
    # Apply migration to Supabase
-   npm run db:migrate
+   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
    # Or manually via Supabase Dashboard SQL Editor
    ```
 
 2. **Configure Clerk Webhooks**
-
    - Go to Clerk Dashboard → Webhooks
    - Add/update webhook endpoint: `https://yourdomain.com/api/webhooks/clerk`
    - Subscribe to new events:
@@ -698,20 +690,17 @@ If issues occur:
 ## Next Steps After Implementation
 
 1. **Monitor Performance**
-
    - Track webhook delivery latency
    - Monitor database query performance
    - Set up alerts for sync failures
 
 2. **Extend Functionality**
-
    - Add organization invitations sync
    - Sync organization domains
    - Track role change history
    - Build admin dashboard for org management
 
 3. **Optimize Queries**
-
    - Add materialized views for complex reports
    - Implement caching for frequently accessed data
    - Consider read replicas for high-traffic apps

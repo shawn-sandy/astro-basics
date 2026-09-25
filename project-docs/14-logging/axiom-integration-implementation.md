@@ -657,11 +657,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
 Add correlation tracking to database operations:
 
 ```typescript
-// Example for TursoDatabase class methods
+// Example for SupabaseDatabase class methods
 async getMessages(options?: MessageQueryOptions, correlationId?: string): Promise<Message[]> {
   const ctx = {
     operation: 'database.getMessages',
-    provider: 'turso',
+    provider: 'supabase',
     correlationId: correlationId || logger.createCorrelationId(),
     queryOptions: options,
   }
@@ -670,16 +670,17 @@ async getMessages(options?: MessageQueryOptions, correlationId?: string): Promis
 
   try {
     const startTime = Date.now()
-    const tursoMessages = await tursoGetMessages(options)
+    const { data: messages, error: queryError } = await query // query built as in the existing method
+    if (queryError) throw new Error(`Failed to retrieve messages: ${queryError.message}`)
     const duration = Date.now() - startTime
 
     await logger.info('Messages retrieved successfully', {
       ...ctx,
-      count: tursoMessages.length,
+      count: messages?.length ?? 0,
       requestDuration: duration,
     })
 
-    return tursoMessages.map(this.convertTursoMessage)
+    return (messages || []).map(this.convertSupabaseMessage)
   } catch (error) {
     await logger.error('Failed to retrieve messages', {
       ...ctx,

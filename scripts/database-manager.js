@@ -1,17 +1,17 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S node --import tsx
 
 /**
  * Database Management Script
- * Unified interface for common database operations across providers
+ * Unified interface for common Supabase database operations
+ *
+ * The checks here query Supabase through `getDatabase()`, the same abstraction the app
+ * uses, so a passing check means a real read succeeded. Run it through the `tsx` loader
+ * (`npm run db:manage`), which lets this script import the TypeScript abstraction layer.
  */
 
 import { parseArgs } from 'util'
-import { existsSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+import { getDatabase } from '#libs/database'
 
 // Color utilities
 const colors = {
@@ -37,7 +37,6 @@ const log = {
 // Parse command line arguments
 const { values: args, positionals } = parseArgs({
   options: {
-    provider: { type: 'string', short: 'p' },
     help: { type: 'boolean', short: 'h' },
     verbose: { type: 'boolean', short: 'v' },
     'dry-run': { type: 'boolean' },
@@ -53,130 +52,44 @@ if (args.help || !command) {
   console.log(`
 ${colors.bright}Database Management Tool${colors.reset}
 
-${colors.cyan}Usage:${colors.reset} node scripts/database-manager.js <command> [options]
+${colors.cyan}Usage:${colors.reset} npm run db:manage -- <command> [options]
+        node --import tsx --env-file=.env scripts/database-manager.js <command> [options]
 
 ${colors.cyan}Commands:${colors.reset}
-  ${colors.green}status${colors.reset}           Show comprehensive database status
-  ${colors.green}test${colors.reset}             Test database connections
-  ${colors.green}schema${colors.reset}           Show database schema information
-  ${colors.green}tables${colors.reset}           List all tables and their row counts
-  ${colors.green}health${colors.reset}           Check database health and performance
+  ${colors.green}status${colors.reset}           Show comprehensive database status (no query)
+  ${colors.green}test${colors.reset}             Read one row from the messages table
+  ${colors.green}schema${colors.reset}           Not implemented here; use npm run db:schema
+  ${colors.green}tables${colors.reset}           Read sample rows from the messages table
+  ${colors.green}health${colors.reset}           Time a one-row read and rate the response
   ${colors.green}cleanup${colors.reset}          Clean up old/unused data (with confirmation)
-  ${colors.green}backup${colors.reset}           Create database backup
-  ${colors.green}migrate${colors.reset}          Show migration status
   ${colors.green}setup${colors.reset}            Run setup wizard
-  ${colors.green}switch${colors.reset}           Interactive database switching
 
 ${colors.cyan}Options:${colors.reset}
-  -p, --provider <name>   Target specific provider (turso|supabase|auto)
   --dry-run              Show what would be done without executing
   -v, --verbose          Show detailed output
   -h, --help             Show this help message
 
 ${colors.cyan}Examples:${colors.reset}
-  node scripts/database-manager.js status           # Show full status
-  node scripts/database-manager.js test --provider turso  # Test Turso connection
-  node scripts/database-manager.js tables --verbose # List tables with details
-  node scripts/database-manager.js cleanup --dry-run # Preview cleanup operations
-  node scripts/database-manager.js switch           # Interactive provider switching
+  npm run db:manage -- status            # Show full status
+  npm run db:manage -- test              # Read from Supabase and report failures
+  npm run db:manage -- tables --verbose  # Sample rows with details
+  npm run db:manage -- cleanup --dry-run # Preview cleanup operations
 `)
   process.exit(0)
 }
 
 /**
- * Detect database provider
+ * Open the database through the abstraction layer, exiting when it is not configured.
+ *
+ * `getDatabase()` applies the app's own rule: the URL, the anon key and the service role
+ * key must all be set, and the URL must be parseable.
  */
-function detectProvider() {
-  const explicitProvider = process.env.DATABASE_PROVIDER
-  const tursoConfigured = !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN)
-  const supabaseConfigured = !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY)
-
-  if (args.provider) {
-    const requestedProvider = args.provider.toLowerCase()
-    if (!['turso', 'supabase', 'auto'].includes(requestedProvider)) {
-      log.error(`Invalid provider: ${requestedProvider}`)
-      process.exit(1)
-    }
-    return requestedProvider
-  }
-
-  if (explicitProvider && (explicitProvider === 'turso' || explicitProvider === 'supabase')) {
-    return explicitProvider
-  }
-
-  if (supabaseConfigured) return 'supabase'
-  if (tursoConfigured) return 'turso'
-
-  log.error('No database provider configured')
-  log.info('Run: npm run db:wizard to configure a database')
-  process.exit(1)
-}
-
-/**
- * Get database connection based on provider
- */
-async function getDatabase(provider) {
+function openDatabase() {
   try {
-    // Since we're in Node.js, we need to use a different approach
-    // For now, we'll use a simpler test approach
-
-    if (provider === 'turso') {
-      // Test Turso configuration
-      const tursoUrl = process.env.TURSO_DATABASE_URL
-      const tursoToken = process.env.TURSO_AUTH_TOKEN
-
-      if (!tursoUrl || !tursoToken) {
-        throw new Error('Turso configuration missing')
-      }
-
-      if (!tursoUrl.startsWith('libsql://')) {
-        throw new Error('Invalid Turso URL format')
-      }
-
-      return {
-        isConfigured: () => true,
-        getMessages: async (_options = {}) => {
-          // Mock successful response for connection test
-          return []
-        },
-        provider: 'turso',
-      }
-    } else if (provider === 'supabase') {
-      // Test Supabase configuration
-      const supabaseUrl = process.env.SUPABASE_URL
-      const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
-
-      if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error('Supabase configuration missing')
-      }
-
-      if (!supabaseUrl.startsWith('https://')) {
-        throw new Error('Invalid Supabase URL format')
-      }
-
-      return {
-        isConfigured: () => true,
-        getMessages: async (_options = {}) => {
-          // Mock successful response for connection test
-          return []
-        },
-        provider: 'supabase',
-      }
-    }
-
-    // Auto-detect
-    const supabaseConfigured = !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY)
-    const tursoConfigured = !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN)
-
-    if (supabaseConfigured) {
-      return getDatabase('supabase')
-    } else if (tursoConfigured) {
-      return getDatabase('turso')
-    } else {
-      throw new Error('No database provider configured')
-    }
+    return getDatabase()
   } catch (error) {
-    log.error(`Failed to initialize database: ${error.message}`)
+    log.error(error.message)
+    log.info('Run: npm run db:wizard to configure Supabase')
     if (args.verbose) {
       console.error(error.stack)
     }
@@ -203,37 +116,32 @@ async function executeStatus() {
  * Execute test command
  */
 async function executeTest() {
-  const provider = detectProvider()
+  const db = openDatabase()
+  const provider = db.getProviderName()
   log.header(`Testing ${provider.toUpperCase()} Connection`)
 
   try {
-    const db = await getDatabase(provider)
-
-    log.step('Checking connection...')
-    const isConfigured = db.isConfigured()
-    if (!isConfigured) {
+    log.step('Checking configuration...')
+    if (!db.isConfigured()) {
       log.error(`${provider} is not properly configured`)
+      process.exitCode = 1
       return
     }
 
-    log.step('Testing basic operations...')
+    // A real bounded read against the messages table: it is the only way to tell a
+    // working connection from credentials Supabase rejects or a missing table.
+    log.step('Reading from the messages table...')
+    const messages = await db.getMessages({ limit: 1 })
+    log.success(`Read succeeded - the messages table returned ${messages.length} of up to 1 row`)
 
-    // Test basic read operation (get messages count)
-    try {
-      const messages = await db.getMessages({ limit: 1 })
-      log.success(
-        `Connection successful - can read data (found ${Array.isArray(messages) ? messages.length : 0} messages)`
-      )
-    } catch (error) {
-      log.warning(`Read test failed: ${error.message}`)
-    }
-
-    log.success(`${provider.toUpperCase()} connection test completed`)
+    log.success(`${provider.toUpperCase()} connection test passed`)
   } catch (error) {
     log.error(`Connection test failed: ${error.message}`)
+    log.info('If the messages table does not exist, apply scripts/migrations/006_messages.sql')
     if (args.verbose) {
       console.error(error.stack)
     }
+    process.exitCode = 1
   }
 }
 
@@ -241,43 +149,31 @@ async function executeTest() {
  * Execute tables command
  */
 async function executeTables() {
-  const provider = detectProvider()
+  const db = openDatabase()
+  const provider = db.getProviderName()
   log.header(`Database Tables (${provider.toUpperCase()})`)
 
+  // The abstraction layer only covers `messages`; the dashboard lists every table.
+  log.info('Only the messages table is checked here')
+  log.info('Use your Supabase dashboard for a full table list and row counts')
+
   try {
-    const db = await getDatabase(provider)
+    const messages = await db.getMessages({ limit: 5 })
+    log.success(`Messages table accessible - ${messages.length} sample records`)
 
-    if (provider === 'turso') {
-      // For Turso, we can query sqlite_master
-      log.info('Turso table information not yet implemented')
-      log.info('Use your Turso dashboard or CLI for detailed table information')
-    } else if (provider === 'supabase') {
-      // For Supabase, we could use information_schema
-      log.info('Supabase table information not yet implemented')
-      log.info('Use your Supabase dashboard for detailed table information')
-    }
-
-    // Test basic message table access
-    try {
-      const messages = await db.getMessages({ limit: 5 })
-      log.success(
-        `Messages table accessible - ${Array.isArray(messages) ? messages.length : 0} sample records`
-      )
-
-      if (args.verbose && Array.isArray(messages) && messages.length > 0) {
-        console.log('\nSample messages:')
-        messages.forEach((msg, i) => {
-          console.log(`  ${i + 1}. ${msg.title || msg.name || 'Untitled'} (ID: ${msg.id})`)
-        })
-      }
-    } catch (error) {
-      log.warning(`Could not access messages table: ${error.message}`)
+    if (args.verbose && messages.length > 0) {
+      console.log('\nSample messages:')
+      messages.forEach((msg, i) => {
+        console.log(`  ${i + 1}. ${msg.subject || msg.name || 'Untitled'} (ID: ${msg.id})`)
+      })
     }
   } catch (error) {
-    log.error(`Failed to check tables: ${error.message}`)
+    log.error(`Could not access messages table: ${error.message}`)
+    log.info('If the messages table does not exist, apply scripts/migrations/006_messages.sql')
     if (args.verbose) {
       console.error(error.stack)
     }
+    process.exitCode = 1
   }
 }
 
@@ -285,59 +181,53 @@ async function executeTables() {
  * Execute health command
  */
 async function executeHealth() {
-  const provider = detectProvider()
+  const db = openDatabase()
+  const provider = db.getProviderName()
   log.header(`Database Health Check (${provider.toUpperCase()})`)
 
+  log.step('Configuration check...')
+  if (!db.isConfigured()) {
+    log.error('Database not properly configured')
+    process.exitCode = 1
+    return
+  }
+  log.success('Configuration valid')
+
+  log.step('Connection performance test...')
+  const startTime = Date.now()
+
   try {
-    const db = await getDatabase(provider)
+    await db.getMessages({ limit: 1 })
+    const responseTime = Date.now() - startTime
 
-    log.step('Configuration check...')
-    const isConfigured = db.isConfigured()
-    if (!isConfigured) {
-      log.error('Database not properly configured')
-      return
-    }
-    log.success('Configuration valid')
-
-    log.step('Connection performance test...')
-    const startTime = Date.now()
-
-    try {
-      await db.getMessages({ limit: 1 })
-      const responseTime = Date.now() - startTime
-
-      if (responseTime < 100) {
-        log.success(`Excellent response time: ${responseTime}ms`)
-      } else if (responseTime < 500) {
-        log.success(`Good response time: ${responseTime}ms`)
-      } else if (responseTime < 1000) {
-        log.warning(`Slow response time: ${responseTime}ms`)
-      } else {
-        log.warning(`Very slow response time: ${responseTime}ms`)
-      }
-    } catch (error) {
-      log.error(`Health check failed: ${error.message}`)
-    }
-
-    log.step('Provider-specific health checks...')
-    if (provider === 'turso') {
-      log.info('Turso health: Check your dashboard at https://turso.tech')
-    } else if (provider === 'supabase') {
-      log.info('Supabase health: Check your dashboard at https://supabase.com')
+    if (responseTime < 100) {
+      log.success(`Excellent response time: ${responseTime}ms`)
+    } else if (responseTime < 500) {
+      log.success(`Good response time: ${responseTime}ms`)
+    } else if (responseTime < 1000) {
+      log.warning(`Slow response time: ${responseTime}ms`)
+    } else {
+      log.warning(`Very slow response time: ${responseTime}ms`)
     }
   } catch (error) {
     log.error(`Health check failed: ${error.message}`)
+    log.info('If the messages table does not exist, apply scripts/migrations/006_messages.sql')
     if (args.verbose) {
       console.error(error.stack)
     }
+    process.exitCode = 1
+    return
   }
+
+  log.step('Provider-specific health checks...')
+  log.info('Supabase health: Check your dashboard at https://supabase.com')
 }
 
 /**
  * Execute cleanup command
  */
 async function executeCleanup() {
-  const provider = detectProvider()
+  const provider = openDatabase().getProviderName()
   log.header(`Database Cleanup (${provider.toUpperCase()})`)
 
   if (args['dry-run']) {
@@ -358,44 +248,6 @@ async function executeCleanup() {
 }
 
 /**
- * Execute backup command
- */
-async function executeBackup() {
-  log.header('Database Backup')
-
-  // Delegate to existing backup functionality
-  try {
-    const { execSync } = await import('child_process')
-    log.info('Creating environment backup...')
-    execSync('node scripts/switch-database.js --backup-only', { stdio: 'inherit' })
-  } catch (error) {
-    log.error(`Backup failed: ${error.message}`)
-  }
-}
-
-/**
- * Execute migrate command
- */
-async function executeMigrate() {
-  log.header('Migration Status')
-
-  try {
-    // Check if migration script exists
-    const migrationScript = join(__dirname, 'migrate.js')
-    if (existsSync(migrationScript)) {
-      const { execSync } = await import('child_process')
-      log.info('Checking migration status...')
-      execSync('node scripts/migrate.js --status', { stdio: 'inherit' })
-    } else {
-      log.warning('Migration script not found')
-      log.info('Migration system not yet implemented for this project')
-    }
-  } catch (error) {
-    log.error(`Migration check failed: ${error.message}`)
-  }
-}
-
-/**
  * Execute setup command
  */
 async function executeSetup() {
@@ -406,20 +258,6 @@ async function executeSetup() {
     execSync('node scripts/setup-wizard.js', { stdio: 'inherit' })
   } catch (error) {
     log.error(`Setup wizard failed: ${error.message}`)
-  }
-}
-
-/**
- * Execute switch command
- */
-async function executeSwitch() {
-  log.info('Launching database switching tool...')
-
-  try {
-    const { execSync } = await import('child_process')
-    execSync('node scripts/switch-database.js', { stdio: 'inherit' })
-  } catch (error) {
-    log.error(`Database switching failed: ${error.message}`)
   }
 }
 
@@ -448,17 +286,8 @@ async function main() {
       case 'cleanup':
         await executeCleanup()
         break
-      case 'backup':
-        await executeBackup()
-        break
-      case 'migrate':
-        await executeMigrate()
-        break
       case 'setup':
         await executeSetup()
-        break
-      case 'switch':
-        await executeSwitch()
         break
       default:
         log.error(`Unknown command: ${command}`)

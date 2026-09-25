@@ -28,7 +28,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **astro-basics-website** is a content-rich Astro website that serves as both a component library and a
 demonstration site. It uses server-side rendering (`output: "server"`), integrates Clerk authentication,
-and supports multiple database backends (Supabase, Turso).
+and uses Supabase (PostgreSQL) as its database.
 
 ### Repository Structure
 
@@ -60,7 +60,7 @@ docs/                  # Project documentation
 - **Component Library**: Exportable Astro/React components via package.json exports
 - **Content Management**: Three content collections with MDX support
 - **Authentication**: Clerk integration with protected routes
-- **Database Support**: Turso (LibSQL) and Supabase backends
+- **Database Support**: Supabase (PostgreSQL) via `getDatabase()` from `#libs/database`
 - **Comment System**: Full-featured polymorphic comment system for posts and docs
 - **PWA Ready**: Service worker and offline support
 - **Testing**: Unit (Vitest) and E2E (Playwright) test suites
@@ -117,29 +117,17 @@ npx playwright test path/to/e2e.spec.ts  # Run specific Playwright test
 ### Database Commands
 
 ```bash
-# Database Management
-npm run db:status     # Check current database configuration and status
-npm run db:wizard     # Interactive setup wizard for first-time configuration
-npm run db:manage     # Advanced database management CLI
-
-# Database Switching (with automatic backups)
-npm run db:switch:turso      # Switch to Turso database
-npm run db:switch:supabase   # Switch to Supabase database
-npm run db:backup           # Create configuration backup
-npm run db:restore          # Restore from backup
+# Database Management (Supabase)
+npm run db:status     # Check Supabase configuration and status
+npm run db:wizard     # Interactive Supabase setup wizard for first-time configuration
+npm run db:manage     # Database management CLI (status, test, schema, tables, health, cleanup, setup)
 
 # Schema and Validation
-npm run db:schema     # Validate database schema compatibility
+npm run db:schema     # Check Supabase configuration against the expected schema
 
-# Legacy Commands (still available)
-npm run db:setup      # Initialize database
-npm run db:reset      # Reset database
-npm run db:check      # Check database connection
-npm run db:seed:messages  # Seed messages table
-npm run db:migrate    # Run migrations up
-npm run db:migrate:status  # Check migration status
-npm run db:migrate:create  # Create new migration
-npm run db:migrate:rollback  # Rollback migration
+# Data and Migrations
+npm run db:seed:messages  # Seed Supabase messages table (needs SUPABASE_SERVICE_ROLE_KEY)
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql  # Apply a migration
 ```
 
 ### GitHub Integration
@@ -204,7 +192,7 @@ The project includes a configurable role system for setup-time customization:
 
 - **Configuration**: Define roles in `config/roles.config.ts`
 - **Type Generation**: Auto-generates TypeScript types in `src/types/generated-roles.ts`
-- **Migration Generation**: Creates database migrations for PostgreSQL/SQLite
+- **Migration Generation**: Creates PostgreSQL migrations for Supabase
 - **Core Roles**: Three required roles (`member`, `admin`, `super_admin`)
 - **Hierarchical Privilege Escalation**: Higher-level roles automatically inherit lower-level permissions (default behavior, configurable via `useHierarchy` option in role guards)
 - **Setup Command**: `npm run setup:roles` to generate types and migrations
@@ -221,7 +209,7 @@ vim config/roles.config.ts
 npm run setup:roles
 
 # Apply database migration
-npm run db:migrate
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
 
 # Commit generated files
 git add config/ src/types/ scripts/migrations/
@@ -240,26 +228,12 @@ Three collections share identical schema (`src/content/config.ts`):
 
 ### Database Integration
 
-The project features a **unified database abstraction layer** that enables seamless switching between database providers:
+The project uses **Supabase (PostgreSQL)** behind a **unified database abstraction layer**:
 
-- **Database Abstraction**: `src/libs/database.ts` provides unified interface for all database operations
-- **Provider Auto-Detection**: Automatically detects and uses available database based on configuration
-- **Unified Types**: `src/libs/database-types.ts` ensures consistent data structures across providers
-- **Safe Switching**: Built-in backup/restore system prevents configuration loss during database switching
-
-**Supported Providers:**
-
+- **Database Abstraction**: `getDatabase()` from `#libs/database` (`src/libs/database.ts`) is the single entry point for all database operations
+- **Configuration Check**: `getDatabase()` throws a clear error when `SUPABASE_URL` and `SUPABASE_ANON_KEY` are not set
+- **Unified Types**: `src/libs/database-types.ts` defines shared data structures
 - **Supabase**: PostgreSQL with real-time features, uses service role for server operations
-- **Turso**: LibSQL with edge distribution and low latency
-
-**Provider Selection Priority:**
-
-1. Explicit choice via `DATABASE_PROVIDER` environment variable
-2. Supabase (if configured)
-3. Turso (if configured)
-4. Error if no providers available
-
-All API endpoints and components automatically adapt to the active database provider without code changes.
 
 #### Supabase Migrations
 
@@ -310,14 +284,17 @@ scripts/migrations/
 - `users` - User profiles with role-based access control and email uniqueness enforcement
 - `organization_memberships` - Multi-tenant organization support
 - `user_preferences` - App-specific user settings
+- `messages` - Contact-form submissions, the only table `getDatabase()` reads or writes
 
 **Applying Migrations:**
 
 ```bash
-# For fresh databases (recommended as of 2025-10-12)
-# Only 2 migrations required - email constraint included in 001
-npm run db:migrate -- 001_core_schema.sql
-npm run db:migrate -- 002_security_policies.sql
+# For fresh databases (email constraint included in 001)
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql
+
+# Required by the contact form and /dashboard/messages
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/006_messages.sql
 
 # For existing databases with legacy migrations already applied
 # Migration 004 is safe to keep - idempotent design prevents conflicts
@@ -327,11 +304,14 @@ npm run db:migrate -- 002_security_policies.sql
 **Rolling Back Migrations:**
 
 ```bash
-# Rollback security policies first
-npm run db:migrate -- rollback_002_security_policies.sql
+# Rollback messages first (WARNING: Deletes all stored messages!)
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_006_messages.sql
+
+# Then rollback security policies
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_002_security_policies.sql
 
 # Then rollback core schema (WARNING: Deletes all data!)
-npm run db:migrate -- rollback_001_core_schema.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_001_core_schema.sql
 ```
 
 **Migration Best Practices:**
@@ -414,20 +394,11 @@ CLERK_SECRET_KEY=sk_test_...
 
 ### Database Configuration
 
-**Choose one or both database providers:**
-
 ```env
-# Database Provider Selection (optional - auto-detects if not specified)
-DATABASE_PROVIDER=turso           # 'turso', 'supabase', or 'auto'
-
 # Supabase (PostgreSQL)
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=eyJ...         # For client-side operations
 SUPABASE_SERVICE_ROLE_KEY=eyJ... # For server-side operations (required)
-
-# Turso (LibSQL)
-TURSO_DATABASE_URL=libsql://your-db.turso.io
-TURSO_AUTH_TOKEN=eyJ...          # Authentication token
 ```
 
 **Quick Setup:** Run `npm run db:wizard` for guided configuration.
@@ -442,9 +413,8 @@ TURSO_AUTH_TOKEN=eyJ...          # Authentication token
 - `src/utils/site-config.ts`: Site constants, PAGINATION_COUNT=2
 - `src/libs/content.ts`: Slugify, Truncate utilities
 - `src/constants/formErrors.ts`: Form validation messages
-- `src/libs/database.ts`: Unified database abstraction layer with provider auto-detection
+- `src/libs/database.ts`: Unified database abstraction layer (`getDatabase()`) over Supabase
 - `src/libs/database-types.ts`: Shared TypeScript interfaces for consistent data structures
-- `src/libs/turso.ts`: Turso database client with retry logic and message operations
 - `src/libs/supabase.ts`: Supabase client initialization
 - `src/utils/comments-availability.ts`: Comment system availability checker
 - `src/utils/sanitize.ts`: Content sanitization utilities with DOMPurify
@@ -464,15 +434,6 @@ The project includes a comprehensive comment system with:
 - **Soft Deletes**: Comments marked as 'archived' rather than hard deleted
 - **Row-Level Security**: Supabase RLS policies for secure data access
 - **Accessibility**: ARIA labels, keyboard navigation, screen reader support
-
-### Turso Database Operations
-
-The project includes comprehensive Turso integration with:
-
-- Connection validation and retry logic (3 attempts with exponential backoff)
-- Message CRUD operations (insertMessage, getMessages, markMessageAsRead, archiveMessage)
-- Transaction support via executeTransaction
-- Proper error handling with descriptive messages
 
 ### PWA Configuration
 
@@ -572,7 +533,7 @@ Please start by analyzing the current state and recommending the appropriate rel
 
 - Complete security audit using `/project-docs/09-releases/vX.Y.Z-RELEASE-security-audit-checklist.md`
 - OWASP Top 10 2021 compliance verification
-- Technology-specific security checks (Astro, Clerk, Supabase, Turso)
+- Technology-specific security checks (Astro, Clerk, Supabase)
 - Zero critical/high vulnerabilities before production deployment
 
 **File Naming:** All release documents use version-prefixed naming:

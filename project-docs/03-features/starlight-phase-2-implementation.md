@@ -78,7 +78,7 @@ src/content/docs/guide/
 ├── api/
 │   ├── index.mdx                   # API overview ✅ Complete
 │   ├── authentication.mdx          # 🔄 Clerk integration
-│   ├── database.mdx               # 🔄 Supabase/Turso
+│   ├── database.mdx               # 🔄 Supabase
 │   ├── comments.mdx               # 🔄 Comment system API
 │   ├── posts.mdx                  # 🔄 Content API
 │   ├── utilities.mdx              # 🔄 Helper functions

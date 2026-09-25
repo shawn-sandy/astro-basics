@@ -34,7 +34,7 @@ from the Netlify UI under `app.netlify.com/integrations/{site}/emails`. It does 
 ```text
 Browser
   └─> POST /api/message-us              (Astro SSR fn, .netlify/v1/functions/ssr)
-        ├─> db.insertMessage()          (existing — Turso/Supabase)
+        ├─> db.insertMessage()          (existing — Supabase)
         └─> POST $URL/.netlify/functions/emails/contact-notification
               header: netlify-emails-secret
               └─> [emails fn, .netlify/functions-internal/emails]

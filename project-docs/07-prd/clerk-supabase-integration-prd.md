@@ -11,7 +11,7 @@ This PRD outlines the integration of Clerk authentication with Supabase database
 - **Authentication**: Clerk is fully integrated for authentication with protected routes
 - **Database**: Supabase client initialized but not connected to authentication
 - **Existing Infrastructure**:
-  - Turso database with messages table
+  - A second database provider (since removed) holding the messages table
   - Clerk middleware protecting `/dashboard/*`, `/forum/*`, `/organization/*` routes
   - Basic Supabase connection testing endpoint
 
@@ -48,7 +48,6 @@ SUPABASE_JWT_SECRET=your-jwt-secret  # New: Must match Supabase dashboard
 
 1. Navigate to Supabase Dashboard → Authentication → Providers
 2. Add Custom JWT Provider:
-
    - **Issuer**: `https://clerk.com`
    - **JWKS URL**: `https://[your-clerk-domain].clerk.accounts.dev/.well-known/jwks.json`
    - **Audience**: Your Supabase project URL

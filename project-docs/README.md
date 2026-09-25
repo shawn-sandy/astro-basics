@@ -24,7 +24,6 @@ Essential guides for getting the project running:
 
 - `setup-guide.md` - Complete project setup walkthrough
 - `authentication-guide.md` - Clerk authentication setup
-- `database-setup.md` - Database configuration (Turso/Supabase)
 - `linting-guide.md` - Code quality and linting setup
 - `mcp-servers.md` - Model Context Protocol server setup
 
@@ -36,7 +35,6 @@ Step-by-step tutorials for common operations:
 
 - `clerk-supabase-setup.md` - Integrating Clerk with Supabase
 - `configurable-roles.md` - Setting up custom role systems
-- `database-switching-guide.md` - Switching between database providers
 - `database-troubleshooting-guide.md` - Common database issues
 - `role-guard-usage-guide.md` - Using role-based access control
 
@@ -49,7 +47,6 @@ Documentation for major features:
 - `comment-system.md` - Polymorphic comment system architecture
 - `events-implementation.md` - Event system design
 - `starlight-integration-implementation.md` - Starlight docs integration
-- `turso-comments-implementation-plan.md` - Turso-specific comment features
 
 ### 04-integrations/
 
@@ -70,11 +67,6 @@ Organized by provider:
 - `setup-guide.md` - Supabase project setup
 - `migration-guide-jwt.md` - Migrating from JWT to native auth
 - `native-integration.md` - Modern Clerk-Supabase integration
-
-#### turso/
-
-- `README.md` - Turso database overview
-- `optimization-guide.md` - Performance optimization tips
 
 #### Other
 
@@ -97,7 +89,6 @@ Active implementation plans:
 - `README.md` - Implementation plans overview and critical path
 - `clerk-supabase-modernization.md` - Modernizing Clerk integration
 - `clerk-supabase-role-sync.md` - Organization role synchronization
-- `database-refactoring.md` - Database abstraction layer
 - `default-member-role.md` - Default role assignment
 - `testing-implementation.md` - Test suite implementation
 
@@ -252,8 +243,8 @@ Historical record of finished implementations. Found in `completed/`.
 → Then check [04-integrations/clerk/](./04-integrations/clerk/) for advanced topics
 
 **...work with the database**
-→ Start with [01-getting-started/database-setup.md](./01-getting-started/database-setup.md)
-→ See [02-guides/database-switching-guide.md](./02-guides/database-switching-guide.md) for provider switching
+→ Start with [02-guides/clerk-supabase-setup.md](./02-guides/clerk-supabase-setup.md)
+→ See [02-guides/database-troubleshooting-guide.md](./02-guides/database-troubleshooting-guide.md) for common issues
 → Check [05-database/](./05-database/) for schema details
 
 **...implement a new feature**

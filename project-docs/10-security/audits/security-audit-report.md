@@ -13,7 +13,6 @@ The security audit revealed several areas of concern in the message system imple
 ### 🔴 Critical Issues (Immediate Action Required)
 
 1. **No Rate Limiting on Message Submission API**
-
    - **Location:** `/src/pages/api/message-us.ts`
    - **Risk:** The API endpoint lacks rate limiting, making it vulnerable to:
      - Spam attacks
@@ -22,7 +21,6 @@ The security audit revealed several areas of concern in the message system imple
    - **Impact:** High - Could lead to database exhaustion and service unavailability
 
 2. **Missing CSRF Protection**
-
    - **Location:** Contact forms and API endpoint
    - **Risk:** No CSRF tokens implemented in form submissions
    - **Impact:** High - Attackers could submit messages on behalf of users
@@ -35,12 +33,10 @@ The security audit revealed several areas of concern in the message system imple
 ### 🟠 High Priority Issues
 
 4. **No Content Security Policy (CSP)**
-
    - **Risk:** Missing CSP headers to prevent XSS attacks
    - **Recommendation:** Implement strict CSP headers
 
 5. **Insufficient Input Sanitization**
-
    - **Location:** `/src/pages/api/message-us.ts`
    - **Risk:** While length validation exists, no HTML/script sanitization
    - **Impact:** Medium-High - Potential for stored XSS
@@ -53,13 +49,11 @@ The security audit revealed several areas of concern in the message system imple
 ### 🟡 Medium Priority Issues
 
 7. **Sensitive Data in Error Messages**
-
-   - **Location:** `/src/libs/turso.ts:105-109`
+   - **Location:** client module for a second database provider (since removed)
    - **Risk:** Database errors exposed to console with query details
    - **Impact:** Medium - Information disclosure
 
 8. **No Message Encryption**
-
    - **Risk:** Messages stored in plaintext in database
    - **Impact:** Medium - Sensitive data exposure if database compromised
 
@@ -72,7 +66,7 @@ The security audit revealed several areas of concern in the message system imple
 
 ✅ **SQL Injection Protection**
 
-- Parameterized queries properly implemented in `/src/libs/turso.ts`
+- Parameterized queries properly implemented in the database client (a second provider, since removed)
 - No direct SQL concatenation detected
 
 ✅ **Authentication for Dashboard**
@@ -204,18 +198,15 @@ const validatedIP = ip && isIP(ip) ? ip : 'unknown'
 ## Implementation Priority
 
 1. **Immediate (Within 24 hours)**
-
    - Fix XSS vulnerability in MessageList.astro
    - Implement rate limiting on API endpoint
 
 2. **High Priority (Within 1 week)**
-
    - Add CSRF protection
    - Implement input sanitization
    - Add Content Security Policy headers
 
 3. **Medium Priority (Within 2 weeks)**
-
    - Add honeypot fields
    - Implement message encryption
    - Improve error handling to prevent information disclosure
@@ -228,7 +219,6 @@ const validatedIP = ip && isIP(ip) ? ip : 'unknown'
 ## Testing Recommendations
 
 1. **Security Testing Tools**
-
    - Run OWASP ZAP scanner
    - Use Burp Suite for penetration testing
    - Implement automated security tests in CI/CD

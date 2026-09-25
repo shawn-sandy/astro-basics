@@ -12,7 +12,7 @@ This comprehensive guide walks you through setting up astro-basics with all its 
 Astro-basics is a production-ready web development framework with:
 
 - ✅ **Authentication** - Clerk integration with protected routes
-- ✅ **Database Support** - Supabase (PostgreSQL) and Turso (LibSQL) backends
+- ✅ **Database Support** - Supabase (PostgreSQL) backend
 - ✅ **Role System** - Configurable roles with TypeScript type safety
 - ✅ **Security** - CSRF protection, rate limiting, RLS policies
 - ✅ **Testing** - Unit tests (Vitest) and E2E tests (Playwright)
@@ -120,10 +120,7 @@ Unauthenticated users are automatically redirected to sign-in.
 
 ### Step 3: Database Setup
 
-Choose **one or both** database backends:
-
-- **Supabase** (PostgreSQL): Real-time features, native Clerk integration, RLS
-- **Turso** (LibSQL): Edge-first SQLite, low latency, global distribution
+The project uses **Supabase** (PostgreSQL) for real-time features, native Clerk integration, and RLS.
 
 #### Option A: Guided Setup (Recommended)
 
@@ -134,12 +131,12 @@ npm run db:wizard
 ```
 
 The wizard will:
-- Detect available database credentials
-- Guide you through configuration
-- Set up database schema automatically
-- Verify connection
 
-#### Option B: Manual Setup - Supabase
+- Prompt for your Supabase project URL, anon key, and service role key (required for database queries)
+- Test the connection
+- Save the configuration to `.env`
+
+#### Option B: Manual Setup
 
 **1. Create Supabase Project**
 
@@ -175,6 +172,7 @@ PUBLIC_SUPABASE_ANON_KEY=eyJ...
 ```
 
 :::tip[Understanding Supabase Keys]
+
 - **Anon Key**: Safe for client-side code. Respects Row Level Security (RLS) policies.
 - **Service Role Key**: Bypasses RLS. Server-side only. Never expose in client code.
 - **Project URL**: Your unique Supabase project endpoint.
@@ -182,88 +180,28 @@ PUBLIC_SUPABASE_ANON_KEY=eyJ...
 
 **3. Run Migrations**
 
-```bash
-# Apply database schema (users, roles, organizations, comments)
-npm run db:migrate
+Migrations are SQL files in `scripts/migrations/`. Apply each one with `psql`, or paste it into the Supabase SQL editor:
 
-# Verify migration status
-npm run db:migrate:status
+```bash
+# Export your Supabase connection string first (Project Settings → Database).
+# It is not the API URL above: psql needs the PostgreSQL connection string.
+export DATABASE_URL="postgresql://postgres:[password]@[project-ref].supabase.co:5432/postgres"
+
+# Apply database schema (users, roles, organizations)
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql
+
+# Apply the contact messages table, required by the contact form and /dashboard/messages
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/006_messages.sql
 
 # Set up Clerk-Supabase user sync
 npm run db:setup-users
+
+# Verify configuration
+npm run db:status
 ```
 
 See the [Clerk-Supabase Integration Guide](/guide/integrations/clerk-supabase/) for detailed instructions.
-
-#### Option C: Manual Setup - Turso
-
-**1. Install Turso CLI**
-
-```bash
-curl -sSfL https://get.tur.so/install.sh | bash
-turso auth login
-```
-
-**2. Create Database**
-
-```bash
-# Create database
-turso db create astro-basics
-
-# Get connection details
-turso db show astro-basics
-```
-
-**3. Configure Environment**
-
-```bash
-# Get database URL
-turso db show astro-basics --url
-# → TURSO_DATABASE_URL
-
-# Create auth token
-turso db tokens create astro-basics
-# → TURSO_AUTH_TOKEN
-```
-
-Add to `.env`:
-
-```env
-TURSO_DATABASE_URL=libsql://your-db.turso.io
-TURSO_AUTH_TOKEN=eyJ...
-```
-
-**4. Initialize Database**
-
-```bash
-npm run db:setup
-```
-
-#### Database Switching
-
-The project includes a **unified database abstraction layer**:
-
-```bash
-# Check current database status
-npm run db:status
-
-# Switch databases (with automatic backup)
-npm run db:switch:supabase
-npm run db:switch:turso
-npm run db:switch:auto        # Auto-detect
-
-# Backup and restore
-npm run db:backup
-npm run db:restore
-```
-
-**Key Features:**
-- Automatic backup before switching
-- Provider auto-detection via `DATABASE_PROVIDER` env var
-- Unified TypeScript types
-- Zero code changes required
-
-See the [Database Switching Guide](/guide/database-switching/) for complete documentation.
 
 ### Step 4: Role Configuration
 
@@ -305,7 +243,7 @@ vim config/roles.config.ts
 export const roleConfig: RoleConfig = {
   roles: [
     { id: 'member', level: 1, name: 'Member', isDefault: true },
-    { id: 'author', level: 2, name: 'Author' },      // New
+    { id: 'author', level: 2, name: 'Author' }, // New
     { id: 'moderator', level: 3, name: 'Moderator' }, // New
     { id: 'admin', level: 4, name: 'Admin' },
     { id: 'super_admin', level: 5, name: 'Super Admin' },
@@ -324,13 +262,14 @@ npm run setup:roles
 ```
 
 This creates:
+
 - TypeScript types in `src/types/generated-roles.ts`
 - Database migrations in `scripts/migrations/`
 
 **4. Apply Migration**
 
 ```bash
-npm run db:migrate
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/XXX_user_roles.sql
 ```
 
 **5. Commit Changes**
@@ -466,14 +405,11 @@ npm run test:e2e:report
 npm run db:status       # Check configuration
 npm run db:schema       # Validate schema
 
-# Migrations
-npm run db:migrate      # Run migrations
-npm run db:migrate:status  # Check status
-npm run db:migrate:rollback # Rollback
+# Migrations (SQL files in scripts/migrations/)
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
 
 # Data management
-npm run db:seed:messages    # Seed data
-npm run db:reset            # Reset (deletes all data)
+npm run db:seed:messages    # Seed the messages table
 ```
 
 See the [Database Troubleshooting Guide](/guide/database-troubleshooting/) for help with common issues.
@@ -509,6 +445,7 @@ ASTRO_ADAPTER=netlify  # or 'node', 'vercel'
 **Problem:** "Clerk keys not configured"
 
 **Solution:**
+
 ```bash
 # Verify keys in .env
 grep CLERK .env
@@ -523,12 +460,13 @@ grep CLERK .env
 **Problem:** "Failed to connect to database"
 
 **Solution:**
+
 ```bash
 # Check status
 npm run db:status
 
 # Verify connection
-npm run db:check
+npm run db:manage test
 
 # See troubleshooting guide
 # /guide/database-troubleshooting/
@@ -539,9 +477,13 @@ npm run db:check
 **Problem:** "Table does not exist" errors
 
 **Solution:**
+
 ```bash
 # Run migrations
-npm run db:migrate
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
+
+# "relation \"messages\" does not exist" means this one has not been applied
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/006_messages.sql
 
 # Verify schema
 npm run db:schema
@@ -558,6 +500,7 @@ npm run db:schema
 **Problem:** Commits fail due to linting
 
 **Solution:**
+
 ```bash
 # Fix all issues
 npm run fix:all
@@ -569,7 +512,7 @@ Now that you're set up:
 
 1. **Explore Features**
    - [Configurable Roles](/guide/configurable-roles/) - Custom role system
-   - [Database Switching](/guide/database-switching/) - Provider flexibility
+   - [Environment Configuration](/guide/environment-configuration/) - Database and service settings
    - [Role Guard Usage](/guide/role-guard-usage/) - Access control patterns
 
 2. **Learn the Stack**

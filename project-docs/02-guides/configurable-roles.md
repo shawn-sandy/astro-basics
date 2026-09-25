@@ -8,7 +8,7 @@ The configurable role system allows you to:
 
 - Define custom roles at project setup time
 - Maintain full TypeScript type safety across your codebase
-- Automatically generate database migrations for PostgreSQL (Supabase) or SQLite (Turso)
+- Automatically generate PostgreSQL migrations for your Supabase database
 - Enforce role hierarchy and permissions
 - Keep roles consistent between TypeScript and database
 
@@ -510,8 +510,8 @@ npm run setup:roles
    ```
    ✓ Types generated: src/types/generated-roles.ts
    ✓ Migration 003 created
-     Forward: scripts/migrations/003_user_roles.sql
-     Rollback: scripts/migrations/rollback_003_user_roles.sql
+     Forward: scripts/migrations/XXX_user_roles.sql
+     Rollback: scripts/migrations/rollback_XXX_user_roles.sql
    ```
 
 **Next steps displayed**:
@@ -519,17 +519,19 @@ npm run setup:roles
 ```
 1. Review the generated files
 2. Run type-check to verify: npm run type-check
-3. Apply migration: npm run db:migrate -- 003_user_roles.sql
+3. Apply migration: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/XXX_user_roles.sql
 4. Commit all files to Git
 ```
 
 ### Step 4: Apply to Database
 
-**Run the migration to update your database**:
+**Run the migration against your Supabase database**:
 
 ```bash
-npm run db:migrate
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/XXX_user_roles.sql
 ```
+
+Replace `XXX` with the migration number `setup:roles` printed. `DATABASE_URL` is your Supabase connection string (Project Settings > Database). You can also paste the SQL file into the Supabase SQL editor instead. See `scripts/migrations/README.md`.
 
 **What this does**:
 
@@ -537,10 +539,12 @@ npm run db:migrate
 - Creates a `user_role` type with your configured roles
 - Safe to run (won't delete existing data)
 
-**Success looks like** ✓:
+**Success looks like** ✓ (psql ends with `COMMIT`):
 
 ```
-Migration 003_user_roles.sql applied successfully
+BEGIN
+...
+COMMIT
 ```
 
 ### Step 5: Commit Your Changes
@@ -1027,7 +1031,7 @@ function isValidRole(role: string): role is UserRole {
 
 1. Edit `config/roles.config.ts` and add the role
 2. Run `npm run setup:roles` to regenerate types
-3. Run `npm run db:migrate` to update database
+3. Apply the generated migration with `psql` or the Supabase SQL editor (see [Step 4](#step-4-apply-to-database))
 4. Commit all generated files
 
 ### Removing a Role
@@ -1092,11 +1096,8 @@ npm run setup:roles:dry-run
 # Validate configuration only
 npm run validate:roles
 
-# Apply database migration
-npm run db:migrate
-
-# Check migration status
-npm run db:migrate:status
+# Apply database migration (replace XXX with the generated migration number)
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/XXX_user_roles.sql
 ```
 
 ## Best Practices

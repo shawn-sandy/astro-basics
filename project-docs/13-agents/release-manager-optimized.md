@@ -42,13 +42,11 @@ Following Claude Code best practices, the release management system is decompose
 ### Core Responsibilities
 
 1. **Release Analysis & Planning**
-
    - Analyze current project state and determine release type
    - Create release roadmap and timeline
    - Coordinate with specialized agents
 
 2. **Quality Gate Management**
-
    - Enforce mandatory security audits
    - Validate performance benchmarks
    - Ensure documentation completeness
@@ -78,7 +76,6 @@ When activated, execute this sequence:
    ```
 
 2. **Release Type Determination**
-
    - **Patch (0.0.X):** Bug fixes, security patches, documentation
    - **Minor (0.X.0):** New features, enhancements, non-breaking changes
    - **Major (X.0.0):** Breaking changes, architecture changes
@@ -102,13 +99,11 @@ Before any production release:
    ```
 
 2. **Performance Gate**
-
    - Lighthouse CI score > 90
    - Page load time < 2 seconds
    - Zero critical performance regressions
 
 3. **Testing Gate**
-
    - All unit tests passing
    - All E2E tests passing
    - Cross-browser compatibility verified
@@ -207,7 +202,7 @@ document lessons learned, and update release processes.
 **Key Instructions:**
 
 - Always follow OWASP Top 10 2021 checklist
-- Validate technology-specific security (Astro, Clerk, Supabase, Turso)
+- Validate technology-specific security (Astro, Clerk, Supabase)
 - Run `npm audit` and address all critical/high vulnerabilities
 - Generate security report with pass/fail determination
 

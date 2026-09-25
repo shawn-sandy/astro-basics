@@ -1,6 +1,15 @@
-#!/usr/bin/env node --env-file=.env
+#!/usr/bin/env -S node --import tsx --env-file=.env
 
-import { createClient } from '@libsql/client'
+/**
+ * Seeds the `messages` table with sample contact-form submissions.
+ *
+ * Writes through `getDatabase()` like the rest of the app, so this script never holds
+ * provider credentials or a Supabase client of its own. Run it with the `tsx` loader
+ * (`npm run db:seed:messages`), which is what lets a plain Node script import the
+ * TypeScript abstraction layer.
+ */
+
+import { getDatabase } from '#libs/database'
 
 // Generate realistic dates over the past 90 days
 function generateDate(daysAgo) {
@@ -249,58 +258,35 @@ const messages = [
 ]
 
 async function seedMessages() {
-  // Validate environment variables
-  const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL
-  const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN
-
-  if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
-    console.error('❌ Turso database is not configured.')
-    console.error('   Please set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN in your .env file')
-    process.exit(1)
-  }
-
-  // Create database client
-  const client = createClient({
-    url: TURSO_DATABASE_URL,
-    authToken: TURSO_AUTH_TOKEN,
-  })
-
   console.log('🌱 Starting to seed messages...')
 
   try {
-    // Prepare batch of insert statements
-    const statements = messages.map((msg, index) => {
-      const userAgent = userAgents[index % userAgents.length]
-      const ipAddress = ipAddresses[index % ipAddresses.length]
+    // Inside the try: getDatabase() throws when Supabase is not configured, naming the
+    // keys to set. An unparseable SUPABASE_URL reads as not configured, as in the app.
+    const db = getDatabase()
+
+    const rows = messages.map((msg, index) => {
       const createdAt = generateDate(msg.daysAgo)
 
       return {
-        sql: `
-          INSERT INTO messages (
-            name, email, subject, message, ip_address, user_agent,
-            is_read, is_archived, created_at, updated_at
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `,
-        args: [
-          msg.name,
-          msg.email,
-          msg.subject || null,
-          msg.message,
-          ipAddress,
-          userAgent,
-          msg.is_read === true ? 1 : 0,
-          msg.is_archived === true ? 1 : 0,
-          createdAt,
-          createdAt,
-        ],
+        name: msg.name,
+        email: msg.email,
+        subject: msg.subject,
+        message: msg.message,
+        ip_address: ipAddresses[index % ipAddresses.length],
+        user_agent: userAgents[index % userAgents.length],
+        is_read: msg.is_read === true,
+        is_archived: msg.is_archived === true,
+        created_at: createdAt,
+        updated_at: createdAt,
       }
     })
 
-    // Execute all inserts in a batch transaction
-    await client.batch(statements)
+    // insertMessages() writes the batch in one statement, so a failure leaves no
+    // partial seed behind
+    const inserted = await db.insertMessages(rows)
 
-    console.log(`✅ Successfully seeded ${messages.length} messages`)
+    console.log(`✅ Successfully seeded ${inserted.length} messages`)
     console.log('📊 Summary:')
     console.log(`   - Unread messages: ${messages.filter(m => !m.is_read).length}`)
     console.log(`   - Read messages: ${messages.filter(m => m.is_read).length}`)
@@ -310,11 +296,10 @@ async function seedMessages() {
     )
 
     // Show a few sample records
-    const sampleResult = await client.execute(
-      'SELECT id, name, subject, created_at FROM messages ORDER BY created_at DESC LIMIT 3'
-    )
+    const sample = await db.getMessages({ limit: 3 })
+
     console.log('\n📝 Sample records:')
-    for (const row of sampleResult.rows) {
+    for (const row of sample) {
       const date = new Date(row.created_at)
       console.log(
         `   - ID ${row.id}: ${row.name} - "${row.subject}" (${date.toLocaleDateString()})`
@@ -322,9 +307,8 @@ async function seedMessages() {
     }
   } catch (error) {
     console.error('❌ Error seeding messages:', error.message || error)
+    console.error('   Run `npm run db:wizard` if Supabase is not configured yet.')
     process.exit(1)
-  } finally {
-    client.close()
   }
 }
 

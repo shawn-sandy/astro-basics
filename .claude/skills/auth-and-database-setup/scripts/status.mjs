@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * Reports whether login (Clerk) and the database (Turso / Supabase) are switched on,
+ * Reports whether login (Clerk) and the database (Supabase) are switched on,
  * without ever printing a key, token, or URL.
  *
  * ON/OFF follows the "configured" rules in src/utils/env-config.ts: a missing value, an
  * unreplaced `YOUR_...` placeholder from .env.example, or (for Supabase) a URL that is
- * not http(s) means that feature is off. Key-prefix checks such as `pk_` are only hints:
+ * not http(s) means that feature is off. The database also needs SUPABASE_SERVICE_ROLE_KEY,
+ * as getDatabase() in src/libs/database.ts does: every query uses the service role client. Key-prefix checks such as `pk_` are only hints:
  * the app accepts those values, so a swapped key still counts as ON, flagged.
  *
  * Run from the project root:
@@ -52,18 +53,6 @@ const GROUPS = [
     ],
   },
   {
-    name: 'Database: Turso',
-    required: [
-      {
-        key: 'TURSO_DATABASE_URL',
-        // Every scheme @libsql/client accepts, including `turso dev`'s http://127.0.0.1.
-        looks: v => /^(libsql|https?|wss?|file):/.test(v),
-        expect: 'libsql://...',
-      },
-      { key: 'TURSO_AUTH_TOKEN' },
-    ],
-  },
-  {
     name: 'Database: Supabase',
     required: [
       {
@@ -74,9 +63,9 @@ const GROUPS = [
         hint: REST_ENDPOINT_HINT,
       },
       { key: 'SUPABASE_ANON_KEY' },
+      { key: 'SUPABASE_SERVICE_ROLE_KEY' },
     ],
     optional: [
-      { key: 'SUPABASE_SERVICE_ROLE_KEY', note: 'needed to sync Clerk users' },
       {
         key: 'PUBLIC_SUPABASE_URL',
         placeholder: 'YOUR_SUPABASE_URL',
@@ -180,33 +169,12 @@ export async function report(env, fetchImpl = fetch) {
     }
   }
 
-  // Same precedence as detectDatabaseProviders() in src/libs/database.ts.
-  const turso = on['Database: Turso']
-  const supabase = on['Database: Supabase']
-  const explicit = env.DATABASE_PROVIDER
-  const active =
-    (explicit === 'turso' && turso) || (explicit === 'supabase' && supabase)
-      ? explicit
-      : supabase
-        ? 'supabase'
-        : turso
-          ? 'turso'
-          : 'none'
-  lines.push(`Database used for messages: ${active}`)
-
-  if (supabase) {
+  if (on['Database: Supabase']) {
     lines.push(await supabaseSchemaLine(env, fetchImpl))
-    // The webhook and fetchUserWithRole() write users through getSupabaseServiceRole(),
-    // which returns null without this key (src/libs/supabase-native.ts).
-    const needs = [
-      !on['Login (Clerk)'] && 'Login ON',
-      !counts(fieldState(env.SUPABASE_SERVICE_ROLE_KEY, { key: 'SUPABASE_SERVICE_ROLE_KEY' })) &&
-        'SUPABASE_SERVICE_ROLE_KEY',
-    ].filter(Boolean)
+    // The webhook writes users through getSupabaseServiceRole(); the database being ON
+    // already guarantees SUPABASE_SERVICE_ROLE_KEY, so only login is left to check.
     lines.push(
-      needs.length
-        ? `Clerk user sync: not ready (needs ${needs.join(' and ')})`
-        : 'Clerk user sync: ready'
+      on['Login (Clerk)'] ? 'Clerk user sync: ready' : 'Clerk user sync: not ready (needs Login ON)'
     )
   }
   return lines

@@ -1,11 +1,13 @@
 List database tables with sample data and row counts, providing insights into the current database structure and content.
 
-This command provides table information including:
+This command runs `npm run db:manage tables` (add `--verbose` for sample records), which:
 
-- Available tables in the current database provider
-- Row counts and sample records from key tables (messages, etc.)
-- Table structure insights and schema compatibility
-- Data examples to understand content format and types
-- Provider-specific table access methods and limitations
+- reads up to five rows from the `messages` table through `getDatabase()` from `#libs/database`
+- reports how many came back, and with `--verbose` prints their subject and id
 
-The table listing uses the unified database abstraction layer to query table information consistently across Turso (LibSQL) and Supabase (PostgreSQL), demonstrating the power of the provider-agnostic interface for data exploration.
+Only `messages` is checked: it is the only table the abstraction layer covers. Use the
+Supabase dashboard for a full table list, row counts and column types.
+
+The command exits non-zero when the database is not configured or the read fails, so a
+missing `messages` table (apply `scripts/migrations/006_messages.sql`) or a rejected
+credential is reported rather than passed over.

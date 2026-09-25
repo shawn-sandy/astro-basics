@@ -39,7 +39,7 @@ project-docs/
 ├── 01-getting-started/          # Onboarding materials
 ├── 02-guides/                   # How-to guides
 ├── 03-features/                 # Feature specifications
-├── 04-integrations/             # Third-party integrations (Clerk, Supabase, Turso)
+├── 04-integrations/             # Third-party integrations (Clerk, Supabase)
 ├── 05-database/                 # Database schemas and migrations
 ├── 06-implementation-plans/     # Active implementation roadmaps
 ├── 07-prd/                      # Product requirements documents
@@ -69,7 +69,7 @@ project-docs/
 
 - `clerk/` - All Clerk-related integration docs
 - `supabase/` - All Supabase integration docs
-- `turso/` - Turso database documentation
+- A second database provider's docs (since removed)
 - Root-level for general integrations (PWA, etc.)
 
 **Files Affected**: 11 files consolidated
@@ -81,7 +81,7 @@ project-docs/
 
 - `GETTING-STARTED.md` → `setup-guide.md`
 - `AUTHENTICATION_DEVELOPER_GUIDE.md` → `authentication-guide.md`
-- `DATABASE_SETUP.md` → `database-setup.md`
+- `DATABASE_SETUP.md` → `database-setup.md` (since removed)
 - `LINTING_GUIDE.md` → `linting-guide.md`
 - `MCP-SERVERS.md` → `mcp-servers.md`
 
@@ -143,7 +143,7 @@ project-docs/
 - Getting started: 5 files
 - Integrations (Clerk): 8 files
 - Integrations (Supabase): 4 files
-- Integrations (Turso): 3 files
+- Integrations (second database provider, since removed): 3 files
 - Implementation plans: 8 files
 - PRDs: 5 files
 - Testing: 4 files
@@ -290,7 +290,7 @@ $ grep -c "project-docs/02-guides" ../CLAUDE.md
 → [04-integrations/clerk/](./04-integrations/clerk/)
 
 **...work with databases**
-→ [01-getting-started/database-setup.md](./01-getting-started/database-setup.md)
+→ [02-guides/clerk-supabase-setup.md](./02-guides/clerk-supabase-setup.md)
 → [05-database/](./05-database/)
 
 **...implement a feature**

@@ -28,7 +28,7 @@ This document outlines the requirements for integrating a comprehensive newslett
 
 ### 2.1 Technology Stack
 
-- **Database**: Turso (LibSQL) - Leverage existing database infrastructure
+- **Database**: Supabase (PostgreSQL) - Leverage existing database infrastructure
 - **Email Service**: Resend API for transactional and bulk emails
 - **Email Templates**: React Email for responsive templates
 - **Authentication**: Clerk for admin access control
@@ -39,7 +39,7 @@ This document outlines the requirements for integrating a comprehensive newslett
 
 ```
 ┌─────────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Web Forms     │────▶│  API Routes  │────▶│   Turso DB  │
+│   Web Forms     │────▶│  API Routes  │────▶│ Supabase DB │
 └─────────────────┘     └──────────────┘     └─────────────┘
                                │                     ▲
                                ▼                     │
@@ -371,14 +371,12 @@ Check out these amazing projects...
 ### 8.2 Email Compliance
 
 - **GDPR Compliance**:
-
   - Double opt-in required
   - Clear consent language
   - Easy data export/deletion
   - Privacy policy link
 
 - **CAN-SPAM Compliance**:
-
   - Physical address in footer
   - Clear sender identification
   - Unsubscribe link in every email
@@ -526,7 +524,7 @@ For existing contact form submissions:
 ## 18. Cost Estimates
 
 - Resend API: ~$20/month for 10,000 emails
-- Additional Turso storage: Minimal
+- Additional Supabase storage: Minimal
 - Development time: 8 weeks
 - Maintenance: 2-4 hours/month
 

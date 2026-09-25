@@ -1,31 +1,27 @@
 # Claude Database Management Commands
 
-This directory contains Claude slash commands for managing the astro-basics database system, which features a sophisticated unified abstraction layer supporting both Turso (LibSQL) and Supabase (PostgreSQL) providers.
+This directory contains Claude slash commands for managing the astro-basics database system, which uses Supabase (PostgreSQL) behind a unified abstraction layer (`getDatabase()` from `#libs/database`).
 
 ## Available Commands
 
 ### Core Database Operations
 
-- **`/db-status`** - Show comprehensive database status and provider information
-- **`/db-switch`** - Interactively switch between database providers with backup
+- **`/db-status`** - Show comprehensive database status and Supabase configuration
 - **`/db-test`** - Test current database connectivity and performance
 - **`/db-health`** - Run complete health check with diagnostics
 
 ### Data Management
 
-- **`/db-backup`** - Create environment configuration backup
-- **`/db-restore`** - Restore from backup with validation
 - **`/db-tables`** - List tables and show sample data
 
 ### Setup & Maintenance
 
 - **`/db-setup`** - Launch interactive setup wizard
-- **`/db-migrate`** - Show migration status and run migrations
 - **`/db-cleanup`** - Preview/execute database cleanup operations
 
 ### Development Tools
 
-- **`/db-schema`** - Validate database schema compatibility
+- **`/db-schema`** - Validate the Supabase database schema
 - **`/db-debug`** - Advanced debugging with verbose logging
 
 ## Architecture Integration
@@ -36,29 +32,23 @@ These commands leverage the existing robust infrastructure:
 
 - **`src/libs/database.ts`** - Main abstraction with unified Database interface
 - **`src/libs/database-types.ts`** - Shared TypeScript types
-- **Provider-specific implementations** - Turso and Supabase clients
+- **Supabase implementation** - The only database provider
 
 ### Management Scripts
 
-- **`scripts/database-manager.js`** - CLI tool with 9 management commands
+- **`scripts/database-manager.js`** - CLI tool with 7 management commands
 - **`scripts/database-status.js`** - Comprehensive status reporting
-- **`scripts/switch-database.js`** - Safe provider switching with backup
-- **16 npm scripts** - Complete database management workflow
+- **`npm run db:*` scripts** - Complete database management workflow
 
 ### Documentation
 
-- **Database Switching Guide** - Complete user guide for provider switching
+- **Clerk + Supabase Setup Guide** - Supabase configuration walkthrough
 - **Database Troubleshooting Guide** - Technical troubleshooting reference
 - **Comprehensive error handling** - With recovery procedures
 
-## Provider Selection Logic
+## Configuration
 
-The system automatically selects providers using this priority:
-
-1. **Explicit Choice** - `DATABASE_PROVIDER` environment variable
-2. **Supabase Priority** - If both configured, prefers Supabase
-3. **Turso Fallback** - Uses Turso if only it's configured
-4. **Error State** - Clear guidance if no providers configured
+`getDatabase()` returns the Supabase implementation when `SUPABASE_URL` and `SUPABASE_ANON_KEY` are set, and throws a clear error otherwise. Run `/db-setup` (`npm run db:wizard`) to configure them.
 
 ## Command Usage Pattern
 
@@ -73,10 +63,9 @@ Each command follows this pattern:
 
 These commands provide learning opportunities about:
 
-- **Database abstraction patterns** and provider-agnostic design
-- **Safe database switching** with backup and rollback strategies
-- **Configuration management** for multiple database providers
-- **Schema compatibility** across different database types (LibSQL vs PostgreSQL)
+- **Database abstraction patterns** with a single entry point
+- **Configuration management** for Supabase
+- **Schema validation** for PostgreSQL
 - **Production-ready database infrastructure** patterns
 
 ## Integration with Existing Workflows

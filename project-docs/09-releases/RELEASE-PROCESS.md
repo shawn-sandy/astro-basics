@@ -279,8 +279,8 @@ git revert --no-commit HEAD
 git commit -m "revert: rollback v0.X.0 release"
 git push origin primary
 
-# 4. Database rollback (if needed)
-npm run db:migrate:rollback
+# 4. Database rollback (if needed) - apply the migration's rollback SQL
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_00X_descriptive_name.sql
 
 # 5. Clear CDN cache
 npm run cdn:purge
@@ -354,19 +354,16 @@ Thank you to all contributors!
 For critical security patches:
 
 1. **Immediate Response** (< 2 hours)
-
    - Assess severity
    - Create hotfix branch
    - Develop and test fix
 
 2. **Fast Track Testing** (< 4 hours)
-
    - Security verification
    - Regression testing
    - Smoke tests only
 
 3. **Emergency Deployment** (< 6 hours)
-
    - Skip feature freeze
    - Direct to production
    - Immediate monitoring
@@ -472,9 +469,9 @@ npm run deploy:preview
 npm run deploy:prod
 
 # Database
-npm run db:migrate
-npm run db:migrate:rollback
-npm run db:check
+npm run db:status
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/00X_descriptive_name.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_00X_descriptive_name.sql
 ```
 
 ### Release Checklist Template

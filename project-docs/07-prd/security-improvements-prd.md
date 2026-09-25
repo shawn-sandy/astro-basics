@@ -19,7 +19,7 @@ This PRD outlines the essential security improvements for the astro-basics messa
 
 - Message submission API (`/src/pages/api/message-us.ts`)
 - Message display components (`/src/components/dashboard/MessageList.astro`)
-- Database operations (`/src/libs/turso.ts`)
+- Database operations (`/src/libs/database.ts`)
 - Form components and validation
 - Middleware and security headers
 
@@ -213,12 +213,10 @@ Content-Security-Policy:
 ### Essential Testing
 
 1. **XSS Testing**
-
    - Test common XSS payloads
    - Verify HTML escaping works
 
 2. **CSRF Testing**
-
    - Verify token validation
    - Test expired tokens
 
@@ -229,7 +227,6 @@ Content-Security-Policy:
 ## Success Metrics
 
 1. **Security Goals**
-
    - Zero XSS vulnerabilities in message display
    - Zero CSRF attacks possible
    - Effective rate limiting preventing spam

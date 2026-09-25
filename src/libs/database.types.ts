@@ -38,10 +38,23 @@ export type Database = {
           created_at: string
           updated_at: string
         }
-        Insert: Omit<
-          Database['public']['Tables']['messages']['Row'],
-          'id' | 'created_at' | 'updated_at'
-        >
+        // Only the contact form's own fields are required: every other column has a
+        // default in scripts/migrations/006_messages.sql, and a seed may set the
+        // timestamps explicitly.
+        Insert: {
+          name: string
+          email: string
+          message: string
+          user_id?: string | null
+          clerk_user_id?: string | null
+          subject?: string | null
+          is_read?: boolean
+          is_archived?: boolean
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string
+          updated_at?: string
+        }
         Update: Partial<Database['public']['Tables']['messages']['Insert']>
       }
     }

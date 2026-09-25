@@ -47,19 +47,11 @@ export interface EnvironmentConfig {
   getClerkSecretKey(): string | null
   getClerkWebhookSecret(): string | null
 
-  // Database Configuration
-  getDatabaseProvider(): 'turso' | 'supabase' | 'auto' | null
-
-  // Supabase
+  // Supabase (database)
   isSupabaseConfigured(): boolean
   getSupabaseUrl(): string | null
   getSupabaseAnonKey(): string | null
   getSupabaseServiceRoleKey(): string | null
-
-  // Turso
-  isTursoConfigured(): boolean
-  getTursoDatabaseUrl(): string | null
-  getTursoAuthToken(): string | null
 
   // Logging (Axiom)
   isAxiomConfigured(): boolean
@@ -114,17 +106,10 @@ interface CachedEnvironment {
   CLERK_SECRET_KEY: string | undefined
   CLERK_WEBHOOK_SECRET: string | undefined
 
-  // Database selection
-  DATABASE_PROVIDER: string | undefined
-
   // Supabase
   SUPABASE_URL: string | undefined
   SUPABASE_ANON_KEY: string | undefined
   SUPABASE_SERVICE_ROLE_KEY: string | undefined
-
-  // Turso
-  TURSO_DATABASE_URL: string | undefined
-  TURSO_AUTH_TOKEN: string | undefined
 
   // Axiom Logging
   AXIOM_TOKEN: string | undefined
@@ -138,42 +123,57 @@ interface CachedEnvironment {
 let cachedEnvironment: CachedEnvironment | null = null
 
 /**
+ * Raw environment source.
+ *
+ * Astro and Vitest populate `import.meta.env`, but the `db:*` CLI scripts run under plain
+ * Node (through `tsx`), where `import.meta.env` is `undefined` and values arrive in
+ * `process.env`. Reading both keeps one configuration abstraction for the app and its
+ * scripts; without it a script importing `#libs/database` throws on the first lookup.
+ *
+ * `import.meta.env` wins so an Astro build keeps its statically replaced values.
+ */
+function readEnv(key: string): string | undefined {
+  const metaEnv: Record<string, unknown> | undefined = import.meta.env
+  const fromMeta = metaEnv?.[key]
+  if (typeof fromMeta === 'string') return fromMeta
+
+  // `process` is absent in the browser, where the fallback is neither needed nor usable.
+  if (typeof process === 'undefined') return undefined
+  return process.env[key]
+}
+
+/**
  * Load and cache environment variables for optimal performance.
  * Similar to database abstraction pattern with lazy loading.
  */
 function loadEnvironment(): CachedEnvironment {
   if (!cachedEnvironment) {
+    const metaEnv: Record<string, unknown> | undefined = import.meta.env
+
     cachedEnvironment = {
-      // Astro environment detection
-      DEV: import.meta.env.DEV ?? false,
-      PROD: import.meta.env.PROD ?? false,
-      MODE: import.meta.env.MODE ?? 'development',
+      // Astro environment detection. Outside Astro, NODE_ENV stands in for DEV/PROD.
+      DEV: (metaEnv?.DEV as boolean | undefined) ?? readEnv('NODE_ENV') !== 'production',
+      PROD: (metaEnv?.PROD as boolean | undefined) ?? readEnv('NODE_ENV') === 'production',
+      MODE: (metaEnv?.MODE as string | undefined) ?? readEnv('NODE_ENV') ?? 'development',
 
       // Astro configuration
-      ASTRO_ADAPTER: import.meta.env.ASTRO_ADAPTER,
-      PUBLIC_SITE_URL: import.meta.env.PUBLIC_SITE_URL,
+      ASTRO_ADAPTER: readEnv('ASTRO_ADAPTER'),
+      PUBLIC_SITE_URL: readEnv('PUBLIC_SITE_URL'),
 
       // Clerk Authentication
-      PUBLIC_CLERK_PUBLISHABLE_KEY: import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY,
-      CLERK_SECRET_KEY: import.meta.env.CLERK_SECRET_KEY,
-      CLERK_WEBHOOK_SECRET: import.meta.env.CLERK_WEBHOOK_SECRET,
-
-      // Database selection
-      DATABASE_PROVIDER: import.meta.env.DATABASE_PROVIDER,
+      PUBLIC_CLERK_PUBLISHABLE_KEY: readEnv('PUBLIC_CLERK_PUBLISHABLE_KEY'),
+      CLERK_SECRET_KEY: readEnv('CLERK_SECRET_KEY'),
+      CLERK_WEBHOOK_SECRET: readEnv('CLERK_WEBHOOK_SECRET'),
 
       // Supabase
-      SUPABASE_URL: import.meta.env.SUPABASE_URL,
-      SUPABASE_ANON_KEY: import.meta.env.SUPABASE_ANON_KEY,
-      SUPABASE_SERVICE_ROLE_KEY: import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
-
-      // Turso
-      TURSO_DATABASE_URL: import.meta.env.TURSO_DATABASE_URL,
-      TURSO_AUTH_TOKEN: import.meta.env.TURSO_AUTH_TOKEN,
+      SUPABASE_URL: readEnv('SUPABASE_URL'),
+      SUPABASE_ANON_KEY: readEnv('SUPABASE_ANON_KEY'),
+      SUPABASE_SERVICE_ROLE_KEY: readEnv('SUPABASE_SERVICE_ROLE_KEY'),
 
       // Axiom Logging
-      AXIOM_TOKEN: import.meta.env.AXIOM_TOKEN,
-      AXIOM_DATASET: import.meta.env.AXIOM_DATASET,
-      AXIOM_ORG_ID: import.meta.env.AXIOM_ORG_ID,
+      AXIOM_TOKEN: readEnv('AXIOM_TOKEN'),
+      AXIOM_DATASET: readEnv('AXIOM_DATASET'),
+      AXIOM_ORG_ID: readEnv('AXIOM_ORG_ID'),
     }
   }
   return cachedEnvironment
@@ -245,15 +245,6 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
     return secret && secret !== 'YOUR_CLERK_WEBHOOK_SECRET' ? secret : null
   }
 
-  // Database configuration
-  getDatabaseProvider(): 'turso' | 'supabase' | 'auto' | null {
-    const provider = this.env.DATABASE_PROVIDER
-    if (provider === 'turso' || provider === 'supabase' || provider === 'auto') {
-      return provider
-    }
-    return null
-  }
-
   // Supabase
   isSupabaseConfigured(): boolean {
     return !!(this.getSupabaseUrl() && this.getSupabaseAnonKey())
@@ -288,29 +279,6 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
   getSupabaseServiceRoleKey(): string | null {
     const key = this.env.SUPABASE_SERVICE_ROLE_KEY
     return key && key !== 'YOUR_SUPABASE_SERVICE_ROLE_KEY' ? key : null
-  }
-
-  // Turso
-  isTursoConfigured(): boolean {
-    return !!(this.getTursoDatabaseUrl() && this.getTursoAuthToken())
-  }
-
-  /**
-   * Returns the Turso URL only when it is a real one.
-   *
-   * `.env.example` ships `TURSO_DATABASE_URL=YOUR_TURSO_DATABASE_URL`. Left in place it
-   * reads as configured, so provider auto-detection picks Turso and hands the
-   * placeholder to `createClient` on the first database operation. No scheme check here:
-   * Turso URLs are `libsql://`, not HTTP(S) like Supabase's.
-   */
-  getTursoDatabaseUrl(): string | null {
-    const url = this.env.TURSO_DATABASE_URL
-    return url && url !== 'YOUR_TURSO_DATABASE_URL' ? url : null
-  }
-
-  getTursoAuthToken(): string | null {
-    const token = this.env.TURSO_AUTH_TOKEN
-    return token && token !== 'YOUR_TURSO_AUTH_TOKEN' ? token : null
   }
 
   // Axiom Logging
@@ -348,17 +316,14 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
       missingConfig.push('Clerk Authentication (PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY)')
     }
 
-    const hasSupabase = this.isSupabaseConfigured()
-    const hasTurso = this.isTursoConfigured()
+    // The same three keys `getDatabase()` requires: every query in `#libs/database` runs
+    // through the service role client, so reporting the database ready without that key
+    // would promise queries that throw.
+    const hasSupabase = this.isSupabaseConfigured() && !!this.getSupabaseServiceRoleKey()
 
-    if (!hasSupabase && !hasTurso) {
-      missingConfig.push('Database Provider (Supabase or Turso configuration)')
+    if (!hasSupabase) {
+      missingConfig.push('Database (SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY)')
     }
-
-    // Determine available database providers
-    const availableProviders: string[] = []
-    if (hasSupabase) availableProviders.push('supabase')
-    if (hasTurso) availableProviders.push('turso')
 
     return {
       environment: this.getEnvironment(),
@@ -370,9 +335,9 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
           hasWebhook: !!this.getClerkWebhookSecret(),
         },
         database: {
-          provider: this.getDatabaseProvider(),
-          configured: hasSupabase || hasTurso,
-          availableProviders,
+          provider: hasSupabase ? 'supabase' : null,
+          configured: hasSupabase,
+          availableProviders: hasSupabase ? ['supabase'] : [],
         },
         logging: {
           configured: this.isAxiomConfigured(),

@@ -5,7 +5,7 @@
 This guide helps developers migrate from direct `import.meta.env` access to the unified environment configuration abstraction layer. The migration improves type safety, validation, performance, and testability.
 
 **Target Audience:** Developers working on astro-basics codebase
-**Migration Status:** Phase 1 complete (7 files), Phase 2 in progress (8 files remaining)
+**Migration Status:** Phase 1 complete (6 files), Phase 2 in progress (8 files remaining)
 **Related Issue:** #317
 **OpenSpec Proposal:** [complete-env-abstraction-migration](../../openspec/changes/complete-env-abstraction-migration/)
 
@@ -13,14 +13,13 @@ This guide helps developers migrate from direct `import.meta.env` access to the 
 
 ## Migration Status
 
-### ✅ Completed (Phase 1 - 7 Files)
+### ✅ Completed (Phase 1 - 6 Files)
 
 These files have been successfully migrated and serve as reference examples:
 
 | File                          | Status      | Pattern Used                   |
 | ----------------------------- | ----------- | ------------------------------ |
 | `src/libs/database.ts`        | ✅ Migrated | Database provider detection    |
-| `src/libs/turso.ts`           | ✅ Migrated | Database client initialization |
 | `src/libs/supabase.ts`        | ✅ Migrated | Database client setup          |
 | `src/libs/supabase-native.ts` | ✅ Migrated | Native database operations     |
 | `src/utils/clerk-config.ts`   | ✅ Migrated | Clerk configuration management |
@@ -129,18 +128,6 @@ const supabaseUrl = envConfig.getSupabaseUrl()
 const supabaseAnonKey = envConfig.getSupabaseAnonKey()
 ```
 
-**Turso Configuration:**
-
-```typescript
-// Before
-const tursoUrl = import.meta.env.TURSO_DATABASE_URL
-const tursoToken = import.meta.env.TURSO_AUTH_TOKEN
-
-// After
-const tursoUrl = envConfig.getTursoDatabaseUrl()
-const tursoToken = envConfig.getTursoAuthToken()
-```
-
 ### Step 4: Use Validation Helpers
 
 **Replace manual validation with built-in helpers:**
@@ -161,7 +148,6 @@ if (!envConfig.isClerkConfigured()) {
 
 - `isClerkConfigured()` - Validates both Clerk keys present and not placeholders
 - `isSupabaseConfigured()` - Validates Supabase URL and anon key
-- `isTursoConfigured()` - Validates Turso URL and auth token
 - `isAxiomConfigured()` - Validates Axiom token and dataset
 
 ### Step 5: Safe Non-Null Assertions
@@ -643,7 +629,7 @@ vi.mock('#utils/env-config', () => ({
 
 Review these successfully migrated files for patterns:
 
-- **Database:** `src/libs/database.ts`, `src/libs/turso.ts`, `src/libs/supabase.ts`
+- **Database:** `src/libs/database.ts`, `src/libs/supabase.ts`
 - **Auth:** `src/utils/clerk-config.ts`
 - **Logging:** `src/utils/logger.ts`
 
@@ -689,6 +675,6 @@ A: Add it to `src/utils/env-config.ts` following the existing patterns, then use
 ---
 
 **Last Updated:** October 2025
-**Migration Status:** Phase 1 complete (7/15 files), Phase 2 in progress
+**Migration Status:** Phase 1 complete (6/14 files), Phase 2 in progress
 **Related Issue:** #317
 **OpenSpec Proposal:** [complete-env-abstraction-migration](../../openspec/changes/complete-env-abstraction-migration/)

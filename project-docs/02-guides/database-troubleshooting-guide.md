@@ -1,7 +1,7 @@
 # Database Troubleshooting Guide
 
 **Project**: astro-basics Database System  
-**Purpose**: Technical troubleshooting for database switching and configuration issues  
+**Purpose**: Technical troubleshooting for Supabase database configuration issues  
 **Audience**: Developers and system administrators  
 **Last Updated**: 2025-01-24
 
@@ -25,16 +25,6 @@ npm run db:manage health
 npm run db:schema
 ```
 
-### Emergency Recovery
-
-```bash
-# If something went wrong during switching
-npm run db:restore
-
-# If restore fails, use manual backup
-cp .env.backup .env
-```
-
 ---
 
 ## Common Error Messages
@@ -45,13 +35,13 @@ cp .env.backup .env
 
 - API endpoints return 503 errors
 - Dashboard shows "Database service unavailable"
-- `db:status` shows no configured providers
+- `db:status` reports that Supabase is not configured
 
 **Diagnosis:**
 
 ```bash
 npm run db:status
-# Look for: "❌ No database providers configured"
+# Look for: "Configure Supabase (SUPABASE_URL and SUPABASE_ANON_KEY)"
 ```
 
 **Solutions:**
@@ -59,16 +49,13 @@ npm run db:status
 1. **Missing Environment Variables**
 
    ```bash
-   # Check your .env file has required variables
-   cat .env | grep -E "(TURSO|SUPABASE)"
+   # Check which required variables are set (never prints their values)
+   npm run db:status
 
-   # For Turso, you need:
-   TURSO_DATABASE_URL=libsql://...
-   TURSO_AUTH_TOKEN=eyJ...
-
-   # For Supabase, you need:
+   # You need:
    SUPABASE_URL=https://...
-   SUPABASE_SERVICE_ROLE_KEY=eyJ...
+   SUPABASE_ANON_KEY=eyJ...
+   SUPABASE_SERVICE_ROLE_KEY=eyJ...  # for server-side operations
    ```
 
 2. **Run Setup Wizard**
@@ -96,18 +83,16 @@ npm run db:status
 **Diagnosis:**
 
 ```bash
-# Test connectivity to both providers
+# Test connectivity to Supabase
 npm run db:manage test --verbose
 
 # Check network connectivity
-curl -I https://your-project.supabase.co  # For Supabase
-# Turso connectivity is tested by the client
+curl -I https://your-project.supabase.co
 ```
 
 **Solutions:**
 
 1. **Network Issues**
-
    - Check firewall settings
    - Verify DNS resolution
    - Test from different network if possible
@@ -115,54 +100,14 @@ curl -I https://your-project.supabase.co  # For Supabase
 2. **Invalid Credentials**
 
    ```bash
-   # Turso: Verify token hasn't expired
-   # Check at: https://turso.tech/
-
-   # Supabase: Verify project is active
+   # Verify the Supabase project is active
    # Check at: https://supabase.com/dashboard
    ```
 
 3. **Database Server Issues**
-   - Check provider status pages
+   - Check the Supabase status page
    - Verify database instance is running
    - Check for maintenance windows
-
-### "Provider detection failed"
-
-**Symptoms:**
-
-- Auto-detection doesn't work
-- Wrong database provider selected
-- Inconsistent behavior between environments
-
-**Diagnosis:**
-
-```bash
-npm run db:status
-# Look at "Provider Selection Logic" section
-```
-
-**Solutions:**
-
-1. **Explicit Provider Setting**
-
-   ```bash
-   # Set explicit provider in .env
-   echo "DATABASE_PROVIDER=turso" >> .env
-   # or
-   echo "DATABASE_PROVIDER=supabase" >> .env
-   ```
-
-2. **Clear Detection Issues**
-
-   ```bash
-   # Remove auto-detection, use explicit choice
-   sed -i 's/DATABASE_PROVIDER=auto/DATABASE_PROVIDER=turso/' .env
-   ```
-
-3. **Multiple Providers Configured**
-   - Priority is: Explicit → Supabase → Turso
-   - Set `DATABASE_PROVIDER` to override auto-detection
 
 ### "Schema validation failed"
 
@@ -184,11 +129,11 @@ npm run db:schema
 1. **Run Database Migrations**
 
    ```bash
-   # For Turso
-   npm run db:migrate
+   # Apply a migration from scripts/migrations/
+   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
 
-   # For Supabase
-   # Check migrations in Supabase Dashboard
+   # Or paste the SQL into the Supabase SQL editor
+   # See scripts/migrations/README.md for the order
    ```
 
 2. **Manual Schema Check**
@@ -202,128 +147,27 @@ npm run db:schema
 
 ---
 
-## Database-Specific Issues
+## Supabase (PostgreSQL) Issues
 
-### Turso (LibSQL) Issues
-
-#### "Invalid database URL format"
-
-```bash
-# Correct format:
-TURSO_DATABASE_URL=libsql://database-name.turso.io
-# Not: https://database-name.turso.io
-```
-
-#### "Authentication failed"
-
-```bash
-# Token might be expired - regenerate at:
-# https://app.turso.tech/[your-org]/[your-db]/settings/tokens
-```
-
-#### "Database not found"
-
-```bash
-# Verify database exists in Turso dashboard
-# Check organization and database name spelling
-```
-
-### Supabase (PostgreSQL) Issues
-
-#### "Invalid API key"
+### "Invalid API key"
 
 ```bash
 # Don't use SUPABASE_ANON_KEY for server operations
 # Use SUPABASE_SERVICE_ROLE_KEY instead
 ```
 
-#### "Row Level Security (RLS) policy violation"
+### "Row Level Security (RLS) policy violation"
 
 ```bash
 # Check RLS policies in Supabase Dashboard
 # Ensure service role can access required tables
 ```
 
-#### "Project paused"
+### "Project paused"
 
 ```bash
 # Check if Supabase project is paused
 # Free tier projects pause after inactivity
-```
-
----
-
-## Switching Issues
-
-### "Backup creation failed"
-
-**Symptoms:**
-
-- Switching command fails before making changes
-- `.env.backup` file is not created
-
-**Diagnosis:**
-
-```bash
-# Check filesystem permissions
-ls -la .env
-ls -la .env.backup 2>/dev/null || echo "Backup doesn't exist"
-```
-
-**Solutions:**
-
-```bash
-# Manual backup creation
-cp .env .env.backup
-
-# Fix permissions if needed
-chmod 644 .env
-```
-
-### "Environment update failed"
-
-**Symptoms:**
-
-- Switching appears to succeed but database doesn't change
-- `.env` file not updated correctly
-
-**Diagnosis:**
-
-```bash
-# Check if .env file is writable
-ls -la .env
-
-# Verify current provider
-npm run db:status | grep "Active Provider"
-```
-
-**Solutions:**
-
-```bash
-# Make .env writable
-chmod 644 .env
-
-# Manual environment update
-echo "DATABASE_PROVIDER=turso" >> .env
-# or edit directly with nano/vim
-```
-
-### "Rollback needed"
-
-**Symptoms:**
-
-- Switch completed but new database doesn't work
-- Need to revert to previous configuration
-
-**Solutions:**
-
-```bash
-# Automatic rollback
-npm run db:restore
-
-# Manual rollback
-cp .env.backup .env
-npm run db:status  # Verify restoration
 ```
 
 ---
@@ -353,7 +197,7 @@ npm run type-check
 **Symptoms:**
 
 - Changes to database configuration don't take effect
-- Need to restart dev server after switching
+- Need to restart dev server after editing `.env`
 
 **Solutions:**
 
@@ -371,18 +215,17 @@ npm run start
 **Symptoms:**
 
 - Works locally but fails in production
-- Different database provider selected
 
 **Diagnosis:**
 
 ```bash
 # Check production environment variables
-# Ensure DATABASE_PROVIDER is set explicitly
+# Ensure SUPABASE_URL and SUPABASE_ANON_KEY are set
 ```
 
 **Solutions:**
 
-- Set explicit `DATABASE_PROVIDER` in production
+- Set `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` in production
 - Use same credentials format as local
 - Verify network access from production environment
 
@@ -390,12 +233,12 @@ npm run start
 
 ## API Endpoint Issues
 
-### "API returns wrong provider info"
+### "API reports no database configured"
 
 **Symptoms:**
 
-- `/api/supabase-test` reports wrong provider
-- Inconsistent provider information
+- `/api/supabase-test` returns "No database provider is properly configured"
+- `.env` has Supabase values but the API does not see them
 
 **Diagnosis:**
 
@@ -403,7 +246,7 @@ npm run start
 # Test API endpoint
 curl http://localhost:4321/api/supabase-test
 
-# Check which provider is actually active
+# Check whether Supabase is configured
 npm run db:status
 ```
 
@@ -458,24 +301,6 @@ npm run db:manage health --verbose
 
 - Check network latency to database
 - Verify database instance performance tier
-- Consider switching providers for performance comparison
-
-### "Memory issues during switching"
-
-**Symptoms:**
-
-- Switching process crashes
-- Out of memory errors
-
-**Solutions:**
-
-```bash
-# Use dry-run mode to test first
-node scripts/switch-database.js --to turso --dry-run
-
-# Switch without running other processes
-# Stop dev server before switching
-```
 
 ---
 
@@ -533,16 +358,6 @@ npm run db:manage status --verbose
 ### Manual Database Testing
 
 ```bash
-# Test Turso directly
-node -e "
-import { createClient } from '@libsql/client';
-const client = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN
-});
-console.log(await client.execute('SELECT 1'));
-"
-
 # Test Supabase directly
 node -e "
 import { createClient } from '@supabase/supabase-js';
@@ -557,11 +372,12 @@ console.log(await client.from('messages').select('count'));
 ### Environment Variable Debugging
 
 ```bash
-# Check all database-related environment variables
-env | grep -E "(DATABASE|TURSO|SUPABASE)" | sort
+# Check which database-related variables are set (names only, no values)
+env | grep -o '^SUPABASE_[A-Z_]*=' | sort
 
-# Check for invisible characters or extra spaces
-od -c .env | grep -E "(TURSO|SUPABASE|DATABASE)"
+# Check for Windows line endings or trailing spaces (prints line numbers, not values)
+grep -n $'\r' .env | cut -d: -f1
+grep -n '^SUPABASE_[A-Z_]*=.* $' .env | cut -d: -f1
 ```
 
 ---
@@ -585,7 +401,7 @@ echo "OS: $(uname -a)" >> debug-info.txt
 
 ```bash
 # Enable logging and reproduce issue
-DEBUG=1 npm run db:switch:turso 2>&1 | tee switch-debug.log
+DEBUG=1 npm run db:manage test 2>&1 | tee db-debug.log
 ```
 
 ### Reset to Clean State
@@ -613,9 +429,9 @@ npm run db:manage health
 
 ```bash
 # Always backup before experimenting
-npm run db:backup
+cp .env .env.backup
 # Make changes...
-# If issues: npm run db:restore
+# If issues: cp .env.backup .env
 ```
 
 ### Environment Validation
@@ -635,4 +451,4 @@ git status | grep -E "(\.env|backup)" && echo "⚠️  Check .env files"
 
 ---
 
-_This troubleshooting guide covers technical resolution for database system issues. For basic usage, see the Database Switching Guide._
+_This troubleshooting guide covers technical resolution for database system issues. For setup, see the Clerk + Supabase Setup Guide (`project-docs/02-guides/clerk-supabase-setup.md`)._

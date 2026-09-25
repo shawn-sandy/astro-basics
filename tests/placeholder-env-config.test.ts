@@ -52,7 +52,7 @@ describe('Supabase configuration with placeholder values', () => {
     expect(config.getSupabaseUrl()).toBeNull()
   })
 
-  it.each(['ftp://example.com', 'javascript:alert(1)', 'libsql://wrong-provider.turso.io'])(
+  it.each(['ftp://example.com', 'javascript:alert(1)', 'ws://example.com'])(
     'rejects the parseable but non-HTTP URL %s',
     async url => {
       // `URL.canParse` accepts these; Supabase only accepts HTTP(S) and would throw.
@@ -95,11 +95,11 @@ describe('Supabase configuration with placeholder values', () => {
 })
 
 /**
- * The same defect in the database config. Left unfixed, `cp .env.example .env` makes
- * Turso look configured, so provider auto-detection selects it and the placeholder URL
- * reaches `createClient` on the first database operation.
+ * The status report has to agree with `getDatabase()`, which requires the service role key
+ * on top of the URL and anon key: every query runs through the service role client. Saying
+ * the database is configured without it promises queries that throw.
  */
-describe('Turso configuration with placeholder values', () => {
+describe('database readiness in the configuration status', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -109,27 +109,35 @@ describe('Turso configuration with placeholder values', () => {
     vi.resetModules()
   })
 
-  it('treats the .env.example placeholders as unconfigured', async () => {
+  it('reports the database as configured only with all three keys', async () => {
     const config = await loadConfigWithEnv({
-      TURSO_DATABASE_URL: 'YOUR_TURSO_DATABASE_URL',
-      TURSO_AUTH_TOKEN: 'YOUR_TURSO_AUTH_TOKEN',
+      SUPABASE_URL: 'https://abcdefgh.supabase.co',
+      SUPABASE_ANON_KEY: 'real-anon-key',
+      SUPABASE_SERVICE_ROLE_KEY: 'real-service-key',
     })
 
-    expect(config.getTursoDatabaseUrl()).toBeNull()
-    expect(config.getTursoAuthToken()).toBeNull()
-    expect(config.isTursoConfigured()).toBe(false)
+    const status = config.getConfigurationStatus()
+
+    expect(status.services.database).toMatchObject({ provider: 'supabase', configured: true })
+    expect(status.missingConfiguration.join(' ')).not.toContain('SUPABASE')
   })
 
-  it('passes a real libsql URL and token through untouched', async () => {
-    // No HTTP(S) scheme check here - unlike Supabase, Turso URLs are libsql://.
+  it('does not report the database as configured without the service role key', async () => {
     const config = await loadConfigWithEnv({
-      TURSO_DATABASE_URL: 'libsql://my-db.turso.io',
-      TURSO_AUTH_TOKEN: 'real-auth-token',
+      SUPABASE_URL: 'https://abcdefgh.supabase.co',
+      SUPABASE_ANON_KEY: 'real-anon-key',
+      SUPABASE_SERVICE_ROLE_KEY: '',
     })
 
-    expect(config.getTursoDatabaseUrl()).toBe('libsql://my-db.turso.io')
-    expect(config.getTursoAuthToken()).toBe('real-auth-token')
-    expect(config.isTursoConfigured()).toBe(true)
+    const status = config.getConfigurationStatus()
+
+    expect(status.services.database).toMatchObject({
+      provider: null,
+      configured: false,
+      availableProviders: [],
+    })
+    expect(status.isFullyConfigured).toBe(false)
+    expect(status.missingConfiguration.join(' ')).toContain('SUPABASE_SERVICE_ROLE_KEY')
   })
 })
 

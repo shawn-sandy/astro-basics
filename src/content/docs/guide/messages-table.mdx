@@ -1,0 +1,146 @@
+---
+title: Messages Table
+description: The Supabase table behind the contact form and the messages dashboard - its migration, its schema, and the abstraction layer that reads it.
+sidebar:
+  order: 8
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+
+The `messages` table stores contact-form submissions. It is the only table the database
+abstraction layer (`src/libs/database.ts`) reads or writes, so the contact form,
+`/dashboard/messages` and `npm run db:seed:messages` all depend on it.
+
+## Applying the migration
+
+A fresh Supabase project does not have this table.
+
+<Steps>
+
+1. Get your connection string from the Supabase dashboard (**Project Settings → Database**)
+   and export it:
+
+   ```bash
+   export DATABASE_URL="postgresql://postgres:[password]@[project-ref].supabase.co:5432/postgres"
+   ```
+
+2. Apply the migration with `psql`, or paste the file into the Supabase SQL editor:
+
+   ```bash
+   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/006_messages.sql
+   ```
+
+3. Confirm it:
+
+   ```bash
+   npm run db:schema      # reads the table and checks the columns the app needs
+   npm run db:manage test # reads one row and fails when the read is rejected
+   ```
+
+</Steps>
+
+<Aside type="caution" title="Depends on 001_core_schema.sql">
+  `messages.user_id` references `users(id)`, so apply `001_core_schema.sql` first. Rolling
+  the migration back with `rollback_006_messages.sql` deletes every stored message. Back the
+  table up first, owner-readable only since the rows hold personal data:
+  `install -m 600 /dev/null messages-backup.sql && pg_dump "$DATABASE_URL" --table=messages > messages-backup.sql`.
+</Aside>
+
+Without the migration, `db:schema` and `db:manage test` fail with
+`relation "messages" does not exist`, the contact form returns a 500, and
+`/dashboard/messages` shows no messages.
+
+## Schema
+
+| Column          | Type          | Null | Notes                                              |
+| --------------- | ------------- | ---- | -------------------------------------------------- |
+| `id`            | `bigint`      | no   | Primary key, identity                              |
+| `user_id`       | `uuid`        | yes  | References `users(id)`, `NULL` when anonymous      |
+| `clerk_user_id` | `text`        | yes  | Clerk user id, `NULL` when anonymous               |
+| `name`          | `text`        | no   | From the form                                      |
+| `email`         | `text`        | no   | From the form                                      |
+| `subject`       | `text`        | yes  | From the form                                      |
+| `message`       | `text`        | no   | From the form                                      |
+| `is_read`       | `boolean`     | no   | Default `false`, set by the dashboard              |
+| `is_archived`   | `boolean`     | no   | Default `false`, set by the dashboard              |
+| `ip_address`    | `text`        | yes  | Captured by the API route                          |
+| `user_agent`    | `text`        | yes  | Captured by the API route                          |
+| `created_at`    | `timestamptz` | no   | Default `now()`; a seed may set it                 |
+| `updated_at`    | `timestamptz` | no   | Default `now()`, maintained by a trigger on update |
+
+Indexes: `idx_messages_created_at` (the dashboard lists newest first),
+`idx_messages_is_read`, `idx_messages_is_archived` and `idx_messages_user_id`.
+
+### Row Level Security
+
+RLS is enabled with a single policy, `messages_service_all`, granting the `service_role`
+full access. `anon` and `authenticated` therefore have **no** access: messages hold personal
+data (email, IP address, user agent), and every read and write goes through the server-side
+service role client. This is why `getDatabase()` requires `SUPABASE_SERVICE_ROLE_KEY` on top
+of the URL and anon key.
+
+## Reading and writing it
+
+Application code never touches the table directly:
+
+```typescript
+import { getDatabase } from '#libs/database'
+
+const db = getDatabase()
+
+const id = await db.insertMessage({ name, email, subject, message })
+const unread = await db.getMessages({ is_read: false, limit: 10 })
+await db.markMessageAsRead(id)
+await db.archiveMessage(id)
+```
+
+### Bulk inserts
+
+`insertMessage()` always creates an unread, unarchived message stamped with the current
+time. `insertMessages()` writes rows verbatim, which is what a seed or an import needs:
+
+```typescript
+const ids = await db.insertMessages([
+  {
+    name: 'Sarah Johnson',
+    email: 'sarah.johnson@email.com',
+    subject: 'Question about pricing',
+    message: 'Do you offer annual discounts?',
+    is_read: true,
+    created_at: '2026-08-01T12:00:00Z',
+    updated_at: '2026-08-01T12:00:00Z',
+  },
+])
+```
+
+Every field beyond `name`, `email` and `message` is optional and falls back to the
+`insertMessage()` default. The batch is one `INSERT`, so a failure leaves no partial write
+behind.
+
+## The db:\* scripts
+
+`db:manage`, `db:schema` and `db:seed:messages` import `#libs/database` and therefore run
+through the `tsx` loader, which is what the npm scripts do
+(`node --import tsx --env-file=.env <script>`). They hold no Supabase credentials of their
+own.
+
+| Command                    | What it does                                                 |
+| -------------------------- | ------------------------------------------------------------ |
+| `npm run db:status`        | Reports which keys are set. Sends no query.                  |
+| `npm run db:manage test`   | Reads one row; exits non-zero when the read fails.           |
+| `npm run db:manage tables` | Reads up to five rows; `--verbose` prints them.              |
+| `npm run db:manage health` | Times a one-row read and rates the response time.            |
+| `npm run db:schema`        | Reads one row and checks the NOT NULL columns the app reads. |
+| `npm run db:seed:messages` | Inserts ~24 sample messages spread over the past 90 days.    |
+
+<Aside type="note" title="What db:schema cannot check">
+  It cannot see column types, defaults, constraints or indexes, and it cannot tell a missing
+  nullable column from a `NULL` one - the abstraction layer maps both to `null`.
+  `scripts/migrations/006_messages.sql` remains the source of truth for the full schema.
+</Aside>
+
+## Related pages
+
+- [Database Troubleshooting](/guide/database-troubleshooting/)
+- [Environment Configuration](/guide/environment-configuration/)
+- [Complete Setup Guide](/guide/getting-started/setup/)
