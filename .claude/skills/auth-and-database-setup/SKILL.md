@@ -113,7 +113,8 @@ sync still goes to Supabase.
 1. They create a project at [supabase.com](https://supabase.com) and open
    **Project Settings > API**.
 2. In `.env` they replace the placeholders:
-   - `SUPABASE_URL` and `PUBLIC_SUPABASE_URL`: the Project URL (`https://...`)
+   - `SUPABASE_URL` and `PUBLIC_SUPABASE_URL`: the Project URL (`https://...`), not the
+     REST endpoint that ends in `/rest/v1`
    - `SUPABASE_ANON_KEY` and `PUBLIC_SUPABASE_ANON_KEY`: the anon (or publishable)
      key
    - `SUPABASE_SERVICE_ROLE_KEY`: the service_role (or secret) key. This key is
@@ -146,6 +147,7 @@ uses the service role key and does not need it. The steps are in
 | `Supabase users table: exists, but ... (42501)`   | The table is there, but the API roles have no grants on it    | The schema SQL changes no grants; check the table's API access in the Supabase dashboard |
 | `Supabase users table: key rejected`              | The anon key was copied wrong or belongs to another project   | Recopy `SUPABASE_ANON_KEY`                                                               |
 | `could not reach SUPABASE_URL (ENOTFOUND)`        | Typo in the URL, or the project is paused                     | Check the Project URL; resume the project in the Supabase dashboard                      |
+| `SUPABASE_URL` says `without /rest/v1`            | They pasted the REST endpoint; the app adds `/rest/v1` itself | Delete `/rest/v1` from the end of `SUPABASE_URL` and `PUBLIC_SUPABASE_URL`               |
 | `Supabase users table: timed out`                 | The URL points at something that never answers                | Check the Project URL is the one from **Project Settings > API**                         |
 | `Clerk user sync: not ready`                      | Login is off, or `SUPABASE_SERVICE_ROLE_KEY` is not set       | Part A, or Supabase step 2                                                               |
 | `db:setup` fails with `fetch failed`              | The Turso URL or token is wrong                               | Rerun `turso db show astro-basics --url` and create a new token                          |

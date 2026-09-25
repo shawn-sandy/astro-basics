@@ -16,9 +16,17 @@ import { pathToFileURL, URL } from 'node:url'
 const isHttpUrl = v => URL.canParse(v) && ['http:', 'https:'].includes(new URL(v).protocol)
 
 /**
- * `valid` is an app rule and failing it turns the feature OFF; `looks` is only a hint.
- * `placeholder` is the exact .env.example value, when it is not `YOUR_<key>`.
- * @typedef {{ key: string, valid?: (v: string) => boolean, looks?: (v: string) => boolean, expect?: string, note?: string, placeholder?: string }} Field
+ * The dashboard also shows the REST endpoint (`.../rest/v1`). supabase-js appends
+ * `rest/v1` itself, so a pasted endpoint makes every query hit `/rest/v1/rest/v1/...`.
+ */
+const isRestEndpoint = v => /\/rest\/v1\/?$/.test(new URL(v).pathname)
+const REST_ENDPOINT_HINT = 'expected the Project URL, without /rest/v1'
+
+/**
+ * `valid` is an app rule and failing it turns the feature OFF; `looks` is only a hint,
+ * reported as `hint` when given. `placeholder` is the exact .env.example value, when it
+ * is not `YOUR_<key>`.
+ * @typedef {{ key: string, valid?: (v: string) => boolean, looks?: (v: string) => boolean, expect?: string, hint?: string, note?: string, placeholder?: string }} Field
  */
 
 /** @type {{ name: string, required: Field[], optional?: Field[] }[]} */
@@ -58,7 +66,13 @@ const GROUPS = [
   {
     name: 'Database: Supabase',
     required: [
-      { key: 'SUPABASE_URL', valid: isHttpUrl, expect: 'https://...' },
+      {
+        key: 'SUPABASE_URL',
+        valid: isHttpUrl,
+        expect: 'https://...',
+        looks: v => !isRestEndpoint(v),
+        hint: REST_ENDPOINT_HINT,
+      },
       { key: 'SUPABASE_ANON_KEY' },
     ],
     optional: [
@@ -68,6 +82,8 @@ const GROUPS = [
         placeholder: 'YOUR_SUPABASE_URL',
         valid: isHttpUrl,
         expect: 'https://...',
+        looks: v => !isRestEndpoint(v),
+        hint: REST_ENDPOINT_HINT,
         note: 'browser',
       },
       { key: 'PUBLIC_SUPABASE_ANON_KEY', placeholder: 'YOUR_SUPABASE_ANON_KEY', note: 'browser' },
@@ -87,7 +103,8 @@ function fieldState(value, field) {
   if (value === (field.placeholder ?? `YOUR_${field.key}`)) return 'placeholder'
   if (field.valid && !field.valid(value)) return `unusable (expected ${field.expect})`
   if (value.startsWith('YOUR_')) return 'set, but still starts with YOUR_'
-  if (field.looks && !field.looks(value)) return `set, but expected ${field.expect}`
+  if (field.looks && !field.looks(value))
+    return `set, but ${field.hint ?? `expected ${field.expect}`}`
   return 'ok'
 }
 
@@ -104,8 +121,15 @@ const PROBE_TIMEOUT_MS = 10_000
  * @returns {Promise<string>}
  */
 async function supabaseSchemaLine(env, fetchImpl) {
+  // The app's queries cannot work from here, and the 404 the probe would get says
+  // "run the schema SQL" - the wrong fix.
+  if (isRestEndpoint(env.SUPABASE_URL))
+    return 'Supabase users table: not checked - remove /rest/v1 from SUPABASE_URL'
   try {
-    const url = new URL('/rest/v1/users?select=id&limit=1', env.SUPABASE_URL)
+    // Resolve exactly as supabase-js does: new URL('rest/v1', ensureTrailingSlash(url)).
+    // An absolute '/rest/v1' would drop any base path and probe a URL the app never uses.
+    const base = env.SUPABASE_URL.trim()
+    const url = new URL('rest/v1/users?select=id&limit=1', base.endsWith('/') ? base : `${base}/`)
     const res = await fetchImpl(url, {
       headers: { apikey: String(env.SUPABASE_ANON_KEY) },
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),

@@ -163,6 +163,49 @@ describe('auth-and-database-setup status report', () => {
     expect(init.headers).toEqual({ apikey: supabase.SUPABASE_ANON_KEY })
   })
 
+  it('probes the same path supabase-js requests, keeping any base path', async () => {
+    const paths: string[] = []
+    const record = async (url: { pathname: string }) => {
+      paths.push(url.pathname)
+      return new Response('[]', { status: 200 })
+    }
+    for (const SUPABASE_URL of [
+      'https://ref.supabase.co',
+      'https://ref.supabase.co/',
+      'https://self-hosted.example/supabase',
+    ]) {
+      await report({ ...supabase, SUPABASE_URL }, record as unknown as typeof fetch)
+    }
+
+    // supabase-js: new URL('rest/v1', ensureTrailingSlash(url)) + '/users'
+    expect(paths).toEqual(['/rest/v1/users', '/rest/v1/users', '/supabase/rest/v1/users'])
+  })
+
+  it('flags a SUPABASE_URL pasted with /rest/v1 instead of reporting the table found', async () => {
+    const ok = vi.fn(async () => new Response('[]', { status: 200 }))
+
+    for (const suffix of ['/rest/v1', '/rest/v1/']) {
+      const lines = await report(
+        {
+          ...supabase,
+          SUPABASE_URL: `${supabase.SUPABASE_URL}${suffix}`,
+          PUBLIC_SUPABASE_URL: `${supabase.SUPABASE_URL}${suffix}`,
+        },
+        ok
+      )
+
+      // env-config.ts accepts any http(s) URL, so the app still counts Supabase as configured.
+      expect(lines).toContain('Database: Supabase: ON')
+      expect(lines.find(l => l.includes(' SUPABASE_URL'))).toContain('without /rest/v1')
+      expect(lines.find(l => l.includes('PUBLIC_SUPABASE_URL'))).toContain('without /rest/v1')
+      const probe = lines.find(l => l.includes('users table'))
+      expect(probe).not.toContain('found')
+      expect(probe).toContain('remove /rest/v1')
+      expect(lines.join('\n')).not.toContain('projectref-hostname')
+    }
+    expect(ok).not.toHaveBeenCalled()
+  })
+
   it('reports the schema as found when the users table answers', async () => {
     const lines = await report(supabase, async () => new Response('[]', { status: 200 }))
 
