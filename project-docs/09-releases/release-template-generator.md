@@ -144,12 +144,6 @@ docs/releases/
 - [ ] Anonymous key restricted
 - [ ] Service key protected
 
-### Turso Integration
-
-- [ ] Connection string secured
-- [ ] Auth token protected
-- [ ] Query parameterization verified
-
 ## Audit Approval
 
 - **Security Lead:** **\*\*\*\***\_**\*\*\*\*** Date: \***\*\_\*\***
@@ -398,7 +392,6 @@ echo "✅ Created GitHub issues for $VERSION release"
    ```
 
 2. **Customize Documents**
-
    - Edit the generated epic with specific features and goals
    - Update security checklist with version-specific requirements
    - Prepare release notes draft
@@ -420,7 +413,6 @@ If automation scripts are not available:
 
 1. Copy templates from this document
 2. Replace placeholder values:
-
    - `X.Y.Z` → actual version number
    - `[DATE]` → target dates
    - `[NAME]` → team member names

@@ -13,7 +13,7 @@ This document outlines the comprehensive plan for integrating Astro Starlight do
 - **Routing**: Custom routes at `/docs/[...slug].astro`
 - **Features**: MDX support, syntax highlighting, tags, breadcrumbs
 - **Authentication**: Clerk integration for protected routes
-- **Database**: Supabase/Turso for comments system
+- **Database**: Supabase for comments system
 
 ### Key Considerations
 
@@ -490,13 +490,11 @@ If issues arise during implementation:
 ## Post-Implementation Tasks
 
 1. **Documentation Updates**
-
    - Update README.md with Starlight info
    - Add Starlight to CLAUDE.md
    - Create contributor guide for docs
 
 2. **Monitoring Setup**
-
    - Track documentation analytics
    - Monitor error rates
    - Set up performance alerts

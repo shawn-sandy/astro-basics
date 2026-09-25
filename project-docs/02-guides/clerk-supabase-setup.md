@@ -304,13 +304,3 @@ Subscribe to real-time changes in a table
 ```typescript
 const { data, loading, error } = useSupabaseSubscription('messages', `clerk_user_id=eq.${userId}`)
 ```
-
-## Migration from Turso
-
-If you're migrating from Turso to Supabase:
-
-1. Export data from Turso using the export script
-2. Transform data to match Supabase schema
-3. Import using Supabase's CSV import or SQL insert statements
-4. Update application code to use Supabase client instead of Turso
-5. Test thoroughly before switching production traffic

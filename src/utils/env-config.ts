@@ -47,19 +47,11 @@ export interface EnvironmentConfig {
   getClerkSecretKey(): string | null
   getClerkWebhookSecret(): string | null
 
-  // Database Configuration
-  getDatabaseProvider(): 'turso' | 'supabase' | 'auto' | null
-
-  // Supabase
+  // Supabase (database)
   isSupabaseConfigured(): boolean
   getSupabaseUrl(): string | null
   getSupabaseAnonKey(): string | null
   getSupabaseServiceRoleKey(): string | null
-
-  // Turso
-  isTursoConfigured(): boolean
-  getTursoDatabaseUrl(): string | null
-  getTursoAuthToken(): string | null
 
   // Logging (Axiom)
   isAxiomConfigured(): boolean
@@ -114,17 +106,10 @@ interface CachedEnvironment {
   CLERK_SECRET_KEY: string | undefined
   CLERK_WEBHOOK_SECRET: string | undefined
 
-  // Database selection
-  DATABASE_PROVIDER: string | undefined
-
   // Supabase
   SUPABASE_URL: string | undefined
   SUPABASE_ANON_KEY: string | undefined
   SUPABASE_SERVICE_ROLE_KEY: string | undefined
-
-  // Turso
-  TURSO_DATABASE_URL: string | undefined
-  TURSO_AUTH_TOKEN: string | undefined
 
   // Axiom Logging
   AXIOM_TOKEN: string | undefined
@@ -158,17 +143,10 @@ function loadEnvironment(): CachedEnvironment {
       CLERK_SECRET_KEY: import.meta.env.CLERK_SECRET_KEY,
       CLERK_WEBHOOK_SECRET: import.meta.env.CLERK_WEBHOOK_SECRET,
 
-      // Database selection
-      DATABASE_PROVIDER: import.meta.env.DATABASE_PROVIDER,
-
       // Supabase
       SUPABASE_URL: import.meta.env.SUPABASE_URL,
       SUPABASE_ANON_KEY: import.meta.env.SUPABASE_ANON_KEY,
       SUPABASE_SERVICE_ROLE_KEY: import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
-
-      // Turso
-      TURSO_DATABASE_URL: import.meta.env.TURSO_DATABASE_URL,
-      TURSO_AUTH_TOKEN: import.meta.env.TURSO_AUTH_TOKEN,
 
       // Axiom Logging
       AXIOM_TOKEN: import.meta.env.AXIOM_TOKEN,
@@ -245,15 +223,6 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
     return secret && secret !== 'YOUR_CLERK_WEBHOOK_SECRET' ? secret : null
   }
 
-  // Database configuration
-  getDatabaseProvider(): 'turso' | 'supabase' | 'auto' | null {
-    const provider = this.env.DATABASE_PROVIDER
-    if (provider === 'turso' || provider === 'supabase' || provider === 'auto') {
-      return provider
-    }
-    return null
-  }
-
   // Supabase
   isSupabaseConfigured(): boolean {
     return !!(this.getSupabaseUrl() && this.getSupabaseAnonKey())
@@ -288,29 +257,6 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
   getSupabaseServiceRoleKey(): string | null {
     const key = this.env.SUPABASE_SERVICE_ROLE_KEY
     return key && key !== 'YOUR_SUPABASE_SERVICE_ROLE_KEY' ? key : null
-  }
-
-  // Turso
-  isTursoConfigured(): boolean {
-    return !!(this.getTursoDatabaseUrl() && this.getTursoAuthToken())
-  }
-
-  /**
-   * Returns the Turso URL only when it is a real one.
-   *
-   * `.env.example` ships `TURSO_DATABASE_URL=YOUR_TURSO_DATABASE_URL`. Left in place it
-   * reads as configured, so provider auto-detection picks Turso and hands the
-   * placeholder to `createClient` on the first database operation. No scheme check here:
-   * Turso URLs are `libsql://`, not HTTP(S) like Supabase's.
-   */
-  getTursoDatabaseUrl(): string | null {
-    const url = this.env.TURSO_DATABASE_URL
-    return url && url !== 'YOUR_TURSO_DATABASE_URL' ? url : null
-  }
-
-  getTursoAuthToken(): string | null {
-    const token = this.env.TURSO_AUTH_TOKEN
-    return token && token !== 'YOUR_TURSO_AUTH_TOKEN' ? token : null
   }
 
   // Axiom Logging
@@ -349,16 +295,10 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
     }
 
     const hasSupabase = this.isSupabaseConfigured()
-    const hasTurso = this.isTursoConfigured()
 
-    if (!hasSupabase && !hasTurso) {
-      missingConfig.push('Database Provider (Supabase or Turso configuration)')
+    if (!hasSupabase) {
+      missingConfig.push('Database (SUPABASE_URL, SUPABASE_ANON_KEY)')
     }
-
-    // Determine available database providers
-    const availableProviders: string[] = []
-    if (hasSupabase) availableProviders.push('supabase')
-    if (hasTurso) availableProviders.push('turso')
 
     return {
       environment: this.getEnvironment(),
@@ -370,9 +310,9 @@ class AstroBasicsEnvironmentConfig implements EnvironmentConfig {
           hasWebhook: !!this.getClerkWebhookSecret(),
         },
         database: {
-          provider: this.getDatabaseProvider(),
-          configured: hasSupabase || hasTurso,
-          availableProviders,
+          provider: hasSupabase ? 'supabase' : null,
+          configured: hasSupabase,
+          availableProviders: hasSupabase ? ['supabase'] : [],
         },
         logging: {
           configured: this.isAxiomConfigured(),

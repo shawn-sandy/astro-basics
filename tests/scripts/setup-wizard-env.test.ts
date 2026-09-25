@@ -47,18 +47,14 @@ function untouchedLines(text: string, changed: string[]): string[] {
 /** Wizard answers keyed by prompt text, so the test does not depend on prompt order. */
 const wizardAnswers: [RegExp, string][] = [
   [/Reconfigure\?/, 'y'],
-  [/Which database provider/, '3'],
-  [/Turso database URL/, 'libsql://my-db.turso.io'],
-  [/Turso auth token/, 'turso-token'],
   [/Supabase project URL/, 'https://abc.supabase.co'],
   [/anonymous key/, 'eyJanon'],
   [/service role key\?/, 'n'],
-  [/default provider/, '3'],
 ]
 
 /**
  * Run the real wizard from a copy of scripts/ in projectDir, so it edits projectDir/.env.
- * Configures both providers and picks auto-detect. Resolves with the exit code.
+ * Configures Supabase without a service role key. Resolves with the exit code.
  */
 function runWizard(projectDir: string): Promise<number | null> {
   mkdirSync(join(projectDir, 'scripts/lib'), { recursive: true })
@@ -104,17 +100,11 @@ describe('setup wizard .env write path', () => {
   it('updates only the keys it manages and keeps every other line, comments included', () => {
     const original = readFileSync(envPath, 'utf-8')
     const before = parseEnv(original)
-    const changed = [
-      'TURSO_DATABASE_URL',
-      'TURSO_AUTH_TOKEN',
-      'DATABASE_PROVIDER',
-      'ENABLE_COMMENTS',
-    ]
+    const changed = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'ENABLE_COMMENTS']
 
     const after = runWritePath({
-      TURSO_DATABASE_URL: 'libsql://my-db.turso.io',
-      TURSO_AUTH_TOKEN: 'turso-token',
-      DATABASE_PROVIDER: 'turso',
+      SUPABASE_URL: 'https://abc.supabase.co',
+      SUPABASE_ANON_KEY: 'eyJanon',
       ENABLE_COMMENTS: 'true',
     })
     const parsed = parseEnv(after)
@@ -125,60 +115,48 @@ describe('setup wizard .env write path', () => {
 
     expect(untouchedLines(after, changed)).toEqual(untouchedLines(original, changed))
 
-    expect(parsed.TURSO_DATABASE_URL).toBe('libsql://my-db.turso.io')
-    expect(parsed.TURSO_AUTH_TOKEN).toBe('turso-token')
-    expect(parsed.DATABASE_PROVIDER).toBe('turso')
+    expect(parsed.SUPABASE_URL).toBe('https://abc.supabase.co')
+    expect(parsed.SUPABASE_ANON_KEY).toBe('eyJanon')
     expect(parsed.ENABLE_COMMENTS).toBe('true')
 
     // An updated key keeps its inline comment.
-    const originalUrlLine = original.split('\n').find(l => l.startsWith('TURSO_DATABASE_URL='))!
-    const updatedUrlLine = after.split('\n').find(l => l.startsWith('TURSO_DATABASE_URL='))!
+    const originalUrlLine = original.split('\n').find(l => l.startsWith('SUPABASE_URL='))!
+    const updatedUrlLine = after.split('\n').find(l => l.startsWith('SUPABASE_URL='))!
     expect(updatedUrlLine).toContain(originalUrlLine.slice(originalUrlLine.indexOf('#')))
   })
 
-  it('removes a key set to undefined (auto-detect provider)', () => {
-    writeFileSync(envPath, `${example}\nDATABASE_PROVIDER=turso\n`)
+  it('removes a key set to undefined', () => {
+    writeFileSync(envPath, `${example}\nSTALE_KEY=old\n`)
 
-    const parsed = parseEnv(runWritePath({ DATABASE_PROVIDER: undefined }))
+    const parsed = parseEnv(runWritePath({ STALE_KEY: undefined }))
 
-    expect(parsed).not.toHaveProperty('DATABASE_PROVIDER')
+    expect(parsed).not.toHaveProperty('STALE_KEY')
     expect(parsed.PUBLIC_SUPABASE_URL).toBe(parseEnv(example).PUBLIC_SUPABASE_URL)
   })
 
-  it('runs the real wizard: only answered keys change and auto-detect drops DATABASE_PROVIDER', async () => {
-    writeFileSync(envPath, `${example}\nEXTRA_KEY=keep-me\nDATABASE_PROVIDER=turso\n`)
+  it('runs the real wizard: only answered keys change', async () => {
     const original = readFileSync(envPath, 'utf-8')
 
     expect(await runWizard(dir)).toBe(0)
 
     const after = readFileSync(envPath, 'utf-8')
     const parsed = parseEnv(after)
-    expect(parsed).not.toHaveProperty('DATABASE_PROVIDER')
     expect(parsed).toMatchObject({
-      TURSO_DATABASE_URL: 'libsql://my-db.turso.io',
-      TURSO_AUTH_TOKEN: 'turso-token',
       SUPABASE_URL: 'https://abc.supabase.co',
       SUPABASE_ANON_KEY: 'eyJanon',
       EXTRA_KEY: 'keep-me',
       PUBLIC_SUPABASE_URL: parseEnv(example).PUBLIC_SUPABASE_URL,
     })
-    const changed = [
-      'TURSO_DATABASE_URL',
-      'TURSO_AUTH_TOKEN',
-      'SUPABASE_URL',
-      'SUPABASE_ANON_KEY',
-      'DATABASE_PROVIDER',
-      'ENABLE_COMMENTS',
-    ]
+    const changed = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'ENABLE_COMMENTS']
     expect(untouchedLines(after, changed)).toEqual(untouchedLines(original, changed))
   })
 
   it('sees a key on the first line of a file saved with a BOM', () => {
-    writeFileSync(envPath, '\uFEFFDATABASE_PROVIDER=turso\nEXTRA_KEY=keep-me\n')
+    writeFileSync(envPath, '\uFEFFSTALE_KEY=old\nEXTRA_KEY=keep-me\n')
 
-    expect(readEnvFile(envPath).DATABASE_PROVIDER).toBe('turso')
-    const parsed = parseEnv(runWritePath({ DATABASE_PROVIDER: undefined }).replace(/^\uFEFF/, ''))
-    expect(parsed).not.toHaveProperty('DATABASE_PROVIDER')
+    expect(readEnvFile(envPath).STALE_KEY).toBe('old')
+    const parsed = parseEnv(runWritePath({ STALE_KEY: undefined }).replace(/^\uFEFF/, ''))
+    expect(parsed).not.toHaveProperty('STALE_KEY')
     expect(parsed.EXTRA_KEY).toBe('keep-me')
   })
 
@@ -192,8 +170,8 @@ describe('setup wizard .env write path', () => {
     rmSync(envPath)
     expect(existsSync(envPath)).toBe(false)
 
-    const parsed = parseEnv(runWritePath({ TURSO_DATABASE_URL: 'libsql://my-db.turso.io' }))
+    const parsed = parseEnv(runWritePath({ SUPABASE_URL: 'https://abc.supabase.co' }))
 
-    expect(parsed.TURSO_DATABASE_URL).toBe('libsql://my-db.turso.io')
+    expect(parsed.SUPABASE_URL).toBe('https://abc.supabase.co')
   })
 })

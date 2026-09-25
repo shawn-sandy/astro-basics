@@ -2,12 +2,13 @@
 
 /**
  * Database Status Checker
- * Shows current database configuration and switching status
+ * Shows the current Supabase database configuration
  */
 
 import { existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { envValue } from './lib/env-file.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -36,13 +37,7 @@ console.log(`${colors.bright}Database Status Report${colors.reset}\n`)
 // Check abstraction layer files
 log.header('1. Abstraction Layer Status')
 const srcDir = join(__dirname, '..', 'src', 'libs')
-const requiredFiles = [
-  'database-types.ts',
-  'database.ts',
-  'turso.ts',
-  'supabase.ts',
-  'supabase-native.ts',
-]
+const requiredFiles = ['database-types.ts', 'database.ts', 'supabase.ts', 'supabase-native.ts']
 
 let allFilesExist = true
 for (const file of requiredFiles) {
@@ -67,28 +62,6 @@ console.log()
 // Check environment variables
 log.header('2. Database Configuration Status')
 
-/**
- * Reads an env var, treating an unreplaced `YOUR_...` placeholder from .env.example
- * as not set, as src/utils/env-config.ts does. Format is not checked here.
- */
-const envValue = key => (process.env[key]?.startsWith('YOUR_') ? undefined : process.env[key])
-
-// Turso configuration
-const tursoUrl = envValue('TURSO_DATABASE_URL')
-const tursoToken = envValue('TURSO_AUTH_TOKEN')
-const tursoConfigured = !!(tursoUrl && tursoToken)
-
-console.log(`   ${colors.cyan}Turso Configuration:${colors.reset}`)
-console.log(
-  `     DATABASE_URL: ${tursoUrl ? colors.green + '✓ Set' + colors.reset : colors.red + '✗ Not set' + colors.reset}`
-)
-console.log(
-  `     AUTH_TOKEN: ${tursoToken ? colors.green + '✓ Set' + colors.reset : colors.red + '✗ Not set' + colors.reset}`
-)
-console.log(
-  `     Status: ${tursoConfigured ? colors.green + '✓ Configured' + colors.reset : colors.red + '✗ Not configured' + colors.reset}`
-)
-
 // Supabase configuration
 const supabaseUrl = envValue('SUPABASE_URL')
 const supabaseAnonKey = envValue('SUPABASE_ANON_KEY')
@@ -96,7 +69,7 @@ const supabaseServiceKey = envValue('SUPABASE_SERVICE_ROLE_KEY')
 const supabaseConfigured = !!(supabaseUrl && supabaseAnonKey)
 const supabaseFullyConfigured = !!(supabaseUrl && supabaseAnonKey && supabaseServiceKey)
 
-console.log(`\n   ${colors.cyan}Supabase Configuration:${colors.reset}`)
+console.log(`   ${colors.cyan}Supabase Configuration:${colors.reset}`)
 console.log(
   `     SUPABASE_URL: ${supabaseUrl ? colors.green + '✓ Set' + colors.reset : colors.red + '✗ Not set' + colors.reset}`
 )
@@ -112,84 +85,29 @@ console.log(
 
 console.log()
 
-// Provider selection logic
-log.header('3. Database Provider Selection')
+// Provider selection
+log.header('3. Database Provider')
 
-const explicitProvider = process.env.DATABASE_PROVIDER
-console.log(
-  `   Explicit Provider (DATABASE_PROVIDER): ${explicitProvider ? colors.green + explicitProvider + colors.reset : colors.yellow + 'none (auto-detect)' + colors.reset}`
-)
-
-// Determine what would be used
-let selectedProvider = null
-let selectionReason = ''
-
-if (explicitProvider && (explicitProvider === 'turso' || explicitProvider === 'supabase')) {
-  if (explicitProvider === 'turso' && tursoConfigured) {
-    selectedProvider = 'turso'
-    selectionReason = 'explicit choice (configured)'
-  } else if (explicitProvider === 'supabase' && supabaseConfigured) {
-    selectedProvider = 'supabase'
-    selectionReason = 'explicit choice (configured)'
-  } else {
-    selectedProvider = null
-    selectionReason = `explicit choice (${explicitProvider}) but not configured`
-  }
-} else if (supabaseConfigured) {
-  selectedProvider = 'supabase'
-  selectionReason = 'auto-detected (priority)'
-} else if (tursoConfigured) {
-  selectedProvider = 'turso'
-  selectionReason = 'auto-detected (fallback)'
-} else {
-  selectedProvider = null
-  selectionReason = 'no databases configured'
-}
+const selectedProvider = supabaseConfigured ? 'supabase' : null
 
 console.log(
   `   Selected Provider: ${selectedProvider ? colors.green + selectedProvider + colors.reset : colors.red + 'none' + colors.reset}`
 )
-console.log(`   Selection Reason: ${selectionReason}`)
-
-console.log()
-
-// Switching recommendations
-log.header('4. Switching Options')
-
-if (tursoConfigured && supabaseConfigured) {
-  log.success('Both databases configured - switching available')
-  console.log(`   To use Turso: ${colors.cyan}DATABASE_PROVIDER=turso${colors.reset}`)
-  console.log(`   To use Supabase: ${colors.cyan}DATABASE_PROVIDER=supabase${colors.reset}`)
-  console.log(`   To auto-detect: ${colors.cyan}unset DATABASE_PROVIDER${colors.reset}`)
-} else if (tursoConfigured) {
-  log.warning('Only Turso configured')
-  console.log(`   Configure Supabase to enable switching`)
-} else if (supabaseConfigured) {
-  log.warning('Only Supabase configured')
-  console.log(`   Configure Turso to enable switching`)
-} else {
-  log.error('No databases configured')
-  console.log(`   Configure at least one database to proceed`)
-}
 
 console.log()
 
 // Next steps
-log.header('5. Next Steps')
+log.header('4. Next Steps')
 
 if (!allFilesExist) {
   log.error('Fix missing abstraction layer files first')
 } else if (!selectedProvider) {
-  log.error('Configure at least one database (Turso or Supabase)')
-  console.log(`   See: .env.example for configuration template`)
-} else if (selectedProvider && tursoConfigured && supabaseConfigured) {
-  log.success('Ready for database switching!')
-  console.log(`   Current: ${selectedProvider}`)
-  console.log(`   Available: turso, supabase`)
-  console.log(`   Run: ${colors.cyan}npm run db:switch${colors.reset} to switch databases`)
+  log.error('Configure Supabase (SUPABASE_URL and SUPABASE_ANON_KEY)')
+  console.log(`   Run: ${colors.cyan}npm run db:wizard${colors.reset} or see .env.example`)
+} else if (!supabaseFullyConfigured) {
+  log.warning('Set SUPABASE_SERVICE_ROLE_KEY for server-side operations')
 } else {
-  log.info('Single database setup - switching not available')
-  console.log(`   Configure additional database for switching capability`)
+  log.success('Database is ready')
 }
 
 console.log()

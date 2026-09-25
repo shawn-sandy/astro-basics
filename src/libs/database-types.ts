@@ -1,13 +1,12 @@
 /**
  * Unified database types for astro-basics project
- * Works with both Turso and Supabase providers
+ * Backed by Supabase (PostgreSQL)
  */
 
-export type DatabaseProvider = 'turso' | 'supabase' | 'auto'
+export type DatabaseProvider = 'supabase'
 
 /**
- * Unified Message type that works across both databases
- * Based on the existing MessageRow from Turso but generalized
+ * Message row returned by the database abstraction layer
  */
 export interface Message {
   id: number
@@ -25,7 +24,6 @@ export interface Message {
 
 /**
  * Input data for creating new messages
- * Matches existing MessageData from Turso
  */
 export interface MessageData {
   name: string
@@ -38,7 +36,6 @@ export interface MessageData {
 
 /**
  * Query options for retrieving messages
- * Compatible with existing Turso getMessages options
  */
 export interface MessageQueryOptions {
   is_read?: boolean
@@ -78,8 +75,7 @@ export interface Database {
  * Database provider detection result
  */
 export interface ProviderDetectionResult {
-  provider: DatabaseProvider
-  available: string[]
-  configured: string[]
+  available: DatabaseProvider[]
+  configured: DatabaseProvider[]
   recommended: DatabaseProvider | null
 }

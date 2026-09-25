@@ -461,7 +461,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
 ### MANDATORY: Use Database Abstraction Layer
 
-**Rule:** NEVER access database providers directly. ALWAYS use the unified database interface.
+**Rule:** NEVER access the Supabase client directly. ALWAYS use the unified database interface.
 
 ```typescript
 // ✅ CORRECT - Use abstraction layer
@@ -477,10 +477,8 @@ console.log(`Using: ${status.provider_name}`)
 
 // ❌ INCORRECT - Direct provider access
 import { createClient } from '@supabase/supabase-js'
-import { createClient as createTursoClient } from '@libsql/client'
 
 const supabase = createClient(url, key) // NEVER do this
-const turso = createTursoClient({ url }) // NEVER do this
 ```
 
 ### Database Operation Patterns

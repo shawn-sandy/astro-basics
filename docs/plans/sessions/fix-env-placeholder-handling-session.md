@@ -64,9 +64,9 @@ logging silently.
 
 **Who it affects:** anyone submitting the contact form on a fresh clone.
 
-With template values in place, the app's automatic database selection was choosing Turso and
-handing it a fake connection string on the first database operation. Turso is now correctly
-seen as un-configured.
+With template values in place, the app's automatic database selection was choosing a second
+database provider (since removed) and handing it a fake connection string on the first database
+operation. The fix made that provider correctly read as un-configured.
 
 ### 5. README corrected
 
@@ -125,17 +125,17 @@ matters more than the failure itself._
 
 ## Before and after
 
-| Situation                                     | Before                                   | After                                 |
-| --------------------------------------------- | ---------------------------------------- | ------------------------------------- |
-| Copy `.env.example` to `.env`, start the site | Error page on every route                | Site renders                          |
-| No `.env` file at all                         | Site renders                             | Site renders (unchanged)              |
-| Placeholder database URL                      | Treated as configured, crashes           | Treated as not configured             |
-| Placeholder logging token                     | Log shipping attempted, `forbidden` spam | Console logging, silent               |
-| Placeholder Turso credentials                 | Auto-selected as the active database     | Skipped as not configured             |
-| Database URL with a wrong scheme (`ftp://`)   | Accepted, then crashes                   | Rejected as not configured            |
-| Local Supabase on plain `http://`             | Accepted                                 | Still accepted                        |
-| Turso's `libsql://` URLs                      | Accepted                                 | Still accepted                        |
-| README's authentication step                  | Labelled "required"                      | Labelled optional, with what you lose |
+| Situation                                                       | Before                                   | After                                 |
+| --------------------------------------------------------------- | ---------------------------------------- | ------------------------------------- |
+| Copy `.env.example` to `.env`, start the site                   | Error page on every route                | Site renders                          |
+| No `.env` file at all                                           | Site renders                             | Site renders (unchanged)              |
+| Placeholder database URL                                        | Treated as configured, crashes           | Treated as not configured             |
+| Placeholder logging token                                       | Log shipping attempted, `forbidden` spam | Console logging, silent               |
+| Placeholder credentials for the second database (since removed) | Auto-selected as the active database     | Skipped as not configured             |
+| Database URL with a wrong scheme (`ftp://`)                     | Accepted, then crashes                   | Rejected as not configured            |
+| Local Supabase on plain `http://`                               | Accepted                                 | Still accepted                        |
+| The second database's own URL scheme                            | Accepted                                 | Still accepted                        |
+| README's authentication step                                    | Labelled "required"                      | Labelled optional, with what you lose |
 
 ## Decisions
 
@@ -156,13 +156,15 @@ verified before acting: `URL.canParse('ftp://example.com')` returns `true`, and 
 client accepts only `http(s)`. A scheme typo would have passed the new guard and failed in
 exactly the place the guard exists to protect.
 
-**Share the pattern across services, not the rule.** Supabase URLs must be `http(s)`; Turso's
-are `libsql://`. Copying the Supabase check to Turso would have rejected every valid Turso
-configuration. What generalises is "an unusable value reads as absent" — not the specific test.
+**Share the pattern across services, not the rule.** Supabase URLs must be `http(s)`; the second
+database provider (since removed) used its own URL scheme. Copying the Supabase check to it would
+have rejected every valid configuration for that provider. What generalises is "an unusable value
+reads as absent" — not the specific test.
 
-**Fix Turso rather than soften the documentation.** The reviewer offered both. The setup skill
-had already promised that every untouched placeholder is safe, and narrowing that to "safe
-except this one" makes the document worse for the audience it was written for.
+**Fix the second database provider rather than soften the documentation.** The reviewer offered
+both. The setup skill had already promised that every untouched placeholder is safe, and
+narrowing that to "safe except this one" makes the document worse for the audience it was
+written for.
 
 **Do not verify setup by running the test suite.** The setup skill explicitly tells Claude not
 to run `npm test` or `npm run type-check` as a confirmation step, because both are red on a
@@ -221,15 +223,17 @@ someone adds it to `.gitignore`.
 ### Application code
 
 - `src/utils/env-config.ts` — the substance of the fix. `getSupabaseUrl()` now requires a
-  parseable `http(s)` URL; the Turso and Axiom getters reject their template placeholders; the
-  three `is*Configured()` checks delegate to those getters so they cannot drift apart.
+  parseable `http(s)` URL; the getters for the second database provider (since removed) and Axiom
+  reject their template placeholders; the three `is*Configured()` checks delegate to those
+  getters so they cannot drift apart.
 - `src/libs/supabase-native.ts` — removed the import-time client construction that turned a
   configuration error into a site-wide outage.
 
 ### Tests
 
-- `tests/placeholder-env-config.test.ts` — new. Thirteen cases across Supabase, Turso, and
-  Axiom, covering placeholder, empty, unparseable, wrong-scheme, and valid values.
+- `tests/placeholder-env-config.test.ts` — new. Thirteen cases across Supabase, the second
+  database provider (since removed), and Axiom, covering placeholder, empty, unparseable,
+  wrong-scheme, and valid values.
 
 ### Documentation and tooling
 
@@ -246,9 +250,10 @@ someone adds it to `.gitignore`.
 - **Placeholder** — one of those fake values, left unreplaced. The whole session is about what
   happens when code cannot tell a placeholder from a real setting.
 - **Clerk** — the third-party service handling sign-in and user accounts.
-- **Supabase** — one of the two supported databases, reached over `https://`.
-- **Turso** — the other supported database, reached over `libsql://`. The project can pick
-  between the two automatically.
+- **Supabase** — one of the two databases supported at the time (now the only one), reached over
+  `https://`.
+- **Second database provider** — the other database supported at the time, since removed. The
+  project could pick between the two automatically.
 - **Axiom** — the third-party service the app ships its logs to in production.
 - **Middleware** — code that runs on every incoming request before the page is produced. If it
   fails to start, no page can be served, which is why one bad setting took down every route.

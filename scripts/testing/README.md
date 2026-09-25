@@ -6,14 +6,6 @@ This directory contains test scripts for verifying functionality and behavior of
 
 ### Database Testing
 
-- **`test-db-connection.js`** - Tests Turso database connection
-
-  ```bash
-  npm run test:db:connection
-  ```
-
-  Verifies database connectivity and lists existing tables.
-
 - **`test-database-abstraction.js`** - Tests the unified database abstraction layer
 
   ```bash

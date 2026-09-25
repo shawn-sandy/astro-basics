@@ -64,14 +64,11 @@ SITE_URL=http://localhost:4321
 # Database (Optional)
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
-# Turso (Optional)
-TURSO_DATABASE_URL=libsql://your-database.turso.io
-TURSO_AUTH_TOKEN=your_auth_token_here
 ```
 
 :::note[Where to find these credentials?]
 Need help locating your API keys?
+
 - **Clerk keys**: [Clerk Dashboard](https://dashboard.clerk.com) → API Keys
 - **Supabase keys**: [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API
 - **Detailed instructions**: See the [Complete Setup Guide](/guide/getting-started/setup/#2-get-credentials) for step-by-step instructions with screenshots.
@@ -83,7 +80,7 @@ Need help locating your API keys?
 If you plan to customize user roles, **configure them before running database migrations**. Role configuration generates database migrations that define your role schema. See [Section 3: Role Configuration](#3-role-configuration-optional) below for details, or skip to use the default 3-tier system (member, admin, super_admin).
 :::
 
-The project supports **Supabase** (PostgreSQL) and **Turso** (LibSQL) backends.
+The project uses **Supabase** (PostgreSQL) as its database.
 
 #### Interactive Setup (Recommended)
 
@@ -92,7 +89,7 @@ The project supports **Supabase** (PostgreSQL) and **Turso** (LibSQL) backends.
 npm run db:wizard
 ```
 
-The wizard will detect available credentials and guide you through configuration.
+The wizard prompts for your Supabase project URL, anon key, and optional service role key, then tests the connection.
 
 #### Manual Setup
 
@@ -100,41 +97,18 @@ The wizard will detect available credentials and guide you through configuration
 # Check database status and configuration
 npm run db:status
 
-# Initialize database schema
-npm run db:setup
-
 # Verify connection
-npm run db:check
+npm run db:manage test
 
-# Run migrations (Supabase)
-npm run db:migrate
-
-# Check migration status
-npm run db:migrate:status
+# Apply migrations (SQL files in scripts/migrations/)
+# DATABASE_URL is your Supabase connection string (Project Settings → Database)
+psql "$DATABASE_URL" -f scripts/migrations/001_core_schema.sql
+psql "$DATABASE_URL" -f scripts/migrations/002_security_policies.sql
 ```
 
-#### Database Switching
+You can also paste migration files into the Supabase SQL editor.
 
-The project includes seamless database switching with automatic backups:
-
-```bash
-# Switch to Supabase (with backup)
-npm run db:switch:supabase
-
-# Switch to Turso (with backup)
-npm run db:switch:turso
-
-# Auto-detect and use available database
-npm run db:switch:auto
-
-# Create backup only
-npm run db:backup
-
-# Restore from backup
-npm run db:restore
-```
-
-See the [Complete Setup Guide](/guide/getting-started/setup/) and [Database Switching Guide](/guide/database-switching/) for detailed configuration.
+See the [Complete Setup Guide](/guide/getting-started/setup/) and [Environment Configuration](/guide/environment-configuration/) for detailed configuration.
 
 ### 3. Role Configuration (Optional)
 
@@ -166,7 +140,7 @@ vim config/roles.config.ts
 export const roleConfig: RoleConfig = {
   roles: [
     { name: 'member', level: 1, label: 'Member' },
-    { name: 'author', level: 2, label: 'Author' },      // Custom
+    { name: 'author', level: 2, label: 'Author' }, // Custom
     { name: 'moderator', level: 3, label: 'Moderator' }, // Custom
     { name: 'admin', level: 4, label: 'Admin' },
     { name: 'super_admin', level: 5, label: 'Super Admin' },
@@ -182,7 +156,7 @@ export const roleConfig: RoleConfig = {
 npm run setup:roles
 
 # Apply the migration
-npm run db:migrate
+psql "$DATABASE_URL" -f scripts/migrations/XXX_user_roles.sql
 ```
 
 **4. Commit your changes:**
@@ -308,5 +282,5 @@ After installation, explore these guides:
 - **[Complete Setup](/guide/getting-started/setup/)** - Full feature configuration (database, roles, security)
 - **[Configurable Roles](/guide/configurable-roles/)** - Custom role system with templates and examples
 - **[Role Guard Usage](/guide/role-guard-usage/)** - Access control patterns and best practices
-- **[Database Switching](/guide/database-switching/)** - Flexible backend selection
+- **[Database Troubleshooting](/guide/database-troubleshooting/)** - Fix common Supabase issues
 - **[Components](/guide/components/)** - Explore available components

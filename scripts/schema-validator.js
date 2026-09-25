@@ -2,10 +2,11 @@
 
 /**
  * Schema Validation Tool
- * Ensures database schemas are consistent across providers
+ * Checks the Supabase configuration against the expected schema
  */
 
 import { parseArgs } from 'util'
+import { envValue } from './lib/env-file.js'
 
 // Color utilities
 const colors = {
@@ -52,8 +53,7 @@ ${colors.cyan}Options:${colors.reset}
   -h, --help              Show this help message
 
 ${colors.cyan}Description:${colors.reset}
-Validates that database schemas are consistent across providers and ready
-for switching. Ensures both Turso and Supabase have compatible schemas.
+Validates that the Supabase database schema matches what the application expects.
 
 ${colors.cyan}Validation Checks:${colors.reset}
   • Required tables exist (messages, etc.)
@@ -91,82 +91,13 @@ const EXPECTED_SCHEMA = {
 }
 
 /**
- * Check database configuration
+ * Validate Supabase schema. Callers must check the configuration first.
  */
-function checkDatabaseConfig() {
-  const tursoConfigured = !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN)
-  const supabaseConfigured = !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY)
-  const activeProvider = process.env.DATABASE_PROVIDER || 'auto'
+function validateSupabaseSchema() {
+  log.info('Validating SUPABASE schema...')
 
-  return {
-    tursoConfigured,
-    supabaseConfigured,
-    activeProvider,
-    bothConfigured: tursoConfigured && supabaseConfigured,
-  }
-}
-
-/**
- * Validate schema for a specific provider
- */
-async function validateProviderSchema(provider) {
-  log.info(`Validating ${provider.toUpperCase()} schema...`)
-
-  try {
-    if (provider === 'turso') {
-      return validateTursoSchema()
-    } else if (provider === 'supabase') {
-      return validateSupabaseSchema()
-    }
-  } catch (error) {
-    log.error(`Schema validation failed for ${provider}: ${error.message}`)
-    return false
-  }
-}
-
-/**
- * Validate Turso schema
- */
-async function validateTursoSchema() {
-  // For now, we'll do basic validation
-  // In a real implementation, we'd connect to Turso and check actual schema
-
-  if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
-    log.error('Turso not configured')
-    return false
-  }
-
-  log.success('Turso configuration valid')
-
-  // Mock schema validation
-  if (args.verbose) {
-    console.log('  Expected tables:')
-    Object.keys(EXPECTED_SCHEMA).forEach(table => {
-      console.log(`    ✓ ${table}`)
-      if (args.verbose) {
-        Object.keys(EXPECTED_SCHEMA[table].columns).forEach(column => {
-          const col = EXPECTED_SCHEMA[table].columns[column]
-          console.log(`      - ${column}: ${col.type}${col.nullable ? '' : ' NOT NULL'}`)
-        })
-      }
-    })
-  }
-
-  log.success('Turso schema validation completed')
-  return true
-}
-
-/**
- * Validate Supabase schema
- */
-async function validateSupabaseSchema() {
   // For now, we'll do basic validation
   // In a real implementation, we'd connect to Supabase and check actual schema
-
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    log.error('Supabase not configured')
-    return false
-  }
 
   log.success('Supabase configuration valid')
 
@@ -189,39 +120,6 @@ async function validateSupabaseSchema() {
 }
 
 /**
- * Compare schemas between providers
- */
-async function compareSchemas() {
-  log.header('Schema Comparison')
-
-  const config = checkDatabaseConfig()
-
-  if (!config.bothConfigured) {
-    log.warning('Both databases are not configured - cannot compare schemas')
-    if (!config.tursoConfigured) {
-      log.info('Configure Turso to enable schema comparison')
-    }
-    if (!config.supabaseConfigured) {
-      log.info('Configure Supabase to enable schema comparison')
-    }
-    return false
-  }
-
-  log.info('Comparing schemas between Turso and Supabase...')
-
-  // In a real implementation, we would:
-  // 1. Fetch actual schema from both databases
-  // 2. Compare table structures, column types, indexes
-  // 3. Report any differences
-  // 4. Suggest migration scripts if needed
-
-  log.success('Schema comparison completed')
-  log.info('Schemas appear to be compatible for switching')
-
-  return true
-}
-
-/**
  * Generate migration scripts
  */
 async function generateMigrations() {
@@ -234,7 +132,7 @@ async function generateMigrations() {
 
   log.info('Migration generation not yet implemented')
   log.info('This feature would:')
-  console.log('  • Detect schema differences between providers')
+  console.log('  • Detect schema differences against the expected schema')
   console.log('  • Generate SQL migration scripts')
   console.log('  • Provide safe migration procedures')
   console.log('  • Create rollback scripts')
@@ -251,41 +149,17 @@ async function generateMigrations() {
 async function main() {
   console.log(`${colors.bright}Database Schema Validator${colors.reset}\n`)
 
-  const config = checkDatabaseConfig()
+  const supabaseConfigured = !!(envValue('SUPABASE_URL') && envValue('SUPABASE_ANON_KEY'))
 
   log.header('Configuration Status')
   console.log(
-    `  Turso: ${config.tursoConfigured ? colors.green + '✓ Configured' + colors.reset : colors.red + '✗ Not configured' + colors.reset}`
-  )
-  console.log(
-    `  Supabase: ${config.supabaseConfigured ? colors.green + '✓ Configured' + colors.reset : colors.red + '✗ Not configured' + colors.reset}`
-  )
-  console.log(`  Active Provider: ${config.activeProvider}`)
-  console.log(
-    `  Schema Comparison: ${config.bothConfigured ? colors.green + 'Available' + colors.reset : colors.yellow + 'Limited' + colors.reset}`
+    `  Supabase: ${supabaseConfigured ? colors.green + '✓ Configured' + colors.reset : colors.red + '✗ Not configured' + colors.reset}`
   )
   console.log()
 
-  // Validate individual provider schemas
-  const validationResults = []
-
-  if (config.tursoConfigured) {
-    const tursoValid = await validateProviderSchema('turso')
-    validationResults.push({ provider: 'turso', valid: tursoValid })
-  }
-
-  if (config.supabaseConfigured) {
-    const supabaseValid = await validateProviderSchema('supabase')
-    validationResults.push({ provider: 'supabase', valid: supabaseValid })
-  }
+  const valid = supabaseConfigured && validateSupabaseSchema()
 
   console.log()
-
-  // Compare schemas if both are configured
-  if (config.bothConfigured) {
-    await compareSchemas()
-    console.log()
-  }
 
   // Generate migrations if needed
   await generateMigrations()
@@ -293,21 +167,11 @@ async function main() {
   // Summary
   log.header('Validation Summary')
 
-  const allValid = validationResults.every(result => result.valid)
-
-  if (allValid && validationResults.length > 0) {
+  if (valid) {
     log.success('All configured database schemas are valid')
-    if (config.bothConfigured) {
-      log.success('Databases are ready for switching')
-      console.log(`\n${colors.cyan}Next steps:${colors.reset}`)
-      console.log(
-        `  • Switch databases: ${colors.green}npm run db:switch:turso${colors.reset} or ${colors.green}npm run db:switch:supabase${colors.reset}`
-      )
-      console.log(`  • Check status: ${colors.green}npm run db:status${colors.reset}`)
-    }
-  } else if (validationResults.length === 0) {
-    log.error('No databases configured')
-    console.log(`  Run: ${colors.green}npm run db:wizard${colors.reset} to configure a database`)
+  } else if (!supabaseConfigured) {
+    log.error('Supabase is not configured')
+    console.log(`  Run: ${colors.green}npm run db:wizard${colors.reset} to configure Supabase`)
   } else {
     log.warning('Some schema validations failed')
     console.log(`  Use ${colors.green}--verbose${colors.reset} for detailed information`)

@@ -1,9 +1,7 @@
 # Supabase Database Migrations
 
-This directory contains PostgreSQL migrations for the Supabase database provider.
+This directory contains PostgreSQL migrations for the Supabase database.
 
-> **Note**: For Turso (LibSQL) migrations, see `/db/migrations/` directory.
->
 > **Note**: An older migration directory exists at `scripts/supabase-migrations/` (Aug 2025) that created a simpler users table. This was superseded by the comprehensive migrations in this directory (Oct 2025) which add roles, organizations, and preferences. For new installations, use the migrations in THIS directory.
 
 ---
@@ -249,7 +247,6 @@ If a migration's built-in verification fails:
 ## Related Documentation
 
 - **Database Overview**: `/project-docs/05-database/README.md`
-- **Turso Migrations**: `/db/migrations/README.md`
 - **Clerk Integration**: `/project-docs/04-integrations/clerk-authentication.md`
 - **Migration Refactor Plan**: `/docs/database/supabase-migration-refactor-plan.md`
 

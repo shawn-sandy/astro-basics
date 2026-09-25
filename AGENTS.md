@@ -26,7 +26,7 @@
 **Database Rules:**
 
 - ✅ ALWAYS use abstraction layer: `import { getDatabase } from '#libs/database'`
-- ❌ NEVER access providers directly (Supabase/Turso clients)
+- ❌ NEVER access the Supabase client directly
 
 **Component Rules:**
 
@@ -247,7 +247,7 @@ import { createClient } from '@supabase/supabase-js'
 const supabase = createClient(url, key) // NEVER DO THIS
 ```
 
-**Rationale:** Abstraction layer enables database provider switching (Supabase ↔ Turso) without code changes.
+**Rationale:** Supabase is the database, and `getDatabase()` is the single entry point that owns its configuration, error handling, and types.
 
 **See complete guide:** [CLAUDE-PATTERNS.md > Database Access Patterns](CLAUDE-PATTERNS.md#database-access-patterns)
 
@@ -303,7 +303,7 @@ npm run build         # Production build
 
 1. Copy `.env.example` to `.env`
 2. Populate Clerk authentication keys (REQUIRED)
-3. Configure database provider (Supabase or Turso)
+3. Configure Supabase (`npm run db:wizard`)
 4. NEVER commit secrets to version control
 
 ### Required Environment Variables
@@ -313,8 +313,10 @@ npm run build         # Production build
 PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 
-# Database (Choose one or both)
-DATABASE_PROVIDER=turso  # 'turso', 'supabase', or 'auto'
+# Database (Supabase)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
 ```
 
 **See complete setup:** [project-docs/01-getting-started/setup-guide.md](project-docs/01-getting-started/setup-guide.md)

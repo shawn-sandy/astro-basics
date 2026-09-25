@@ -29,7 +29,6 @@ Before you begin, ensure you have the following installed:
 - **Playwright browsers** (for E2E tests): Install after project setup with `npx playwright install`
 - **Clerk account** (for authentication features): [clerk.com](https://clerk.com)
 - **Supabase account** (for PostgreSQL database): [supabase.com](https://supabase.com)
-- **Turso account** (for LibSQL edge database): [turso.tech](https://turso.tech)
 
 ## Initial Setup
 
@@ -73,17 +72,10 @@ PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 CLERK_WEBHOOK_SECRET=whsec_...
 
-# Database - Choose one or both
+# Database (Supabase)
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
-
-# Alternative: Turso (LibSQL)
-TURSO_DATABASE_URL=libsql://your-db.turso.io
-TURSO_AUTH_TOKEN=eyJ...
-
-# Optional: Database provider selection
-# DATABASE_PROVIDER=supabase  # 'supabase', 'turso', or 'auto' (default)
 ```
 
 ## Configuration
@@ -119,10 +111,9 @@ Unauthenticated users are automatically redirected to the sign-in page.
 
 ### Database Setup
 
-The project supports **two database backends** with seamless switching:
-
-- **Supabase** (PostgreSQL): Real-time features, native Clerk integration, RLS policies
-- **Turso** (LibSQL): Edge-first SQLite, low latency, global distribution
+The project uses **Supabase** (PostgreSQL) for its database: real-time features, native Clerk
+integration, and RLS policies. All database access goes through `getDatabase()` from
+`#libs/database`.
 
 #### Option A: Guided Setup (Recommended)
 
@@ -134,14 +125,12 @@ npm run db:wizard
 
 The wizard will:
 
-1. Detect available database credentials
-2. Guide you through configuration choices
-3. Set up the database schema automatically
-4. Verify the connection
+1. Show your current Supabase configuration
+2. Prompt for your Supabase project URL, anon key, and (optionally) service role key
+3. Test the connection
+4. Write the values to `.env`, preserving your other settings
 
 #### Option B: Manual Setup
-
-##### Supabase Setup
 
 1. **Create a Supabase Project**
    - Sign up at [supabase.com](https://supabase.com)
@@ -156,13 +145,14 @@ The wizard will:
 
 3. **Run Migrations**
 
-   ```bash
-   # Apply database schema (users, roles, organizations)
-   npm run db:migrate
+   Apply the SQL files in `scripts/migrations/` (users, roles, organizations) one at a time:
 
-   # Verify migration status
-   npm run db:migrate:status
+   ```bash
+   psql "$DATABASE_URL" -f scripts/migrations/<file>.sql
    ```
+
+   Or paste each file into the Supabase SQL editor. See
+   [scripts/migrations/README.md](scripts/migrations/README.md) for the order.
 
 4. **Configure Clerk Integration**
 
@@ -173,74 +163,14 @@ The wizard will:
 
    See [project-docs/04-integrations/supabase-setup-guide.md](project-docs/04-integrations/supabase-setup-guide.md) for detailed instructions.
 
-##### Turso Setup
-
-1. **Create a Turso Database**
-
-   ```bash
-   # Install Turso CLI
-   curl -sSfL https://get.tur.so/install.sh | bash
-
-   # Login to Turso
-   turso auth login
-
-   # Create a database
-   turso db create astro-basics
-
-   # Get connection details
-   turso db show astro-basics
-   ```
-
-2. **Configure Environment**
-
-   ```bash
-   # Get your database URL
-   turso db show astro-basics --url
-   # → TURSO_DATABASE_URL
-
-   # Create an auth token
-   turso db tokens create astro-basics
-   # → TURSO_AUTH_TOKEN
-   ```
-
-3. **Initialize Database**
-
-   ```bash
-   npm run db:setup
-   ```
-
-#### Database Switching
-
-The project includes a **unified database abstraction layer** that allows seamless switching:
+#### Verify the Connection
 
 ```bash
-# Check current database status
+# Check Supabase configuration and whether the database is ready
 npm run db:status
-
-# Switch to Supabase (with automatic backup)
-npm run db:switch:supabase
-
-# Switch to Turso (with automatic backup)
-npm run db:switch:turso
-
-# Auto-detect and use available database
-npm run db:switch:auto
-
-# Create backup only
-npm run db:backup
-
-# Restore from backup
-npm run db:restore
 ```
 
-**Key Features:**
-
-- Automatic backup before switching
-- Provider auto-detection
-- Unified TypeScript types
-- Zero code changes required
-
-See [project-docs/02-guides/database-switching-guide.md](project-docs/02-guides/database-switching-guide.md) for detailed information.
+See [project-docs/02-guides/clerk-supabase-setup.md](project-docs/02-guides/clerk-supabase-setup.md) for detailed information.
 
 ### Role Configuration
 
@@ -311,7 +241,7 @@ To add custom roles:
 4. **Apply database migration**
 
    ```bash
-   npm run db:migrate
+   psql "$DATABASE_URL" -f scripts/migrations/<generated-file>.sql
    ```
 
 5. **Commit generated files**
@@ -487,22 +417,13 @@ The build output goes to the `dist/` directory (~10-15 seconds build time).
 # Check database status
 npm run db:status
 
-# Run migrations
-npm run db:migrate
+# Run a migration from scripts/migrations/
+psql "$DATABASE_URL" -f scripts/migrations/<file>.sql
 
-# Check migration status
-npm run db:migrate:status
+# Validate schema
+npm run db:schema
 
-# Create new migration
-npm run db:migrate:create
-
-# Rollback last migration
-npm run db:migrate:rollback
-
-# Reset database (warning: deletes all data)
-npm run db:reset
-
-# Seed sample data
+# Seed sample messages (needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY)
 npm run db:seed:messages
 ```
 
@@ -583,7 +504,7 @@ grep CLERK .env
 npm run db:status
 
 # Verify credentials in .env
-npm run db:check
+grep SUPABASE .env
 
 # See detailed troubleshooting guide
 # project-docs/02-guides/database-troubleshooting-guide.md
@@ -596,8 +517,8 @@ npm run db:check
 **Solution:**
 
 ```bash
-# Run migrations to create tables
-npm run db:migrate
+# Run the migration that creates the table
+psql "$DATABASE_URL" -f scripts/migrations/<file>.sql
 
 # Verify schema
 npm run db:schema
@@ -642,7 +563,7 @@ Now that you have the project running:
 
 2. **Configure custom features**
    - Set up custom roles: [project-docs/02-guides/configurable-roles.md](project-docs/02-guides/configurable-roles.md)
-   - Configure database: [project-docs/02-guides/database-switching-guide.md](project-docs/02-guides/database-switching-guide.md)
+   - Configure database: [project-docs/02-guides/clerk-supabase-setup.md](project-docs/02-guides/clerk-supabase-setup.md)
    - Add MCP servers: Check [project-docs/](project-docs/) for MCP integration guides
 
 3. **Start building**

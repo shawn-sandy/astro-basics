@@ -2,16 +2,10 @@
 
 /**
  * Database Management Script
- * Unified interface for common database operations across providers
+ * Unified interface for common Supabase database operations
  */
 
 import { parseArgs } from 'util'
-import { existsSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 
 // Color utilities
 const colors = {
@@ -37,7 +31,6 @@ const log = {
 // Parse command line arguments
 const { values: args, positionals } = parseArgs({
   options: {
-    provider: { type: 'string', short: 'p' },
     help: { type: 'boolean', short: 'h' },
     verbose: { type: 'boolean', short: 'v' },
     'dry-run': { type: 'boolean' },
@@ -62,118 +55,56 @@ ${colors.cyan}Commands:${colors.reset}
   ${colors.green}tables${colors.reset}           List all tables and their row counts
   ${colors.green}health${colors.reset}           Check database health and performance
   ${colors.green}cleanup${colors.reset}          Clean up old/unused data (with confirmation)
-  ${colors.green}backup${colors.reset}           Create database backup
-  ${colors.green}migrate${colors.reset}          Show migration status
   ${colors.green}setup${colors.reset}            Run setup wizard
-  ${colors.green}switch${colors.reset}           Interactive database switching
 
 ${colors.cyan}Options:${colors.reset}
-  -p, --provider <name>   Target specific provider (turso|supabase|auto)
   --dry-run              Show what would be done without executing
   -v, --verbose          Show detailed output
   -h, --help             Show this help message
 
 ${colors.cyan}Examples:${colors.reset}
   node scripts/database-manager.js status           # Show full status
-  node scripts/database-manager.js test --provider turso  # Test Turso connection
+  node scripts/database-manager.js test             # Test Supabase connection
   node scripts/database-manager.js tables --verbose # List tables with details
   node scripts/database-manager.js cleanup --dry-run # Preview cleanup operations
-  node scripts/database-manager.js switch           # Interactive provider switching
 `)
   process.exit(0)
 }
 
 /**
- * Detect database provider
+ * Resolve the database provider, exiting when Supabase is not configured
  */
 function detectProvider() {
-  const explicitProvider = process.env.DATABASE_PROVIDER
-  const tursoConfigured = !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN)
-  const supabaseConfigured = !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY)
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) return 'supabase'
 
-  if (args.provider) {
-    const requestedProvider = args.provider.toLowerCase()
-    if (!['turso', 'supabase', 'auto'].includes(requestedProvider)) {
-      log.error(`Invalid provider: ${requestedProvider}`)
-      process.exit(1)
-    }
-    return requestedProvider
-  }
-
-  if (explicitProvider && (explicitProvider === 'turso' || explicitProvider === 'supabase')) {
-    return explicitProvider
-  }
-
-  if (supabaseConfigured) return 'supabase'
-  if (tursoConfigured) return 'turso'
-
-  log.error('No database provider configured')
-  log.info('Run: npm run db:wizard to configure a database')
+  log.error('No database configured')
+  log.info('Run: npm run db:wizard to configure Supabase')
   process.exit(1)
 }
 
 /**
- * Get database connection based on provider
+ * Validate the Supabase configuration and return a stub connection for the checks below
  */
-async function getDatabase(provider) {
+async function getDatabase() {
   try {
-    // Since we're in Node.js, we need to use a different approach
-    // For now, we'll use a simpler test approach
+    const supabaseUrl = process.env.SUPABASE_URL
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
 
-    if (provider === 'turso') {
-      // Test Turso configuration
-      const tursoUrl = process.env.TURSO_DATABASE_URL
-      const tursoToken = process.env.TURSO_AUTH_TOKEN
-
-      if (!tursoUrl || !tursoToken) {
-        throw new Error('Turso configuration missing')
-      }
-
-      if (!tursoUrl.startsWith('libsql://')) {
-        throw new Error('Invalid Turso URL format')
-      }
-
-      return {
-        isConfigured: () => true,
-        getMessages: async (_options = {}) => {
-          // Mock successful response for connection test
-          return []
-        },
-        provider: 'turso',
-      }
-    } else if (provider === 'supabase') {
-      // Test Supabase configuration
-      const supabaseUrl = process.env.SUPABASE_URL
-      const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
-
-      if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error('Supabase configuration missing')
-      }
-
-      if (!supabaseUrl.startsWith('https://')) {
-        throw new Error('Invalid Supabase URL format')
-      }
-
-      return {
-        isConfigured: () => true,
-        getMessages: async (_options = {}) => {
-          // Mock successful response for connection test
-          return []
-        },
-        provider: 'supabase',
-      }
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase configuration missing')
     }
 
-    // Auto-detect
-    const supabaseConfigured = !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY)
-    const tursoConfigured = !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN)
+    if (!supabaseUrl.startsWith('https://')) {
+      throw new Error('Invalid Supabase URL format')
+    }
 
-    if (supabaseConfigured) {
-      return getDatabase('supabase')
-    } else if (tursoConfigured) {
-      return getDatabase('turso')
-    } else {
-      throw new Error('No database provider configured')
+    return {
+      isConfigured: () => true,
+      getMessages: async (_options = {}) => {
+        // Mock successful response for connection test
+        return []
+      },
+      provider: 'supabase',
     }
   } catch (error) {
     log.error(`Failed to initialize database: ${error.message}`)
@@ -207,7 +138,7 @@ async function executeTest() {
   log.header(`Testing ${provider.toUpperCase()} Connection`)
 
   try {
-    const db = await getDatabase(provider)
+    const db = await getDatabase()
 
     log.step('Checking connection...')
     const isConfigured = db.isConfigured()
@@ -245,17 +176,11 @@ async function executeTables() {
   log.header(`Database Tables (${provider.toUpperCase()})`)
 
   try {
-    const db = await getDatabase(provider)
+    const db = await getDatabase()
 
-    if (provider === 'turso') {
-      // For Turso, we can query sqlite_master
-      log.info('Turso table information not yet implemented')
-      log.info('Use your Turso dashboard or CLI for detailed table information')
-    } else if (provider === 'supabase') {
-      // For Supabase, we could use information_schema
-      log.info('Supabase table information not yet implemented')
-      log.info('Use your Supabase dashboard for detailed table information')
-    }
+    // For Supabase, we could use information_schema
+    log.info('Supabase table information not yet implemented')
+    log.info('Use your Supabase dashboard for detailed table information')
 
     // Test basic message table access
     try {
@@ -289,7 +214,7 @@ async function executeHealth() {
   log.header(`Database Health Check (${provider.toUpperCase()})`)
 
   try {
-    const db = await getDatabase(provider)
+    const db = await getDatabase()
 
     log.step('Configuration check...')
     const isConfigured = db.isConfigured()
@@ -320,11 +245,7 @@ async function executeHealth() {
     }
 
     log.step('Provider-specific health checks...')
-    if (provider === 'turso') {
-      log.info('Turso health: Check your dashboard at https://turso.tech')
-    } else if (provider === 'supabase') {
-      log.info('Supabase health: Check your dashboard at https://supabase.com')
-    }
+    log.info('Supabase health: Check your dashboard at https://supabase.com')
   } catch (error) {
     log.error(`Health check failed: ${error.message}`)
     if (args.verbose) {
@@ -358,44 +279,6 @@ async function executeCleanup() {
 }
 
 /**
- * Execute backup command
- */
-async function executeBackup() {
-  log.header('Database Backup')
-
-  // Delegate to existing backup functionality
-  try {
-    const { execSync } = await import('child_process')
-    log.info('Creating environment backup...')
-    execSync('node scripts/switch-database.js --backup-only', { stdio: 'inherit' })
-  } catch (error) {
-    log.error(`Backup failed: ${error.message}`)
-  }
-}
-
-/**
- * Execute migrate command
- */
-async function executeMigrate() {
-  log.header('Migration Status')
-
-  try {
-    // Check if migration script exists
-    const migrationScript = join(__dirname, 'migrate.js')
-    if (existsSync(migrationScript)) {
-      const { execSync } = await import('child_process')
-      log.info('Checking migration status...')
-      execSync('node scripts/migrate.js --status', { stdio: 'inherit' })
-    } else {
-      log.warning('Migration script not found')
-      log.info('Migration system not yet implemented for this project')
-    }
-  } catch (error) {
-    log.error(`Migration check failed: ${error.message}`)
-  }
-}
-
-/**
  * Execute setup command
  */
 async function executeSetup() {
@@ -406,20 +289,6 @@ async function executeSetup() {
     execSync('node scripts/setup-wizard.js', { stdio: 'inherit' })
   } catch (error) {
     log.error(`Setup wizard failed: ${error.message}`)
-  }
-}
-
-/**
- * Execute switch command
- */
-async function executeSwitch() {
-  log.info('Launching database switching tool...')
-
-  try {
-    const { execSync } = await import('child_process')
-    execSync('node scripts/switch-database.js', { stdio: 'inherit' })
-  } catch (error) {
-    log.error(`Database switching failed: ${error.message}`)
   }
 }
 
@@ -448,17 +317,8 @@ async function main() {
       case 'cleanup':
         await executeCleanup()
         break
-      case 'backup':
-        await executeBackup()
-        break
-      case 'migrate':
-        await executeMigrate()
-        break
       case 'setup':
         await executeSetup()
-        break
-      case 'switch':
-        await executeSwitch()
         break
       default:
         log.error(`Unknown command: ${command}`)

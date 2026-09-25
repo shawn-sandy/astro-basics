@@ -2,9 +2,14 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { POST, GET } from '../../src/pages/api/message-us'
 
 // Mock the dependencies
-vi.mock('#libs/turso', () => ({
-  isTursoConfigured: vi.fn(() => true),
+const mockDb = vi.hoisted(() => ({
+  isConfigured: vi.fn(() => true),
   insertMessage: vi.fn(() => Promise.resolve('test-message-id')),
+  getProviderName: vi.fn(() => 'supabase'),
+}))
+
+vi.mock('#libs/database', () => ({
+  getDatabase: () => mockDb,
 }))
 
 vi.mock('#utils/csrf', () => ({
@@ -248,8 +253,7 @@ describe('POST /api/message-us', () => {
   describe('Database configuration', () => {
     it('should return 503 when database is not configured', async () => {
       // Mock database as not configured
-      const { isTursoConfigured } = await import('#libs/turso')
-      vi.mocked(isTursoConfigured).mockReturnValueOnce(false)
+      mockDb.isConfigured.mockReturnValueOnce(false)
 
       const request = createMockRequest(validMessageData)
       const cookies = createMockCookies()
@@ -266,8 +270,7 @@ describe('POST /api/message-us', () => {
   describe('Error handling', () => {
     it('should handle database insertion errors', async () => {
       // Mock database insertion to fail
-      const { insertMessage } = await import('#libs/turso')
-      vi.mocked(insertMessage).mockRejectedValueOnce(new Error('Database error'))
+      mockDb.insertMessage.mockRejectedValueOnce(new Error('Database error'))
 
       const request = createMockRequest(validMessageData)
       const cookies = createMockCookies()
@@ -298,8 +301,7 @@ describe('POST /api/message-us', () => {
 
   describe('IP address handling', () => {
     it('should extract IP from x-forwarded-for header', async () => {
-      const { insertMessage } = await import('#libs/turso')
-      const insertMessageSpy = vi.mocked(insertMessage)
+      const insertMessageSpy = mockDb.insertMessage
 
       const request = createMockRequest(validMessageData)
       request.headers.set('x-forwarded-for', '203.0.113.1, 70.41.3.18')
@@ -315,8 +317,7 @@ describe('POST /api/message-us', () => {
     })
 
     it('should fallback to x-real-ip header', async () => {
-      const { insertMessage } = await import('#libs/turso')
-      const insertMessageSpy = vi.mocked(insertMessage)
+      const insertMessageSpy = mockDb.insertMessage
 
       const request = createMockRequest(validMessageData)
       request.headers.delete('x-forwarded-for')
@@ -333,8 +334,7 @@ describe('POST /api/message-us', () => {
     })
 
     it('should use "unknown" for invalid IP addresses', async () => {
-      const { insertMessage } = await import('#libs/turso')
-      const insertMessageSpy = vi.mocked(insertMessage)
+      const insertMessageSpy = mockDb.insertMessage
 
       const request = createMockRequest(validMessageData)
       request.headers.set('x-forwarded-for', 'invalid-ip')
@@ -350,8 +350,7 @@ describe('POST /api/message-us', () => {
     })
 
     it('should normalize IPv6 addresses', async () => {
-      const { insertMessage } = await import('#libs/turso')
-      const insertMessageSpy = vi.mocked(insertMessage)
+      const insertMessageSpy = mockDb.insertMessage
 
       const request = createMockRequest(validMessageData)
       request.headers.set('x-forwarded-for', '[2001:0db8:0000:0000:0000:0000:0000:0001]:8080')
@@ -367,8 +366,7 @@ describe('POST /api/message-us', () => {
     })
 
     it('should handle IPv6 addresses without truncation', async () => {
-      const { insertMessage } = await import('#libs/turso')
-      const insertMessageSpy = vi.mocked(insertMessage)
+      const insertMessageSpy = mockDb.insertMessage
 
       const request = createMockRequest(validMessageData)
       request.headers.set('x-forwarded-for', '2001:db8:85a3::8a2e:370:7334')

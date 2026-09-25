@@ -1,12 +1,11 @@
-Validate database schema compatibility between providers and ensure schema matches application expectations.
+Validate the Supabase database schema and ensure it matches application expectations.
 
 This command provides schema validation through:
 
-- Cross-provider schema comparison (Turso LibSQL ↔ Supabase PostgreSQL)
-- Table structure validation and column type mapping verification
-- Index and constraint compatibility checking
+- Supabase configuration check (`npm run db:schema`)
+- Table structure validation and column type verification
+- Index and constraint checking
 - Application code schema requirement validation
-- Migration recommendations for schema discrepancies
-- Provider-specific schema features and limitations analysis
+- Migration recommendations for schema discrepancies (SQL files in `scripts/migrations/`)
 
-Schema validation leverages the unified database abstraction layer's type system, ensuring the Database interface contract is properly supported across both provider implementations while identifying potential compatibility issues.
+Schema validation leverages the unified database abstraction layer's type system, ensuring the Supabase implementation properly supports the Database interface contract.

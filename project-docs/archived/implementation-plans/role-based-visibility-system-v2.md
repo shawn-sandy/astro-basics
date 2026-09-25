@@ -356,8 +356,8 @@ const roleCache = new LRUCache<string, SupabaseUserRole>({
 /**
  * Fetches user role from Supabase with LRU caching
  *
- * Uses project's unified database abstraction layer to support
- * both Turso and Supabase backends transparently.
+ * Uses project's unified database abstraction layer to reach
+ * the Supabase backend.
  *
  * @param userId - Clerk user ID
  * @returns User's Supabase role or null if not found/error

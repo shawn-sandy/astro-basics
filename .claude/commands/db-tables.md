@@ -2,10 +2,10 @@ List database tables with sample data and row counts, providing insights into th
 
 This command provides table information including:
 
-- Available tables in the current database provider
+- Available tables in the Supabase database
 - Row counts and sample records from key tables (messages, etc.)
-- Table structure insights and schema compatibility
+- Table structure insights
 - Data examples to understand content format and types
-- Provider-specific table access methods and limitations
+- Supabase table access methods and limitations
 
-The table listing uses the unified database abstraction layer to query table information consistently across Turso (LibSQL) and Supabase (PostgreSQL), demonstrating the power of the provider-agnostic interface for data exploration.
+The table listing runs `npm run db:manage tables` (add `--verbose` for sample records) against the Supabase (PostgreSQL) database behind the unified database abstraction layer.

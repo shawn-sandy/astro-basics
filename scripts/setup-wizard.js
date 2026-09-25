@@ -75,8 +75,8 @@ ${colors.cyan}Options:${colors.reset}
   -h, --help              Show this help message
 
 ${colors.cyan}Description:${colors.reset}
-Interactive wizard to help configure database connections for non-developers.
-Supports both Turso (LibSQL) and Supabase backends with guided setup.
+Interactive wizard to help configure the Supabase database connection for
+non-developers.
 
 ${colors.cyan}Examples:${colors.reset}
   node scripts/setup-wizard.js           # Run interactive setup
@@ -114,50 +114,31 @@ function writeEnvFile(envVars) {
 /**
  * Test database connection
  */
-async function testConnection(provider, config) {
-  log.info(`Testing ${provider} connection...`)
+async function testConnection(config) {
+  log.info('Testing supabase connection...')
 
   try {
-    if (provider === 'turso') {
-      // Basic validation for Turso
-      if (!config.TURSO_DATABASE_URL || !config.TURSO_AUTH_TOKEN) {
-        log.error('Missing Turso configuration')
-        return false
-      }
-
-      if (!config.TURSO_DATABASE_URL.startsWith('libsql://')) {
-        log.error('Turso URL should start with "libsql://"')
-        return false
-      }
-
-      log.success('Turso configuration looks valid')
-      return true
-    } else if (provider === 'supabase') {
-      // Basic validation for Supabase
-      if (!config.SUPABASE_URL || !config.SUPABASE_ANON_KEY) {
-        log.error('Missing required Supabase configuration')
-        return false
-      }
-
-      if (!config.SUPABASE_URL.startsWith('https://')) {
-        log.error('Supabase URL should start with "https://"')
-        return false
-      }
-
-      if (!config.SUPABASE_ANON_KEY.startsWith('eyJ')) {
-        log.error('Supabase anonymous key format appears invalid')
-        return false
-      }
-
-      log.success('Supabase configuration looks valid')
-      return true
+    if (!config.SUPABASE_URL || !config.SUPABASE_ANON_KEY) {
+      log.error('Missing required Supabase configuration')
+      return false
     }
+
+    if (!config.SUPABASE_URL.startsWith('https://')) {
+      log.error('Supabase URL should start with "https://"')
+      return false
+    }
+
+    if (!config.SUPABASE_ANON_KEY.startsWith('eyJ')) {
+      log.error('Supabase anonymous key format appears invalid')
+      return false
+    }
+
+    log.success('Supabase configuration looks valid')
+    return true
   } catch (error) {
     log.error(`Connection test failed: ${error.message}`)
     return false
   }
-
-  return false
 }
 
 /**
@@ -167,20 +148,6 @@ function checkCurrentStatus() {
   const envVars = readCurrentEnv()
 
   log.header('Current Database Configuration Status')
-  console.log()
-
-  // Check Turso configuration
-  const tursoConfigured = !!(envVars.TURSO_DATABASE_URL && envVars.TURSO_AUTH_TOKEN)
-  console.log(`${colors.cyan}Turso (LibSQL):${colors.reset}`)
-  console.log(
-    `  Database URL: ${envVars.TURSO_DATABASE_URL ? colors.green + '✓ Configured' + colors.reset : colors.red + '✗ Not set' + colors.reset}`
-  )
-  console.log(
-    `  Auth Token: ${envVars.TURSO_AUTH_TOKEN ? colors.green + '✓ Configured' + colors.reset : colors.red + '✗ Not set' + colors.reset}`
-  )
-  console.log(
-    `  Status: ${tursoConfigured ? colors.green + '✓ Ready' + colors.reset : colors.yellow + 'Incomplete' + colors.reset}`
-  )
   console.log()
 
   // Check Supabase configuration
@@ -206,37 +173,16 @@ function checkCurrentStatus() {
   )
   console.log()
 
-  // Check provider selection
-  const explicitProvider = envVars.DATABASE_PROVIDER
-  console.log(`${colors.cyan}Provider Selection:${colors.reset}`)
+  const activeProvider = supabaseBasicConfigured ? 'supabase' : 'none'
   console.log(
-    `  Explicit Choice: ${explicitProvider ? colors.green + explicitProvider + colors.reset : colors.yellow + 'Auto-detect' + colors.reset}`
-  )
-
-  let activeProvider = 'none'
-  if (explicitProvider && (explicitProvider === 'turso' || explicitProvider === 'supabase')) {
-    if (explicitProvider === 'turso' && tursoConfigured) {
-      activeProvider = 'turso'
-    } else if (explicitProvider === 'supabase' && supabaseBasicConfigured) {
-      activeProvider = 'supabase'
-    }
-  } else if (supabaseBasicConfigured) {
-    activeProvider = 'supabase'
-  } else if (tursoConfigured) {
-    activeProvider = 'turso'
-  }
-
-  console.log(
-    `  Active Provider: ${activeProvider !== 'none' ? colors.green + activeProvider + colors.reset : colors.red + 'None' + colors.reset}`
+    `${colors.cyan}Active Provider:${colors.reset} ${activeProvider !== 'none' ? colors.green + activeProvider + colors.reset : colors.red + 'None' + colors.reset}`
   )
   console.log()
 
   return {
-    tursoConfigured,
     supabaseBasicConfigured,
     supabaseFullyConfigured,
     activeProvider,
-    canSwitch: tursoConfigured && supabaseBasicConfigured,
   }
 }
 
@@ -249,160 +195,52 @@ async function runSetup() {
 
   const envVars = readCurrentEnv()
 
-  // Step 1: Choose database provider
-  log.step('Step 1: Choose your database provider')
-  console.log(`
-${colors.cyan}Available options:${colors.reset}
-  1) ${colors.green}Turso${colors.reset} - Serverless SQLite (LibSQL)
-     • Fast, lightweight, edge-distributed
-     • Great for high-performance applications
-     • Free tier available
-  
-  2) ${colors.blue}Supabase${colors.reset} - PostgreSQL with real-time features  
-     • Full PostgreSQL database
-     • Built-in authentication and real-time subscriptions
-     • Generous free tier
-  
-  3) ${colors.yellow}Both${colors.reset} - Configure both for easy switching
-     • Best of both worlds
-     • Switch between providers with simple commands
-`)
+  // Step 1: Configure Supabase
+  log.step('Step 1: Configure Supabase')
+  log.info('To get your Supabase credentials:')
+  console.log('  1. Sign up at https://supabase.com')
+  console.log('  2. Create a new project')
+  console.log('  3. Go to Settings > API')
+  console.log('  4. Copy your Project URL and API keys\n')
 
-  const providerChoice = await question(
-    'Which database provider would you like to configure? (1/2/3): '
+  const supabaseUrl = await question('Enter your Supabase project URL (starts with https://): ')
+  if (!supabaseUrl.startsWith('https://')) {
+    log.error('Invalid Supabase URL format. Should start with "https://"')
+    return false
+  }
+
+  const supabaseAnonKey = await question('Enter your Supabase anonymous key: ')
+  if (!supabaseAnonKey.startsWith('eyJ')) {
+    log.error('Invalid anonymous key format')
+    return false
+  }
+
+  const configureServiceRole = await question(
+    'Do you want to configure the service role key? (y/N) [Optional but recommended]: '
   )
-
-  let configureProviders = []
-  switch (providerChoice.trim()) {
-    case '1':
-      configureProviders = ['turso']
-      break
-    case '2':
-      configureProviders = ['supabase']
-      break
-    case '3':
-      configureProviders = ['turso', 'supabase']
-      break
-    default:
-      log.error('Invalid choice. Please run the wizard again.')
-      return false
+  let supabaseServiceKey = ''
+  if (configureServiceRole.toLowerCase() === 'y' || configureServiceRole.toLowerCase() === 'yes') {
+    supabaseServiceKey = await question('Enter your Supabase service role key: ')
   }
 
-  // Step 2: Configure each selected provider
-  for (const provider of configureProviders) {
-    console.log(
-      `\n${colors.bright}${colors.cyan}Configuring ${provider.toUpperCase()}${colors.reset}\n`
-    )
-
-    if (provider === 'turso') {
-      log.info('To get your Turso credentials:')
-      console.log('  1. Sign up at https://turso.tech')
-      console.log('  2. Install Turso CLI: curl -sSfL https://get.tur.so/install.sh | bash')
-      console.log('  3. Login: turso auth login')
-      console.log('  4. Create database: turso db create <database-name>')
-      console.log('  5. Get URL: turso db show <database-name> --url')
-      console.log('  6. Create token: turso db tokens create <database-name>\n')
-
-      const tursoUrl = await question('Enter your Turso database URL (starts with libsql://): ')
-      if (!tursoUrl.startsWith('libsql://')) {
-        log.error('Invalid Turso URL format. Should start with "libsql://"')
-        continue
-      }
-
-      const tursoToken = await question('Enter your Turso auth token: ')
-      if (!tursoToken.trim()) {
-        log.error('Auth token is required')
-        continue
-      }
-
-      envVars.TURSO_DATABASE_URL = tursoUrl.trim()
-      envVars.TURSO_AUTH_TOKEN = tursoToken.trim()
-
-      // Test connection
-      const tursoTestResult = await testConnection('turso', envVars)
-      if (!tursoTestResult) {
-        log.warning('Turso connection test failed, but configuration saved.')
-      }
-    }
-
-    if (provider === 'supabase') {
-      log.info('To get your Supabase credentials:')
-      console.log('  1. Sign up at https://supabase.com')
-      console.log('  2. Create a new project')
-      console.log('  3. Go to Settings > API')
-      console.log('  4. Copy your Project URL and API keys\n')
-
-      const supabaseUrl = await question('Enter your Supabase project URL (starts with https://): ')
-      if (!supabaseUrl.startsWith('https://')) {
-        log.error('Invalid Supabase URL format. Should start with "https://"')
-        continue
-      }
-
-      const supabaseAnonKey = await question('Enter your Supabase anonymous key: ')
-      if (!supabaseAnonKey.startsWith('eyJ')) {
-        log.error('Invalid anonymous key format')
-        continue
-      }
-
-      const configureServiceRole = await question(
-        'Do you want to configure the service role key? (y/N) [Optional but recommended]: '
-      )
-      let supabaseServiceKey = ''
-      if (
-        configureServiceRole.toLowerCase() === 'y' ||
-        configureServiceRole.toLowerCase() === 'yes'
-      ) {
-        supabaseServiceKey = await question('Enter your Supabase service role key: ')
-      }
-
-      envVars.SUPABASE_URL = supabaseUrl.trim()
-      envVars.SUPABASE_ANON_KEY = supabaseAnonKey.trim()
-      if (supabaseServiceKey.trim()) {
-        envVars.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceKey.trim()
-      }
-
-      // Test connection
-      const supabaseTestResult = await testConnection('supabase', envVars)
-      if (!supabaseTestResult) {
-        log.warning('Supabase connection test failed, but configuration saved.')
-      }
-    }
+  envVars.SUPABASE_URL = supabaseUrl.trim()
+  envVars.SUPABASE_ANON_KEY = supabaseAnonKey.trim()
+  if (supabaseServiceKey.trim()) {
+    envVars.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceKey.trim()
   }
 
-  // Step 3: Set default provider if both configured
-  if (configureProviders.length > 1) {
-    console.log(`\n${colors.bright}${colors.cyan}Provider Selection${colors.reset}\n`)
-    log.info('You have configured both databases. Which would you like to use by default?')
-    console.log('  1) Turso (fast, serverless SQLite)')
-    console.log('  2) Supabase (full PostgreSQL)')
-    console.log('  3) Auto-detect (Supabase preferred, fallback to Turso)')
-
-    const defaultChoice = await question('Choose default provider (1/2/3): ')
-    switch (defaultChoice.trim()) {
-      case '1':
-        envVars.DATABASE_PROVIDER = 'turso'
-        break
-      case '2':
-        envVars.DATABASE_PROVIDER = 'supabase'
-        break
-      case '3':
-        envVars.DATABASE_PROVIDER = undefined // Auto-detect: updateEnvFile removes the line
-        break
-      default:
-        log.warning('Invalid choice, using auto-detect')
-        envVars.DATABASE_PROVIDER = undefined
-    }
-  } else if (configureProviders.length === 1) {
-    // Set explicit provider if only one configured
-    envVars.DATABASE_PROVIDER = configureProviders[0]
+  // Test connection
+  const supabaseTestResult = await testConnection(envVars)
+  if (!supabaseTestResult) {
+    log.warning('Supabase connection test failed, but configuration saved.')
   }
 
-  // Step 4: Preserve other settings
+  // Step 2: Preserve other settings
   if (!envVars.ENABLE_COMMENTS) {
     envVars.ENABLE_COMMENTS = 'true'
   }
 
-  // Step 5: Write configuration
+  // Step 3: Write configuration
   log.step('Writing configuration to .env file...')
   const writeSuccess = writeEnvFile(envVars)
   if (!writeSuccess) {
@@ -439,7 +277,7 @@ async function main() {
     // Check current status first
     const currentStatus = checkCurrentStatus()
 
-    if (!args.reset && (currentStatus.tursoConfigured || currentStatus.supabaseBasicConfigured)) {
+    if (!args.reset && currentStatus.supabaseBasicConfigured) {
       const reconfigure = await question(
         `${colors.yellow}Database already configured. Reconfigure? (y/N):${colors.reset} `
       )
@@ -458,9 +296,6 @@ async function main() {
       console.log(`\n${colors.cyan}Next steps:${colors.reset}`)
       console.log(`  1. Start your application: ${colors.green}npm run start${colors.reset}`)
       console.log(`  2. Check database status: ${colors.green}npm run db:status${colors.reset}`)
-      console.log(
-        `  3. Switch databases anytime: ${colors.green}npm run db:switch:turso${colors.reset} or ${colors.green}npm run db:switch:supabase${colors.reset}`
-      )
 
       // Show final status
       console.log('\n' + '─'.repeat(50))

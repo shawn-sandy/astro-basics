@@ -18,7 +18,7 @@ import inquirer from 'inquirer'
 import { roleConfig } from '../config/roles.config'
 import { validateRoleConfig } from './lib/role-validator'
 import { writeRoleTypes, validateGeneratedTypes } from './lib/role-generator'
-import { writeMigrationFiles, detectDatabaseProvider } from './lib/migration-generator'
+import { writeMigrationFiles } from './lib/migration-generator'
 
 /**
  * CLI color codes for output
@@ -183,19 +183,6 @@ async function main() {
   // Step 3: Generate Database Migrations
   logSection('Step 3: Generating Database Migrations')
 
-  // Detect database provider
-  const provider = detectDatabaseProvider()
-
-  if (provider === 'unknown') {
-    logWarning('Could not detect database provider from environment variables')
-    logInfo('Defaulting to Supabase (PostgreSQL)')
-    console.log()
-  } else {
-    logSuccess(`Detected database provider: ${provider}`)
-  }
-
-  const dbProvider = provider === 'turso' ? 'turso' : 'supabase'
-
   const migrationResult = isDryRun
     ? {
         success: true,
@@ -203,7 +190,7 @@ async function main() {
         rollbackPath: 'scripts/migrations/rollback_XXX_user_roles.sql (dry-run)',
         migrationNumber: 'XXX',
       }
-    : writeMigrationFiles(roleConfig, dbProvider)
+    : writeMigrationFiles(roleConfig)
 
   if (!migrationResult.success) {
     logError('Migration generation failed!')
@@ -235,16 +222,12 @@ async function main() {
   console.log()
   log('  1. Review the generated files', 'yellow')
   log('  2. Run type-check to verify: npm run type-check', 'yellow')
-  if (dbProvider === 'supabase') {
-    log(
-      '  3. Apply migration: npm run db:migrate -- ' +
-        migrationResult.migrationNumber +
-        '_user_roles.sql',
-      'yellow'
-    )
-  } else {
-    log('  3. Adapt the Turso migration to your schema', 'yellow')
-  }
+  log(
+    '  3. Apply migration: psql "$DATABASE_URL" -f scripts/migrations/' +
+      migrationResult.migrationNumber +
+      '_user_roles.sql (or paste it into the Supabase SQL editor)',
+    'yellow'
+  )
   log('  4. Commit all files to Git', 'yellow')
   console.log()
   log('  git add config/ src/types/ scripts/migrations/', 'blue')

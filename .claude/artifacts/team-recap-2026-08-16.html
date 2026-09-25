@@ -361,8 +361,8 @@
         <h3>The database picker no longer selects a database you never configured</h3>
         <p>
           With template values in place, the app&rsquo;s automatic database selection was choosing
-          Turso and handing it a fake connection string on the first database operation. Turso is
-          now correctly seen as un-configured.
+          a second database provider (since removed) and handing it a fake connection string on the
+          first database operation. The fix made that provider correctly read as un-configured.
         </p>
       </article>
 
@@ -417,10 +417,10 @@
           <tr><td>No settings file at all</td><td>Site renders</td><td>Site renders (unchanged)</td></tr>
           <tr><td>Placeholder database URL</td><td class="was">Treated as configured, crashes</td><td class="now">Treated as not configured</td></tr>
           <tr><td>Placeholder logging token</td><td class="was">Log shipping attempted, <code>forbidden</code> spam</td><td class="now">Console logging, silent</td></tr>
-          <tr><td>Placeholder Turso credentials</td><td class="was">Auto-selected as the active database</td><td class="now">Skipped as not configured</td></tr>
+          <tr><td>Placeholder credentials for the second database (since removed)</td><td class="was">Auto-selected as the active database</td><td class="now">Skipped as not configured</td></tr>
           <tr><td>Database URL with a wrong scheme (<code>ftp://</code>)</td><td class="was">Accepted, then crashes</td><td class="now">Rejected as not configured</td></tr>
           <tr><td>Local Supabase on plain <code>http://</code></td><td>Accepted</td><td>Still accepted</td></tr>
-          <tr><td>Turso&rsquo;s <code>libsql://</code> URLs</td><td>Accepted</td><td>Still accepted</td></tr>
+          <tr><td>The second database&rsquo;s own URL scheme</td><td>Accepted</td><td>Still accepted</td></tr>
           <tr><td>README&rsquo;s authentication step</td><td class="was">Labelled &ldquo;required&rdquo;</td><td class="now">Labelled optional, with what you lose</td></tr>
         </tbody>
       </table>
@@ -473,17 +473,18 @@
       <article class="entry">
         <h3>Share the pattern across services, not the rule</h3>
         <p>
-          Supabase URLs must be <code>http(s)</code>; Turso&rsquo;s are <code>libsql://</code>.
+          Supabase URLs must be <code>http(s)</code>; the second database provider (since removed)
+          used its own URL scheme.
         </p>
         <p class="rejected">
-          <b>Rejected</b> &mdash; copying the Supabase check to Turso: it would have rejected every
-          valid Turso configuration. What generalises is &ldquo;an unusable value reads as
+          <b>Rejected</b> &mdash; copying the Supabase check to that provider: it would have rejected
+          every valid configuration for it. What generalises is &ldquo;an unusable value reads as
           absent&rdquo;, not the specific test.
         </p>
       </article>
 
       <article class="entry">
-        <h3>Fix Turso rather than soften the documentation</h3>
+        <h3>Fix the second database provider rather than soften the documentation</h3>
         <p>
           The reviewer offered both. The setup skill had already promised that every untouched
           placeholder is safe.
@@ -627,7 +628,8 @@
           <li>
             <b>src/utils/env-config.ts</b>
             <span>&mdash; the substance of the fix. The Supabase getter now requires a parseable
-            <code>http(s)</code> URL; the Turso and Axiom getters reject their template placeholders;
+            <code>http(s)</code> URL; the getters for the second database provider (since removed)
+            and Axiom reject their template placeholders;
             the three &ldquo;is configured&rdquo; checks delegate to those getters so they cannot
             drift apart.</span>
           </li>
@@ -644,7 +646,8 @@
         <ul>
           <li>
             <b>tests/placeholder-env-config.test.ts</b>
-            <span>&mdash; new. Thirteen cases across Supabase, Turso, and Axiom, covering
+            <span>&mdash; new. Thirteen cases across Supabase, the second database provider (since
+            removed), and Axiom, covering
             placeholder, empty, unparseable, wrong-scheme, and valid values.</span>
           </li>
         </ul>
@@ -678,8 +681,8 @@
       <div><dt>Settings template (<code>.env.example</code>)</dt><dd>A committed template of that file, with fake values such as <code>YOUR_SUPABASE_URL</code> standing in for the real ones. Copying it is normally the first setup step.</dd></div>
       <div><dt>Placeholder</dt><dd>One of those fake values, left unreplaced. This whole recap is about what happens when code cannot tell a placeholder from a real setting.</dd></div>
       <div><dt>Clerk</dt><dd>The third-party service handling sign-in and user accounts.</dd></div>
-      <div><dt>Supabase</dt><dd>One of the two supported databases, reached over <code>https://</code>.</dd></div>
-      <div><dt>Turso</dt><dd>The other supported database, reached over <code>libsql://</code>. The project can pick between the two automatically.</dd></div>
+      <div><dt>Supabase</dt><dd>One of the two databases supported at the time (now the only one), reached over <code>https://</code>.</dd></div>
+      <div><dt>Second database provider</dt><dd>The other database supported at the time, since removed. The project could pick between the two automatically.</dd></div>
       <div><dt>Axiom</dt><dd>The third-party service the app ships its logs to in production.</dd></div>
       <div><dt>Middleware</dt><dd>Code that runs on every incoming request before the page is produced. If it fails to start, no page can be served &mdash; which is why one bad setting took down every route.</dd></div>
       <div><dt>Import time / module load</dt><dd>When a file is first read by the program, before it handles any request. A failure here is fatal in a way the same failure later would not be.</dd></div>

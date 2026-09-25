@@ -1,9 +1,8 @@
 /**
  * Migration Generator
  *
- * Generates database migrations for role ENUM creation based on
- * role configuration. Supports both PostgreSQL (Supabase) and
- * SQLite (Turso) database providers.
+ * Generates PostgreSQL (Supabase) migrations for role ENUM creation
+ * based on role configuration.
  *
  * @module scripts/lib/migration-generator
  */
@@ -186,73 +185,24 @@ COMMIT;
 }
 
 /**
- * Generates Turso (SQLite) migration
- *
- * Creates TEXT column with CHECK constraint for Turso database.
- * SQLite doesn't support ENUMs, so we use CHECK constraints.
- *
- * @param config - The validated role configuration
- * @param migrationNumber - The migration number
- * @returns SQL migration code
- */
-export function generateTursoMigration(config: RoleConfig, migrationNumber: string): string {
-  const timestamp = new Date().toISOString()
-  const roleNames = config.roles.map(r => r.name)
-  const checkConstraint = roleNames.map(name => `'${name}'`).join(', ')
-
-  return `-- Migration ${migrationNumber}: User Roles
--- Generated: ${timestamp}
--- Source: config/roles.config.ts
--- Database: SQLite (Turso)
-
--- Note: SQLite does not support ENUMs, so we use CHECK constraints
-
--- Roles configuration:
-${config.roles.map(r => `-- ${r.name} (Level ${r.level}): ${r.label}`).join('\n')}
-
--- If you need to create a users table with role column:
--- CREATE TABLE IF NOT EXISTS users (
---   id TEXT PRIMARY KEY,
---   role TEXT NOT NULL DEFAULT 'member' CHECK (role IN (${checkConstraint})),
---   created_at TEXT NOT NULL DEFAULT (datetime('now')),
---   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
--- );
-
--- For existing tables, you would need to:
--- 1. Create new table with CHECK constraint
--- 2. Copy data
--- 3. Drop old table
--- 4. Rename new table
-
--- This migration is informational only for Turso
--- Please adapt to your specific schema requirements
-`
-}
-
-/**
  * Writes migration files to disk
  *
  * Creates both forward and rollback migration files in the migrations directory.
  *
  * @param config - The validated role configuration
- * @param provider - Database provider ('supabase' or 'turso')
  * @param migrationsDir - Optional custom migrations directory
  * @returns Migration result with file paths
  *
  * @example
  * ```typescript
- * const result = writeMigrationFiles(config, 'supabase')
+ * const result = writeMigrationFiles(config)
  * if (result.success) {
  *   console.log(`Migration: ${result.migrationPath}`)
  *   console.log(`Rollback: ${result.rollbackPath}`)
  * }
  * ```
  */
-export function writeMigrationFiles(
-  config: RoleConfig,
-  provider: 'supabase' | 'turso' = 'supabase',
-  migrationsDir?: string
-): MigrationResult {
+export function writeMigrationFiles(config: RoleConfig, migrationsDir?: string): MigrationResult {
   try {
     // Determine migrations directory
     const dir = migrationsDir || path.join(process.cwd(), 'scripts', 'migrations')
@@ -265,17 +215,8 @@ export function writeMigrationFiles(
     // Get next migration number
     const migrationNumber = getNextMigrationNumber(dir)
 
-    // Generate SQL based on provider
-    let migrationSQL: string
-    let rollbackSQL: string
-
-    if (provider === 'supabase') {
-      migrationSQL = generatePostgresMigration(config, migrationNumber)
-      rollbackSQL = generatePostgresRollback(migrationNumber)
-    } else {
-      migrationSQL = generateTursoMigration(config, migrationNumber)
-      rollbackSQL = '-- No rollback needed for Turso informational migration'
-    }
+    const migrationSQL = generatePostgresMigration(config, migrationNumber)
+    const rollbackSQL = generatePostgresRollback(migrationNumber)
 
     // Define file paths
     const migrationPath = path.join(dir, `${migrationNumber}_user_roles.sql`)
@@ -297,27 +238,4 @@ export function writeMigrationFiles(
       error: error instanceof Error ? error.message : 'Unknown error occurred',
     }
   }
-}
-
-/**
- * Detects database provider from environment
- *
- * Checks environment variables to determine which database is configured.
- *
- * @returns Database provider ('supabase', 'turso', or 'unknown')
- */
-export function detectDatabaseProvider(): 'supabase' | 'turso' | 'unknown' {
-  const hasSupabase = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
-  const hasTurso = !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN)
-
-  // Prefer explicit provider setting
-  if (process.env.DATABASE_PROVIDER === 'supabase' || process.env.DATABASE_PROVIDER === 'turso') {
-    return process.env.DATABASE_PROVIDER
-  }
-
-  // Auto-detect based on available credentials
-  if (hasSupabase) return 'supabase'
-  if (hasTurso) return 'turso'
-
-  return 'unknown'
 }

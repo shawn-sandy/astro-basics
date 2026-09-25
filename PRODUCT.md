@@ -33,7 +33,7 @@ pieces are real and working.
 Three claims a neighbouring Astro starter could not truthfully copy, confirmed with the owner:
 
 1. **The full app stack is wired, not stubbed.** Clerk authentication, a hierarchical role system,
-   middleware-protected routes, a provider-agnostic database abstraction over Turso and Supabase,
+   middleware-protected routes, a Supabase database behind a single `getDatabase()` abstraction,
    threaded comments, CSRF protection, and rate limiting all work in the running site.
 2. **The repository is built to be worked on by coding agents.** `CLAUDE.md` plus its patterns,
    anti-patterns, and validation companions, MCP server integrations, and project skills make

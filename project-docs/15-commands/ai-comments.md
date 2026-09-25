@@ -21,7 +21,7 @@
 **Astro-Basics Patterns Recognized:**
 
 - Middleware authentication flows (`src/middleware.ts`)
-- Database abstraction layer (`src/libs/database.ts`, `src/libs/turso.ts`, `src/libs/supabase.ts`)
+- Database abstraction layer (`src/libs/database.ts`, `src/libs/supabase.ts`)
 - Security implementations (CSRF, rate limiting in `src/utils/`)
 - Astro component server/client boundaries
 - Content collection patterns and SSR considerations
@@ -32,7 +32,7 @@
 **High Priority (Score 8-10):**
 
 - Security-sensitive functions (authentication, CSRF, validation)
-- Database abstraction and provider switching logic
+- Database abstraction logic
 - Complex middleware with multiple responsibilities
 - Error handling with business logic implications
 - Performance-critical algorithms with optimizations
@@ -94,9 +94,9 @@ async function authMiddleware(auth, context, next) {
 ✅ **Will Comment** (Medium Complexity Score: 6/10):
 
 ```typescript
-// Database abstraction with provider switching logic
-export async function executeQuery(query: string, provider?: DatabaseProvider) {
-  // Provider detection, connection management, retry logic
+// Database abstraction with connection handling
+export async function executeQuery(query: string) {
+  // Connection management, retry logic
 }
 ```
 

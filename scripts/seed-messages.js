@@ -1,6 +1,7 @@
 #!/usr/bin/env node --env-file=.env
 
-import { createClient } from '@libsql/client'
+import { createClient } from '@supabase/supabase-js'
+import { envValue } from './lib/env-file.js'
 
 // Generate realistic dates over the past 90 days
 function generateDate(daysAgo) {
@@ -249,56 +250,44 @@ const messages = [
 ]
 
 async function seedMessages() {
-  // Validate environment variables
-  const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL
-  const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN
+  // Validate environment variables. The service role key bypasses RLS on the messages table.
+  const SUPABASE_URL = envValue('SUPABASE_URL')
+  const SUPABASE_SERVICE_ROLE_KEY = envValue('SUPABASE_SERVICE_ROLE_KEY')
 
-  if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
-    console.error('❌ Turso database is not configured.')
-    console.error('   Please set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN in your .env file')
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('❌ Supabase database is not configured.')
+    console.error('   Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env file')
     process.exit(1)
   }
-
-  // Create database client
-  const client = createClient({
-    url: TURSO_DATABASE_URL,
-    authToken: TURSO_AUTH_TOKEN,
-  })
 
   console.log('🌱 Starting to seed messages...')
 
   try {
-    // Prepare batch of insert statements
-    const statements = messages.map((msg, index) => {
-      const userAgent = userAgents[index % userAgents.length]
-      const ipAddress = ipAddresses[index % ipAddresses.length]
+    // Inside the try: createClient throws synchronously on a malformed URL
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+
+    const rows = messages.map((msg, index) => {
       const createdAt = generateDate(msg.daysAgo)
 
       return {
-        sql: `
-          INSERT INTO messages (
-            name, email, subject, message, ip_address, user_agent,
-            is_read, is_archived, created_at, updated_at
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `,
-        args: [
-          msg.name,
-          msg.email,
-          msg.subject || null,
-          msg.message,
-          ipAddress,
-          userAgent,
-          msg.is_read === true ? 1 : 0,
-          msg.is_archived === true ? 1 : 0,
-          createdAt,
-          createdAt,
-        ],
+        name: msg.name,
+        email: msg.email,
+        subject: msg.subject || null,
+        message: msg.message,
+        ip_address: ipAddresses[index % ipAddresses.length],
+        user_agent: userAgents[index % userAgents.length],
+        is_read: msg.is_read === true,
+        is_archived: msg.is_archived === true,
+        created_at: createdAt,
+        updated_at: createdAt,
       }
     })
 
-    // Execute all inserts in a batch transaction
-    await client.batch(statements)
+    // A single insert call is atomic, so a failure leaves no partial seed behind
+    const { error } = await supabase.from('messages').insert(rows)
+    if (error) throw error
 
     console.log(`✅ Successfully seeded ${messages.length} messages`)
     console.log('📊 Summary:')
@@ -310,11 +299,15 @@ async function seedMessages() {
     )
 
     // Show a few sample records
-    const sampleResult = await client.execute(
-      'SELECT id, name, subject, created_at FROM messages ORDER BY created_at DESC LIMIT 3'
-    )
+    const { data: sample, error: sampleError } = await supabase
+      .from('messages')
+      .select('id, name, subject, created_at')
+      .order('created_at', { ascending: false })
+      .limit(3)
+    if (sampleError) throw sampleError
+
     console.log('\n📝 Sample records:')
-    for (const row of sampleResult.rows) {
+    for (const row of sample) {
       const date = new Date(row.created_at)
       console.log(
         `   - ID ${row.id}: ${row.name} - "${row.subject}" (${date.toLocaleDateString()})`
@@ -323,8 +316,6 @@ async function seedMessages() {
   } catch (error) {
     console.error('❌ Error seeding messages:', error.message || error)
     process.exit(1)
-  } finally {
-    client.close()
   }
 }
 

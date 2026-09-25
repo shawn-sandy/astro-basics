@@ -537,7 +537,7 @@ export const GET: APIRoute = async ({ params }) => {
 
 ### ❌ Anti-Pattern 13: Direct Database Provider Access
 
-**Problem:** Directly accessing Supabase or Turso clients bypasses abstraction layer.
+**Problem:** Directly accessing the Supabase client bypasses abstraction layer.
 
 ```typescript
 // ❌ INCORRECT
@@ -575,58 +575,59 @@ export const GET: APIRoute = async () => {
 
 **Why This Matters:**
 
-- Enables database provider switching without code changes
+- Database details stay behind one interface
 - Consistent interface across project
 - Easier testing (mock single interface)
 - Centralized connection management
-- Type safety across providers
+- Shared types from `#libs/database-types`
 
 ---
 
-### ❌ Anti-Pattern 14: Hardcoded Provider Logic
+### ❌ Anti-Pattern 14: Hardcoded Configuration Checks
 
-**Problem:** Using if/else logic to check which database provider is active.
+**Problem:** Reading Supabase environment variables in endpoints to decide whether the database is usable.
 
 ```typescript
 // ❌ INCORRECT
 export const GET: APIRoute = async () => {
-  if (import.meta.env.DATABASE_PROVIDER === 'supabase') {
-    // Supabase logic
-    const supabase = createClient(/* ... */)
-    const { data } = await supabase.from('messages').select('*')
-    return new Response(JSON.stringify(data), { status: 200 })
-  } else if (import.meta.env.DATABASE_PROVIDER === 'turso') {
-    // Turso logic
-    const turso = createClient(/* ... */)
-    const result = await turso.execute('SELECT * FROM messages')
-    return new Response(JSON.stringify(result.rows), { status: 200 })
+  if (!import.meta.env.SUPABASE_URL || !import.meta.env.SUPABASE_ANON_KEY) {
+    return new Response(JSON.stringify({ error: 'No database' }), { status: 500 })
   }
+  const supabase = createClient(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_ANON_KEY)
+  const { data } = await supabase.from('messages').select('*')
+  return new Response(JSON.stringify(data), { status: 200 })
 }
 ```
 
-**Solution:** Use the abstraction layer which handles provider detection automatically.
+**Solution:** Let the abstraction layer own configuration. `getDatabase()` throws a clear error when Supabase is not configured.
 
 ```typescript
 // ✅ CORRECT
 import { getDatabase } from '#libs/database'
 
 export const GET: APIRoute = async () => {
-  // Works with any provider - no conditional logic needed
-  const db = getDatabase()
-  const messages = await db.getMessages({ limit: 10 })
+  try {
+    const db = getDatabase() // Throws if SUPABASE_URL / SUPABASE_ANON_KEY are missing
+    const messages = await db.getMessages({ limit: 10 })
 
-  return new Response(JSON.stringify({ data: messages }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  })
+    return new Response(JSON.stringify({ data: messages }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Database unavailable' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
 }
 ```
 
 **Why This Matters:**
 
-- Adding new providers doesn't require endpoint changes
-- Eliminates branching logic
-- Single source of truth for provider selection
+- Configuration rules live in one place (`#libs/database`)
+- Eliminates duplicated environment checks
+- Single source of truth for database readiness
 - Cleaner, more maintainable code
 
 ---

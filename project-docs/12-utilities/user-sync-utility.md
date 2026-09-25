@@ -499,7 +499,6 @@ export async function fetchUserWithRole(
 - [Clerk-Supabase Integration Setup](../02-guides/clerk-supabase-setup.md)
 - [Clerk-Supabase Sync Fix](../10-security/fixes/clerk-supabase-sync-fix.md)
 - [Authentication Guide](../01-getting-started/authentication-guide.md)
-- [Database Switching Guide](../../src/content/docs/guide/database-switching.mdx)
 - [Configurable Roles](../../src/content/docs/guide/configurable-roles.mdx)
 
 ## Changelog

@@ -193,6 +193,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     there; it is no longer the current behaviour
 - Minor updates and refinements
 
+### Removed
+
+- **Turso (LibSQL) database support**: Supabase is now the only database. `getDatabase()` from
+  `#libs/database` is still the single entry point and throws with the Supabase keys to set when
+  Supabase is not configured
+  - Deleted `src/libs/turso.ts`, `src/libs/schema-setup.ts`, the SQLite `db/` directory and the
+    `@libsql/client` dependency
+  - Provider switching went with it: `DATABASE_PROVIDER`, `TURSO_DATABASE_URL` and
+    `TURSO_AUTH_TOKEN` are no longer read, and the `db:switch*`, `db:backup` and `db:restore`
+    scripts are gone, as are the `/db-switch`, `/db-backup`, `/db-restore` and `/db-migrate` slash
+    commands
+  - Removed the SQLite-only `db:setup`, `db:reset`, `db:check`, `db:migrate*` and
+    `test:db:connection` scripts. Supabase migrations live in `scripts/migrations/` and are applied
+    with `psql` or the Supabase SQL editor (see `scripts/migrations/README.md`)
+  - `db:wizard`, `db:status`, `db:schema` and `db:manage` now cover Supabase only;
+    `db:seed:messages` seeds the Supabase `messages` table (needs `SUPABASE_SERVICE_ROLE_KEY`);
+    `setup:roles` always generates a PostgreSQL migration
+  - Removed the Turso and provider-switching docs, including the `/guide/database-switching` page
+  - **Upgrading a Turso deployment**: set `SUPABASE_URL`, `SUPABASE_ANON_KEY` and
+    `SUPABASE_SERVICE_ROLE_KEY` before deploying, or `getDatabase()` throws "No database
+    configured" and the contact form answers 503. Messages stored in Turso are not migrated;
+    export them first if you need them
+  - `db:schema` no longer counts `.env.example` `YOUR_...` placeholders as configured, and
+    `db:seed:messages` reports a malformed `SUPABASE_URL` without a stack trace
+
 ### Fixed
 
 - **`db:migrate` scripts never loaded `.env`** (`package.json`): `db:migrate`,

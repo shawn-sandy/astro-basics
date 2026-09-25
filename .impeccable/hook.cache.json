@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "sessions": {
+    "eba4724d-4c75-4008-972f-88af9db01f77": {
+      "updatedAt": 1790347778127,
+      "files": {
+        "/Users/shawns-work/repos/astro-basics/.claude/worktrees/remove-turso-database-b3a399/scripts/database-manager.js": {
+          "editCount": 1,
+          "findings": [],
+          "stopBaseline": { "version": 1, "engine": "0.1.5", "counts": {} }
+        },
+        "/Users/shawns-work/repos/astro-basics/.claude/worktrees/remove-turso-database-b3a399/tests/database.test.ts": {
+          "editCount": 1,
+          "findings": [],
+          "stopBaseline": { "version": 1, "engine": "0.1.5", "counts": {} }
+        },
+        "/Users/shawns-work/repos/astro-basics/.claude/worktrees/remove-turso-database-b3a399/tests/scripts/db-scripts.test.ts": {
+          "editCount": 1,
+          "findings": [],
+          "stopBaseline": { "version": 1, "engine": "0.1.5", "counts": {} }
+        }
+      }
+    }
+  }
+}

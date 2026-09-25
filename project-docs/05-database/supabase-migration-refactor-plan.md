@@ -498,8 +498,8 @@ COMMIT;
 
 ```bash
 # Apply migrations in order
-npm run db:migrate -- 001_core_schema.sql
-npm run db:migrate -- 002_security_policies.sql
+psql "$DATABASE_URL" -f scripts/migrations/001_core_schema.sql
+psql "$DATABASE_URL" -f scripts/migrations/002_security_policies.sql
 ```
 
 ### For Existing Projects (With Old Migrations Applied)
@@ -510,7 +510,7 @@ npm run db:migrate -- 002_security_policies.sql
 
 ```bash
 # 1. Backup current database state (if any important data)
-npm run db:backup
+pg_dump > backup.sql
 
 # 2. Drop all tables
 DROP TABLE IF EXISTS user_preferences CASCADE;
@@ -520,8 +520,8 @@ DROP TYPE IF EXISTS user_role CASCADE;
 DROP FUNCTION IF EXISTS update_updated_at() CASCADE;
 
 # 3. Apply new consolidated migrations
-npm run db:migrate -- 001_core_schema.sql
-npm run db:migrate -- 002_security_policies.sql
+psql "$DATABASE_URL" -f scripts/migrations/001_core_schema.sql
+psql "$DATABASE_URL" -f scripts/migrations/002_security_policies.sql
 
 # 4. Verify schema
 npm run db:schema
@@ -648,7 +648,7 @@ COMMIT;
 1. **Backup verification**
 
    ```bash
-   npm run db:backup
+   pg_dump > backup.sql
    # Verify backup file exists and is readable
    ```
 
@@ -770,7 +770,6 @@ COMMIT;
    - **Mitigation:** Validate all existing role value before conversio
    - **Rollback:** Keep backup of users table before igration
 2. \*_RLS policy changes_
-
    - **Risk:** Users may lose/gain unintended acces
    - **Mitigation:** Test policies in staging with acual JWT token
    - **Rollback:** Have rollback script ready to revet policies
@@ -783,7 +782,6 @@ COMMIT;
 ### Medium Risk Areas
 
 1. **Index recreation**
-
    - **Risk:** Performance degradation during index rebuild
    - **Mitigation:** Run during low-traffic window
    - **Rollback:** Indexes will be recreated on rollback
@@ -895,29 +893,24 @@ COMMIT;
 ## Open Questions & Discussion Points
 
 1. **Supabase CLI Integration**
-
    - Should we integrate with Supabase's native migration system?
    - Current setup uses custom npm scripts - is this sufficient?
 
 2. **Migration Version Tracking**
-
    - How do we track which migrations have been applied?
    - Should we create a migrations tracking table?
 
 3. **Multiple Database Support**
-
-   - Project supports both Supabase and Turso
-   - Do we need parallel migration files for Turso?
+   - Project also supported a second database provider at the time (since removed)
+   - Do we need parallel migration files for that provider?
    - How do we keep schemas in sync across providers?
 
 4. **Organization vs. Messages Table**
-
    - `supabase-migrations/` references a `messages` table not in `migrations/`
    - Should we include messages table in consolidated migration?
    - Is messages table still in use or legacy?
 
 5. **Development Workflow**
-
    - How do developers create new migrations after consolidation?
    - What naming convention for future migrations? (003*\*, 1*\*, etc.)
 
@@ -932,9 +925,8 @@ COMMIT;
 
 ### Related Documentation
 
-- [Database Setup Guide](../DATABASE_SETUP.md)
+- [Database Setup Guide](../02-guides/clerk-supabase-setup.md)
 - [Migration Usage Guide](./migration-usage-guide.md)
-- [Database Switching Guide](../guides/database-switching-guide.md)
 - [Database Troubleshooting Guide](../guides/database-troubleshooting-guide.md)
 
 ### Current Migration Files

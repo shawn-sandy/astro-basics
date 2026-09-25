@@ -446,39 +446,7 @@ ASTRO_DB_REMOTE_URL=your-database-url
 ASTRO_DB_APP_TOKEN=your-auth-token
 ```
 
-#### Using Turso (Recommended)
-
-1. Install the Turso CLI:
-
-```bash
-npm install -g @tursodatabase/cli
-```
-
-2. Create an account and database:
-
-```bash
-turso auth signup
-turso db create your-project-name
-```
-
-3. Get your database URL:
-
-```bash
-turso db show your-project-name
-```
-
-4. Create an auth token:
-
-```bash
-turso db tokens create your-project-name
-```
-
-5. Set environment variables:
-
-```bash
-ASTRO_DB_REMOTE_URL=libsql://your-project-name-[user].turso.io
-ASTRO_DB_APP_TOKEN=your-generated-token
-```
+`ASTRO_DB_REMOTE_URL` is the connection URL of your hosted remote database, and `ASTRO_DB_APP_TOKEN` is the auth token that database's host issues for it. Create the database with any host that Astro DB supports, then copy its connection URL and token into these variables. See the [Astro DB documentation](https://docs.astro.build/en/guides/astro-db/) for the list of supported remote databases.
 
 ### 9. Deploy Database Schema
 

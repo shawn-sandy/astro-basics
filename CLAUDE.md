@@ -32,12 +32,12 @@ What am I creating?
 
 ## Project Overview
 
-**astro-basics** is a content-rich Astro website serving as both a component library and demonstration site. It uses server-side rendering, Clerk authentication, and supports multiple database backends.
+**astro-basics** is a content-rich Astro website serving as both a component library and demonstration site. It uses server-side rendering, Clerk authentication, and Supabase (PostgreSQL) as its database.
 
 ### Core Architecture Principles
 
 1. **Server-First Rendering**: Astro SSR with selective client hydration
-2. **Database Abstraction**: Unified interface supporting Supabase and Turso
+2. **Database Abstraction**: Supabase is the database; `getDatabase()` from `#libs/database` is the mandatory entry point
 3. **Strict Type Safety**: TypeScript strict mode with additional safety rules
 4. **Path Alias Imports**: All internal imports use `#` prefix (MANDATORY)
 5. **Component Segregation**: Clear separation between SSR (Astro) and client (React) components
@@ -302,10 +302,9 @@ Before marking ANY task as complete:
 
 ### Database Support
 
-- **Providers**: Supabase (PostgreSQL) and Turso (LibSQL)
-- **Abstraction Layer**: `src/libs/database.ts` (MANDATORY to use)
+- **Database**: Supabase (PostgreSQL)
+- **Abstraction Layer**: `getDatabase()` from `#libs/database` (`src/libs/database.ts`, MANDATORY to use)
 - **Type Definitions**: `src/libs/database-types.ts`
-- **Switching**: `npm run db:switch:turso` or `npm run db:switch:supabase`
 - **Setup**: `npm run db:wizard`
 
 ### Content Collections
@@ -338,16 +337,10 @@ Before marking ANY task as complete:
 PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 
-# Database (Choose one or both)
-DATABASE_PROVIDER=turso  # 'turso', 'supabase', or 'auto'
-
-# Supabase
+# Database (Supabase)
 SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
-
-# Turso
-TURSO_DATABASE_URL=libsql://your-db.turso.io
-TURSO_AUTH_TOKEN=eyJ...
 ```
 
 **Setup Guide**: `cp .env.example .env` or run `npm run db:wizard`
