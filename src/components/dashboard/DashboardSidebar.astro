@@ -211,27 +211,67 @@ const roleLabel = userRole?.replace(/_/g, ' ')
     border-color: color-mix(in srgb, currentcolor 30%, transparent);
   }
 
-  /* Narrow: the panel is a dropdown sheet under the bar while the popover is open. */
+  /*
+   * The link panel's look. No `display` here: the browser hides a closed
+   * popover with `display: none`, and an author `display` would override it.
+   */
   .dashboard-sidebar__panel {
     background: var(--paper-sunk);
     border: 0;
-    border-bottom: 1px solid var(--rule);
     box-sizing: border-box;
     color: var(--ink);
     flex-direction: column;
     font-size: var(--font-size-sm);
     gap: var(--space-6);
-    inset: 4rem 0 auto;
     margin: 0;
-    max-height: calc(100dvh - 4rem);
-    overflow-y: auto;
     padding: var(--space-4);
-    position: fixed;
-    width: 100%;
   }
 
-  .dashboard-sidebar__panel:popover-open {
-    display: flex;
+  /* Narrow, with popover support: a dropdown sheet under the bar while open. */
+  @supports selector(:popover-open) {
+    .dashboard-sidebar__panel {
+      border-bottom: 1px solid var(--rule);
+      inset: 4rem 0 auto;
+      max-height: calc(100dvh - 4rem);
+      overflow-y: auto;
+      position: fixed;
+      width: 100%;
+    }
+
+    .dashboard-sidebar__panel:popover-open {
+      display: flex;
+    }
+  }
+
+  /*
+   * Without popover support (Chrome and Edge before 114, Safari before 17,
+   * Firefox before 125) the `popover` attribute is ignored and the menu button
+   * opens nothing, so the links are listed in flow under the bar and the button
+   * is hidden. The bar stops sticking, or the always-open list would stay pinned
+   * over the page. It is unstuck unconditionally and re-stuck only for the wide
+   * layout: Astro compiles media queries into range syntax, which Safari before
+   * 16.4 and Chrome before 104 cannot parse, so a narrow-only `static` would
+   * never apply in several of these browsers.
+   */
+  @supports not selector(:popover-open) {
+    .dashboard-sidebar {
+      position: static;
+    }
+
+    .dashboard-sidebar__menu {
+      display: none;
+    }
+
+    .dashboard-sidebar__panel {
+      border-top: 1px solid var(--rule);
+      display: flex;
+    }
+
+    @media (min-width: 64rem) {
+      .dashboard-sidebar {
+        position: sticky;
+      }
+    }
   }
 
   /* The vendor pads `nav ul > li`; those properties are restated on the list items. */
