@@ -144,7 +144,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`insertMessages()` on the database abstraction** (`src/libs/database.ts`,
   `src/libs/database-types.ts`): a bulk insert that writes rows verbatim, keeping the
   `is_read`, `is_archived`, `created_at` and `updated_at` values they carry, and returns the new
-  ids in insert order. One statement per batch, so a failure leaves no partial write behind.
+  ids. One statement per batch, so a failure leaves no partial write behind.
   `insertMessage()` keeps its always-unread, always-now behaviour
 
 ### Changed

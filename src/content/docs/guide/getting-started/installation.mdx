@@ -100,8 +100,10 @@ npm run db:status
 # Verify connection
 npm run db:manage test
 
-# Apply migrations (SQL files in scripts/migrations/)
-# DATABASE_URL is your Supabase connection string (Project Settings → Database)
+# Apply migrations (SQL files in scripts/migrations/).
+# Export your Supabase PostgreSQL connection string first (Project Settings → Database);
+# it is not the API URL that SUPABASE_URL holds.
+export DATABASE_URL="postgresql://postgres:[password]@[project-ref].supabase.co:5432/postgres"
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/006_messages.sql

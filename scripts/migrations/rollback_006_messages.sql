@@ -3,7 +3,9 @@
 -- Purpose: Rollback migration 006_messages.sql
 --
 -- WARNING: This DESTROYS DATA. Dropping the messages table removes every
---          contact-form submission stored in it. Back it up first:
+--          contact-form submission stored in it. Back it up first, owner-readable
+--          only since the rows hold personal data:
+--            install -m 600 /dev/null messages-backup.sql
 --            pg_dump "$DATABASE_URL" --table=messages > messages-backup.sql
 --
 -- The contact form and /dashboard/messages stop working after this rollback.

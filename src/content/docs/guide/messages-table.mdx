@@ -41,8 +41,9 @@ A fresh Supabase project does not have this table.
 
 <Aside type="caution" title="Depends on 001_core_schema.sql">
   `messages.user_id` references `users(id)`, so apply `001_core_schema.sql` first. Rolling
-  the migration back with `rollback_006_messages.sql` deletes every stored message; back the
-  table up first with `pg_dump "$DATABASE_URL" --table=messages > messages-backup.sql`.
+  the migration back with `rollback_006_messages.sql` deletes every stored message. Back the
+  table up first, owner-readable only since the rows hold personal data:
+  `install -m 600 /dev/null messages-backup.sql && pg_dump "$DATABASE_URL" --table=messages > messages-backup.sql`.
 </Aside>
 
 Without the migration, `db:schema` and `db:manage test` fail with
@@ -114,7 +115,7 @@ const ids = await db.insertMessages([
 
 Every field beyond `name`, `email` and `message` is optional and falls back to the
 `insertMessage()` default. The batch is one `INSERT`, so a failure leaves no partial write
-behind, and the returned ids are in insert order.
+behind.
 
 ## The db:\* scripts
 

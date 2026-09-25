@@ -183,7 +183,10 @@ PUBLIC_SUPABASE_ANON_KEY=eyJ...
 Migrations are SQL files in `scripts/migrations/`. Apply each one with `psql`, or paste it into the Supabase SQL editor:
 
 ```bash
-# DATABASE_URL is your Supabase connection string (Project Settings → Database)
+# Export your Supabase connection string first (Project Settings → Database).
+# It is not the API URL above: psql needs the PostgreSQL connection string.
+export DATABASE_URL="postgresql://postgres:[password]@[project-ref].supabase.co:5432/postgres"
+
 # Apply database schema (users, roles, organizations)
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql

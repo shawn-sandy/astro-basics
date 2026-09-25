@@ -510,6 +510,8 @@ psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_polic
 
 ```bash
 # 1. Backup current database state (if any important data)
+# The dump holds user data, so create it owner-readable only
+install -m 600 /dev/null backup.sql
 pg_dump "$DATABASE_URL" > backup.sql
 
 # 2. Drop all tables
@@ -648,6 +650,8 @@ COMMIT;
 1. **Backup verification**
 
    ```bash
+   # The dump holds user data, so create it owner-readable only
+   install -m 600 /dev/null backup.sql
    pg_dump "$DATABASE_URL" > backup.sql
    # Verify backup file exists and is readable
    ```
@@ -656,7 +660,7 @@ COMMIT;
 
    ```bash
    # Document current schema state
-   pg_dump --schema-only > pre_migration_schema.sql
+   pg_dump "$DATABASE_URL" --schema-only > pre_migration_schema.sql
    ```
 
 3. **Data export** (if production data exists)

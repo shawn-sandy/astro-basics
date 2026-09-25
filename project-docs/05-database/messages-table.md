@@ -26,8 +26,13 @@ contact form returns a 500, and `/dashboard/messages` shows no messages.
 
 `006_messages.sql` depends on `001_core_schema.sql`: `messages.user_id` references
 `users(id)`. Rolling it back with `rollback_006_messages.sql` **deletes every stored
-message**; back the table up first with
-`pg_dump "$DATABASE_URL" --table=messages > messages-backup.sql`.
+message**. Back the table up first, owner-readable only since the rows hold personal
+data:
+
+```bash
+install -m 600 /dev/null messages-backup.sql
+pg_dump "$DATABASE_URL" --table=messages > messages-backup.sql
+```
 
 ## Schema
 
@@ -94,7 +99,7 @@ const ids = await db.insertMessages([
 
 Every field beyond `name`, `email` and `message` is optional and falls back to the
 `insertMessage()` default. The batch is one `INSERT`, so a failure leaves no partial write
-behind, and the returned ids are in insert order.
+behind.
 
 ## The db:\* scripts
 

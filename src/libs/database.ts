@@ -112,7 +112,8 @@ class SupabaseDatabase implements Database {
    * partial batch behind.
    *
    * @param data - Messages to write verbatim; omitted fields take the `insertMessage` defaults
-   * @returns {Promise<number[]>} Ids of the inserted rows, in insert order
+   * @returns {Promise<number[]>} Ids of the inserted rows; PostgreSQL does not guarantee
+   *   the order of `INSERT ... RETURNING`, so do not rely on it matching `data`
    * @throws {Error} When the service role client is unavailable or the insert fails
    */
   async insertMessages(data: SeedMessageData[]): Promise<number[]> {

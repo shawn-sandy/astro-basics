@@ -145,9 +145,12 @@ The wizard will:
 
 3. **Run Migrations**
 
-   Apply the SQL files in `scripts/migrations/` (users, roles, organizations) one at a time:
+   Apply the SQL files in `scripts/migrations/` (users, roles, organizations) one at a time.
+   `DATABASE_URL` is the PostgreSQL connection string from **Project Settings** →
+   **Database**, not the API URL above:
 
    ```bash
+   export DATABASE_URL="postgresql://postgres:[password]@[project-ref].supabase.co:5432/postgres"
    psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
    ```
 
