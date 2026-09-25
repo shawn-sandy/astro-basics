@@ -61,22 +61,18 @@ CLERK_SECRET_KEY=sk_test_ZGVmYXVsdC10ZXN0LWtleS1mb3ItY2k
 ## Workflow Steps
 
 1. **Setup Environment**
-
    - Checkout code with actions/checkout@v4
    - Setup Node.js 20 with npm caching
    - Install dependencies with `npm ci`
 
 2. **Install Playwright**
-
    - Install Chromium browser with system dependencies
 
 3. **Configure Environment**
-
    - Set up test environment variables
    - Configure Node.js adapter for CI
 
 4. **Build & Test**
-
    - Run TypeScript type checking (non-blocking)
    - Build application for production
    - Start preview server in background
@@ -112,6 +108,19 @@ npm run build
 npm run preview &
 npm run test:e2e
 ```
+
+### Targeting another server
+
+Specs navigate with relative paths, so `use.baseURL` in `playwright.config.ts` is the only place
+the target is set. It reads `PLAYWRIGHT_BASE_URL` and falls back to `http://localhost:4321`:
+
+```bash
+PLAYWRIGHT_BASE_URL=http://localhost:4330 npm run test:e2e
+```
+
+Outside CI, `reuseExistingServer` means a server already answering at that address is used as-is,
+so check which checkout owns the port before trusting a run. When nothing answers, Playwright
+starts `npm run dev` on the port taken from the same URL.
 
 ## Test Coverage
 

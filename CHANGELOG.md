@@ -149,6 +149,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **E2E tests follow one base URL** (`playwright.config.ts`, `e2e/`): specs navigate with relative
+  paths instead of a hard-coded `http://localhost:4321`, and `use.baseURL` reads
+  `PLAYWRIGHT_BASE_URL` (default `http://localhost:4321`). The dev server Playwright starts uses the
+  port from the same URL. Previously a server from another checkout holding 4321 was tested
+  silently
 - **Homepage hero speaks to the agentic starter** (`src/components/astro/HomeHero.astro`): the
   headline is now "Build agentic web apps on Astro Kit.", the deck names what comes wired in (login,
   database, dashboard) and that the repo is set up for Claude Code, and the eyebrow drops the "zero
