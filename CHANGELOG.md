@@ -124,7 +124,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `scripts/status.mjs` reports each feature as ON or OFF using the same rules as
     `src/utils/env-config.ts`, and never prints a key, URL or hostname
   - When Supabase is configured, it also checks that the `users` table from
-    `scripts/migrations/001_core_schema.sql` exists
+    `scripts/migrations/001_core_schema.sql` exists (10-second timeout), and whether Clerk
+    user sync is ready (login on plus `SUPABASE_SERVICE_ROLE_KEY`)
   - The `project-setup` skill now hands login and database setup off to it
 
 ### Changed

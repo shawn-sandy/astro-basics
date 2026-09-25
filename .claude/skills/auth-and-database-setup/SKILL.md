@@ -69,21 +69,24 @@ into `CLERK_WEBHOOK_SECRET`.
 
 Help them choose:
 
-| Choose       | If they want                                                            |
-| ------------ | ----------------------------------------------------------------------- |
-| **Turso**    | Messages (`/api/message-us`, `/dashboard/messages`). Simplest setup.    |
-| **Supabase** | Signed-in users stored with roles, organizations, and preferences.      |
-| **Both**     | Both of the above. Set `DATABASE_PROVIDER=turso` in `.env` (see below). |
+| Choose       | If they want                                                                    |
+| ------------ | ------------------------------------------------------------------------------- |
+| **Turso**    | Messages (`/api/message-us`, `/dashboard/messages`). Simplest setup.            |
+| **Supabase** | Signed-in users stored with roles, organizations, and preferences. No messages. |
+| **Both**     | Both of the above. Set `DATABASE_PROVIDER=turso` in `.env` (see below).         |
 
-The repo has no Supabase SQL that creates the `messages` table. When both databases
-are configured, the app sends messages to Supabase by default, and those calls fail.
-Setting `DATABASE_PROVIDER=turso` keeps messages on Turso, and user sync still goes
-to Supabase.
+The repo has no Supabase SQL that creates the `messages` table, but the app sends
+messages to Supabase whenever it is configured. So with **Supabase alone**,
+`/api/message-us` and `/dashboard/messages` fail. Tell them this before they pick it.
+With **both**, setting `DATABASE_PROVIDER=turso` keeps messages on Turso, and user
+sync still goes to Supabase.
 
 ### Turso
 
-1. Install the Turso CLI. On a Mac use `brew install tursodatabase/tap/turso`,
-   otherwise `curl -sSfL https://get.tur.so/install.sh | bash`. Then run
+1. Install the Turso CLI. On a Mac use `brew install tursodatabase/tap/turso`. On
+   Linux use `curl -sSfL https://get.tur.so/install.sh | bash`. On Windows the CLI
+   only runs inside WSL, so they install WSL first and run every `turso` command
+   there. Do not run the installer in PowerShell or Git Bash. Then run
    `turso auth signup` (or `turso auth login`). Both open a browser.
 2. Create the database and get its URL. The URL is not a secret, so you can run
    these yourself:
@@ -124,7 +127,8 @@ to Supabase.
    explains why.
 
 4. Run the status script. The goal is `Database: Supabase: ON` and
-   `Supabase users table: found`.
+   `Supabase users table: found`. With login on too, it should also say
+   `Clerk user sync: ready`. Otherwise signed-in users are never stored.
 
 The policies in `002` check the Clerk user's ID, so queries made from the browser
 also need Clerk added as a Third-Party Auth provider in Supabase. Server-side code
@@ -133,14 +137,17 @@ uses the service role key and does not need it. The steps are in
 
 ## When something goes wrong
 
-| What they see                                     | What it means                                               | What to do                                                          |
-| ------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------- |
-| Status script says `ok` but the site is unchanged | The dev server is still using the old `.env`                | `Ctrl+C`, `npm run dev`                                             |
-| `node: .env: not found`                           | There is no `.env` yet                                      | Step 0                                                              |
-| `Supabase users table: MISSING`                   | The schema SQL has not been run                             | Supabase, step 3                                                    |
-| `Supabase users table: key rejected`              | The anon key was copied wrong or belongs to another project | Recopy `SUPABASE_ANON_KEY`                                          |
-| `could not reach SUPABASE_URL (ENOTFOUND)`        | Typo in the URL, or the project is paused                   | Check the Project URL; resume the project in the Supabase dashboard |
-| `db:setup` fails with `fetch failed`              | The Turso URL or token is wrong                             | Rerun `turso db show astro-basics --url` and create a new token     |
+| What they see                                     | What it means                                                 | What to do                                                                               |
+| ------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Status script says `ok` but the site is unchanged | The dev server is still using the old `.env`                  | `Ctrl+C`, `npm run dev`                                                                  |
+| `node: .env: not found`                           | There is no `.env` yet                                        | Step 0                                                                                   |
+| `Supabase users table: MISSING (404)`             | The schema SQL has not been run, or the API cannot see it yet | Supabase, step 3. If it already ran, check that the Data API exposes the `public` schema |
+| `Supabase users table: exists, but ... (42501)`   | The table is there, but the API roles have no grants on it    | The schema SQL changes no grants; check the table's API access in the Supabase dashboard |
+| `Supabase users table: key rejected`              | The anon key was copied wrong or belongs to another project   | Recopy `SUPABASE_ANON_KEY`                                                               |
+| `could not reach SUPABASE_URL (ENOTFOUND)`        | Typo in the URL, or the project is paused                     | Check the Project URL; resume the project in the Supabase dashboard                      |
+| `Supabase users table: timed out`                 | The URL points at something that never answers                | Check the Project URL is the one from **Project Settings > API**                         |
+| `Clerk user sync: not ready`                      | Login is off, or `SUPABASE_SERVICE_ROLE_KEY` is not set       | Part A, or Supabase step 2                                                               |
+| `db:setup` fails with `fetch failed`              | The Turso URL or token is wrong                               | Rerun `turso db show astro-basics --url` and create a new token                          |
 
 ## Done
 

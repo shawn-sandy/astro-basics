@@ -159,4 +159,58 @@ describe('auth-and-database-setup status report', () => {
     expect(output).not.toContain('projectref-hostname')
     expect(output).not.toContain(supabase.SUPABASE_ANON_KEY)
   })
+
+  it('bounds the Supabase probe so a silent server cannot hang the report', async () => {
+    const hang = vi.fn(async () => {
+      throw Object.assign(new Error('The operation was aborted due to timeout'), {
+        name: 'TimeoutError',
+      })
+    })
+    const lines = await report(supabase, hang)
+
+    const [, init] = hang.mock.calls[0] as unknown as [unknown, { signal?: unknown }]
+    expect(init.signal).toBeInstanceOf(AbortSignal)
+    expect(lines.some(l => l.includes('users table') && l.includes('timed out'))).toBe(true)
+  })
+
+  it('does not blame the key when the anon role lacks table access (42501)', async () => {
+    // PostgREST answers 42501 with 401 for anonymous requests, even with a valid key.
+    const denied = async () =>
+      new Response(
+        JSON.stringify({ code: '42501', message: 'permission denied for table users' }),
+        {
+          status: 401,
+        }
+      )
+    const line = (await report(supabase, denied)).find(l => l.includes('users table'))
+
+    expect(line).toContain('42501')
+    expect(line).not.toContain('key rejected')
+  })
+
+  it('reports Clerk user sync as ready only with login ON and a service role key', async () => {
+    const ok = async () => new Response('[]', { status: 200 })
+    const serviceRole = 'service-role-SECRET'
+    const syncLine = (lines: string[]) => lines.find(l => l.startsWith('Clerk user sync'))
+
+    expect(syncLine(await report({ ...clerk, ...supabase }, ok))).toContain('not ready')
+    expect(
+      syncLine(
+        await report(
+          { ...clerk, ...supabase, SUPABASE_SERVICE_ROLE_KEY: template.SUPABASE_SERVICE_ROLE_KEY },
+          ok
+        )
+      )
+    ).toContain('not ready')
+    expect(
+      syncLine(await report({ ...supabase, SUPABASE_SERVICE_ROLE_KEY: serviceRole }, ok))
+    ).toContain('not ready')
+
+    const ready = await report(
+      { ...clerk, ...supabase, SUPABASE_SERVICE_ROLE_KEY: serviceRole },
+      ok
+    )
+    expect(ready).toContain('Clerk user sync: ready')
+    expect(ready.join('\n')).not.toContain(serviceRole)
+  })
 })

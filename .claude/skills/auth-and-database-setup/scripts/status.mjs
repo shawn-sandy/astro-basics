@@ -80,6 +80,9 @@ function fieldState(value, field) {
 /** Whether the app would treat a field in this state as configured. */
 const counts = state => state === 'ok' || state.startsWith('set, but')
 
+/** undici's default header timeout is 5 minutes; a silent server would stall the report. */
+const PROBE_TIMEOUT_MS = 10_000
+
 /**
  * Asks Supabase whether the `users` table from scripts/migrations/001_core_schema.sql exists.
  * @param {Record<string, string | undefined>} env
@@ -89,13 +92,23 @@ const counts = state => state === 'ok' || state.startsWith('set, but')
 async function supabaseSchemaLine(env, fetchImpl) {
   try {
     const url = new URL('/rest/v1/users?select=id&limit=1', env.SUPABASE_URL)
-    const res = await fetchImpl(url, { headers: { apikey: String(env.SUPABASE_ANON_KEY) } })
+    const res = await fetchImpl(url, {
+      headers: { apikey: String(env.SUPABASE_ANON_KEY) },
+      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+    })
     if (res.ok) return 'Supabase users table: found'
-    if (res.status === 404) return 'Supabase users table: MISSING - run the schema SQL'
-    if (res.status === 401 || res.status === 403)
-      return `Supabase users table: key rejected (HTTP ${res.status}) - recopy SUPABASE_ANON_KEY`
+    // PostgREST answers "permission denied" (42501) with 401 for anonymous requests, so the
+    // status alone cannot tell a bad key from missing table grants. Only the code is read.
+    const code = (await res.json().catch(() => null))?.code
+    if (code === '42501')
+      return 'Supabase users table: exists, but the anon key has no access to it (42501)'
+    if (res.status === 404) return 'Supabase users table: MISSING (404) - run the schema SQL'
+    if (res.status === 401)
+      return 'Supabase users table: key rejected (HTTP 401) - recopy SUPABASE_ANON_KEY'
     return `Supabase users table: unexpected HTTP ${res.status}`
   } catch (error) {
+    if (error?.name === 'TimeoutError')
+      return `Supabase users table: timed out after ${PROBE_TIMEOUT_MS / 1000}s`
     // Only the error code: the message can contain the project hostname.
     return `Supabase users table: could not reach SUPABASE_URL (${error?.cause?.code ?? 'network error'})`
   }
@@ -135,7 +148,21 @@ export async function report(env, fetchImpl = fetch) {
           : 'none'
   lines.push(`Database used for messages: ${active}`)
 
-  if (supabase) lines.push(await supabaseSchemaLine(env, fetchImpl))
+  if (supabase) {
+    lines.push(await supabaseSchemaLine(env, fetchImpl))
+    // The webhook and fetchUserWithRole() write users through getSupabaseServiceRole(),
+    // which returns null without this key (src/libs/supabase-native.ts).
+    const needs = [
+      !on['Login (Clerk)'] && 'Login ON',
+      !counts(fieldState(env.SUPABASE_SERVICE_ROLE_KEY, { key: 'SUPABASE_SERVICE_ROLE_KEY' })) &&
+        'SUPABASE_SERVICE_ROLE_KEY',
+    ].filter(Boolean)
+    lines.push(
+      needs.length
+        ? `Clerk user sync: not ready (needs ${needs.join(' and ')})`
+        : 'Clerk user sync: ready'
+    )
+  }
   return lines
 }
 
