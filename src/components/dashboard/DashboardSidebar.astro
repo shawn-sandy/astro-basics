@@ -119,9 +119,13 @@ const roleLabel = userRole?.replace(/_/g, ' ')
 <script>
   // A menu left open while the viewport widens past 64rem stays in the top
   // layer, overlaying the page with its toggle button hidden, so close it.
+  // The `hidePopover` check also skips browsers without the popover API, where
+  // `:popover-open` is an unknown selector and `matches` would throw.
   const menu = document.querySelector<HTMLElement>('[data-dashboard-menu]')
   window.matchMedia('(min-width: 64rem)').addEventListener('change', event => {
-    if (event.matches && menu?.matches(':popover-open')) menu.hidePopover()
+    if (event.matches && menu && 'hidePopover' in menu && menu.matches(':popover-open')) {
+      menu.hidePopover()
+    }
   })
 </script>
 
