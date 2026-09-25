@@ -2,12 +2,11 @@
   "version": 1,
   "sessions": {
     "b7bea354-36af-4eaa-9609-56c0efbb707c": {
-      "updatedAt": 1790375250746,
+      "updatedAt": 1790375832366,
       "files": {
         "/Users/shawns-work/repos/astro-basics/.claude/worktrees/remove-turso-database-b3a399/src/components/astro/HomeHero.astro": {
-          "editCount": 6,
+          "editCount": 13,
           "findings": [],
-          "stopBaseline": { "version": 1, "engine": "0.1.5", "counts": {} },
           "cleanAcked": true
         },
         "/Users/shawns-work/repos/astro-basics/.claude/worktrees/remove-turso-database-b3a399/src/components/astro/FeatureCards.astro": {

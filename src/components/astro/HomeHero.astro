@@ -29,8 +29,8 @@
  * <HomeHero
  *   slot="header"
  *   eyebrow="30+ components / built for Claude Code"
- *   headline="Astro components, ready to paste."
- *   deck="Server-rendered components with typed props."
+ *   headline="Build agentic web apps on Astro Kit."
+ *   deck="Login, database and dashboard come wired in."
  * />
  * ```
  */
@@ -47,8 +47,8 @@ export type Props = {
 
 const {
   eyebrow = '30+ components / built for Claude Code',
-  headline = 'Astro components, ready to paste.',
-  deck = 'Server-rendered components with typed props. Copy the import, drop in the markup, ship static HTML.',
+  headline = 'Build agentic web apps on Astro Kit.',
+  deck = 'Login, database and dashboard come wired in, and the repo is set up for Claude Code to work in.',
 } = Astro.props as Props
 
 const specimenTitle = 'Accessibility First'
@@ -230,6 +230,10 @@ const specimenCode = [
     hyphens: manual;
     overflow-wrap: break-word;
     text-align: left;
+
+    /* Evens the lines so a short headline never strands its last word alone
+       ("agent." sat on its own line at 1440px). */
+    text-wrap: balance;
     text-transform: none;
   }
 
