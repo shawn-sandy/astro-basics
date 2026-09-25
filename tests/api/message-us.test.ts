@@ -2,9 +2,10 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { POST, GET } from '../../src/pages/api/message-us'
 
 // Mock the dependencies
-vi.mock('#libs/turso', () => ({
-  isTursoConfigured: vi.fn(() => true),
-  insertMessage: vi.fn(() => Promise.resolve('test-message-id')),
+vi.mock('#utils/email', () => ({
+  getNotificationAddress: vi.fn(() => 'owner@example.com'),
+  isEmailConfigured: vi.fn(() => true),
+  sendEmail: vi.fn(() => Promise.resolve({ sent: true })),
 }))
 
 vi.mock('#utils/csrf', () => ({
@@ -68,7 +69,29 @@ describe('POST /api/message-us', () => {
       expect(response.status).toBe(200)
       expect(result.success).toBe(true)
       expect(result.message).toBe('Your message has been sent successfully!')
-      expect(result.id).toBe('test-message-id')
+    })
+
+    it('should deliver the submission as a notification email', async () => {
+      const { sendEmail } = await import('#utils/email')
+      const request = createMockRequest(validMessageData)
+      const cookies = createMockCookies()
+
+      await POST({ request, cookies } as any)
+
+      expect(sendEmail).toHaveBeenCalledTimes(1)
+      expect(sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          template: 'contact-notification',
+          to: 'owner@example.com',
+          replyTo: validMessageData.email,
+          parameters: expect.objectContaining({
+            name: validMessageData.name,
+            email: validMessageData.email,
+            subject: validMessageData.subject,
+            message: validMessageData.message,
+          }),
+        })
+      )
     })
 
     it('should accept valid form data', async () => {
@@ -94,6 +117,12 @@ describe('POST /api/message-us', () => {
 
       expect(response.status).toBe(200)
       expect(result.success).toBe(true)
+
+      // A missing subject must not reach the email as "undefined"
+      const { sendEmail } = await import('#utils/email')
+      const sent = vi.mocked(sendEmail).mock.calls[0][0]
+      expect(sent.subject).not.toContain('undefined')
+      expect(sent.parameters?.subject).toBeTruthy()
     })
 
     it('should sanitize input data', async () => {
@@ -113,6 +142,12 @@ describe('POST /api/message-us', () => {
 
       expect(response.status).toBe(200)
       expect(result.success).toBe(true)
+
+      // The email carries the sanitized values, not the raw input
+      const { sendEmail } = await import('#utils/email')
+      const sent = vi.mocked(sendEmail).mock.calls[0][0]
+      expect(sent.replyTo).toBe('john@example.com')
+      expect(sent.parameters?.name).not.toContain('<script>')
     })
   })
 
@@ -245,11 +280,10 @@ describe('POST /api/message-us', () => {
     })
   })
 
-  describe('Database configuration', () => {
-    it('should return 503 when database is not configured', async () => {
-      // Mock database as not configured
-      const { isTursoConfigured } = await import('#libs/turso')
-      vi.mocked(isTursoConfigured).mockReturnValueOnce(false)
+  describe('Email configuration', () => {
+    it('should return 503 and send nothing when email is not configured', async () => {
+      const { isEmailConfigured, sendEmail } = await import('#utils/email')
+      vi.mocked(isEmailConfigured).mockReturnValueOnce(false)
 
       const request = createMockRequest(validMessageData)
       const cookies = createMockCookies()
@@ -259,15 +293,12 @@ describe('POST /api/message-us', () => {
 
       expect(response.status).toBe(503)
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Database is not configured')
+      expect(sendEmail).not.toHaveBeenCalled()
     })
-  })
 
-  describe('Error handling', () => {
-    it('should handle database insertion errors', async () => {
-      // Mock database insertion to fail
-      const { insertMessage } = await import('#libs/turso')
-      vi.mocked(insertMessage).mockRejectedValueOnce(new Error('Database error'))
+    it('should return 503 and send nothing when no notification address is set', async () => {
+      const { getNotificationAddress, sendEmail } = await import('#utils/email')
+      vi.mocked(getNotificationAddress).mockReturnValueOnce(null)
 
       const request = createMockRequest(validMessageData)
       const cookies = createMockCookies()
@@ -275,9 +306,27 @@ describe('POST /api/message-us', () => {
       const response = await POST({ request, cookies } as any)
       const result = await response.json()
 
-      expect(response.status).toBe(500)
+      expect(response.status).toBe(503)
       expect(result.success).toBe(false)
-      expect(result.error).toContain('error occurred while sending')
+      expect(sendEmail).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('Error handling', () => {
+    it('should report failure when the notification email is not sent', async () => {
+      // The email is the only record of the submission, so a failed send
+      // must not be acknowledged as success
+      const { sendEmail } = await import('#utils/email')
+      vi.mocked(sendEmail).mockResolvedValueOnce({ sent: false, reason: 'provider-error' })
+
+      const request = createMockRequest(validMessageData)
+      const cookies = createMockCookies()
+
+      const response = await POST({ request, cookies } as any)
+      const result = await response.json()
+
+      expect(response.status).toBe(502)
+      expect(result.success).toBe(false)
     })
 
     it('should handle JSON parsing errors', async () => {
@@ -293,94 +342,6 @@ describe('POST /api/message-us', () => {
       expect(response.status).toBe(500)
       expect(result.success).toBe(false)
       expect(result.error).toContain('error occurred while sending')
-    })
-  })
-
-  describe('IP address handling', () => {
-    it('should extract IP from x-forwarded-for header', async () => {
-      const { insertMessage } = await import('#libs/turso')
-      const insertMessageSpy = vi.mocked(insertMessage)
-
-      const request = createMockRequest(validMessageData)
-      request.headers.set('x-forwarded-for', '203.0.113.1, 70.41.3.18')
-      const cookies = createMockCookies()
-
-      await POST({ request, cookies } as any)
-
-      expect(insertMessageSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ip_address: '203.0.113.1',
-        })
-      )
-    })
-
-    it('should fallback to x-real-ip header', async () => {
-      const { insertMessage } = await import('#libs/turso')
-      const insertMessageSpy = vi.mocked(insertMessage)
-
-      const request = createMockRequest(validMessageData)
-      request.headers.delete('x-forwarded-for')
-      request.headers.set('x-real-ip', '198.51.100.1')
-      const cookies = createMockCookies()
-
-      await POST({ request, cookies } as any)
-
-      expect(insertMessageSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ip_address: '198.51.100.1',
-        })
-      )
-    })
-
-    it('should use "unknown" for invalid IP addresses', async () => {
-      const { insertMessage } = await import('#libs/turso')
-      const insertMessageSpy = vi.mocked(insertMessage)
-
-      const request = createMockRequest(validMessageData)
-      request.headers.set('x-forwarded-for', 'invalid-ip')
-      const cookies = createMockCookies()
-
-      await POST({ request, cookies } as any)
-
-      expect(insertMessageSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ip_address: 'unknown',
-        })
-      )
-    })
-
-    it('should normalize IPv6 addresses', async () => {
-      const { insertMessage } = await import('#libs/turso')
-      const insertMessageSpy = vi.mocked(insertMessage)
-
-      const request = createMockRequest(validMessageData)
-      request.headers.set('x-forwarded-for', '[2001:0db8:0000:0000:0000:0000:0000:0001]:8080')
-      const cookies = createMockCookies()
-
-      await POST({ request, cookies } as any)
-
-      expect(insertMessageSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ip_address: '::1',
-        })
-      )
-    })
-
-    it('should handle IPv6 addresses without truncation', async () => {
-      const { insertMessage } = await import('#libs/turso')
-      const insertMessageSpy = vi.mocked(insertMessage)
-
-      const request = createMockRequest(validMessageData)
-      request.headers.set('x-forwarded-for', '2001:db8:85a3::8a2e:370:7334')
-      const cookies = createMockCookies()
-
-      await POST({ request, cookies } as any)
-
-      expect(insertMessageSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ip_address: '2001:db8:85a3::8a2e:370:7334',
-        })
-      )
     })
   })
 })
@@ -401,6 +362,16 @@ describe('GET /api/message-us', () => {
     expect(response.status).toBe(200)
     expect(result.success).toBe(true)
     expect(result.message).toBe('Contact API is running')
-    expect(typeof result.configured).toBe('boolean')
+    expect(result.configured).toBe(true)
+  })
+
+  it('should report not configured when email is off', async () => {
+    const { isEmailConfigured } = await import('#utils/email')
+    vi.mocked(isEmailConfigured).mockReturnValueOnce(false)
+
+    const response = await GET({} as any)
+    const result = await response.json()
+
+    expect(result.configured).toBe(false)
   })
 })

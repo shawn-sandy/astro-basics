@@ -37,7 +37,7 @@ What am I creating?
 ### Core Architecture Principles
 
 1. **Server-First Rendering**: Astro SSR with selective client hydration
-2. **Database Abstraction**: Unified interface supporting Supabase and Turso
+2. **Supabase Database**: Supabase is the only database, accessed through `#libs/supabase-native`
 3. **Strict Type Safety**: TypeScript strict mode with additional safety rules
 4. **Path Alias Imports**: All internal imports use `#` prefix (MANDATORY)
 5. **Component Segregation**: Clear separation between SSR (Astro) and client (React) components
@@ -100,7 +100,6 @@ npm run type-check    # TypeScript type checking
 ```bash
 npm run db:wizard     # Interactive setup wizard (first-time setup)
 npm run db:status     # Check current configuration
-npm run db:manage     # Advanced database management
 ```
 
 ### Testing
@@ -192,8 +191,8 @@ These rules override ALL other considerations:
 
 ### Database Rules
 
-- ✅ **ALWAYS** use abstraction layer: `import { getDatabase } from '#libs/database'`
-- ❌ **NEVER** access providers directly: `import { createClient } from '@supabase/supabase-js'`
+- ✅ **ALWAYS** use the helpers in `#libs/supabase-native`: `import { getSupabaseServiceRole } from '#libs/supabase-native'`
+- ❌ **NEVER** call `createClient` directly: `import { createClient } from '@supabase/supabase-js'`
 
 ### Security Rules
 
@@ -246,8 +245,8 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
   try {
     // 2. Validate input
-    // 3. Database via abstraction layer
-    const db = getDatabase()
+    // 3. Database via #libs/supabase-native helpers
+    const supabase = getSupabaseServiceRole()
     // 4. Business logic
     // 5. Return success response
   } catch (error) {
@@ -260,11 +259,13 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
 ```typescript
 // ✅ CORRECT
-import { getDatabase } from '#libs/database'
-import type { MessageQueryOptions } from '#libs/database-types'
+import { getSupabaseServiceRole } from '#libs/supabase-native'
 
-const db = getDatabase()
-const messages = await db.getMessages({ limit: 10 })
+const supabase = getSupabaseServiceRole()
+if (!supabase) {
+  // Supabase not configured - return 503
+}
+const { data, error } = await supabase.from('users').select('id, email').limit(10)
 ```
 
 **For complete patterns:** See [CLAUDE-PATTERNS.md](CLAUDE-PATTERNS.md)
@@ -281,7 +282,7 @@ Before marking ANY task as complete:
 - [ ] All imports use `#` path aliases
 - [ ] Components in correct directories
 - [ ] Authentication checks present (if required)
-- [ ] Database accessed via abstraction layer
+- [ ] Database accessed via `#libs/supabase-native` helpers
 - [ ] Error handling implemented
 - [ ] JSDoc comments added
 - [ ] Code tested and working
@@ -302,10 +303,10 @@ Before marking ANY task as complete:
 
 ### Database Support
 
-- **Providers**: Supabase (PostgreSQL) and Turso (LibSQL)
-- **Abstraction Layer**: `src/libs/database.ts` (MANDATORY to use)
-- **Type Definitions**: `src/libs/database-types.ts`
-- **Switching**: `npm run db:switch:turso` or `npm run db:switch:supabase`
+- **Provider**: Supabase (PostgreSQL) only
+- **Client Helpers**: `src/libs/supabase-native.ts` and `src/libs/supabase-auth.ts` (MANDATORY to use)
+- **Type Definitions**: `src/libs/database.types.ts`
+- **Migrations**: `scripts/migrations/`, applied with `psql` (see `scripts/migrations/README.md`)
 - **Setup**: `npm run db:wizard`
 
 ### Content Collections
@@ -338,16 +339,9 @@ Before marking ANY task as complete:
 PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 
-# Database (Choose one or both)
-DATABASE_PROVIDER=turso  # 'turso', 'supabase', or 'auto'
-
-# Supabase
+# Database (Supabase)
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
-
-# Turso
-TURSO_DATABASE_URL=libsql://your-db.turso.io
-TURSO_AUTH_TOKEN=eyJ...
 ```
 
 **Setup Guide**: `cp .env.example .env` or run `npm run db:wizard`

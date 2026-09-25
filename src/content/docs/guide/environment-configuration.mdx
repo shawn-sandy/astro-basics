@@ -197,44 +197,10 @@ const anonKey = envConfig.getSupabaseAnonKey()!
 const serviceRoleKey = envConfig.getSupabaseServiceRoleKey() // Optional, may be null
 ```
 
-### Turso
-
-```typescript
-import { getEnvironmentConfig } from '#utils/env-config'
-
-const envConfig = getEnvironmentConfig()
-
-// Validation
-if (!envConfig.isTursoConfigured()) {
-  throw new Error('Turso not configured')
-}
-
-// Access credentials
-const url = envConfig.getTursoDatabaseUrl()!
-const token = envConfig.getTursoAuthToken()!
-```
-
-### Provider Selection
-
-```typescript
-// Check which database is configured
-const provider = envConfig.getDatabaseProvider()
-// Returns: 'turso' | 'supabase' | 'auto' | null
-
-// Multi-provider support
-if (envConfig.isSupabaseConfigured()) {
-  // Use Supabase
-} else if (envConfig.isTursoConfigured()) {
-  // Use Turso
-} else {
-  throw new Error('No database configured')
-}
-```
-
-<Aside type="note" title="Provider Auto-Detection">
-  If `DATABASE_PROVIDER` is not set, the system automatically detects available providers in this priority order:
-  1. Supabase (if configured)
-  2. Turso (if configured)
+<Aside type="note" title="Supabase is the only database">
+  Application code should not build a client from these credentials. Use the helpers in
+  `#libs/supabase-native` (`getSupabaseServiceRole()`, `createServerSupabaseClient(token)`), which
+  read this configuration and return `null` when Supabase is not configured.
 </Aside>
 
 ---
@@ -305,9 +271,7 @@ if (!status.isFullyConfigured) {
       "hasWebhook": false
     },
     "database": {
-      "provider": "supabase",
-      "configured": true,
-      "availableProviders": ["supabase"]
+      "configured": true
     },
     "logging": {
       "configured": false,
@@ -430,35 +394,6 @@ const env = envConfig.getEnvironment()
 </style>
 ```
 
-### Pattern 4: React Hooks
-
-```typescript
-// src/hooks/useSupabase.tsx
-import { createClient } from '@supabase/supabase-js'
-import { useEffect, useState } from 'react'
-import { getEnvironmentConfig } from '#utils/env-config'
-
-export function useSupabase() {
-  const [client, setClient] = useState<any>(null)
-
-  useEffect(() => {
-    const envConfig = getEnvironmentConfig()
-
-    if (envConfig.isSupabaseConfigured()) {
-      const url = envConfig.getSupabaseUrl()!
-      const key = envConfig.getSupabaseAnonKey()!
-
-      const supabase = createClient(url, key)
-      setClient(supabase)
-    } else {
-      console.warn('Supabase not configured')
-    }
-  }, [])
-
-  return client
-}
-```
-
 ---
 
 ## Testing
@@ -537,14 +472,6 @@ describe('Clerk Integration', () => {
     SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
     ```
   </TabItem>
-
-  <TabItem label="Turso">
-    ```bash
-    # Turso (Required)
-    TURSO_DATABASE_URL=libsql://your-db.turso.io
-    TURSO_AUTH_TOKEN=your_auth_token_here
-    ```
-  </TabItem>
 </Tabs>
 
 ### Optional Variables
@@ -552,9 +479,6 @@ describe('Clerk Integration', () => {
 ```bash
 # Clerk (Optional)
 CLERK_WEBHOOK_SECRET=whsec_your_webhook_secret
-
-# Database Provider Selection (Optional)
-DATABASE_PROVIDER=supabase  # 'turso' | 'supabase' | 'auto'
 
 # Axiom Logging (Optional)
 AXIOM_TOKEN=your_axiom_token
@@ -621,42 +545,6 @@ To obtain your Clerk credentials:
 
 :::tip[Test vs Live Keys]
 Use `pk_test_` and `sk_test_` keys for development. Switch to `pk_live_` and `sk_live_` for production deployments.
-:::
-
-### Getting Turso Credentials
-
-To obtain Turso credentials using the CLI:
-
-**1. Install Turso CLI**
-```bash
-curl -sSfL https://get.tur.so/install.sh | bash
-```
-
-**2. Authenticate**
-```bash
-turso auth login
-```
-
-**3. Create or Select Database**
-```bash
-# Create new database
-turso db create my-database
-
-# Or list existing databases
-turso db list
-```
-
-**4. Get Connection Details**
-```bash
-# Get database URL → TURSO_DATABASE_URL
-turso db show my-database --url
-
-# Create auth token → TURSO_AUTH_TOKEN
-turso db tokens create my-database
-```
-
-:::note[Turso Locations]
-Turso databases are edge-distributed. Choose a primary location close to your users for optimal performance.
 :::
 
 ---
@@ -792,7 +680,6 @@ vi.mock('#utils/env-config', () => ({
 ## Related Guides
 
 - [Getting Started - Setup](/guide/getting-started/setup) - Initial environment configuration
-- [Database Switching](/guide/database-switching) - Switch between Supabase and Turso
 - [Clerk Authentication](/guide/integrations/clerk-supabase) - Clerk integration guide
 - [Logging System](/guide/logging-system) - Axiom logging configuration
 

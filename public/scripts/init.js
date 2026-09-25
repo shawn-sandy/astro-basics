@@ -5,7 +5,6 @@
 import { initContactForm } from './features/contact-form.js'
 import { initPWAInstallPrompt, initOfflineIndicator } from './features/pwa-manager.js'
 import { initConnectionStatus } from './features/connection-status.js'
-import { initSupabaseTest } from './features/supabase-test.js'
 
 /**
  * Initialize all features based on what elements are present
@@ -32,11 +31,6 @@ function initializeFeatures() {
     ?.textContent?.includes("You're Offline")
   if (isOfflinePage) {
     initConnectionStatus()
-  }
-
-  // Supabase test page
-  if (document.getElementById('testConnection')) {
-    initSupabaseTest()
   }
 }
 

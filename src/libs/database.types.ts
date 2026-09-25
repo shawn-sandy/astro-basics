@@ -22,28 +22,6 @@ export type Database = {
         >
         Update: Partial<Database['public']['Tables']['users']['Insert']>
       }
-      messages: {
-        Row: {
-          id: number
-          user_id: string | null
-          clerk_user_id: string | null
-          name: string
-          email: string
-          subject: string | null
-          message: string
-          is_read: boolean
-          is_archived: boolean
-          ip_address: string | null
-          user_agent: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: Omit<
-          Database['public']['Tables']['messages']['Row'],
-          'id' | 'created_at' | 'updated_at'
-        >
-        Update: Partial<Database['public']['Tables']['messages']['Insert']>
-      }
     }
     Views: {
       [_ in never]: never

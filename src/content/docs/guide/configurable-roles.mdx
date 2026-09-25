@@ -15,7 +15,7 @@ The configurable role system allows you to:
 
 - Define custom roles at project setup time
 - Maintain full TypeScript type safety across your codebase
-- Automatically generate database migrations for PostgreSQL (Supabase) or SQLite (Turso)
+- Automatically generate database migrations for PostgreSQL (Supabase)
 - Enforce role hierarchy and permissions
 - Keep roles consistent between TypeScript and database
 
@@ -546,16 +546,16 @@ npm run setup:roles
 ```
 1. Review the generated files
 2. Run type-check to verify: npm run type-check
-3. Apply migration: npm run db:migrate -- 003_user_roles.sql
+3. Apply migration: psql $DATABASE_URL -f scripts/migrations/003_user_roles.sql
 4. Commit all files to Git
 ```
 
 ### Step 4: Apply to Database
 
-**Run the migration to update your database**:
+**Run the migration to update your database** (see `scripts/migrations/README.md`):
 
 ```bash
-npm run db:migrate
+psql $DATABASE_URL -f scripts/migrations/003_user_roles.sql
 ```
 
 **What this does**:
@@ -1066,7 +1066,7 @@ function isValidRole(role: string): role is UserRole {
 
 1. Edit `config/roles.config.ts` and add the role
 2. Run `npm run setup:roles` to regenerate types
-3. Run `npm run db:migrate` to update database
+3. Apply the generated migration with `psql` to update the database
 4. Commit all generated files
 
 ### Removing a Role
@@ -1133,11 +1133,8 @@ npm run setup:roles:dry-run
 # Validate configuration only
 npm run validate:roles
 
-# Apply database migration
-npm run db:migrate
-
-# Check migration status
-npm run db:migrate:status
+# Apply database migration (use the number setup:roles printed)
+psql $DATABASE_URL -f scripts/migrations/<NNN>_user_roles.sql
 ```
 
 ## Best Practices

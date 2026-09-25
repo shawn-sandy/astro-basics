@@ -6,10 +6,11 @@
 
 ## Architecture Overview
 
-**Hybrid Astro SSR application** with multi-database support, role-based access control, and progressive web app capabilities. Key architectural decisions:
+**Hybrid Astro SSR application** with Supabase database support, role-based access control, and progressive web app
+capabilities. Key architectural decisions:
 
 - **Server-side rendering** (`output: "server"`) with selective prerendering via `export const prerender = true`
-- **Database abstraction layer** (`src/libs/database.ts`) enabling runtime switching between Turso (LibSQL) and Supabase (PostgreSQL)
+- **Supabase (PostgreSQL)** as the only database, reached through the helpers in `src/libs/supabase-native.ts`
 - **Dual authentication** via Clerk with native Supabase RLS integration (production-ready 2025)
 - **Role hierarchy system** with configurable privilege escalation through `config/roles.config.ts`
 - **Progressive Web App** (`@vite-pwa/astro`) with offline support, auto-update service worker, and installability
@@ -95,13 +96,13 @@ Content with Starlight-enhanced MDX features...
 
 ```typescript
 // ALWAYS use # alias for src/ imports (configured in package.json "imports")
-import { getDatabase } from '#libs/database' // Unified DB abstraction
+import { getSupabaseServiceRole } from '#libs/supabase-native' // Shared Supabase client
 import { checkUserRole } from '#utils/role-guard' // Role hierarchy checks
 import { logger } from '#utils/logger' // Axiom/console logging
 import { validateCsrfToken } from '#utils/csrf' // Form protection
 
 // Type-only imports required (verbatimModuleSyntax: true)
-import type { Message } from '#libs/database-types'
+import type { Database } from '#libs/database.types'
 ```
 
 ## Development Workflow
@@ -120,14 +121,13 @@ npm run test:e2e      # Playwright (requires: npx playwright install)
 ### Database Operations (requires .env configuration)
 
 ```bash
-npm run db:wizard         # Interactive setup for first-time configuration
-npm run db:switch:turso   # Switch to Turso with automatic backup
-npm run db:switch:supabase # Switch to Supabase with automatic backup
-npm run db:status         # Show current provider + connection health
-npm run db:schema         # Validate schema compatibility across providers
+npm run db:wizard         # Interactive Supabase setup for first-time configuration
+npm run db:status         # Show Supabase configuration + connection health
 ```
 
-**Database Provider Detection**: Runtime selection via environment variables. The abstraction layer (`src/libs/database.ts`) automatically detects available providers and fails gracefully when unconfigured.
+**Unconfigured Supabase**: The helpers in `src/libs/supabase-native.ts` return `null` when Supabase is not configured,
+so callers fail gracefully (typically with a 503). Migrations in `scripts/migrations/` are applied with `psql` (see
+`scripts/migrations/README.md`).
 
 ### Role Configuration (BEFORE database setup)
 
@@ -136,26 +136,29 @@ npm run setup:roles       # Generate types + migrations from config/roles.config
 npm run validate:roles    # Validate role configuration without applying changes
 ```
 
-**Critical**: Configure roles in `config/roles.config.ts` BEFORE running `db:setup` or `db:wizard`. Role setup generates database migrations that define the schema.
+**Critical**: Configure roles in `config/roles.config.ts` BEFORE running `db:wizard` or applying migrations. Role setup
+generates database migrations that define the schema.
 
 ## Critical Patterns
 
-### Database Abstraction Layer
+### Supabase Access
 
-**DO**: Use unified database interface (`src/libs/database.ts`)
+**DO**: Use the shared helpers (`src/libs/supabase-native.ts`)
 
 ```typescript
-import { getDatabase } from '#libs/database'
+import { getSupabaseServiceRole } from '#libs/supabase-native'
 
-const db = getDatabase() // Auto-detects Turso or Supabase
-const messages = await db.getMessages({ limit: 10 })
+const supabase = getSupabaseServiceRole() // null when Supabase is not configured
+if (supabase) {
+  const { data: users } = await supabase.from('users').select('id, email').limit(10)
+}
 ```
 
-**DON'T**: Import provider-specific clients directly unless implementing new database operations
+**DON'T**: Create clients directly
 
 ```typescript
-// ❌ Breaks provider abstraction
-import getTursoClient from '#libs/turso'
+// ❌ Bypasses the shared configuration checks and typing
+import { createClient } from '@supabase/supabase-js'
 ```
 
 ### Role-Based Access Control
@@ -275,11 +278,9 @@ export async function getStaticPaths() {
 PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_... # Safe with dummy value for builds
 CLERK_SECRET_KEY=sk_test_...             # Safe with dummy value for builds
 
-# Database (required for message/comment features)
+# Database (required for user sync/comment features)
 SUPABASE_URL=https://....supabase.co
 SUPABASE_SERVICE_ROLE_KEY=eyJh...        # Admin operations
-TURSO_DATABASE_URL=libsql://....turso.io
-TURSO_AUTH_TOKEN=eyJh...
 ```
 
 **Development Mode**: Dummy Clerk keys allow builds but auth operations fail gracefully. Core functionality (static pages, content) remains operational.
@@ -338,7 +339,7 @@ Deployment config in `netlify.toml` (minimal configuration, publishes `dist/`).
 ## Additional Resources
 
 - **Role System**: See `project-docs/03-features/role-based-access-control.md`
-- **Database Setup**: See `project-docs/05-database/database-switching.md`
+- **Database Setup**: See `scripts/migrations/README.md`
 - **MCP Integration**: See `project-docs/04-integrations/mcp/setup.md`
 - **OpenSpec Proposals**: Follow `openspec/AGENTS.md` for architectural changes
 

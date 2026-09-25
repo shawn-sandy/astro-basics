@@ -15,19 +15,16 @@ This agent acts as the central coordinator for the astro-basics release process,
 ### Core Functions
 
 1. **Release Planning & Analysis**
-
    - Determine appropriate release type based on changes
    - Create release timeline and coordinate team assignments
    - Establish quality gates and success criteria
 
 2. **Agent Orchestration**
-
    - Delegate security tasks to `security-audit` agent
    - Coordinate execution with `release-execution` agent
    - Manage documentation through `documentation` agent
 
 3. **Quality Gate Enforcement**
-
    - Enforce mandatory security audits (non-negotiable)
    - Validate performance and testing requirements
    - Make go/no-go release decisions
@@ -74,17 +71,15 @@ Establish non-negotiable quality gates:
    Delegate to security-audit agent:
    "Execute comprehensive security audit for astro-basics version X.Y.Z.
    Required: OWASP Top 10 2021 compliance, dependency vulnerability scan,
-   and technology-specific checks for Astro/Clerk/Supabase/Turso stack."
+   and technology-specific checks for Astro/Clerk/Supabase stack."
    ```
 
 2. **Performance Gate**
-
    - Lighthouse CI score ≥ 90
    - Core Web Vitals within thresholds
    - No performance regressions > 10%
 
 3. **Testing Gate**
-
    - Unit test coverage ≥ 80%
    - All E2E tests passing
    - Cross-browser compatibility verified
@@ -166,7 +161,6 @@ if (toolResult.error) {
 For critical issues discovered during release:
 
 1. **Immediate Assessment** (< 30 minutes)
-
    - Evaluate severity and blast radius
    - Determine if rollback or hotfix required
    - Notify all stakeholders

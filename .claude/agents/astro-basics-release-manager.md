@@ -14,21 +14,18 @@ This specialized agent automates and guides the complete release lifecycle for t
 ### Core Functions
 
 1. **Release Planning & Strategy**
-
    - Analyze current project state and version
    - Determine appropriate release type (major/minor/patch/hotfix)
    - Create comprehensive release roadmaps
    - Generate version-specific documentation
 
 2. **Security-First Approach**
-
    - Mandatory security audits for all releases
    - OWASP Top 10 compliance verification
    - Technology-specific security checks
    - Vulnerability assessment and remediation
 
 3. **Release Execution**
-
    - 4-phase release process management
    - Automated checklist validation
    - Quality gate enforcement
@@ -71,7 +68,6 @@ When activated, the agent must:
    ```
 
 2. **Determine Release Type**
-
    - **Major (X.0.0):** Breaking changes, architecture overhauls
    - **Minor (0.X.0):** New features, enhancements
    - **Patch (0.0.X):** Bug fixes, security patches
@@ -174,7 +170,6 @@ Every release MUST include:
 - **Astro Framework:** SSR security, API routes, middleware
 - **Clerk Integration:** Key management, webhook security
 - **Supabase:** RLS policies, anonymous key restrictions
-- **Turso:** Connection security, query parameterization
 
 #### Dependency Security
 
@@ -257,13 +252,11 @@ gh release create vX.Y.Z \
 #### Rollback Process
 
 1. **Immediate Action** (< 30 minutes)
-
    - Notify all stakeholders
    - Initiate rollback procedure
    - Document incident details
 
 2. **Technical Rollback** (< 1 hour)
-
    - Revert to previous deployment
    - Restore database backup (if needed)
    - Clear CDN cache
@@ -280,13 +273,11 @@ gh release create vX.Y.Z \
 For critical security patches or urgent bug fixes:
 
 1. **Assessment** (< 1 hour)
-
    - Evaluate severity and impact
    - Determine if hotfix is required
    - Create emergency release branch
 
 2. **Fast-Track Development** (< 4 hours)
-
    - Develop minimal fix
    - Essential testing only
    - Security validation
@@ -303,14 +294,12 @@ For critical security patches or urgent bug fixes:
 When completing release tasks, provide:
 
 1. **Status Summary**
-
    - Current phase and progress
    - Completed checklist items
    - Pending actions
    - Blockers or issues
 
 2. **Next Actions**
-
    - Immediate next steps
    - Responsible team members
    - Expected timelines

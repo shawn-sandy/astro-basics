@@ -1,12 +1,11 @@
-Launch the interactive database setup wizard to configure new database providers or reconfigure existing connections.
+Launch the interactive database setup wizard (`npm run db:wizard`) to configure or reconfigure the Supabase connection.
 
 This command provides guided database configuration:
 
-- Interactive provider selection (Turso, Supabase, or both)
-- Step-by-step credential collection with validation
-- Automatic .env file configuration and formatting
-- Connection testing before finalizing setup
-- Database initialization and schema validation
-- Integration with existing project structure
+- Step-by-step collection of the Supabase project URL, anon key and (optional) service role key
+- Format validation of each value before it is saved
+- Updates only the keys it manages in `.env`, leaving every other line and comment untouched
+- A configuration summary before and after setup
 
-The setup wizard leverages the database abstraction layer's provider detection system, ensuring proper configuration for seamless operation with the unified Database interface. Perfect for new projects or adding additional database providers.
+Supabase is the only database provider. After setup, apply the migrations in `scripts/migrations/`
+(see its README) and check the result with `/db-status`.

@@ -13,7 +13,7 @@ Astro-basics is a production-ready web development framework built on Astro that
 
 - **Component Library**: Reusable Astro and React components
 - **Authentication**: Pre-configured Clerk integration with protected routes
-- **Database Support**: Supabase (PostgreSQL) and Turso (LibSQL) with seamless switching
+- **Database Support**: Supabase (PostgreSQL) with native Clerk integration
 - **Role System**: Configurable user roles with TypeScript type safety
 - **Security Features**: CSRF protection, rate limiting, RLS policies
 - **Styling System**: SCSS-based design tokens and utilities
@@ -76,10 +76,6 @@ import { Header } from 'astro-basics-website'
    # Optional: Database configuration
    SUPABASE_URL=https://...
    SUPABASE_ANON_KEY=eyJ...
-
-   # Optional: Turso configuration
-   TURSO_DATABASE_URL=libsql://...
-   TURSO_AUTH_TOKEN=...
    ```
 
 ## Development Commands
@@ -129,7 +125,7 @@ For minimal setup to start exploring:
 For production-ready setup with all features:
 
 1. **Authentication** - Clerk integration with protected routes
-2. **Database** - Supabase (PostgreSQL) or Turso (LibSQL) with seamless switching
+2. **Database** - Supabase (PostgreSQL) with native Clerk integration
 3. **Role Configuration** - Customizable user roles with TypeScript type safety
 4. **Security Features** - CSRF protection, rate limiting, RLS policies
 
@@ -148,9 +144,8 @@ After setup, explore these guides:
 4. **[Role Guard Usage](/guide/role-guard-usage/)** - Access control patterns and best practices
 
 ### Advanced Features
-5. **[Database Switching](/guide/database-switching/)** - Seamless backend provider switching
-6. **[Components](/guide/components/)** - Component library reference
-7. **[API Reference](/guide/api/)** - Detailed API documentation
+5. **[Components](/guide/components/)** - Component library reference
+6. **[API Reference](/guide/api/)** - Detailed API documentation
 
 ## Getting Help
 

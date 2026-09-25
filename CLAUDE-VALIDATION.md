@@ -114,7 +114,7 @@ Creating an API endpoint?
 │  │   └─ Structure:
 │  │       1. Authentication check (FIRST)
 │  │       2. Input validation
-│  │       3. Database access (via abstraction)
+│  │       3. Database access (via #libs/supabase-native)
 │  │       4. Business logic
 │  │       5. Consistent response format
 │  │       6. Error handling (try-catch)
@@ -124,7 +124,7 @@ Creating an API endpoint?
 │      └─ Structure:
 │          1. Input validation
 │          2. Rate limiting (consider)
-│          3. Database access (via abstraction)
+│          3. Database access (via #libs/supabase-native)
 │          4. Business logic
 │          5. Consistent response format
 │          6. Error handling (try-catch)
@@ -138,7 +138,7 @@ Creating an API endpoint?
 │
 └─ Location: src/pages/api/*.ts
     ✓ Export const [METHOD]: APIRoute
-    ✓ Use getDatabase() for DB operations
+    ✓ Use #libs/supabase-native helpers for DB operations
     ✓ Validate all inputs
     ✓ Consistent error format
     ✓ Include try-catch
@@ -149,7 +149,7 @@ Creating an API endpoint?
 - [ ] File in `src/pages/api/` directory
 - [ ] Authentication check if protected
 - [ ] Input validation present
-- [ ] Uses `getDatabase()` (not direct provider)
+- [ ] Uses `#libs/supabase-native` helpers (not `createClient` directly)
 - [ ] Consistent error response format
 - [ ] Try-catch wraps async operations
 - [ ] Correct HTTP status codes
@@ -162,26 +162,29 @@ Creating an API endpoint?
 ```
 Need to access database?
 │
-├─ STOP! Do NOT access providers directly
+├─ STOP! Do NOT call createClient from @supabase/supabase-js directly
 │
-├─ Use: import { getDatabase } from '#libs/database'
+├─ Use: import { getSupabaseServiceRole } from '#libs/supabase-native'
+│       (or createServerSupabaseClient(token) to act as the signed-in user)
+│
+├─ Client is null? → Supabase not configured, return 503
 │
 ├─ What operation?
 │  │
-│  ├─ INSERT → db.insertMessage(data)
+│  ├─ INSERT → supabase.from(table).insert(data)
 │  │          ✓ Validate data first
 │  │          ✓ Sanitize user input
 │  │
-│  ├─ SELECT → db.getMessages(options)
+│  ├─ SELECT → supabase.from(table).select(cols).range(from, to)
 │  │          ✓ Specify limit/offset
 │  │          ✓ Handle empty results
 │  │
-│  ├─ UPDATE → db.markMessageAsRead(id)
+│  ├─ UPDATE → supabase.from(table).update(data).eq('id', id)
 │  │          ✓ Verify ownership
 │  │          ✓ Check if exists
 │  │
-│  └─ DELETE → db.archiveMessage(id)
-│             ✓ Soft delete (archive)
+│  └─ DELETE → supabase.from(table).delete().eq('id', id)
+│             ✓ Prefer soft delete where the table supports it
 │             ✓ Verify ownership
 │
 └─ Error handling:
@@ -192,8 +195,8 @@ Need to access database?
 
 **Validation:**
 
-- [ ] Uses `getDatabase()` abstraction
-- [ ] No direct Supabase/Turso client imports
+- [ ] Uses `#libs/supabase-native` helpers
+- [ ] No direct `createClient` imports from `@supabase/supabase-js`
 - [ ] Input validated before DB operation
 - [ ] Error handling present
 - [ ] Appropriate query options used
@@ -319,7 +322,7 @@ Before marking a task as complete, verify ALL items:
 - [ ] Components placed in correct directory (astro/react/dashboard)
 - [ ] API endpoints include authentication check (if protected)
 - [ ] API endpoints validate input
-- [ ] Database operations use abstraction layer (never direct)
+- [ ] Database operations use `#libs/supabase-native` helpers (never `createClient` directly)
 - [ ] Error responses follow consistent format
 - [ ] Try-catch blocks wrap async operations
 - [ ] HTTP status codes are correct
@@ -366,9 +369,9 @@ These rules are **MANDATORY** and must **NEVER** be violated:
    - ❌ `import X from '../utils/x'`
    - ✅ `import X from '#utils/x'`
 
-2. **NEVER access database providers directly**
+2. **NEVER create Supabase clients directly**
    - ❌ `import { createClient } from '@supabase/supabase-js'`
-   - ✅ `import { getDatabase } from '#libs/database'`
+   - ✅ `import { getSupabaseServiceRole } from '#libs/supabase-native'`
 
 3. **NEVER skip authentication checks on protected endpoints**
    - ❌ Processing request without checking `locals.userId`
@@ -404,8 +407,8 @@ These rules are **MANDATORY** and must **NEVER** be violated:
 4. **ALWAYS validate user input**
    - Check required fields, validate formats
 
-5. **ALWAYS use database abstraction layer**
-   - Use `getDatabase()`, never direct clients
+5. **ALWAYS use the Supabase helpers**
+   - Use `#libs/supabase-native` helpers, never direct clients
 
 6. **ALWAYS include try-catch for async operations**
    - Wrap database calls, API calls, etc.
@@ -480,8 +483,8 @@ These rules are **MANDATORY** and must **NEVER** be violated:
 - [ ] Export `const [METHOD]: APIRoute`
 - [ ] Add authentication check FIRST
 - [ ] Add input validation SECOND
-- [ ] Import `getDatabase` with `#` alias
-- [ ] Use database abstraction layer
+- [ ] Import `getSupabaseServiceRole` with `#` alias
+- [ ] Use `#libs/supabase-native` helpers
 - [ ] Implement business logic
 - [ ] Wrap in try-catch
 - [ ] Return consistent response format
@@ -491,7 +494,7 @@ These rules are **MANDATORY** and must **NEVER** be violated:
 
 - [ ] Authentication check present
 - [ ] Input validation working
-- [ ] Uses `getDatabase()` (not direct)
+- [ ] Uses `#libs/supabase-native` helpers (not direct)
 - [ ] Error handling present
 - [ ] Correct HTTP status codes
 - [ ] Consistent error format
@@ -505,14 +508,14 @@ These rules are **MANDATORY** and must **NEVER** be violated:
 **Pre-Flight:**
 
 - [ ] Confirm operation type (INSERT, SELECT, UPDATE, DELETE)
-- [ ] Check if operation exists in abstraction layer
-- [ ] Determine if new abstraction method needed
+- [ ] Check whether an existing utility already performs it (e.g. `#utils/user-sync`)
+- [ ] Check the table's RLS policies in `scripts/migrations/`
 
 **Implementation:**
 
-- [ ] Import `getDatabase` from `#libs/database`
-- [ ] Import types from `#libs/database-types`
-- [ ] Call appropriate method on `db` instance
+- [ ] Import a client helper from `#libs/supabase-native`
+- [ ] Use types from `#libs/database.types`
+- [ ] Return 503 when the helper returns `null`
 - [ ] Validate input data before operation
 - [ ] Handle null/empty results
 - [ ] Wrap in try-catch
@@ -520,12 +523,12 @@ These rules are **MANDATORY** and must **NEVER** be violated:
 
 **Completion:**
 
-- [ ] Uses abstraction layer (not direct provider)
+- [ ] Uses `#libs/supabase-native` helpers (not `createClient` directly)
 - [ ] Proper types imported
 - [ ] Input validated
 - [ ] Error handling present
 - [ ] Results properly typed
-- [ ] No direct Supabase/Turso imports
+- [ ] No direct `@supabase/supabase-js` client creation
 
 ---
 
