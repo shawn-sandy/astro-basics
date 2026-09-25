@@ -60,7 +60,7 @@ export function MessagesList() {
           .select(
             `
             id, subject, message, name, email, created_at, updated_at,
-            is_read, is_archived, user_id, clerk_user_id,
+            is_read, is_archived, user_id, clerk_user_id, ip_address, user_agent,
             users!inner(clerk_id)
           `
           )

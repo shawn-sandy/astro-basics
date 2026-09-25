@@ -9,6 +9,7 @@
 
 import type { APIRoute } from 'astro'
 
+import type { Database } from '#libs/database.types'
 import { createServerClerkSupabaseClient } from '#libs/supabase-auth'
 import { logger } from '#utils/logger'
 
@@ -252,18 +253,17 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     // Separate profile updates from preferences
     const { preferences, ...profileUpdates } = updates
 
-    // Allowed profile fields (prevent updating system fields)
-    const allowedProfileFields = ['username', 'full_name', 'app_metadata']
+    // Allowed profile fields (prevent updating system fields). Typed as the table's
+    // Update, so a field that is not a column is a compile error rather than a
+    // PostgREST failure at runtime.
+    const allowedProfileFields = ['username', 'full_name', 'app_metadata'] as const
 
-    const sanitizedProfileUpdates = Object.keys(profileUpdates)
-      .filter(key => allowedProfileFields.includes(key))
-      .reduce(
-        (obj, key) => {
-          obj[key] = profileUpdates[key]
-          return obj
-        },
-        {} as Record<string, unknown>
-      )
+    const sanitizedProfileUpdates: Database['public']['Tables']['users']['Update'] = {}
+    for (const field of allowedProfileFields) {
+      if (field in profileUpdates) {
+        sanitizedProfileUpdates[field] = profileUpdates[field]
+      }
+    }
 
     let userData = null
 
@@ -304,17 +304,14 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
         'notifications_push',
         'language',
         'timezone',
-      ]
+      ] as const
 
-      const sanitizedPreferences = Object.keys(preferences)
-        .filter(key => allowedPreferenceFields.includes(key))
-        .reduce(
-          (obj, key) => {
-            obj[key] = preferences[key]
-            return obj
-          },
-          {} as Record<string, unknown>
-        )
+      const sanitizedPreferences: Database['public']['Tables']['user_preferences']['Update'] = {}
+      for (const field of allowedPreferenceFields) {
+        if (field in preferences) {
+          sanitizedPreferences[field] = preferences[field]
+        }
+      }
 
       if (Object.keys(sanitizedPreferences).length > 0) {
         const { error: prefError } = await supabase

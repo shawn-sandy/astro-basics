@@ -1,7 +1,10 @@
 import type { APIRoute } from 'astro'
 
+import type { Database } from '#libs/database.types'
 import { createServerSupabaseClient, isSupabaseConfigured } from '#libs/supabase-native'
 import { logger, logApiRequest, logApiResponse, logApiError } from '#utils/logger'
+
+type UserUpdate = Database['public']['Tables']['users']['Update']
 
 export const GET: APIRoute = async ({ locals }) => {
   const enhancedLocals = locals as typeof locals & {
@@ -180,8 +183,10 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     }
 
     // Prepare update data (only allow certain fields to be updated)
-    const allowedFields = ['username', 'full_name', 'avatar_url', 'metadata']
-    const updateData: Record<string, unknown> = {}
+    // `app_metadata` is the column name in 001_core_schema.sql; 'metadata' does not exist,
+    // so a request carrying it used to make PostgREST reject the whole update.
+    const allowedFields = ['username', 'full_name', 'avatar_url', 'app_metadata'] as const
+    const updateData: UserUpdate = {}
 
     for (const field of allowedFields) {
       if (field in body) {

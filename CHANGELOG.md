@@ -275,6 +275,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The typed Supabase client checked nothing** (`src/libs/database.types.ts`): each table needs a
+  `Relationships` key to satisfy supabase-js's `GenericTable`. Without it the whole schema failed
+  `GenericSchema` and **every** `from()` call resolved to `never`, which accepts any column name,
+  any payload and any result shape in silence. The schema now mirrors
+  `scripts/migrations/001_core_schema.sql` and `006_messages.sql` — it was missing the
+  `organization_memberships` and `user_preferences` tables outright — and carries `Relationships`
+  on all four, which is also what resolves embedded selects like
+  `select('*, user_preferences(*)')`. `npm run type-check` drops from 121 errors to 80
+  - **`/api/user/sync` could never write a user**: `buildUserData()` emitted a `metadata` key,
+    but the column is `app_metadata`, so PostgREST rejected the whole upsert with
+    "column users.metadata does not exist". Covered by `tests/utils/user.test.ts`
+  - **`PATCH /api/user/profile` accepted a `metadata` field** that has no column, so a request
+    carrying it failed the same way. The allow-list now names `app_metadata`
+  - **The Clerk webhook could write `false` into `users.email`**: `validEmail` is the result of an
+    `||` chain that yields `false` when the payload carries no email address at all. It, the
+    profile-sync upsert and `buildUserData()` now send `null` for every nullable column, never
+    `false`, `undefined` or `''` (Clerk leaves an unset username or image as an empty string)
+  - `DELETE /api/user/messages` compared the text query parameter against the `bigint` `id`; it
+    now parses and validates the number. `MessagesList`'s two queries return the same columns,
+    and `useSupabaseSubscription()` takes a table name the schema knows
 - **`setup:roles` generated a `CREATE TYPE` PostgreSQL rejects** (`scripts/lib/migration-generator.ts`):
   each ENUM value's comma came after its `-- Level ...` comment, so the comment swallowed it
   and the values had no separators. The comma now comes first

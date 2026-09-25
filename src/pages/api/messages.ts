@@ -1,6 +1,9 @@
 import type { APIRoute } from 'astro'
 
+import type { Database } from '#libs/database.types'
 import { getAuthenticatedSupabase } from '#libs/supabase-server'
+
+type MessageUpdate = Database['public']['Tables']['messages']['Update']
 
 export const GET: APIRoute = async ({ locals }) => {
   if (!locals.userId) {
@@ -111,7 +114,7 @@ export const POST: APIRoute = async context => {
         email: body.email,
         subject: body.subject || null,
         message: body.message,
-        user_id: user?.id,
+        user_id: user?.id ?? null,
         clerk_user_id: auth.userId,
         is_read: false,
         is_archived: false,
@@ -182,7 +185,8 @@ export const PATCH: APIRoute = async context => {
     }
 
     // Update the message (RLS will ensure user owns it)
-    const updateData: Record<string, boolean> = {}
+    // Typed as the table's Update so a column that does not exist is a compile error
+    const updateData: MessageUpdate = {}
     if (typeof body.is_read === 'boolean') updateData.is_read = body.is_read
     if (typeof body.is_archived === 'boolean') updateData.is_archived = body.is_archived
 
@@ -241,9 +245,10 @@ export const DELETE: APIRoute = async context => {
 
   try {
     const url = new URL(context.request.url)
-    const messageId = url.searchParams.get('id')
+    const messageId = Number(url.searchParams.get('id'))
 
-    if (!messageId) {
+    // messages.id is a bigint, and the query string is text
+    if (!Number.isInteger(messageId) || messageId <= 0) {
       return new Response(JSON.stringify({ error: 'Message ID required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },

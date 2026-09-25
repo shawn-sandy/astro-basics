@@ -144,10 +144,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
         const userData = {
           clerk_id: id,
-          email: validEmail,
-          username,
+          // validEmail is `false` when the payload carries no email address at all, and
+          // the nullable columns take null rather than undefined.
+          email: validEmail || null,
+          username: username || null,
           full_name: `${first_name || ''} ${last_name || ''}`.trim() || null,
-          avatar_url: image_url,
+          avatar_url: image_url || null,
           role, // User-level role from Clerk
           app_metadata: public_metadata || {},
           last_sign_in_at: last_sign_in_at ? new Date(last_sign_in_at).toISOString() : null,
@@ -263,10 +265,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
         const role = (public_metadata?.role as string) || 'member'
 
         const userData = {
-          email: validEmail,
-          username,
+          // As in user.created: never write `false` or `undefined` to these columns.
+          email: validEmail || null,
+          username: username || null,
           full_name: `${first_name || ''} ${last_name || ''}`.trim() || null,
-          avatar_url: image_url,
+          avatar_url: image_url || null,
           role, // User-level role from Clerk
           app_metadata: public_metadata || {},
           last_sign_in_at: last_sign_in_at ? new Date(last_sign_in_at).toISOString() : null,

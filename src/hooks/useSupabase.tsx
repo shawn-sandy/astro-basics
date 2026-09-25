@@ -251,7 +251,7 @@ export function useSupabase() {
  * feedback before server confirmation, improving perceived performance for real-time interactions.
  *
  * @template T - The TypeScript type for table records, defaults to unknown for maximum flexibility
- * @param {string} tableName - PostgreSQL table name to subscribe to (must exist in Database schema)
+ * @param {keyof Database['public']['Tables']} tableName - Table to subscribe to; the type enforces that it exists in the schema
  * @param {string} [filter] - Optional Supabase filter string (e.g., "user_id.eq.abc123")
  * @param {boolean} [enabled=true] - Whether subscription is active, useful for conditional subscriptions
  *
@@ -286,11 +286,10 @@ export function useSupabase() {
  * @see {@link useSupabase} for authenticated client access
  * @since 1.0.0
  */
-export function useSupabaseSubscription<T = unknown>(
-  tableName: string,
-  filter?: string,
-  enabled = true
-) {
+export function useSupabaseSubscription<
+  TableName extends keyof Database['public']['Tables'],
+  T = Database['public']['Tables'][TableName]['Row'],
+>(tableName: TableName, filter?: string, enabled = true) {
   const { client, isAuthenticated } = useSupabase()
   const [data, setData] = useState<T[]>([])
   const [loading, setLoading] = useState(true)
@@ -335,7 +334,9 @@ export function useSupabaseSubscription<T = unknown>(
 
         if (fetchError) throw fetchError
 
-        setData(initialData || [])
+        // T defaults to the table's Row; a caller may narrow it, which TypeScript cannot
+        // prove against the query result, hence the assertion.
+        setData((initialData ?? []) as T[])
         setError(null)
 
         /**

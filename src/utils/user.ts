@@ -95,14 +95,17 @@ export function buildUserData(user: ClerkUser, email: string) {
   // Extract role from publicMetadata, default to 'member' if not set
   const role = (user.publicMetadata?.role as string) || 'member'
 
+  // `app_metadata` is the column name in 001_core_schema.sql. The nullable columns take
+  // null, never undefined or '': PostgREST writes what it is given, and Clerk leaves an
+  // unset username or image as an empty string.
   return {
     clerk_id: user.id,
     email,
-    username: user.username,
+    username: user.username || null,
     full_name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || null,
-    avatar_url: user.imageUrl,
+    avatar_url: user.imageUrl || null,
     role, // User-level role from Clerk
-    metadata: user.publicMetadata || {},
+    app_metadata: user.publicMetadata || {},
     last_sign_in_at: user.lastSignInAt ? new Date(user.lastSignInAt).toISOString() : null,
   }
 }
