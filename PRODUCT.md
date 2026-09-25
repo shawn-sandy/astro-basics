@@ -111,6 +111,8 @@ Explicitly **not** claimed:
   `#libs/supabase-auth`. Migrations live in `scripts/migrations/` and are applied with `psql`.
 - The contact form stores nothing. Each submission is delivered only as an email, and the endpoint
   returns 503 unless email is configured.
+- Auth fails closed. Without real Clerk keys, `/dashboard` and `/organization` answer 503 with a
+  setup notice instead of the page. `e2e/auth-fail-closed.spec.ts` enforces it in CI.
 - Light and dark themes, with a toggle that overrides the OS preference.
 - Internal imports use `#` path aliases.
 - Progressive web app: service worker, offline page, install prompt, standalone mode.
@@ -119,17 +121,6 @@ Known constraints:
 
 - `/docs` requests a `docs` collection entry, `0-welcome`, that does not exist, and has answered
   500 because of it. `/guide/components/` is the working component index.
-- **Auth fails open without Clerk keys.** When the keys are absent the auth middleware is left out
-  of the chain entirely, so `/dashboard` and `/organization` are not protected. The proposal
-  (decision 7) requires auth to fail closed before a non-developer deploys; it has not been fixed.
-  The route matcher also still lists `/forum`, which no longer exists.
-- **`POST /api/test/sync-user` is unauthenticated, with or without Clerk keys.** It sits outside
-  the protected routes, and neither the CSRF middleware (which only issues tokens) nor rate
-  limiting (contact form only) guards it. Given any Clerk user ID, it upserts that user's row with
-  the Supabase service-role client, bypassing RLS, and returns the user's email, username, name,
-  image and last sign-in time; failures return raw Supabase and Clerk errors. The same decision
-  requires it deleted or limited to development; it is still present.
-- Both are tracked in issue #381.
 
 ## Brand Commitments
 
