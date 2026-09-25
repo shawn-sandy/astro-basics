@@ -115,7 +115,10 @@ describe('auth-and-database-setup status report', () => {
       { headers: unknown },
     ]
     expect(url.pathname).toBe('/rest/v1/users')
-    expect(init.headers).toEqual({ apikey: supabase.SUPABASE_ANON_KEY })
+    expect(init.headers).toEqual({
+      apikey: supabase.SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${supabase.SUPABASE_ANON_KEY}`,
+    })
   })
 
   it('probes the same path supabase-js requests, keeping any base path', async () => {
@@ -219,19 +222,65 @@ describe('auth-and-database-setup status report', () => {
     expect(lines.some(l => l.includes('users table') && l.includes('key rejected'))).toBe(true)
   })
 
-  it('does not blame the key when the anon role lacks table access (42501)', async () => {
-    // PostgREST answers 42501 with 401 for anonymous requests, even with a valid key.
-    const denied = async () =>
-      new Response(
-        JSON.stringify({ code: '42501', message: 'permission denied for table users' }),
-        {
-          status: 401,
-        }
-      )
+  const denied = async () =>
+    new Response(JSON.stringify({ code: '42501', message: 'permission denied for table users' }), {
+      status: 401,
+    })
+  const serviceRole = 'service-role-SECRET'
+  // Answers per key, as Supabase does: anon and service_role are probed separately.
+  const byKey =
+    (anon: () => Response, service: () => Response) =>
+    async (_url: unknown, init?: { headers?: Record<string, string> }) =>
+      init?.headers?.apikey === serviceRole ? service() : anon()
+  const anonDenied = () =>
+    new Response(JSON.stringify({ code: '42501' }), {
+      status: 401,
+    })
+
+  it('reads an anon 42501 as the table existing, since 007 grants anon nothing', async () => {
     const line = (await report(supabase, denied)).find(l => l.includes('users table'))
 
-    expect(line).toContain('42501')
-    expect(line).not.toContain('key rejected')
+    expect(line).toContain('found')
+    expect(line).not.toContain('42501')
+  })
+
+  it('probes as service_role when that key is set, the key Clerk sync writes with', async () => {
+    // PostgREST answers an authenticated 42501 with 403.
+    const spy = vi.fn(
+      byKey(anonDenied, () => new Response(JSON.stringify({ code: '42501' }), { status: 403 }))
+    )
+    const lines = await report({ ...supabase, SUPABASE_SERVICE_ROLE_KEY: serviceRole }, spy)
+    const line = lines.find(l => l.includes('users table'))
+
+    const headers = spy.mock.calls.map(
+      call => (call as unknown as [unknown, { headers: unknown }])[1].headers
+    )
+    expect(headers).toContainEqual({ apikey: serviceRole, Authorization: `Bearer ${serviceRole}` })
+    expect(line).toContain('service_role has no access')
+    expect(line).toContain('007_data_api_grants.sql')
+    expect(lines.join('\n')).not.toContain(serviceRole)
+  })
+
+  it('names the service role key when that key is rejected', async () => {
+    const lines = await report(
+      { ...supabase, SUPABASE_SERVICE_ROLE_KEY: serviceRole },
+      byKey(anonDenied, () => new Response('{}', { status: 401 }))
+    )
+
+    expect(lines.find(l => l.includes('users table'))).toContain('recopy SUPABASE_SERVICE_ROLE_KEY')
+  })
+
+  it('still catches a bad anon key when a service role key is set', async () => {
+    // The profile endpoints send the anon key as apikey, so a wrong one breaks them.
+    const lines = await report(
+      { ...supabase, SUPABASE_SERVICE_ROLE_KEY: serviceRole },
+      byKey(
+        () => new Response('{}', { status: 401 }),
+        () => new Response('[]', { status: 200 })
+      )
+    )
+
+    expect(lines.find(l => l.includes('users table'))).toContain('recopy SUPABASE_ANON_KEY')
   })
 
   it('reports Clerk user sync as ready only with login ON and a service role key', async () => {
