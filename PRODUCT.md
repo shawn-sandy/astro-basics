@@ -24,10 +24,11 @@ either user above.
 
 ## Product Purpose
 
-Astro Kit is a production-ready Astro website that a non-developer can hand to Claude Code to set
-up, customize, extend, and deploy. It doubles as its own component library and reference
-implementation, so the same repository serves the person working through an agent and the
-developer reading the code.
+Astro Kit is an Astro website that a non-developer can hand to Claude Code to set up, customize,
+extend, and deploy. It doubles as its own component library and reference implementation, so the
+same repository serves the person working through an agent and the developer reading the code.
+Until the known security constraints under Capabilities and Constraints are fixed, it is not to be
+described as production-ready.
 
 The direction is set by the converged proposal at
 `docs/prompts/proposal-build-agentic-starter-kit.md`: make the repository's existing capability
