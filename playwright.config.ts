@@ -1,3 +1,4 @@
+import { URL } from 'node:url'
 import { devices, type PlaywrightTestConfig } from '@playwright/test'
 
 /**
@@ -6,6 +7,18 @@ import { devices, type PlaywrightTestConfig } from '@playwright/test'
  * Playwright configuration for Astro project
  * See https://playwright.dev/docs/test-configuration
  */
+
+/**
+ * Server the suite runs against. Specs navigate with relative paths, so this is
+ * the only place the target is set. Override it to test a dev server on another
+ * port, such as a second worktree: `PLAYWRIGHT_BASE_URL=http://localhost:4330`.
+ */
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:4321'
+
+// The local dev server is started on the same port the suite targets, so an
+// override cannot start one port and wait on another.
+const port = new URL(baseURL).port || '4321'
+
 const config: PlaywrightTestConfig = {
   testDir: './e2e',
 
@@ -23,7 +36,7 @@ const config: PlaywrightTestConfig = {
 
   // Global test settings
   use: {
-    baseURL: 'http://localhost:4321',
+    baseURL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -69,8 +82,8 @@ const config: PlaywrightTestConfig = {
   webServer: process.env.CI
     ? undefined // In CI, we'll start the preview server manually
     : {
-        command: 'npm run dev',
-        url: 'http://localhost:4321',
+        command: `npm run dev -- --port ${port}`,
+        url: baseURL,
         timeout: 120 * 1000,
         reuseExistingServer: !process.env.CI,
         stdout: 'ignore',

@@ -13,10 +13,6 @@ import { test, expect } from '@playwright/test'
  * only paint something a visitor can operate. That is what makes this a
  * checkable contract instead of a taste preference, and it is what the accent
  * audit below enforces.
- *
- * Deliberately uses relative `page.goto('/')` rather than the hardcoded
- * `BASE_URL` in e2e/test-utils.ts so the suite follows `use.baseURL` and can be
- * pointed at a different port.
  */
 
 /** Widths the plan's acceptance criteria name for the reflow gate. */

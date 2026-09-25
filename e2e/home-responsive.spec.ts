@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test'
-import { BASE_URL, VIEWPORTS } from './test-utils'
+import { VIEWPORTS } from './test-utils'
 
 test.describe('Home Page Responsive Design', () => {
   test('responsive layout integrity', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     const viewportSizes = [
       VIEWPORTS.mobile, // Mobile

@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import { BASE_URL } from './test-utils'
 
 test.describe('Home Page Performance', () => {
   test('loads without errors', async ({ page }) => {
@@ -10,7 +9,7 @@ test.describe('Home Page Performance', () => {
       }
     })
 
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
     expect(errors).toHaveLength(0)

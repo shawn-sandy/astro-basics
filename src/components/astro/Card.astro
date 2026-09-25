@@ -57,7 +57,11 @@ const codeMarkup = hasCode ? `<code>${(await Astro.slots.render('code')).trim()}
       </div>
     )
   }
-  {hasCode && <pre data-card-code set:html={codeMarkup} />}
+  {
+    /* tabindex: the snippet scrolls sideways, and a scroll region needs a tab
+       stop for a keyboard user to scroll it (WCAG 2.1.1). */
+    hasCode && <pre data-card-code tabindex="0" set:html={codeMarkup} />
+  }
 </CardComponent>
 
 <style>

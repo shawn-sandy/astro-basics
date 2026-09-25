@@ -1,6 +1,5 @@
 import { createRequire } from 'node:module'
 import { test, expect, type Page, type Locator } from '@playwright/test'
-import { BASE_URL } from './test-utils'
 
 /**
  * E2E coverage for the native-popover primary navigation.
@@ -66,7 +65,7 @@ async function expectPopoverOpen(target: Locator, open: boolean): Promise<void> 
 
 test.describe('Primary navigation popover', () => {
   test('panel is closed on load while the hamburger is visible', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     await expect(hamburger(page)).toBeVisible()
     await expectPopoverOpen(panel(page), false)
@@ -79,7 +78,7 @@ test.describe('Primary navigation popover', () => {
   })
 
   test('clicking the hamburger reveals all five links', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     await hamburger(page).click()
     await expectPopoverOpen(panel(page), true)
@@ -90,7 +89,7 @@ test.describe('Primary navigation popover', () => {
   })
 
   test('Esc closes the panel and restores focus to the hamburger', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     await hamburger(page).click()
     await expectPopoverOpen(panel(page), true)
@@ -108,7 +107,7 @@ test.describe('Primary navigation popover', () => {
   })
 
   test('clicking outside light-dismisses the panel', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     const urlBeforeDismiss = page.url()
 
     await hamburger(page).click()
@@ -131,7 +130,7 @@ test.describe('Primary navigation popover', () => {
   })
 
   test('hamburger is reachable by Tab and opens the panel with Enter', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await expect(hamburger(page)).toBeVisible()
 
     const button = hamburger(page)
@@ -149,7 +148,7 @@ test.describe('Primary navigation popover', () => {
   })
 
   test(`hamburger hit area is at least ${MIN_TARGET_PX}x${MIN_TARGET_PX}px`, async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     const box = await hamburger(page).boundingBox()
     expect(box, 'hamburger should have a bounding box').not.toBeNull()
@@ -159,7 +158,7 @@ test.describe('Primary navigation popover', () => {
 
   test('open panel does not animate under prefers-reduced-motion: reduce', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     await hamburger(page).click()
     await expectPopoverOpen(panel(page), true)
@@ -188,7 +187,7 @@ test.describe('Primary navigation popover', () => {
   })
 
   test('open panel has zero axe-core WCAG 2.2 AA violations', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     await hamburger(page).click()
     await expectPopoverOpen(panel(page), true)
@@ -225,7 +224,7 @@ test.describe('Primary navigation popover', () => {
   })
 
   test('anonymous visitors get no dashboard or profile links anywhere', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     // The popover is presentational, never access control: authenticated-only
     // links must be absent from the response, open panel or not.
@@ -238,7 +237,7 @@ test.describe('Primary navigation popover', () => {
 
   test('open panel adds no horizontal scrolling at 320px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 640 })
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     const metrics = () =>
       page.evaluate(() => ({

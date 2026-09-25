@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import { BASE_URL } from './test-utils'
 
 /**
  * E2E coverage for the "Skip to main content" link in `src/layouts/Base.astro`.
@@ -18,7 +17,7 @@ const SKIP = 'a.skip-link'
 
 test.describe('Skip to main content link', () => {
   test('is the first focusable element and is hidden until focused', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     const skip = page.locator(SKIP)
     await expect(skip).toHaveAttribute('href', '#main')
@@ -42,7 +41,7 @@ test.describe('Skip to main content link', () => {
   test('moves keyboard focus to the main landmark, not just the scroll position', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     await page.keyboard.press('Tab')
     await page.keyboard.press('Enter')
@@ -53,7 +52,7 @@ test.describe('Skip to main content link', () => {
   })
 
   test('page has exactly one main landmark for the link to target', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     // Guards against a layout re-introducing a nested <main>, which both breaks
     // the landmark structure and makes `locator('main')` ambiguous.

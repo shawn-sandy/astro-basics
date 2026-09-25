@@ -66,10 +66,19 @@ const promotedFeatures = features.slice(0, promotedCount)
 const compactFeatures = features.slice(promotedCount)
 
 /**
- * Source line that reproduces a promoted specimen, shown beside the rendered card.
+ * Source that reproduces a promoted specimen, shown beside the rendered card.
+ * Built from the same fields the card renders from -- title, link and body --
+ * so the printed call site cannot drift from the card above it. It used to
+ * print only the title, which renders an empty card, not the one shown.
  */
 const specimenSource = (feature: FeatureCard): string =>
-  `import Card from '#components/astro/Card.astro'\n\n<Card cardTitle="${feature.title}" />`
+  [
+    "import Card from '#components/astro/Card.astro'",
+    '',
+    `<Card cardTitle="${feature.title}"${feature.link ? ` cardLink="${feature.link}"` : ''}>`,
+    `  <p>${feature.description}</p>`,
+    '</Card>',
+  ].join('\n')
 ---
 
 {
@@ -192,8 +201,11 @@ const specimenSource = (feature: FeatureCard): string =>
     list-style: none;
   }
 
+  /* padding-inline: 0 clears the vendor list-item indent, which set every row's
+     text 8px in from the specimens and headings above it. */
   .feature-cards__compact li {
     padding-block: 1rem;
+    padding-inline: 0;
     border-block-start: 1px solid var(--rule);
   }
 

@@ -384,7 +384,15 @@ npx playwright test --ui
 npm run test:e2e:report
 ```
 
-**Note:** Dev server must run on port 4321 for E2E tests.
+**Note:** E2E tests target `http://localhost:4321` by default, and reuse a dev server already
+running there. To test a server on another port, such as a second worktree, set
+`PLAYWRIGHT_BASE_URL`:
+
+```bash
+PLAYWRIGHT_BASE_URL=http://localhost:4330 npm run test:e2e
+```
+
+If nothing is running at that address, Playwright starts `npm run dev` on the same port.
 
 ## Database Management
 
