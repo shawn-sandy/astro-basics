@@ -35,6 +35,21 @@ export interface MessageData {
 }
 
 /**
+ * Input data for a bulk insert that writes rows verbatim.
+ *
+ * `insertMessage` always creates an unread, unarchived message stamped with the current
+ * time. Seeding and imports need to keep the state and timestamps they carry, so those
+ * fields are part of the input here; each one falls back to the `insertMessage` default
+ * when it is omitted.
+ */
+export interface SeedMessageData extends MessageData {
+  is_read?: boolean
+  is_archived?: boolean
+  created_at?: string
+  updated_at?: string
+}
+
+/**
  * Query options for retrieving messages
  */
 export interface MessageQueryOptions {
@@ -61,6 +76,7 @@ export interface DatabaseConfig {
 export interface Database {
   // Core message operations (what the app actually uses)
   insertMessage(data: MessageData): Promise<number>
+  insertMessages(data: SeedMessageData[]): Promise<number[]>
   getMessages(options?: MessageQueryOptions): Promise<Message[]>
   getMessageById(id: number): Promise<Message | null>
   markMessageAsRead(id: number): Promise<boolean>

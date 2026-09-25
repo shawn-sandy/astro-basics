@@ -1,7 +1,15 @@
-#!/usr/bin/env node --env-file=.env
+#!/usr/bin/env -S node --import tsx --env-file=.env
 
-import { createClient } from '@supabase/supabase-js'
-import { envValue } from './lib/env-file.js'
+/**
+ * Seeds the `messages` table with sample contact-form submissions.
+ *
+ * Writes through `getDatabase()` like the rest of the app, so this script never holds
+ * provider credentials or a Supabase client of its own. Run it with the `tsx` loader
+ * (`npm run db:seed:messages`), which is what lets a plain Node script import the
+ * TypeScript abstraction layer.
+ */
+
+import { getDatabase } from '#libs/database'
 
 // Generate realistic dates over the past 90 days
 function generateDate(daysAgo) {
@@ -250,23 +258,12 @@ const messages = [
 ]
 
 async function seedMessages() {
-  // Validate environment variables. The service role key bypasses RLS on the messages table.
-  const SUPABASE_URL = envValue('SUPABASE_URL')
-  const SUPABASE_SERVICE_ROLE_KEY = envValue('SUPABASE_SERVICE_ROLE_KEY')
-
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    console.error('❌ Supabase database is not configured.')
-    console.error('   Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env file')
-    process.exit(1)
-  }
-
   console.log('🌱 Starting to seed messages...')
 
   try {
-    // Inside the try: createClient throws synchronously on a malformed URL
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    })
+    // Inside the try: getDatabase() throws when Supabase is not configured, naming the
+    // keys to set. An unparseable SUPABASE_URL reads as not configured, as in the app.
+    const db = getDatabase()
 
     const rows = messages.map((msg, index) => {
       const createdAt = generateDate(msg.daysAgo)
@@ -274,7 +271,7 @@ async function seedMessages() {
       return {
         name: msg.name,
         email: msg.email,
-        subject: msg.subject || null,
+        subject: msg.subject,
         message: msg.message,
         ip_address: ipAddresses[index % ipAddresses.length],
         user_agent: userAgents[index % userAgents.length],
@@ -285,11 +282,11 @@ async function seedMessages() {
       }
     })
 
-    // A single insert call is atomic, so a failure leaves no partial seed behind
-    const { error } = await supabase.from('messages').insert(rows)
-    if (error) throw error
+    // insertMessages() writes the batch in one statement, so a failure leaves no
+    // partial seed behind
+    const inserted = await db.insertMessages(rows)
 
-    console.log(`✅ Successfully seeded ${messages.length} messages`)
+    console.log(`✅ Successfully seeded ${inserted.length} messages`)
     console.log('📊 Summary:')
     console.log(`   - Unread messages: ${messages.filter(m => !m.is_read).length}`)
     console.log(`   - Read messages: ${messages.filter(m => m.is_read).length}`)
@@ -299,12 +296,7 @@ async function seedMessages() {
     )
 
     // Show a few sample records
-    const { data: sample, error: sampleError } = await supabase
-      .from('messages')
-      .select('id, name, subject, created_at')
-      .order('created_at', { ascending: false })
-      .limit(3)
-    if (sampleError) throw sampleError
+    const sample = await db.getMessages({ limit: 3 })
 
     console.log('\n📝 Sample records:')
     for (const row of sample) {
@@ -315,6 +307,7 @@ async function seedMessages() {
     }
   } catch (error) {
     console.error('❌ Error seeding messages:', error.message || error)
+    console.error('   Run `npm run db:wizard` if Supabase is not configured yet.')
     process.exit(1)
   }
 }

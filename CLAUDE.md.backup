@@ -284,14 +284,17 @@ scripts/migrations/
 - `users` - User profiles with role-based access control and email uniqueness enforcement
 - `organization_memberships` - Multi-tenant organization support
 - `user_preferences` - App-specific user settings
+- `messages` - Contact-form submissions, the only table `getDatabase()` reads or writes
 
 **Applying Migrations:**
 
 ```bash
-# For fresh databases (recommended as of 2025-10-12)
-# Only 2 migrations required - email constraint included in 001
+# For fresh databases (email constraint included in 001)
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql
+
+# Required by the contact form and /dashboard/messages
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/006_messages.sql
 
 # For existing databases with legacy migrations already applied
 # Migration 004 is safe to keep - idempotent design prevents conflicts
@@ -301,7 +304,10 @@ psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_polic
 **Rolling Back Migrations:**
 
 ```bash
-# Rollback security policies first
+# Rollback messages first (WARNING: Deletes all stored messages!)
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_006_messages.sql
+
+# Then rollback security policies
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_002_security_policies.sql
 
 # Then rollback core schema (WARNING: Deletes all data!)

@@ -26,6 +26,7 @@ import type {
   Message,
   MessageData,
   MessageQueryOptions,
+  SeedMessageData,
 } from './database-types'
 import { isSupabaseConfigured } from './supabase'
 import { getSupabaseServiceRole } from './supabase-native'
@@ -101,6 +102,50 @@ class SupabaseDatabase implements Database {
     }
 
     return result.id
+  }
+
+  /**
+   * Inserts several messages in one statement, keeping the state and timestamps they carry.
+   *
+   * Used by `db:seed:messages`, which needs messages spread over past dates and already
+   * marked read or archived. A single insert call is atomic, so a failure leaves no
+   * partial batch behind.
+   *
+   * @param data - Messages to write verbatim; omitted fields take the `insertMessage` defaults
+   * @returns {Promise<number[]>} Ids of the inserted rows, in insert order
+   * @throws {Error} When the service role client is unavailable or the insert fails
+   */
+  async insertMessages(data: SeedMessageData[]): Promise<number[]> {
+    if (data.length === 0) {
+      return []
+    }
+
+    const supabase = getSupabaseServiceRole()
+    if (!supabase) {
+      throw new Error('Supabase service role not configured')
+    }
+
+    const insertData = data.map(row => ({
+      name: row.name,
+      email: row.email,
+      subject: row.subject || null,
+      message: row.message,
+      ip_address: row.ip_address || null,
+      user_agent: row.user_agent || null,
+      is_read: row.is_read ?? false,
+      is_archived: row.is_archived ?? false,
+      ...(row.created_at ? { created_at: row.created_at } : {}),
+      ...(row.updated_at ? { updated_at: row.updated_at } : {}),
+    }))
+
+    const { data: result, error } = await supabase.from('messages').insert(insertData).select('id')
+
+    if (error) {
+      console.error('Supabase insert error:', error)
+      throw new Error(`Failed to insert messages: ${error.message}`)
+    }
+
+    return (result ?? []).map(row => row.id)
   }
 
   async getMessages(options?: MessageQueryOptions): Promise<Message[]> {
@@ -297,4 +342,11 @@ export function getDatabaseStatus() {
 }
 
 // Export types for use in other files
-export type { Database, DatabaseProvider, Message, MessageData, MessageQueryOptions }
+export type {
+  Database,
+  DatabaseProvider,
+  Message,
+  MessageData,
+  MessageQueryOptions,
+  SeedMessageData,
+}

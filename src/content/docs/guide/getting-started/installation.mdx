@@ -104,6 +104,7 @@ npm run db:manage test
 # DATABASE_URL is your Supabase connection string (Project Settings → Database)
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/006_messages.sql
 ```
 
 You can also paste migration files into the Supabase SQL editor.

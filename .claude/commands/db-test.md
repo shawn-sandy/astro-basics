@@ -1,14 +1,16 @@
-Check that the Supabase configuration looks valid. This does not connect to the database.
+Test the Supabase connection with a real read.
 
-This command runs `npm run db:manage test`, which checks:
+This command runs `npm run db:manage test`, which:
 
-- `SUPABASE_URL` and `SUPABASE_ANON_KEY` are set
-- `SUPABASE_URL` starts with `https://` (a local `http://` Supabase URL is rejected)
+- checks that `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are set and
+  that the URL is parseable, through `getDatabase()` from `#libs/database` - the same rule the
+  app applies
+- reads up to one row from the `messages` table through that abstraction layer
 
-It does not send a query. Its "Connection successful" line only means the configuration passed
-these checks, not that credentials were accepted or that the `messages` table exists.
+The command exits non-zero when the database is not configured or the read fails, so
+"connection test passed" means Supabase accepted the credentials and the `messages` table
+exists and is readable.
 
-- For a real query, start the dev server and open `/api/supabase-test`, which reads through
-  `getDatabase()` from `#libs/database`.
-- `getDatabase()` also needs `SUPABASE_SERVICE_ROLE_KEY`, which this check does not look at.
-  `npm run db:status` reports all three keys.
+- A failing read usually means the credentials were rejected, or that
+  `scripts/migrations/006_messages.sql` has not been applied to this project.
+- `npm run db:status` reports which of the three keys are set without connecting.

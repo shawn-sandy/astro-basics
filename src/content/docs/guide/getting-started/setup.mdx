@@ -188,6 +188,9 @@ Migrations are SQL files in `scripts/migrations/`. Apply each one with `psql`, o
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql
 
+# Apply the contact messages table, required by the contact form and /dashboard/messages
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/006_messages.sql
+
 # Set up Clerk-Supabase user sync
 npm run db:setup-users
 
@@ -475,6 +478,9 @@ npm run db:manage test
 ```bash
 # Run migrations
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
+
+# "relation \"messages\" does not exist" means this one has not been applied
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/006_messages.sql
 
 # Verify schema
 npm run db:schema

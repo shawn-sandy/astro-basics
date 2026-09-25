@@ -1,11 +1,22 @@
-Validate the Supabase database schema and ensure it matches application expectations.
+Validate the Supabase `messages` table against what the application reads.
 
-This command provides schema validation through:
+This command runs `npm run db:schema`, which:
 
-- Supabase configuration check (`npm run db:schema`)
-- Table structure validation and column type verification
-- Index and constraint checking
-- Application code schema requirement validation
-- Migration recommendations for schema discrepancies (SQL files in `scripts/migrations/`)
+- checks that `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are set
+- reads up to one row from the `messages` table through `getDatabase()` from `#libs/database`
+- checks that the returned row carries the NOT NULL columns the application reads
 
-Schema validation leverages the unified database abstraction layer's type system, ensuring the Supabase implementation properly supports the Database interface contract.
+It exits non-zero when the database is not configured, when the read fails, or when a column
+is missing. An empty table is reported as readable but unconfirmed: there is no row to check
+the columns against.
+
+What it does not check, because the Supabase client cannot see it:
+
+- column types, defaults, constraints and indexes
+- the nullable columns (`subject`, `ip_address`, `user_agent`), which read as `NULL` whether
+  or not they exist
+- any table other than `messages`
+
+`scripts/migrations/006_messages.sql` is the source of truth for the full schema; compare
+against it, and apply it when the table does not exist. `--verbose` prints the expected
+columns and indexes.

@@ -10,20 +10,26 @@ This directory contains PostgreSQL migrations for the Supabase database.
 
 ### Fresh Database Installation
 
-For **new databases**, run only these two migrations in order:
+For **new databases**, run these three migrations in order:
 
 ```bash
-# Set your Supabase connection string
+# Set your Supabase connection string (Supabase dashboard > Project Settings > Database)
 export DATABASE_URL="postgresql://postgres:[password]@[project-ref].supabase.co:5432/postgres"
 
 # Apply core schema
-psql $DATABASE_URL -f scripts/migrations/001_core_schema.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
 
 # Apply security policies
-psql $DATABASE_URL -f scripts/migrations/002_security_policies.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql
+
+# Apply the contact messages table
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/006_messages.sql
 ```
 
 **That's it!** Skip migrations 003 and 004 - they are deprecated/redundant.
+
+Without `006_messages.sql` the contact form and `/dashboard/messages` fail: the
+database abstraction layer reads and writes the `messages` table it creates.
 
 ---
 
@@ -38,10 +44,12 @@ If you have an **existing database** with older migrations applied, consult the 
 
 ### ✅ Required Migrations
 
-| File                        | Created    | Purpose                               | Status     |
-| --------------------------- | ---------- | ------------------------------------- | ---------- |
-| `001_core_schema.sql`       | 2025-10-12 | Core tables, roles, indexes, triggers | **ACTIVE** |
-| `002_security_policies.sql` | 2025-10-06 | Row Level Security (RLS) policies     | **ACTIVE** |
+| File                         | Created    | Purpose                               | Status     |
+| ---------------------------- | ---------- | ------------------------------------- | ---------- |
+| `001_core_schema.sql`        | 2025-10-12 | Core tables, roles, indexes, triggers | **ACTIVE** |
+| `002_security_policies.sql`  | 2025-10-06 | Row Level Security (RLS) policies     | **ACTIVE** |
+| `005_migration_tracking.sql` | 2025-11-21 | `schema_migrations` table (optional)  | **ACTIVE** |
+| `006_messages.sql`           | 2026-09-25 | `messages` table for the contact form | **ACTIVE** |
 
 ### ⚠️ Deprecated Migrations
 
@@ -102,14 +110,42 @@ If you have an **existing database** with older migrations applied, consult the 
 
 ---
 
+### 006_messages.sql
+
+**Purpose**: Creates the `messages` table behind the contact form and the messages dashboard.
+
+**Creates**:
+
+- `messages` table (13 columns)
+  - Submitted content: `name`, `email`, `subject`, `message`
+  - Dashboard state: `is_read`, `is_archived`
+  - Request metadata: `ip_address`, `user_agent`
+  - Optional author links: `user_id` (→ `users.id`), `clerk_user_id`
+  - `created_at` / `updated_at` with defaults, so a seed can set them explicitly
+- 4 indexes for the dashboard's newest-first listing and its state filters
+- `messages_updated_at` trigger
+- RLS enabled with a single service-role policy: `anon` and `authenticated` have
+  no access, because messages hold personal data and every read and write goes
+  through the server-side service role client
+
+**Dependencies**: `001_core_schema.sql` (the `users` table referenced by `user_id`)
+
+**Used by**: `getDatabase()` in `src/libs/database.ts` - the contact form
+(`/api/message-us`), `/dashboard/messages` and `npm run db:seed:messages`
+
+**Rollback**: `rollback_006_messages.sql` (**destroys all stored messages**)
+
+---
+
 ## Rollback Procedures
 
 ### Rollback All Migrations (Nuclear Option)
 
 ```bash
 # Rollback in reverse order
-psql $DATABASE_URL -f scripts/migrations/rollback_002_security_policies.sql
-psql $DATABASE_URL -f scripts/migrations/rollback_001_core_schema.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_006_messages.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_002_security_policies.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_001_core_schema.sql
 ```
 
 **Warning**: This will drop all tables and data! Use with extreme caution.
@@ -118,7 +154,7 @@ psql $DATABASE_URL -f scripts/migrations/rollback_001_core_schema.sql
 
 ```bash
 # Example: Rollback security policies only
-psql $DATABASE_URL -f scripts/migrations/rollback_002_security_policies.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_002_security_policies.sql
 ```
 
 ---

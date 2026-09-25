@@ -77,7 +77,8 @@ whose `runtimeArgs` are `VAR=value ...` followed by `npm run dev -- --port 4332`
   `getDatabase()`.
 - `/dashboard/messages` -> reads messages through `getDatabase()`.
 - `db:status`, `db:schema`, `db:seed:messages`, `db:manage`, with the `.env.example` placeholders
-  and with the stub.
+  and with the stub. `db:seed:messages` inserts its whole batch in one `POST`, so the stand-in
+  should answer that `POST ...?select=id` with one `{"id":n}` per row it received.
 
 ### Gotchas
 
@@ -88,4 +89,11 @@ whose `runtimeArgs` are `VAR=value ...` followed by `npm run dev -- --port 4332`
   `(sleep 8; printf 'y\r') | script -q /dev/null npx tsx scripts/setup-roles.ts --dry-run`.
 - `db:wizard` writes `<projectRoot>/.env`. Copy `scripts/setup-wizard.js` and
   `scripts/lib/env-file.js` into a scratch dir and run it there with piped answers.
-- `db:manage test` only validates config and rejects `http://` URLs; it never queries.
+- `db:manage`, `db:schema` and `db:seed:messages` import `#libs/database`, so they need the
+  `tsx` loader: run them directly as `node --import tsx --env-file=<scratch>/x.env <script>`.
+  They accept an `http://` Supabase URL, which is what lets the stand-in above serve them.
+- `db:manage test`, `db:manage tables`, `db:manage health` and `db:schema` each read the
+  `messages` table and exit non-zero when that read fails, so the stand-in has to answer
+  `GET /rest/v1/messages`. Answer `401` from it to see the failure path.
+- `tests/scripts/db-scripts.test.ts` already drives these four commands against an in-process
+  PostgREST stand-in; copy its `startStandIn` helper rather than writing a new one.

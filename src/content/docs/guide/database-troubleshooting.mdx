@@ -149,7 +149,8 @@ Operations succeed but data doesn't match expectations.
   <TabItem label="Quick Schema Check">
     ```bash
     npm run db:schema
-    # Checks the Supabase configuration and lists the expected tables
+    # Reads the messages table and checks the columns the app needs.
+    # Exits non-zero when the read fails or a column is missing.
     ```
   </TabItem>
   <TabItem label="Migration Fix">
@@ -170,6 +171,19 @@ Operations succeed but data doesn't match expectations.
     </Steps>
   </TabItem>
 </Tabs>
+
+### `relation "messages" does not exist`
+
+The contact form returns a 500, `/dashboard/messages` shows nothing, and `npm run db:schema`
+and `npm run db:manage test` both fail on the read. A fresh Supabase project has no
+`messages` table.
+
+```bash
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/006_messages.sql
+npm run db:schema
+```
+
+See [Messages Table](/guide/messages-table/) for the schema this creates and its RLS policy.
 
 ## Supabase Issues
 

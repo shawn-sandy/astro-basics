@@ -29,13 +29,17 @@ export default defineConfig({
       // Sidebar configuration for src/content/docs/guide structure
       sidebar: [
         { label: 'Guide', items: [{ label: 'Welcome', link: '/guide/' }] },
-        { label: 'Getting Started', items: [{ autogenerate: { directory: 'guide/getting-started' } }] },
+        {
+          label: 'Getting Started',
+          items: [{ autogenerate: { directory: 'guide/getting-started' } }],
+        },
         { label: 'Components', items: [{ autogenerate: { directory: 'guide/components' } }] },
         {
           label: 'Features',
           items: [
             { label: 'Environment Configuration', link: '/guide/environment-configuration' },
             { label: 'Configurable Roles', link: '/guide/configurable-roles' },
+            { label: 'Messages Table', link: '/guide/messages-table' },
             { label: 'Database Troubleshooting', link: '/guide/database-troubleshooting' },
             { label: 'Design Direction', link: '/guide/design-direction' },
             { label: 'Logging System', link: '/guide/logging-system' },
@@ -52,9 +56,7 @@ export default defineConfig({
         },
         {
           label: 'Utilities',
-          items: [
-            { label: 'User Sync', link: '/guide/utilities/user-sync' },
-          ],
+          items: [{ label: 'User Sync', link: '/guide/utilities/user-sync' }],
         },
         { label: 'API Reference', items: [{ autogenerate: { directory: 'guide/api' } }] },
         {

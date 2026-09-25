@@ -123,35 +123,57 @@ interface CachedEnvironment {
 let cachedEnvironment: CachedEnvironment | null = null
 
 /**
+ * Raw environment source.
+ *
+ * Astro and Vitest populate `import.meta.env`, but the `db:*` CLI scripts run under plain
+ * Node (through `tsx`), where `import.meta.env` is `undefined` and values arrive in
+ * `process.env`. Reading both keeps one configuration abstraction for the app and its
+ * scripts; without it a script importing `#libs/database` throws on the first lookup.
+ *
+ * `import.meta.env` wins so an Astro build keeps its statically replaced values.
+ */
+function readEnv(key: string): string | undefined {
+  const metaEnv: Record<string, unknown> | undefined = import.meta.env
+  const fromMeta = metaEnv?.[key]
+  if (typeof fromMeta === 'string') return fromMeta
+
+  // `process` is absent in the browser, where the fallback is neither needed nor usable.
+  if (typeof process === 'undefined') return undefined
+  return process.env[key]
+}
+
+/**
  * Load and cache environment variables for optimal performance.
  * Similar to database abstraction pattern with lazy loading.
  */
 function loadEnvironment(): CachedEnvironment {
   if (!cachedEnvironment) {
+    const metaEnv: Record<string, unknown> | undefined = import.meta.env
+
     cachedEnvironment = {
-      // Astro environment detection
-      DEV: import.meta.env.DEV ?? false,
-      PROD: import.meta.env.PROD ?? false,
-      MODE: import.meta.env.MODE ?? 'development',
+      // Astro environment detection. Outside Astro, NODE_ENV stands in for DEV/PROD.
+      DEV: (metaEnv?.DEV as boolean | undefined) ?? readEnv('NODE_ENV') !== 'production',
+      PROD: (metaEnv?.PROD as boolean | undefined) ?? readEnv('NODE_ENV') === 'production',
+      MODE: (metaEnv?.MODE as string | undefined) ?? readEnv('NODE_ENV') ?? 'development',
 
       // Astro configuration
-      ASTRO_ADAPTER: import.meta.env.ASTRO_ADAPTER,
-      PUBLIC_SITE_URL: import.meta.env.PUBLIC_SITE_URL,
+      ASTRO_ADAPTER: readEnv('ASTRO_ADAPTER'),
+      PUBLIC_SITE_URL: readEnv('PUBLIC_SITE_URL'),
 
       // Clerk Authentication
-      PUBLIC_CLERK_PUBLISHABLE_KEY: import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY,
-      CLERK_SECRET_KEY: import.meta.env.CLERK_SECRET_KEY,
-      CLERK_WEBHOOK_SECRET: import.meta.env.CLERK_WEBHOOK_SECRET,
+      PUBLIC_CLERK_PUBLISHABLE_KEY: readEnv('PUBLIC_CLERK_PUBLISHABLE_KEY'),
+      CLERK_SECRET_KEY: readEnv('CLERK_SECRET_KEY'),
+      CLERK_WEBHOOK_SECRET: readEnv('CLERK_WEBHOOK_SECRET'),
 
       // Supabase
-      SUPABASE_URL: import.meta.env.SUPABASE_URL,
-      SUPABASE_ANON_KEY: import.meta.env.SUPABASE_ANON_KEY,
-      SUPABASE_SERVICE_ROLE_KEY: import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+      SUPABASE_URL: readEnv('SUPABASE_URL'),
+      SUPABASE_ANON_KEY: readEnv('SUPABASE_ANON_KEY'),
+      SUPABASE_SERVICE_ROLE_KEY: readEnv('SUPABASE_SERVICE_ROLE_KEY'),
 
       // Axiom Logging
-      AXIOM_TOKEN: import.meta.env.AXIOM_TOKEN,
-      AXIOM_DATASET: import.meta.env.AXIOM_DATASET,
-      AXIOM_ORG_ID: import.meta.env.AXIOM_ORG_ID,
+      AXIOM_TOKEN: readEnv('AXIOM_TOKEN'),
+      AXIOM_DATASET: readEnv('AXIOM_DATASET'),
+      AXIOM_ORG_ID: readEnv('AXIOM_ORG_ID'),
     }
   }
   return cachedEnvironment

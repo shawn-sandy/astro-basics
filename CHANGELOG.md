@@ -128,7 +128,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     user sync is ready (login on plus `SUPABASE_SERVICE_ROLE_KEY`)
   - The `project-setup` skill now hands login and database setup off to it
 
+- **`messages` table migration** (`scripts/migrations/006_messages.sql`,
+  `rollback_006_messages.sql`): the contact form and `/dashboard/messages` read and write a
+  `messages` table that no migration created, so both failed on a fresh Supabase project even with
+  valid credentials
+  - 13 columns matching the `Database` contract, four indexes for the dashboard's newest-first
+    listing and its state filters, and an `updated_at` trigger
+  - `created_at` and `updated_at` default to `now()`, so an insert may omit them and a seed may set
+    them to keep the original submission date
+  - RLS enabled with one `service_role` policy: `anon` and `authenticated` get no access, since
+    messages hold personal data and every read and write goes through the service role client
+  - Documented at `/guide/messages-table` and `project-docs/05-database/messages-table.md`; the
+    fresh-install instructions and `scripts/migrations/README.md` now list it
+
+- **`insertMessages()` on the database abstraction** (`src/libs/database.ts`,
+  `src/libs/database-types.ts`): a bulk insert that writes rows verbatim, keeping the
+  `is_read`, `is_archived`, `created_at` and `updated_at` values they carry, and returns the new
+  ids in insert order. One statement per batch, so a failure leaves no partial write behind.
+  `insertMessage()` keeps its always-unread, always-now behaviour
+
 ### Changed
+
+- **The `db:*` scripts now query Supabase through `getDatabase()`** (`scripts/database-manager.js`,
+  `scripts/schema-validator.js`, `scripts/seed-messages.js`): they no longer construct a Supabase
+  client or answer from a stub, so their results reflect the database
+  - `db:manage test`, `db:manage tables` and `db:manage health` used to answer from a stub whose
+    `getMessages()` returned `[]` without a request. Any non-empty key and an `https://` URL
+    reported "Connection successful", even with credentials Supabase rejects or no `messages`
+    table. Each command now performs a bounded read and exits non-zero when it fails
+  - `db:schema` used to print "All configured database schemas are valid" from a credential check
+    alone. It now reads the table and checks the NOT NULL columns the app reads, reports an empty
+    table as unconfirmed rather than valid, and states what it cannot check: column types,
+    defaults, constraints, indexes, and the nullable columns
+  - `db:seed:messages` writes through the new `insertMessages()` instead of importing
+    `@supabase/supabase-js` itself
+  - Because they import the TypeScript abstraction layer, these three scripts run under the `tsx`
+    loader: `node --import tsx --env-file=.env <script>`. The npm scripts already do this
+  - `#utils/env-config` reads `process.env` when `import.meta.env` is absent, which is what lets a
+    plain Node script share the app's one configuration abstraction
+  - `/db-test`, `/db-schema`, `/db-tables` and `/db-health` describe what their commands actually
+    verify, replacing the "does not connect to the database" wording
 
 - **Accent repointed from violet to petrol** (`src/styles/_design-tokens.scss`): `--island` and
   `--island-bg` move off the violet/indigo family that generated palettes converge on
