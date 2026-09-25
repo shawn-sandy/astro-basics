@@ -37,9 +37,10 @@ node --env-file=.env .claude/skills/auth-and-database-setup/scripts/status.mjs
 ```
 
 Each feature shows `ON` or `OFF`, using the app's own rules. Each setting shows `ok`,
-`placeholder`, `missing`, `unusable` (the app will ignore it), or `set, but expected
-...` (the app accepts it, but it is probably pasted in the wrong place). Tell them in
-plain words what is on, then ask what they want: login, a database, or both.
+`placeholder`, `missing`, `unusable` (the app will ignore it), or `set, but ...` (the
+app accepts it, but it is probably pasted in the wrong place or only half replaced).
+Tell them in plain words what is on, then ask what they want: login, a database, or
+both.
 
 ## Part A - Login (Clerk)
 

@@ -17,7 +17,8 @@ const isHttpUrl = v => URL.canParse(v) && ['http:', 'https:'].includes(new URL(v
 
 /**
  * `valid` is an app rule and failing it turns the feature OFF; `looks` is only a hint.
- * @typedef {{ key: string, valid?: (v: string) => boolean, looks?: (v: string) => boolean, expect?: string, note?: string }} Field
+ * `placeholder` is the exact .env.example value, when it is not `YOUR_<key>`.
+ * @typedef {{ key: string, valid?: (v: string) => boolean, looks?: (v: string) => boolean, expect?: string, note?: string, placeholder?: string }} Field
  */
 
 /** @type {{ name: string, required: Field[], optional?: Field[] }[]} */
@@ -25,7 +26,12 @@ const GROUPS = [
   {
     name: 'Login (Clerk)',
     required: [
-      { key: 'PUBLIC_CLERK_PUBLISHABLE_KEY', looks: v => v.startsWith('pk_'), expect: 'pk_...' },
+      {
+        key: 'PUBLIC_CLERK_PUBLISHABLE_KEY',
+        placeholder: 'YOUR_CLERK_PUBLISHABLE_KEY',
+        looks: v => v.startsWith('pk_'),
+        expect: 'pk_...',
+      },
       { key: 'CLERK_SECRET_KEY', looks: v => v.startsWith('sk_'), expect: 'sk_...' },
     ],
     optional: [
@@ -57,8 +63,14 @@ const GROUPS = [
     ],
     optional: [
       { key: 'SUPABASE_SERVICE_ROLE_KEY', note: 'needed to sync Clerk users' },
-      { key: 'PUBLIC_SUPABASE_URL', valid: isHttpUrl, expect: 'https://...', note: 'browser' },
-      { key: 'PUBLIC_SUPABASE_ANON_KEY', note: 'browser' },
+      {
+        key: 'PUBLIC_SUPABASE_URL',
+        placeholder: 'YOUR_SUPABASE_URL',
+        valid: isHttpUrl,
+        expect: 'https://...',
+        note: 'browser',
+      },
+      { key: 'PUBLIC_SUPABASE_ANON_KEY', placeholder: 'YOUR_SUPABASE_ANON_KEY', note: 'browser' },
     ],
   },
 ]
@@ -71,8 +83,10 @@ const GROUPS = [
  */
 function fieldState(value, field) {
   if (!value) return 'missing'
-  if (value.startsWith('YOUR_')) return 'placeholder'
+  // env-config.ts rejects only the exact placeholder; any other YOUR_ value is "configured".
+  if (value === (field.placeholder ?? `YOUR_${field.key}`)) return 'placeholder'
   if (field.valid && !field.valid(value)) return `unusable (expected ${field.expect})`
+  if (value.startsWith('YOUR_')) return 'set, but still starts with YOUR_'
   if (field.looks && !field.looks(value)) return `set, but expected ${field.expect}`
   return 'ok'
 }

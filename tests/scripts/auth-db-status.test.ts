@@ -40,6 +40,27 @@ describe('auth-and-database-setup status report', () => {
     expect(lines).toContain('Database: Supabase: OFF')
     expect(lines).toContain('Database used for messages: none')
     expect(neverCalled).not.toHaveBeenCalled()
+    const settings = lines.filter(l => /^ {2}[A-Z_]+ /.test(l))
+    expect(settings).toHaveLength(10)
+    for (const line of settings) expect(line).toMatch(/ placeholder( |$)/)
+  })
+
+  it('counts a half-edited YOUR_ value as set, as the app does, but flags it', async () => {
+    // env-config.ts rejects only the exact placeholder, so the app picks Turso here.
+    const lines = await report(
+      {
+        ...supabase,
+        ...turso,
+        TURSO_DATABASE_URL: 'YOUR_TURSO_DATABASE_URL_EXTRA',
+        DATABASE_PROVIDER: 'turso',
+      },
+      async () => new Response('[]', { status: 200 })
+    )
+
+    expect(lines).toContain('Database: Turso: ON')
+    expect(lines).toContain('Database used for messages: turso')
+    expect(lines.find(l => l.includes('TURSO_DATABASE_URL'))).toContain('still starts with YOUR_')
+    expect(lines.join('\n')).not.toContain('_EXTRA')
   })
 
   it('turns login ON with real-looking keys and never prints them', async () => {
