@@ -73,7 +73,7 @@ jobs:
       - run: npx vitest run tests/email.test.ts tests/send-email.test.ts
       # Informational, not blocking: the rest of the suite carries ~49
       # pre-existing failures unrelated to Astro (role-validator, csrf,
-      # ip-validation, etc.), plus tests/integration/** needs live
+      # etc.), plus tests/integration/** needs live
       # Supabase credentials this workflow doesn't have. Tracked as
       # separate tech debt, not this upgrade's responsibility.
       - run: npx vitest run --exclude "tests/integration/**"

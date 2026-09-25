@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Reports whether login (Clerk) and the database (Turso / Supabase) are switched on,
+ * Reports whether login (Clerk) and the database (Supabase) are switched on,
  * without ever printing a key, token, or URL.
  *
  * ON/OFF follows the "configured" rules in src/utils/env-config.ts: a missing value, an
@@ -49,18 +49,6 @@ const GROUPS = [
         expect: 'whsec_...',
         note: 'syncs users into Supabase',
       },
-    ],
-  },
-  {
-    name: 'Database: Turso',
-    required: [
-      {
-        key: 'TURSO_DATABASE_URL',
-        // Every scheme @libsql/client accepts, including `turso dev`'s http://127.0.0.1.
-        looks: v => /^(libsql|https?|wss?|file):/.test(v),
-        expect: 'libsql://...',
-      },
-      { key: 'TURSO_AUTH_TOKEN' },
     ],
   },
   {
@@ -180,21 +168,7 @@ export async function report(env, fetchImpl = fetch) {
     }
   }
 
-  // Same precedence as detectDatabaseProviders() in src/libs/database.ts.
-  const turso = on['Database: Turso']
-  const supabase = on['Database: Supabase']
-  const explicit = env.DATABASE_PROVIDER
-  const active =
-    (explicit === 'turso' && turso) || (explicit === 'supabase' && supabase)
-      ? explicit
-      : supabase
-        ? 'supabase'
-        : turso
-          ? 'turso'
-          : 'none'
-  lines.push(`Database used for messages: ${active}`)
-
-  if (supabase) {
+  if (on['Database: Supabase']) {
     lines.push(await supabaseSchemaLine(env, fetchImpl))
     // The webhook and fetchUserWithRole() write users through getSupabaseServiceRole(),
     // which returns null without this key (src/libs/supabase-native.ts).

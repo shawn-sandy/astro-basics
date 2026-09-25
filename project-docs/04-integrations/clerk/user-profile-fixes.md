@@ -726,7 +726,7 @@ if (userId) {
 export const AVAILABLE_ROUTES = {
   '/dashboard': true,
   '/profile': true,
-  '/forum': true,
+  '/forum': false,
   '/organization': true,
   // Add routes as they're implemented
   '/settings': false,

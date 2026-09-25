@@ -2,8 +2,6 @@
 
 This directory contains PostgreSQL migrations for the Supabase database provider.
 
-> **Note**: For Turso (LibSQL) migrations, see `/db/migrations/` directory.
->
 > **Note**: An older migration directory exists at `scripts/supabase-migrations/` (Aug 2025) that created a simpler users table. This was superseded by the comprehensive migrations in this directory (Oct 2025) which add roles, organizations, and preferences. For new installations, use the migrations in THIS directory.
 
 ---
@@ -34,16 +32,26 @@ psql $DATABASE_URL -f scripts/migrations/002_security_policies.sql
 If you have an **existing database** with older migrations applied, consult the upgrade guide:
 `docs/database/supabase-migration-refactor-plan.md`
 
+If your database has a `messages` table (the contact form used to store submissions there; it now
+only sends a notification email), drop it with migration 006. This is **irreversible** - export the
+table first if you need its contents:
+
+```bash
+psql $DATABASE_URL -c "\copy messages TO 'messages-backup.csv' CSV HEADER"
+psql $DATABASE_URL -f scripts/migrations/006_drop_messages_table.sql
+```
+
 ---
 
 ## Active Migrations (Current State)
 
 ### ✅ Required Migrations
 
-| File                        | Created    | Purpose                               | Status     |
-| --------------------------- | ---------- | ------------------------------------- | ---------- |
-| `001_core_schema.sql`       | 2025-10-12 | Core tables, roles, indexes, triggers | **ACTIVE** |
-| `002_security_policies.sql` | 2025-10-06 | Row Level Security (RLS) policies     | **ACTIVE** |
+| File                          | Created    | Purpose                                                             | Status     |
+| ----------------------------- | ---------- | ------------------------------------------------------------------- | ---------- |
+| `001_core_schema.sql`         | 2025-10-12 | Core tables, roles, indexes, triggers                               | **ACTIVE** |
+| `002_security_policies.sql`   | 2025-10-06 | Row Level Security (RLS) policies                                   | **ACTIVE** |
+| `006_drop_messages_table.sql` | 2026-09-25 | Drop legacy `messages` table (existing databases only, no rollback) | **ACTIVE** |
 
 ### ⚠️ Deprecated Migrations
 
@@ -249,7 +257,6 @@ If a migration's built-in verification fails:
 ## Related Documentation
 
 - **Database Overview**: `/project-docs/05-database/README.md`
-- **Turso Migrations**: `/db/migrations/README.md`
 - **Clerk Integration**: `/project-docs/04-integrations/clerk-authentication.md`
 - **Migration Refactor Plan**: `/docs/database/supabase-migration-refactor-plan.md`
 

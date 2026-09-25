@@ -194,8 +194,6 @@ async function main() {
     logSuccess(`Detected database provider: ${provider}`)
   }
 
-  const dbProvider = provider === 'turso' ? 'turso' : 'supabase'
-
   const migrationResult = isDryRun
     ? {
         success: true,
@@ -203,7 +201,7 @@ async function main() {
         rollbackPath: 'scripts/migrations/rollback_XXX_user_roles.sql (dry-run)',
         migrationNumber: 'XXX',
       }
-    : writeMigrationFiles(roleConfig, dbProvider)
+    : writeMigrationFiles(roleConfig)
 
   if (!migrationResult.success) {
     logError('Migration generation failed!')
@@ -235,16 +233,12 @@ async function main() {
   console.log()
   log('  1. Review the generated files', 'yellow')
   log('  2. Run type-check to verify: npm run type-check', 'yellow')
-  if (dbProvider === 'supabase') {
-    log(
-      '  3. Apply migration: npm run db:migrate -- ' +
-        migrationResult.migrationNumber +
-        '_user_roles.sql',
-      'yellow'
-    )
-  } else {
-    log('  3. Adapt the Turso migration to your schema', 'yellow')
-  }
+  log(
+    '  3. Apply migration: psql $DATABASE_URL -f scripts/migrations/' +
+      migrationResult.migrationNumber +
+      '_user_roles.sql',
+    'yellow'
+  )
   log('  4. Commit all files to Git', 'yellow')
   console.log()
   log('  git add config/ src/types/ scripts/migrations/', 'blue')

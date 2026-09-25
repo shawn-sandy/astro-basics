@@ -57,8 +57,8 @@ This directory contains verification scripts for validating database migrations,
 Run verification scripts after applying database migrations to ensure they were successful:
 
 ```bash
-# Apply migration
-npm run db:migrate
+# Apply migration (see scripts/migrations/README.md)
+psql $DATABASE_URL -f scripts/migrations/<migration>.sql
 
 # Verify migration
 node --env-file=.env scripts/verification/simple-verify-migration.js

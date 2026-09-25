@@ -218,21 +218,6 @@ const supabase = createClient(
 export default supabase
 ```
 
-### Turso Client
-
-**File:** `src/libs/turso.ts`
-
-```typescript
-import { createClient } from '@libsql/client'
-
-const turso = createClient({
-  url: process.env.TURSO_DATABASE_URL!,
-  authToken: process.env.TURSO_AUTH_TOKEN
-})
-
-export default turso
-```
-
 ## Build Configuration
 
 ### Astro Config
@@ -299,10 +284,6 @@ SITE_URL=https://your-site.com
 # Database
 SUPABASE_URL=https://project.supabase.co
 SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiI...
-
-# Turso
-TURSO_DATABASE_URL=libsql://database.turso.io
-TURSO_AUTH_TOKEN=your_token
 
 # Deployment
 ASTRO_ADAPTER=netlify # or 'node', 'vercel'

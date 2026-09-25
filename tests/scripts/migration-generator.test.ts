@@ -238,57 +238,19 @@ describe('Migration Generator', () => {
     it('should detect Supabase when credentials are present', () => {
       process.env.SUPABASE_URL = 'https://test.supabase.co'
       process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-key'
-      delete process.env.DATABASE_PROVIDER
 
       const provider = detectDatabaseProvider()
 
       expect(provider).toBe('supabase')
-    })
-
-    it('should detect Turso when credentials are present', () => {
-      delete process.env.SUPABASE_URL
-      delete process.env.SUPABASE_SERVICE_ROLE_KEY
-      process.env.TURSO_DATABASE_URL = 'libsql://test.turso.io'
-      process.env.TURSO_AUTH_TOKEN = 'test-token'
-      delete process.env.DATABASE_PROVIDER
-
-      const provider = detectDatabaseProvider()
-
-      expect(provider).toBe('turso')
-    })
-
-    it('should respect explicit DATABASE_PROVIDER setting', () => {
-      process.env.DATABASE_PROVIDER = 'turso'
-      process.env.SUPABASE_URL = 'https://test.supabase.co'
-      process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-key'
-
-      const provider = detectDatabaseProvider()
-
-      expect(provider).toBe('turso')
     })
 
     it('should return unknown when no credentials present', () => {
       delete process.env.SUPABASE_URL
       delete process.env.SUPABASE_SERVICE_ROLE_KEY
-      delete process.env.TURSO_DATABASE_URL
-      delete process.env.TURSO_AUTH_TOKEN
-      delete process.env.DATABASE_PROVIDER
 
       const provider = detectDatabaseProvider()
 
       expect(provider).toBe('unknown')
-    })
-
-    it('should prefer Supabase over Turso when both are configured', () => {
-      process.env.SUPABASE_URL = 'https://test.supabase.co'
-      process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-key'
-      process.env.TURSO_DATABASE_URL = 'libsql://test.turso.io'
-      process.env.TURSO_AUTH_TOKEN = 'test-token'
-      delete process.env.DATABASE_PROVIDER
-
-      const provider = detectDatabaseProvider()
-
-      expect(provider).toBe('supabase')
     })
   })
 })

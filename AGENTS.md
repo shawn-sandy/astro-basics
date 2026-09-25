@@ -25,8 +25,8 @@
 
 **Database Rules:**
 
-- ✅ ALWAYS use abstraction layer: `import { getDatabase } from '#libs/database'`
-- ❌ NEVER access providers directly (Supabase/Turso clients)
+- ✅ ALWAYS use the Supabase helpers: `import { getSupabaseServiceRole } from '#libs/supabase-native'`
+- ❌ NEVER call `createClient` from `@supabase/supabase-js` directly
 
 **Component Rules:**
 
@@ -80,7 +80,7 @@ astro-basics/
 ### Key Principles
 
 - **Path Aliases**: ALL internal imports use `#` prefix (MANDATORY)
-- **Database Abstraction**: Use `getDatabase()` from `#libs/database` (NEVER direct providers)
+- **Database Access**: Supabase only, via the helpers in `#libs/supabase-native` (NEVER `createClient` directly)
 - **Component Segregation**: Clear separation between SSR (Astro) and client (React)
 - **Type Safety**: TypeScript strict mode with explicit type annotations
 - **Authentication**: Check `locals.userId` FIRST on protected endpoints
@@ -111,7 +111,6 @@ astro-basics/
 
 - `npm run db:wizard`: interactive setup wizard (first-time)
 - `npm run db:status`: check current configuration
-- `npm run db:manage`: advanced database management
 
 **See complete commands:** [CLAUDE.md](CLAUDE.md)
 
@@ -128,7 +127,7 @@ astro-basics/
 - **Components**: PascalCase (`Header.astro`, `UserProfile.tsx`)
 - **Utilities**: camelCase or kebab-case (`content.ts`, `email-validation.ts`)
 - **SCSS Partials**: underscore prefix (`_card.scss`, `_variables.scss`)
-- **Types**: PascalCase for interfaces/types (`User`, `MessageData`)
+- **Types**: PascalCase for interfaces/types (`User`, `SendEmailOptions`)
 
 ### Import Patterns (MANDATORY)
 
@@ -136,8 +135,8 @@ astro-basics/
 // ✅ CORRECT - Use # path aliases
 import Header from '#components/astro/Header.astro'
 import { SITE_TITLE } from '#utils/site-config'
-import { getDatabase } from '#libs/database'
-import type { Message } from '#libs/database-types'
+import { getSupabaseServiceRole } from '#libs/supabase-native'
+import type { Database } from '#libs/database.types'
 
 // ❌ INCORRECT - NEVER use relative imports
 import Header from '../components/astro/Header.astro'
@@ -189,7 +188,7 @@ import Component from '#components/astro/Component.astro'
 
 ```typescript
 import type { APIRoute } from 'astro'
-import { getDatabase } from '#libs/database'
+import { getSupabaseServiceRole } from '#libs/supabase-native'
 
 export const POST: APIRoute = async ({ locals, request }) => {
   // 1. AUTHENTICATION CHECK (REQUIRED for protected endpoints)
@@ -205,9 +204,11 @@ export const POST: APIRoute = async ({ locals, request }) => {
     const body = await request.json()
     // Validate required fields...
 
-    // 3. DATABASE ACCESS (REQUIRED: Use abstraction layer)
-    const db = getDatabase()
-    const result = await db.someOperation()
+    // 3. DATABASE ACCESS (REQUIRED: Use #libs/supabase-native helpers)
+    const supabase = getSupabaseServiceRole()
+    if (!supabase) throw new Error('Supabase not configured')
+    const { data: result, error: dbError } = await supabase.from('resources').insert(body).select()
+    if (dbError) throw dbError
 
     // 4. SUCCESS RESPONSE (REQUIRED: Consistent format)
     return new Response(JSON.stringify({ data: result, success: true }), {
@@ -232,22 +233,25 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
 ## Database Access Guidelines
 
-### MANDATORY: Use Abstraction Layer
+### MANDATORY: Use the Supabase Helpers
 
 ```typescript
-// ✅ CORRECT - Use abstraction layer
-import { getDatabase } from '#libs/database'
-import type { MessageQueryOptions } from '#libs/database-types'
+// ✅ CORRECT - Use the shared helpers
+import { getSupabaseServiceRole } from '#libs/supabase-native'
 
-const db = getDatabase()
-const messages = await db.getMessages({ limit: 10 })
+const supabase = getSupabaseServiceRole() // null when Supabase is not configured
+if (supabase) {
+  const { data: users } = await supabase.from('users').select('id, email').limit(10)
+}
 
-// ❌ INCORRECT - NEVER access providers directly
+// ❌ INCORRECT - NEVER create clients directly
 import { createClient } from '@supabase/supabase-js'
 const supabase = createClient(url, key) // NEVER DO THIS
 ```
 
-**Rationale:** Abstraction layer enables database provider switching (Supabase ↔ Turso) without code changes.
+**Rationale:** Supabase is the only database. The helpers centralize configuration checks and
+typing (`src/libs/database.types.ts`); use `createServerSupabaseClient(token)` when a request should
+run as the signed-in user under RLS.
 
 **See complete guide:** [CLAUDE-PATTERNS.md > Database Access Patterns](CLAUDE-PATTERNS.md#database-access-patterns)
 
@@ -303,7 +307,7 @@ npm run build         # Production build
 
 1. Copy `.env.example` to `.env`
 2. Populate Clerk authentication keys (REQUIRED)
-3. Configure database provider (Supabase or Turso)
+3. Configure Supabase (optional; run `npm run db:wizard`)
 4. NEVER commit secrets to version control
 
 ### Required Environment Variables
@@ -313,8 +317,9 @@ npm run build         # Production build
 PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 
-# Database (Choose one or both)
-DATABASE_PROVIDER=turso  # 'turso', 'supabase', or 'auto'
+# Database (Supabase)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
 ```
 
 **See complete setup:** [project-docs/01-getting-started/setup-guide.md](project-docs/01-getting-started/setup-guide.md)

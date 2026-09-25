@@ -8,7 +8,7 @@ A production-ready Astro website with:
 
 - **Server-side rendering** (SSR)
 - **Clerk authentication** with role-based access control
-- **Dual database support** (Turso LibSQL or Supabase PostgreSQL)
+- **Supabase database** (PostgreSQL) with native Clerk integration
 - **Component library** (exportable Astro + React components)
 - **Content management** (MDX-powered blog, docs, and content collections)
 - **Full-featured comment system** with threading and moderation
@@ -36,17 +36,17 @@ astro-basics/
 
 - **Framework**: Astro 5.x with SSR
 - **Auth**: Clerk (user management, organizations, roles)
-- **Database**: Turso (LibSQL) OR Supabase (PostgreSQL) - your choice
+- **Database**: Supabase (PostgreSQL)
 - **Styling**: SCSS with utility classes
 - **Testing**: Vitest (unit) + Playwright (E2E)
 - **Deployment**: Netlify (default), Vercel, or Node adapters
 
 ### Key Concepts
 
-**1. Database Abstraction**
+**1. Supabase Access**
 
-- Switch between Turso and Supabase without code changes
-- Unified API in `src/libs/database.ts`
+- Supabase is the only database
+- Server code uses the helpers in `src/libs/supabase-native.ts`
 - Use `npm run db:wizard` for setup
 
 **2. Role-Based Access Control**
@@ -58,7 +58,7 @@ astro-basics/
 **3. Protected Routes**
 
 - `/dashboard/*` - Requires authentication
-- `/forum/*` - Requires authentication
+- `/forum/*` - Requires authentication (reserved; no forum pages ship today)
 - `/organization/*` - Requires authentication + organization membership
 - Public routes: `/`, `/posts`, `/docs`, `/content`
 
@@ -82,7 +82,6 @@ cp .env.example .env
 # Edit .env and add your credentials:
 # - Clerk keys: https://dashboard.clerk.com → API Keys
 # - Supabase keys: https://supabase.com/dashboard → [Project] → Settings → API
-# - Turso: See CLI commands in .env.example comments
 
 # Set up pre-commit hooks
 npm run prepare
@@ -113,29 +112,17 @@ CLERK_SECRET_KEY=sk_test_dummy
 
 **See**: [01-getting-started/authentication-guide.md](./01-getting-started/authentication-guide.md)
 
-### 3. Choose Your Database (10 minutes)
-
-**Option A: Turso** (recommended for simplicity)
-
-```bash
-# Install Turso CLI
-npm run db:wizard
-
-# Follow prompts to set up Turso
-# Adds TURSO_DATABASE_URL and TURSO_AUTH_TOKEN to .env
-```
-
-**Option B: Supabase** (recommended for PostgreSQL features)
+### 3. Set Up the Database (10 minutes)
 
 ```bash
 # Create project at supabase.com
 # Copy URL and keys to .env
 npm run db:wizard
 
-# Follow prompts to set up Supabase
+# Follow prompts to set up Supabase, then apply the migrations with psql
 ```
 
-**See**: [01-getting-started/database-setup.md](./01-getting-started/database-setup.md)
+**See**: [../scripts/migrations/README.md](../scripts/migrations/README.md)
 
 ## Common Commands
 
@@ -170,9 +157,6 @@ npm run format        # Prettier formatting
 ```bash
 npm run db:wizard     # Interactive setup wizard
 npm run db:status     # Check configuration
-npm run db:migrate    # Run migrations
-npm run db:switch:turso    # Switch to Turso
-npm run db:switch:supabase # Switch to Supabase
 ```
 
 ## Where to Find Documentation
@@ -181,14 +165,13 @@ npm run db:switch:supabase # Switch to Supabase
 
 - **Setup Guide**: [01-getting-started/setup-guide.md](./01-getting-started/setup-guide.md)
 - **Auth Guide**: [01-getting-started/authentication-guide.md](./01-getting-started/authentication-guide.md)
-- **Database Setup**: [01-getting-started/database-setup.md](./01-getting-started/database-setup.md)
+- **Database Setup**: [01-getting-started/setup-guide.md#database-setup](./01-getting-started/setup-guide.md#database-setup)
 - **Linting**: [01-getting-started/linting-guide.md](./01-getting-started/linting-guide.md)
 
 ### How-To Guides
 
 - **All Guides**: [02-guides/](./02-guides/) directory
 - **Role Configuration**: [02-guides/configurable-roles.md](./02-guides/configurable-roles.md)
-- **Database Switching**: [02-guides/database-switching-guide.md](./02-guides/database-switching-guide.md)
 - **Clerk-Supabase Setup**: [02-guides/clerk-supabase-setup.md](./02-guides/clerk-supabase-setup.md)
 
 ### Features & Architecture
@@ -289,7 +272,7 @@ npm run db:status
 npm run db:wizard
 
 # Verify environment variables
-cat .env | grep -E "(TURSO|SUPABASE)"
+cat .env | grep SUPABASE
 ```
 
 ## Need Help?
@@ -314,7 +297,7 @@ After this quick start:
 
 1. **Read the full setup guide**: [01-getting-started/setup-guide.md](./01-getting-started/setup-guide.md)
 2. **Understand authentication**: [01-getting-started/authentication-guide.md](./01-getting-started/authentication-guide.md)
-3. **Configure your database**: [01-getting-started/database-setup.md](./01-getting-started/database-setup.md)
+3. **Configure your database**: [01-getting-started/setup-guide.md#database-setup](./01-getting-started/setup-guide.md#database-setup)
 4. **Explore features**: Browse [03-features/](./03-features/) directory
 5. **Review code quality setup**: [01-getting-started/linting-guide.md](./01-getting-started/linting-guide.md)
 

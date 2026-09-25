@@ -12,7 +12,7 @@ This comprehensive guide walks you through setting up astro-basics with all its 
 Astro-basics is a production-ready web development framework with:
 
 - ✅ **Authentication** - Clerk integration with protected routes
-- ✅ **Database Support** - Supabase (PostgreSQL) and Turso (LibSQL) backends
+- ✅ **Database Support** - Supabase (PostgreSQL) with native Clerk integration
 - ✅ **Role System** - Configurable roles with TypeScript type safety
 - ✅ **Security** - CSRF protection, rate limiting, RLS policies
 - ✅ **Testing** - Unit tests (Vitest) and E2E tests (Playwright)
@@ -113,17 +113,14 @@ CLERK_WEBHOOK_SECRET=whsec_...  # Optional
 These routes require authentication (configured in `src/middleware.ts`):
 
 - `/dashboard/*` - User dashboard and profile
-- `/forum/*` - Community forum features
+- `/forum/*` - Reserved for forum routes (no forum pages ship today)
 - `/organization/*` - Organization management
 
 Unauthenticated users are automatically redirected to sign-in.
 
 ### Step 3: Database Setup
 
-Choose **one or both** database backends:
-
-- **Supabase** (PostgreSQL): Real-time features, native Clerk integration, RLS
-- **Turso** (LibSQL): Edge-first SQLite, low latency, global distribution
+The project uses **Supabase** (PostgreSQL): real-time features, native Clerk integration, RLS.
 
 #### Option A: Guided Setup (Recommended)
 
@@ -134,10 +131,11 @@ npm run db:wizard
 ```
 
 The wizard will:
-- Detect available database credentials
-- Guide you through configuration
-- Set up database schema automatically
-- Verify connection
+- Prompt for your Supabase project URL and keys
+- Check that the values look valid
+- Save them to `.env` without touching unrelated settings
+
+It does not create tables — apply the migrations as in Option B, step 3.
 
 #### Option B: Manual Setup - Supabase
 
@@ -182,88 +180,18 @@ PUBLIC_SUPABASE_ANON_KEY=eyJ...
 
 **3. Run Migrations**
 
+Apply the SQL migrations with `psql` (see `scripts/migrations/README.md`):
+
 ```bash
 # Apply database schema (users, roles, organizations, comments)
-npm run db:migrate
-
-# Verify migration status
-npm run db:migrate:status
+psql $DATABASE_URL -f scripts/migrations/001_core_schema.sql
+psql $DATABASE_URL -f scripts/migrations/002_security_policies.sql
 
 # Set up Clerk-Supabase user sync
 npm run db:setup-users
 ```
 
 See the [Clerk-Supabase Integration Guide](/guide/integrations/clerk-supabase/) for detailed instructions.
-
-#### Option C: Manual Setup - Turso
-
-**1. Install Turso CLI**
-
-```bash
-curl -sSfL https://get.tur.so/install.sh | bash
-turso auth login
-```
-
-**2. Create Database**
-
-```bash
-# Create database
-turso db create astro-basics
-
-# Get connection details
-turso db show astro-basics
-```
-
-**3. Configure Environment**
-
-```bash
-# Get database URL
-turso db show astro-basics --url
-# → TURSO_DATABASE_URL
-
-# Create auth token
-turso db tokens create astro-basics
-# → TURSO_AUTH_TOKEN
-```
-
-Add to `.env`:
-
-```env
-TURSO_DATABASE_URL=libsql://your-db.turso.io
-TURSO_AUTH_TOKEN=eyJ...
-```
-
-**4. Initialize Database**
-
-```bash
-npm run db:setup
-```
-
-#### Database Switching
-
-The project includes a **unified database abstraction layer**:
-
-```bash
-# Check current database status
-npm run db:status
-
-# Switch databases (with automatic backup)
-npm run db:switch:supabase
-npm run db:switch:turso
-npm run db:switch:auto        # Auto-detect
-
-# Backup and restore
-npm run db:backup
-npm run db:restore
-```
-
-**Key Features:**
-- Automatic backup before switching
-- Provider auto-detection via `DATABASE_PROVIDER` env var
-- Unified TypeScript types
-- Zero code changes required
-
-See the [Database Switching Guide](/guide/database-switching/) for complete documentation.
 
 ### Step 4: Role Configuration
 
@@ -330,7 +258,8 @@ This creates:
 **4. Apply Migration**
 
 ```bash
-npm run db:migrate
+# Use the migration number setup:roles printed
+psql $DATABASE_URL -f scripts/migrations/<NNN>_user_roles.sql
 ```
 
 **5. Commit Changes**
@@ -462,21 +391,16 @@ npm run test:e2e:report
 ### Common Commands
 
 ```bash
-# Status and validation
-npm run db:status       # Check configuration
-npm run db:schema       # Validate schema
+# Status
+npm run db:status       # Check Supabase configuration
 
-# Migrations
-npm run db:migrate      # Run migrations
-npm run db:migrate:status  # Check status
-npm run db:migrate:rollback # Rollback
-
-# Data management
-npm run db:seed:messages    # Seed data
-npm run db:reset            # Reset (deletes all data)
+# Users
+npm run db:setup-users  # Set up Clerk-Supabase user sync
+npm run db:sync-user    # Sync the current user
 ```
 
-See the [Database Troubleshooting Guide](/guide/database-troubleshooting/) for help with common issues.
+Migrations live in `scripts/migrations/` and are applied with `psql`, with `rollback_*.sql`
+files alongside the reversible ones. See `scripts/migrations/README.md`.
 
 ## Building for Production
 
@@ -526,13 +450,10 @@ grep CLERK .env
 ```bash
 # Check status
 npm run db:status
-
-# Verify connection
-npm run db:check
-
-# See troubleshooting guide
-# /guide/database-troubleshooting/
 ```
+
+Confirm `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are set, and that the
+Supabase project is not paused.
 
 ### Missing Tables
 
@@ -540,11 +461,9 @@ npm run db:check
 
 **Solution:**
 ```bash
-# Run migrations
-npm run db:migrate
-
-# Verify schema
-npm run db:schema
+# Apply the migrations (see scripts/migrations/README.md)
+psql $DATABASE_URL -f scripts/migrations/001_core_schema.sql
+psql $DATABASE_URL -f scripts/migrations/002_security_policies.sql
 ```
 
 ### Build Warnings
@@ -569,7 +488,6 @@ Now that you're set up:
 
 1. **Explore Features**
    - [Configurable Roles](/guide/configurable-roles/) - Custom role system
-   - [Database Switching](/guide/database-switching/) - Provider flexibility
    - [Role Guard Usage](/guide/role-guard-usage/) - Access control patterns
 
 2. **Learn the Stack**

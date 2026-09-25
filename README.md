@@ -44,13 +44,7 @@ functionality, and enterprise-grade security features.
 
 ### Database Integration
 
-- **Turso (LibSQL)** edge database for message storage
 - **Supabase (PostgreSQL)** with real-time capabilities and native Clerk integration
-- Automatic retry logic with exponential backoff
-- Transaction support for complex operations
-- Message CRUD operations with type safety
-- Support for both Turso and Supabase backends
-- Database switching utility for flexible backend selection
 - Comment system with polymorphic database design
 - Row-Level Security (RLS) policies for data protection
 
@@ -68,7 +62,7 @@ functionality, and enterprise-grade security features.
   - Playwright browser testing
   - Clerk authentication management
 - Automated release management system with security audits
-- Database migration system with rollback support
+- Supabase SQL migrations with rollback scripts (`scripts/migrations/`)
 
 ### Progressive Web App (PWA)
 
@@ -82,10 +76,10 @@ functionality, and enterprise-grade security features.
 ### User Features
 
 - **Dashboard**: Protected user dashboard with profile management
-- **Forum**: Community forum with authentication
 - **Organization Management**: Organization creation and management features
 - **User Profiles**: Comprehensive user profile with Clerk integration
-- **Message System**: Submit and manage messages through the application
+- **Contact Form**: `/message-us` submissions are delivered as a notification email (requires the
+  `EMAIL_*` settings; see the [Email guide](src/content/docs/guide/integrations/email.mdx))
 
 ## Quick Start
 
@@ -100,7 +94,7 @@ functionality, and enterprise-grade security features.
    ```
 
    The site runs on a fresh clone with no accounts and no keys — leave the `YOUR_*`
-   placeholders in place. Clerk, Supabase, Turso, and Axiom each read an unreplaced
+   placeholders in place. Clerk, Supabase, and Axiom each read an unreplaced
    placeholder as "not configured" and switch that feature off, so logging falls back to
    the console and auth-protected routes stay unavailable until you add real keys.
 
@@ -114,8 +108,8 @@ functionality, and enterprise-grade security features.
    > **⚠️ Configure Roles First:** If you plan to customize user roles, configure them BEFORE running database migrations. Role configuration generates database migrations that define your role schema. See [Role Management](#role-management) below, or skip to use the default 3-tier system (member, admin, super_admin).
 
    ```bash
-   npm run db:wizard              # Interactive database setup wizard
-   # Or manually: npm run db:setup
+   npm run db:wizard              # Interactive Supabase setup wizard
+   # Or manually: apply scripts/migrations/ with psql (see scripts/migrations/README.md)
    ```
 
 4. **Start developing**:
@@ -127,7 +121,7 @@ functionality, and enterprise-grade security features.
 **For detailed setup instructions**, see [project-docs/01-getting-started/setup-guide.md](project-docs/01-getting-started/setup-guide.md) which includes:
 
 - Complete authentication setup with Clerk
-- Database configuration (Supabase & Turso)
+- Database configuration (Supabase)
 - Role management system setup
 - Security features configuration
 - Troubleshooting common issues
@@ -156,31 +150,9 @@ npm run fix:all      # Fix all auto-fixable issues
 
 # Database Management
 npm run db:wizard         # Interactive database setup wizard (recommended)
-npm run db:status         # Check current database configuration and status
-npm run db:manage         # Advanced database management CLI
-
-# Database Setup
-npm run db:setup          # Initialize database schema
-npm run db:reset          # Reset database (warning: deletes all data)
-npm run db:check          # Verify database connection
-npm run db:schema         # Validate database schema compatibility
-
-# Database Switching (with automatic backups)
-npm run db:switch         # Interactive database switching
-npm run db:switch:turso   # Switch to Turso backend
-npm run db:switch:supabase # Switch to Supabase backend
-npm run db:switch:auto    # Auto-detect and use available database
-npm run db:backup         # Create configuration backup
-npm run db:restore        # Restore from backup
-
-# Migrations
-npm run db:migrate        # Run migrations
-npm run db:migrate:status # Check migration status
-npm run db:migrate:create # Create new migration
-npm run db:migrate:rollback # Rollback last migration
+npm run db:status         # Check current Supabase configuration and status
 
 # Data Management
-npm run db:seed:messages  # Seed sample messages
 npm run db:setup-users    # Set up Supabase user sync with Clerk
 npm run db:sync-user      # Sync current user to database
 ```
@@ -193,8 +165,8 @@ npm run setup:roles           # Generate types and migrations
 npm run setup:roles:dry-run   # Preview changes without writing files
 npm run validate:roles        # Validate role configuration
 
-# After setup, apply database migration
-npm run db:migrate
+# After setup, apply the generated migration with psql
+psql $DATABASE_URL -f scripts/migrations/<NNN>_user_roles.sql
 ```
 
 **Role System Features:**
@@ -259,32 +231,17 @@ Three main collections defined in `src/content/config.ts`:
 
 ### Database Configuration
 
-The project supports two database backends:
-
-#### Turso (LibSQL)
-
-Edge-first SQLite database, ideal for low-latency global applications:
-
-```env
-TURSO_DATABASE_URL=libsql://your-database.turso.io
-TURSO_AUTH_TOKEN=your-auth-token
-```
-
-Features:
-
-- Automatic retry logic (3 attempts with exponential backoff)
-- Connection pooling and error recovery
-- Type-safe message operations
-- Transaction support
-
-#### Supabase (Alternative)
-
-PostgreSQL database with real-time capabilities:
+The project uses Supabase (PostgreSQL) as its only database. Server code reaches it through the
+helpers in `#libs/supabase-native`:
 
 ```env
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
+
+Migrations live in `scripts/migrations/` and are applied with `psql` — see
+[scripts/migrations/README.md](scripts/migrations/README.md).
 
 ### Deployment
 
@@ -299,7 +256,6 @@ Comprehensive documentation is available in multiple formats:
   - Getting started guides and component documentation
   - API reference with TypeScript integration
   - MCP Server setup and configuration guides
-  - Database troubleshooting and switching guides
   - Role guard system usage
 - **Development Docs**: The `docs/` folder contains detailed implementation guides, PRDs, and technical documentation
 - **Feature Documentation**: See [FEATURES.md](FEATURES.md) for a complete feature overview

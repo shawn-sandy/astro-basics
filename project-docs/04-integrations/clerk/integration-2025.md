@@ -248,22 +248,6 @@ export function createAuthenticatedSupabaseClient(
 }
 ```
 
-**Usage in React:**
-
-```typescript
-// src/hooks/useSupabase.tsx
-import { useAuth } from '@clerk/astro/react'
-import { createAuthenticatedSupabaseClient } from '#libs/supabase-native'
-
-export function useSupabase() {
-  const { getToken, userId, isLoaded } = useAuth()
-
-  const supabase = useMemo(() => createAuthenticatedSupabaseClient(getToken), [getToken])
-
-  return { supabase, userId, isLoaded }
-}
-```
-
 #### 3. Service Role Client (Webhooks & Admin)
 
 Used for operations that bypass RLS (user creation, admin tasks):
@@ -541,7 +525,6 @@ const token = await auth().getToken()
 ### Step 2: Update Clerk Configuration
 
 1. **Remove JWT template** (if exists)
-
    - Clerk Dashboard → JWT Templates → Delete "supabase" template
 
 2. **Enable native integration**
@@ -550,7 +533,6 @@ const token = await auth().getToken()
 ### Step 3: Update Supabase Configuration
 
 1. **Remove custom JWT provider** (if configured)
-
    - Supabase Dashboard → Authentication → Providers
    - Remove any "Custom JWT" providers
 
@@ -664,7 +646,6 @@ const token = await auth().getToken()
 ### Related Guides
 
 - [Database Refactor Documentation](../database/supabase-migration-refactor-plan.md)
-- [Multi-Database Support](../guides/database-troubleshooting-guide.md)
 
 ---
 

@@ -95,45 +95,6 @@ describe('Supabase configuration with placeholder values', () => {
 })
 
 /**
- * The same defect in the database config. Left unfixed, `cp .env.example .env` makes
- * Turso look configured, so provider auto-detection selects it and the placeholder URL
- * reaches `createClient` on the first database operation.
- */
-describe('Turso configuration with placeholder values', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  afterEach(() => {
-    vi.unstubAllEnvs()
-    vi.resetModules()
-  })
-
-  it('treats the .env.example placeholders as unconfigured', async () => {
-    const config = await loadConfigWithEnv({
-      TURSO_DATABASE_URL: 'YOUR_TURSO_DATABASE_URL',
-      TURSO_AUTH_TOKEN: 'YOUR_TURSO_AUTH_TOKEN',
-    })
-
-    expect(config.getTursoDatabaseUrl()).toBeNull()
-    expect(config.getTursoAuthToken()).toBeNull()
-    expect(config.isTursoConfigured()).toBe(false)
-  })
-
-  it('passes a real libsql URL and token through untouched', async () => {
-    // No HTTP(S) scheme check here - unlike Supabase, Turso URLs are libsql://.
-    const config = await loadConfigWithEnv({
-      TURSO_DATABASE_URL: 'libsql://my-db.turso.io',
-      TURSO_AUTH_TOKEN: 'real-auth-token',
-    })
-
-    expect(config.getTursoDatabaseUrl()).toBe('libsql://my-db.turso.io')
-    expect(config.getTursoAuthToken()).toBe('real-auth-token')
-    expect(config.isTursoConfigured()).toBe(true)
-  })
-})
-
-/**
  * The same defect in the logging config. `.env.example` pairs a placeholder token with a
  * real-looking `AXIOM_DATASET=astro-basics`, so the logger considered itself configured
  * and shipped every request's logs to an endpoint that answers `forbidden`. This one only
