@@ -102,8 +102,8 @@ npm run db:manage test
 
 # Apply migrations (SQL files in scripts/migrations/)
 # DATABASE_URL is your Supabase connection string (Project Settings → Database)
-psql "$DATABASE_URL" -f scripts/migrations/001_core_schema.sql
-psql "$DATABASE_URL" -f scripts/migrations/002_security_policies.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql
 ```
 
 You can also paste migration files into the Supabase SQL editor.
@@ -156,7 +156,7 @@ export const roleConfig: RoleConfig = {
 npm run setup:roles
 
 # Apply the migration
-psql "$DATABASE_URL" -f scripts/migrations/XXX_user_roles.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/XXX_user_roles.sql
 ```
 
 **4. Commit your changes:**

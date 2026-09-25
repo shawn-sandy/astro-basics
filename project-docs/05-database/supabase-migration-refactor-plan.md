@@ -498,8 +498,8 @@ COMMIT;
 
 ```bash
 # Apply migrations in order
-psql "$DATABASE_URL" -f scripts/migrations/001_core_schema.sql
-psql "$DATABASE_URL" -f scripts/migrations/002_security_policies.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql
 ```
 
 ### For Existing Projects (With Old Migrations Applied)
@@ -510,7 +510,7 @@ psql "$DATABASE_URL" -f scripts/migrations/002_security_policies.sql
 
 ```bash
 # 1. Backup current database state (if any important data)
-pg_dump > backup.sql
+pg_dump "$DATABASE_URL" > backup.sql
 
 # 2. Drop all tables
 DROP TABLE IF EXISTS user_preferences CASCADE;
@@ -520,8 +520,8 @@ DROP TYPE IF EXISTS user_role CASCADE;
 DROP FUNCTION IF EXISTS update_updated_at() CASCADE;
 
 # 3. Apply new consolidated migrations
-psql "$DATABASE_URL" -f scripts/migrations/001_core_schema.sql
-psql "$DATABASE_URL" -f scripts/migrations/002_security_policies.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql
 
 # 4. Verify schema
 npm run db:schema
@@ -648,7 +648,7 @@ COMMIT;
 1. **Backup verification**
 
    ```bash
-   pg_dump > backup.sql
+   pg_dump "$DATABASE_URL" > backup.sql
    # Verify backup file exists and is readable
    ```
 

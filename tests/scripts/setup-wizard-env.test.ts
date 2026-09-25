@@ -157,6 +157,27 @@ describe('setup wizard .env write path', () => {
     expect(untouchedLines(after, changed)).toEqual(untouchedLines(original, changed))
   })
 
+  it('accepts the sb_publishable_ key format newer Supabase projects issue', async () => {
+    const answers: [RegExp, string][] = wizardAnswers.map(([pattern, answer]) => [
+      pattern,
+      pattern.source.includes('anonymous key') ? 'sb_publishable_abc123' : answer,
+    ])
+
+    expect(await runWizard(dir, answers)).toBe(0)
+    expect(parseEnv(readFileSync(envPath, 'utf-8')).SUPABASE_ANON_KEY).toBe('sb_publishable_abc123')
+  })
+
+  it('still rejects an anon key in neither format', async () => {
+    const original = readFileSync(envPath, 'utf-8')
+    const answers: [RegExp, string][] = wizardAnswers.map(([pattern, answer]) => [
+      pattern,
+      pattern.source.includes('anonymous key') ? 'not-a-key' : answer,
+    ])
+
+    expect(await runWizard(dir, answers)).toBe(1)
+    expect(readFileSync(envPath, 'utf-8')).toBe(original)
+  })
+
   it('fails without writing .env when the service role key is left empty', async () => {
     // Every database query uses the service role key, so a setup without it cannot work.
     const original = readFileSync(envPath, 'utf-8')

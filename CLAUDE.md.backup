@@ -127,7 +127,7 @@ npm run db:schema     # Check Supabase configuration against the expected schema
 
 # Data and Migrations
 npm run db:seed:messages  # Seed Supabase messages table (needs SUPABASE_SERVICE_ROLE_KEY)
-psql "$DATABASE_URL" -f scripts/migrations/<file>.sql  # Apply a migration
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql  # Apply a migration
 ```
 
 ### GitHub Integration
@@ -209,7 +209,7 @@ vim config/roles.config.ts
 npm run setup:roles
 
 # Apply database migration
-psql "$DATABASE_URL" -f scripts/migrations/<file>.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
 
 # Commit generated files
 git add config/ src/types/ scripts/migrations/
@@ -290,8 +290,8 @@ scripts/migrations/
 ```bash
 # For fresh databases (recommended as of 2025-10-12)
 # Only 2 migrations required - email constraint included in 001
-psql "$DATABASE_URL" -f scripts/migrations/001_core_schema.sql
-psql "$DATABASE_URL" -f scripts/migrations/002_security_policies.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql
 
 # For existing databases with legacy migrations already applied
 # Migration 004 is safe to keep - idempotent design prevents conflicts
@@ -302,10 +302,10 @@ psql "$DATABASE_URL" -f scripts/migrations/002_security_policies.sql
 
 ```bash
 # Rollback security policies first
-psql "$DATABASE_URL" -f scripts/migrations/rollback_002_security_policies.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_002_security_policies.sql
 
 # Then rollback core schema (WARNING: Deletes all data!)
-psql "$DATABASE_URL" -f scripts/migrations/rollback_001_core_schema.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_001_core_schema.sql
 ```
 
 **Migration Best Practices:**

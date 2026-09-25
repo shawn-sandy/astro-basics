@@ -270,8 +270,8 @@ npm run db:status
 # Re-run setup wizard
 npm run db:wizard
 
-# Verify environment variables
-cat .env | grep SUPABASE
+# Verify environment variables (shows which are set, never their values)
+npm run db:status
 ```
 
 ## Need Help?

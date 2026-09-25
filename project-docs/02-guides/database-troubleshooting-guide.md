@@ -49,8 +49,8 @@ npm run db:status
 1. **Missing Environment Variables**
 
    ```bash
-   # Check your .env file has required variables
-   cat .env | grep SUPABASE
+   # Check which required variables are set (never prints their values)
+   npm run db:status
 
    # You need:
    SUPABASE_URL=https://...
@@ -130,7 +130,7 @@ npm run db:schema
 
    ```bash
    # Apply a migration from scripts/migrations/
-   psql "$DATABASE_URL" -f scripts/migrations/<file>.sql
+   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
 
    # Or paste the SQL into the Supabase SQL editor
    # See scripts/migrations/README.md for the order
@@ -372,11 +372,12 @@ console.log(await client.from('messages').select('count'));
 ### Environment Variable Debugging
 
 ```bash
-# Check all database-related environment variables
-env | grep SUPABASE | sort
+# Check which database-related variables are set (names only, no values)
+env | grep -o '^SUPABASE_[A-Z_]*=' | sort
 
-# Check for invisible characters or extra spaces
-od -c .env | grep SUPABASE
+# Check for Windows line endings or trailing spaces (prints line numbers, not values)
+grep -n $'\r' .env | cut -d: -f1
+grep -n '^SUPABASE_[A-Z_]*=.* $' .env | cut -d: -f1
 ```
 
 ---

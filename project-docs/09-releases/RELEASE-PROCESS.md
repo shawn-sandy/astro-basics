@@ -280,7 +280,7 @@ git commit -m "revert: rollback v0.X.0 release"
 git push origin primary
 
 # 4. Database rollback (if needed) - apply the migration's rollback SQL
-psql "$DATABASE_URL" -f scripts/migrations/rollback_00X_descriptive_name.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_00X_descriptive_name.sql
 
 # 5. Clear CDN cache
 npm run cdn:purge
@@ -470,8 +470,8 @@ npm run deploy:prod
 
 # Database
 npm run db:status
-psql "$DATABASE_URL" -f scripts/migrations/00X_descriptive_name.sql
-psql "$DATABASE_URL" -f scripts/migrations/rollback_00X_descriptive_name.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/00X_descriptive_name.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/rollback_00X_descriptive_name.sql
 ```
 
 ### Release Checklist Template

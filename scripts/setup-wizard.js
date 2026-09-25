@@ -112,6 +112,11 @@ function writeEnvFile(envVars) {
 }
 
 /**
+ * Anon key formats Supabase issues: legacy JWTs (`eyJ...`) and the newer publishable keys.
+ */
+const isAnonKeyFormat = key => key.startsWith('eyJ') || key.startsWith('sb_publishable_')
+
+/**
  * Test database connection
  */
 async function testConnection(config) {
@@ -128,7 +133,7 @@ async function testConnection(config) {
       return false
     }
 
-    if (!config.SUPABASE_ANON_KEY.startsWith('eyJ')) {
+    if (!isAnonKeyFormat(config.SUPABASE_ANON_KEY)) {
       log.error('Supabase anonymous key format appears invalid')
       return false
     }
@@ -210,8 +215,8 @@ async function runSetup() {
   }
 
   const supabaseAnonKey = await question('Enter your Supabase anonymous key: ')
-  if (!supabaseAnonKey.startsWith('eyJ')) {
-    log.error('Invalid anonymous key format')
+  if (!isAnonKeyFormat(supabaseAnonKey)) {
+    log.error('Invalid anonymous key format. Expected eyJ... or sb_publishable_...')
     return false
   }
 

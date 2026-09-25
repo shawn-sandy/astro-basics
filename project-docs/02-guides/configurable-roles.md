@@ -510,8 +510,8 @@ npm run setup:roles
    ```
    ✓ Types generated: src/types/generated-roles.ts
    ✓ Migration 003 created
-     Forward: scripts/migrations/003_user_roles.sql
-     Rollback: scripts/migrations/rollback_003_user_roles.sql
+     Forward: scripts/migrations/XXX_user_roles.sql
+     Rollback: scripts/migrations/rollback_XXX_user_roles.sql
    ```
 
 **Next steps displayed**:
@@ -519,7 +519,7 @@ npm run setup:roles
 ```
 1. Review the generated files
 2. Run type-check to verify: npm run type-check
-3. Apply migration: psql "$DATABASE_URL" -f scripts/migrations/003_user_roles.sql
+3. Apply migration: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/XXX_user_roles.sql
 4. Commit all files to Git
 ```
 
@@ -528,10 +528,10 @@ npm run setup:roles
 **Run the migration against your Supabase database**:
 
 ```bash
-psql "$DATABASE_URL" -f scripts/migrations/003_user_roles.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/XXX_user_roles.sql
 ```
 
-This needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env`. You can also paste the SQL file into the Supabase SQL editor instead. See `scripts/migrations/README.md`.
+Replace `XXX` with the migration number `setup:roles` printed. `DATABASE_URL` is your Supabase connection string (Project Settings > Database). You can also paste the SQL file into the Supabase SQL editor instead. See `scripts/migrations/README.md`.
 
 **What this does**:
 
@@ -1096,8 +1096,8 @@ npm run setup:roles:dry-run
 # Validate configuration only
 npm run validate:roles
 
-# Apply database migration (replace 003 with the generated migration number)
-psql "$DATABASE_URL" -f scripts/migrations/003_user_roles.sql
+# Apply database migration (replace XXX with the generated migration number)
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/XXX_user_roles.sql
 ```
 
 ## Best Practices

@@ -233,6 +233,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`setup:roles` generated a `CREATE TYPE` PostgreSQL rejects** (`scripts/lib/migration-generator.ts`):
+  each ENUM value's comma came after its `-- Level ...` comment, so the comment swallowed it
+  and the values had no separators. The comma now comes first
+- **`db:wizard` rejected Supabase publishable keys**: it only accepted legacy `eyJ...` anon keys;
+  it now also accepts `sb_publishable_...`, which newer Supabase projects issue
+- **Docs**: migration commands pass `-v ON_ERROR_STOP=1` so a failing statement stops `psql`
+  with an error, backups pass `"$DATABASE_URL"` to `pg_dump`, troubleshooting steps no longer
+  print Supabase keys to the terminal, and the `.env` permission fix is owner-only (`600`)
+
 - **`db:migrate` scripts never loaded `.env`** (`package.json`): `db:migrate`,
   `db:migrate:status`, `db:migrate:create` and `db:migrate:rollback` ran
   `node scripts/migrate.js`, and the `--env-file=.env` in that file's shebang does not apply under

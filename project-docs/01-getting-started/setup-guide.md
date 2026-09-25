@@ -148,7 +148,7 @@ The wizard will:
    Apply the SQL files in `scripts/migrations/` (users, roles, organizations) one at a time:
 
    ```bash
-   psql "$DATABASE_URL" -f scripts/migrations/<file>.sql
+   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
    ```
 
    Or paste each file into the Supabase SQL editor. See
@@ -241,7 +241,7 @@ To add custom roles:
 4. **Apply database migration**
 
    ```bash
-   psql "$DATABASE_URL" -f scripts/migrations/<generated-file>.sql
+   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<generated-file>.sql
    ```
 
 5. **Commit generated files**
@@ -418,7 +418,7 @@ The build output goes to the `dist/` directory (~10-15 seconds build time).
 npm run db:status
 
 # Run a migration from scripts/migrations/
-psql "$DATABASE_URL" -f scripts/migrations/<file>.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
 
 # Validate schema
 npm run db:schema
@@ -500,11 +500,8 @@ grep CLERK .env
 **Solution:**
 
 ```bash
-# Check database status
+# Check database status (shows which keys are set, never their values)
 npm run db:status
-
-# Verify credentials in .env
-grep SUPABASE .env
 
 # See detailed troubleshooting guide
 # project-docs/02-guides/database-troubleshooting-guide.md
@@ -518,7 +515,7 @@ grep SUPABASE .env
 
 ```bash
 # Run the migration that creates the table
-psql "$DATABASE_URL" -f scripts/migrations/<file>.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
 
 # Verify schema
 npm run db:schema

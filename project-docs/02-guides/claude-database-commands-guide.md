@@ -115,7 +115,7 @@ telling you to set them when they are not.
 ```
 
 Apply schema changes from `scripts/migrations/` with
-`psql "$DATABASE_URL" -f scripts/migrations/<file>.sql`, or paste the
+`psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql`, or paste the
 SQL into the Supabase SQL editor. See `scripts/migrations/README.md`.
 
 ---

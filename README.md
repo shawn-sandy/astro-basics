@@ -156,7 +156,7 @@ npm run db:manage         # Database management CLI (status, test, schema, table
 npm run db:schema         # Check Supabase configuration against the expected schema
 
 # Migrations (SQL files in scripts/migrations/, see scripts/migrations/README.md)
-psql "$DATABASE_URL" -f scripts/migrations/<file>.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
 
 # Data Management
 npm run db:seed:messages  # Seed sample messages (needs SUPABASE_SERVICE_ROLE_KEY)
@@ -173,7 +173,7 @@ npm run setup:roles:dry-run   # Preview changes without writing files
 npm run validate:roles        # Validate role configuration
 
 # After setup, apply the generated PostgreSQL migration
-psql "$DATABASE_URL" -f scripts/migrations/<file>.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
 ```
 
 **Role System Features:**

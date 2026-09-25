@@ -185,8 +185,8 @@ Migrations are SQL files in `scripts/migrations/`. Apply each one with `psql`, o
 ```bash
 # DATABASE_URL is your Supabase connection string (Project Settings → Database)
 # Apply database schema (users, roles, organizations)
-psql "$DATABASE_URL" -f scripts/migrations/001_core_schema.sql
-psql "$DATABASE_URL" -f scripts/migrations/002_security_policies.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/002_security_policies.sql
 
 # Set up Clerk-Supabase user sync
 npm run db:setup-users
@@ -263,7 +263,7 @@ This creates:
 **4. Apply Migration**
 
 ```bash
-psql "$DATABASE_URL" -f scripts/migrations/XXX_user_roles.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/XXX_user_roles.sql
 ```
 
 **5. Commit Changes**
@@ -400,7 +400,7 @@ npm run db:status       # Check configuration
 npm run db:schema       # Validate schema
 
 # Migrations (SQL files in scripts/migrations/)
-psql "$DATABASE_URL" -f scripts/migrations/<file>.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
 
 # Data management
 npm run db:seed:messages    # Seed the messages table
@@ -474,7 +474,7 @@ npm run db:manage test
 
 ```bash
 # Run migrations
-psql "$DATABASE_URL" -f scripts/migrations/001_core_schema.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
 
 # Verify schema
 npm run db:schema

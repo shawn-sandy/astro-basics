@@ -611,7 +611,7 @@ describe('Organization Sync', () => {
 
    ```bash
    # Apply migration to Supabase
-   psql "$DATABASE_URL" -f scripts/migrations/<file>.sql
+   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql
    # Or manually via Supabase Dashboard SQL Editor
    ```
 

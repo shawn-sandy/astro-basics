@@ -97,10 +97,14 @@ export function generatePostgresMigration(config: RoleConfig, migrationNumber: s
   const timestamp = new Date().toISOString()
   const roleNames = config.roles.map(r => r.name)
 
-  // Generate ENUM values with comments
+  // Generate ENUM values with comments. The comma goes before the `--` comment,
+  // otherwise the comment swallows it and PostgreSQL sees no separator.
   const enumValues = config.roles
-    .map(r => `  '${r.name}'  -- Level ${r.level}: ${r.label}`)
-    .join(',\n')
+    .map(
+      (r, i, all) =>
+        `  '${r.name}'${i < all.length - 1 ? ',' : ''}  -- Level ${r.level}: ${r.label}`
+    )
+    .join('\n')
 
   return `-- Migration ${migrationNumber}: User Roles ENUM
 -- Generated: ${timestamp}

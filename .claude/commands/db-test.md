@@ -1,11 +1,14 @@
-Test database connectivity, performance, and basic operations for the configured Supabase database.
+Check that the Supabase configuration looks valid. This does not connect to the database.
 
-This command performs comprehensive testing:
+This command runs `npm run db:manage test`, which checks:
 
-- Configuration validation (environment variables, format, keys)
-- Network connectivity and authentication testing
-- Basic CRUD operations (read test with messages table)
-- Response time measurement and performance evaluation
-- Supabase health indicators
+- `SUPABASE_URL` and `SUPABASE_ANON_KEY` are set
+- `SUPABASE_URL` starts with `https://` (a local `http://` Supabase URL is rejected)
 
-The test runs `npm run db:manage test` and uses the same Supabase configuration (`SUPABASE_URL`, `SUPABASE_ANON_KEY`) that `getDatabase()` from `#libs/database` requires.
+It does not send a query. Its "Connection successful" line only means the configuration passed
+these checks, not that credentials were accepted or that the `messages` table exists.
+
+- For a real query, start the dev server and open `/api/supabase-test`, which reads through
+  `getDatabase()` from `#libs/database`.
+- `getDatabase()` also needs `SUPABASE_SERVICE_ROLE_KEY`, which this check does not look at.
+  `npm run db:status` reports all three keys.

@@ -43,6 +43,27 @@ describe('Migration Generator', () => {
       expect(sql).toContain("'super_admin'")
     })
 
+    it('keeps the ENUM value separators outside the line comments', () => {
+      const config: RoleConfig = {
+        roles: [
+          { name: 'member', level: 1, label: 'Member' },
+          { name: 'admin', level: 2, label: 'Administrator' },
+          { name: 'super_admin', level: 3, label: 'Super Administrator' },
+        ],
+        coreRoles: ['member', 'admin', 'super_admin'],
+      }
+
+      const sql = generatePostgresMigration(config, '006')
+      // What PostgreSQL parses once the `-- ...` comments are dropped
+      const enumBody = sql
+        .slice(sql.indexOf('CREATE TYPE user_role AS ENUM ('), sql.indexOf(');'))
+        .split('\n')
+        .map(line => line.replace(/--.*$/, '').trim())
+        .join(' ')
+
+      expect(enumBody).toContain("'member', 'admin', 'super_admin'")
+    })
+
     it('should include role labels as SQL comments', () => {
       const config: RoleConfig = {
         roles: [

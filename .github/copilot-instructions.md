@@ -125,7 +125,7 @@ npm run db:status         # Show Supabase configuration + readiness
 npm run db:schema         # Check Supabase configuration against the expected schema
 ```
 
-**Database Configuration**: The abstraction layer (`src/libs/database.ts`) reads `SUPABASE_URL` and `SUPABASE_ANON_KEY`; `getDatabase()` throws a clear error when they are missing.
+**Database Configuration**: The abstraction layer (`src/libs/database.ts`) needs `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` (every query uses the service role client); `getDatabase()` throws a clear error when any is missing.
 
 ### Role Configuration (BEFORE database setup)
 
@@ -134,7 +134,7 @@ npm run setup:roles       # Generate types + migrations from config/roles.config
 npm run validate:roles    # Validate role configuration without applying changes
 ```
 
-**Critical**: Configure roles in `config/roles.config.ts` BEFORE applying migrations. `npm run setup:roles` generates a PostgreSQL migration in `scripts/migrations/`; apply it with `psql "$DATABASE_URL" -f scripts/migrations/<file>.sql` or the Supabase SQL editor.
+**Critical**: Configure roles in `config/roles.config.ts` BEFORE applying migrations. `npm run setup:roles` generates a PostgreSQL migration in `scripts/migrations/`; apply it with `psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/<file>.sql` or the Supabase SQL editor.
 
 ## Critical Patterns
 
@@ -149,7 +149,7 @@ const db = getDatabase() // Returns the Supabase implementation
 const messages = await db.getMessages({ limit: 10 })
 ```
 
-**DON'T**: Import the Supabase client directly unless implementing new database operations
+**DON'T**: Import the Supabase client directly. Only the Supabase client modules (`src/libs/supabase*.ts`) create clients; add new database operations to `src/libs/database.ts`
 
 ```typescript
 // ❌ Bypasses the database abstraction
@@ -276,7 +276,7 @@ CLERK_SECRET_KEY=sk_test_...             # Safe with dummy value for builds
 # Database (required for message/comment features)
 SUPABASE_URL=https://....supabase.co
 SUPABASE_ANON_KEY=eyJh...
-SUPABASE_SERVICE_ROLE_KEY=eyJh...        # Admin operations
+SUPABASE_SERVICE_ROLE_KEY=eyJh...        # Required: every database query uses it
 ```
 
 **Development Mode**: Dummy Clerk keys allow builds but auth operations fail gracefully. Core functionality (static pages, content) remains operational.

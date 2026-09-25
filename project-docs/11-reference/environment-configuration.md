@@ -216,13 +216,14 @@ Supabase is the only database. `isSupabaseConfigured()` returns `true` when `SUP
 **Example:**
 
 ```typescript
-// In database client initialization
-if (!envConfig.isSupabaseConfigured()) {
-  throw new Error('Supabase not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY')
-}
+// In service-role client initialization (src/libs/supabase-native.ts does this)
+const url = envConfig.getSupabaseUrl()
+const key = envConfig.getSupabaseServiceRoleKey()
 
-const url = envConfig.getSupabaseUrl()!
-const key = envConfig.getSupabaseServiceRoleKey()!
+// isSupabaseConfigured() does not check the service role key, so check it here
+if (!url || !key) {
+  throw new Error('Supabase not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY')
+}
 
 return createClient(url, key)
 ```

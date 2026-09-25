@@ -70,9 +70,9 @@ This error appears when the system can't find valid Supabase credentials.
   </TabItem>
   <TabItem label="Manual Fix">
     <Steps>
-      1. Check your `.env` file has the required variables:
+      1. Check which required variables are set (shows names and status, never the values):
          ```bash
-         grep SUPABASE .env
+         npm run db:status
          ```
 
       2. Add missing credentials to `.env` (unreplaced `YOUR_...` placeholders count as not set):
@@ -156,7 +156,7 @@ Operations succeed but data doesn't match expectations.
     <Steps>
       1. **Apply the SQL migrations** in `scripts/migrations/`:
          ```bash
-         psql "$DATABASE_URL" -f scripts/migrations/001_core_schema.sql
+         psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/001_core_schema.sql
          ```
          Or paste the SQL into the Supabase SQL editor. See `scripts/migrations/README.md` for the order.
 
@@ -306,11 +306,11 @@ Database configuration changes don't take effect without server restart.
     <Steps>
       1. **Compare Environment Files**:
          ```bash
-         # Local
-         grep SUPABASE .env | sort
+         # Local: key names only, so no secret reaches the terminal
+         grep -o '^SUPABASE_[A-Z_]*=' .env | sort
          
          # Production (if accessible)
-         env | grep SUPABASE | sort
+         env | grep -o '^SUPABASE_[A-Z_]*=' | sort
          ```
 
       2. **Test Production Database Access**:
@@ -394,7 +394,7 @@ Database configuration changes don't take effect without server restart.
 <Steps>
 1. **Fix File Permissions**:
    ```bash
-   chmod 644 .env
+   chmod 600 .env  # owner-only: it holds SUPABASE_SERVICE_ROLE_KEY
    chmod +x scripts/*.js
    ```
 
@@ -470,11 +470,12 @@ console.log('Result:', data, 'Error:', error);
 Check for hidden characters or configuration issues:
 
 ```bash
-# Check all database-related environment variables
-env | grep SUPABASE | sort
+# Check which database-related variables are set (names only, no values)
+env | grep -o '^SUPABASE_[A-Z_]*=' | sort
 
-# Check for invisible characters or extra spaces
-od -c .env | grep SUPABASE
+# Check for Windows line endings or trailing spaces (prints line numbers, not values)
+grep -n $'\r' .env | cut -d: -f1
+grep -n '^SUPABASE_[A-Z_]*=.* $' .env | cut -d: -f1
 
 # Check what the database scripts read from .env
 npm run db:status

@@ -222,12 +222,15 @@ async function main() {
   console.log()
   log('  1. Review the generated files', 'yellow')
   log('  2. Run type-check to verify: npm run type-check', 'yellow')
+  log('  3. Apply migration. Set DATABASE_URL to your Supabase connection string', 'yellow')
+  log('     (Project Settings > Database), then run:', 'yellow')
   log(
-    '  3. Apply migration: psql "$DATABASE_URL" -f scripts/migrations/' +
+    '     psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/migrations/' +
       migrationResult.migrationNumber +
-      '_user_roles.sql (or paste it into the Supabase SQL editor)',
+      '_user_roles.sql',
     'yellow'
   )
+  log('     or paste the file into the Supabase SQL editor', 'yellow')
   log('  4. Commit all files to Git', 'yellow')
   console.log()
   log('  git add config/ src/types/ scripts/migrations/', 'blue')
