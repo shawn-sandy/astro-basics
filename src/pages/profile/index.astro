@@ -1,13 +1,14 @@
 ---
-import Auth from '#/layouts/Auth.astro'
+import Dashboard from '#layouts/Dashboard.astro'
+import DashboardPage from '#components/dashboard/DashboardPage.astro'
 import { Show } from '@clerk/astro/components'
 import UserInfo from '#/components/astro/UserInfo.astro'
 import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
 ---
 
-<Auth pageTitle="My Profile - Astro Kit" pageDescription="User profile and account settings">
+<Dashboard pageTitle="My Profile - Astro Kit" pageDescription="User profile and account settings">
   <Show when="signed-in">
-    <div class="profile-page">
+    <DashboardPage eyebrow="Profile" title="My Profile">
       <div class="profile-content">
         <div class="profile-main">
           <UserInfo />
@@ -15,7 +16,7 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
 
         <div class="profile-sidebar">
           <div class="profile-actions">
-            <h3>Account Actions</h3>
+            <h2>Account Actions</h2>
             <div class="action-links">
               <a href="/dashboard" class="action-link">
                 <span class="action-icon">📊</span>
@@ -37,7 +38,7 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
           </div>
 
           <div class="profile-help">
-            <h3>Need Help?</h3>
+            <h2>Need Help?</h2>
             <p>
               If you need to update your profile information or have questions about your account,
               please contact support.
@@ -46,39 +47,33 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
           </div>
         </div>
       </div>
-    </div>
+    </DashboardPage>
   </Show>
 
   <Show when="signed-out">
     <SignedOutMessage />
   </Show>
-</Auth>
+</Dashboard>
 
 <style>
-  .profile-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-
   .profile-header {
     text-align: center;
     margin-bottom: 3rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--color-border, #e5e7eb);
+    border-bottom: 1px solid var(--rule);
   }
 
   .profile-header h1 {
     margin: 0 0 0.5rem 0;
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--color-text-primary, #1f2937);
+    color: var(--ink);
   }
 
   .profile-subtitle {
     margin: 0;
     font-size: 1.125rem;
-    color: var(--color-text-secondary, #6b7280);
+    color: var(--ink-soft);
   }
 
   .profile-content {
@@ -99,18 +94,18 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
 
   .profile-actions,
   .profile-help {
-    background: var(--color-surface, #ffffff);
+    background: var(--card-background);
     border-radius: 8px;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
-  .profile-actions h3,
-  .profile-help h3 {
+  .profile-actions h2,
+  .profile-help h2 {
     margin: 0 0 1rem 0;
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--color-text-primary, #1f2937);
+    color: var(--ink);
   }
 
   .action-links {
@@ -126,13 +121,13 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
     padding: 0.75rem;
     border-radius: 6px;
     text-decoration: none;
-    color: var(--color-text-primary, #1f2937);
+    color: var(--ink);
     transition: background-color 0.2s ease;
   }
 
   .action-link:hover {
-    background: var(--color-background, #f9fafb);
-    color: var(--color-primary, #3b82f6);
+    background: var(--paper);
+    color: var(--island);
   }
 
   .action-icon {
@@ -143,15 +138,15 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
   .profile-help p {
     margin: 0 0 1rem 0;
     font-size: 0.875rem;
-    color: var(--color-text-secondary, #6b7280);
+    color: var(--ink-soft);
     line-height: 1.5;
   }
 
   .help-link {
     display: inline-block;
     padding: 0.5rem 1rem;
-    background: var(--color-primary, #3b82f6);
-    color: white;
+    background: var(--island);
+    color: var(--paper);
     text-decoration: none;
     border-radius: 6px;
     font-size: 0.875rem;
@@ -160,7 +155,7 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
   }
 
   .help-link:hover {
-    background: var(--color-primary-dark, #2563eb);
+    background: color-mix(in oklch, var(--island) 88%, var(--ink));
   }
 
   /* Responsive design */
@@ -176,10 +171,6 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
   }
 
   @media (max-width: 768px) {
-    .profile-page {
-      padding: 1rem;
-    }
-
     .profile-header {
       margin-bottom: 2rem;
       padding-bottom: 1.5rem;

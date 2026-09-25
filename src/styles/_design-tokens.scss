@@ -385,6 +385,22 @@
 :root[data-theme="dark"] {
   @include direction-dark;
   @include legacy-palette-dark;
+
+  // @fpkit/acss ships its own `[data-theme=dark]` block that repoints its
+  // semantic tokens at the dark end of the neutral scale. `legacy-palette-dark`
+  // has already inverted that scale, so the two flips cancel and those tokens
+  // paint light on the dark page: the skip link measured #f4f4f5, and white
+  // button text on the vendor's dark-mode blue measured 3.52:1. Only the toggle
+  // stamps the attribute, so only this path needs it: restating the vendor's
+  // light mapping lets the inverted palette do the flip, exactly as it does
+  // under `prefers-color-scheme`. (0,2,0) beats the vendor's (0,1,0) whatever
+  // the load order.
+  --color-primary: var(--color-blue-600);
+  --color-primary-hover: var(--color-blue-700);
+  --color-text: var(--color-neutral-800);
+  --color-text-inverse: var(--color-neutral-0);
+  --color-skip-link-bg: var(--color-neutral-100);
+
   @include direction-dark-surfaces;
 }
 

@@ -1,0 +1,64 @@
+---
+/**
+ * Compact status label, such as a post's Published/Draft state or a verified
+ * email.
+ *
+ * The success tone is tinted into the card surface with ink text, so it reads
+ * in both themes; the neutral tone is a hairline outline. The dot repeats the
+ * tone for scanning, and the two tones differ in fill as well as hue.
+ *
+ * @component StatusPill
+ * @example
+ * ```astro
+ * <StatusPill tone="success">Published</StatusPill>
+ * ```
+ */
+export type Props = {
+  /** `success` for a completed state, `neutral` for anything pending. */
+  tone?: 'success' | 'neutral'
+}
+
+const { tone = 'neutral' } = Astro.props
+---
+
+<span class:list={['status-pill', `status-pill--${tone}`]}>
+  <span class="status-pill__dot" aria-hidden="true"></span>
+  <slot />
+</span>
+
+<style>
+  .status-pill {
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: var(--radius-full);
+    box-sizing: border-box;
+    display: inline-flex;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    gap: var(--space-1-5);
+    line-height: 1;
+    padding: var(--space-1-5) var(--space-2-5);
+    white-space: nowrap;
+  }
+
+  .status-pill__dot {
+    background: currentcolor;
+    border-radius: 50%;
+    height: 6px;
+    width: 6px;
+  }
+
+  .status-pill--success {
+    background: color-mix(in srgb, var(--color-success) 22%, var(--card-background));
+    color: var(--ink);
+  }
+
+  .status-pill--success .status-pill__dot {
+    background: var(--color-success);
+  }
+
+  .status-pill--neutral {
+    border-color: var(--rule);
+    color: var(--ink-soft);
+  }
+</style>

@@ -1,5 +1,6 @@
 ---
-import Auth from '#layouts/Auth.astro'
+import Dashboard from '#layouts/Dashboard.astro'
+import DashboardPage from '#components/dashboard/DashboardPage.astro'
 import MessageList from '#components/dashboard/MessageList.astro'
 import { getDatabase } from '#libs/database'
 import type { Message } from '#libs/database-types'
@@ -29,13 +30,8 @@ try {
 }
 ---
 
-<Auth
-  hideHeader={false}
-  showBreadcrumb={true}
-  pageTitle="Message Center"
-  pageDescription="Your message center overview"
->
-  <section>
+<Dashboard pageTitle="Message Center" pageDescription="Your message center overview">
+  <DashboardPage eyebrow="Messages" title="Message Center">
     {
       error ? (
         <div class="alert alert-error">
@@ -44,13 +40,11 @@ try {
       ) : messages.length === 0 ? (
         <p>No messages found.</p>
       ) : (
-        <>
-          <MessageList messages={messages} />
-        </>
+        <MessageList messages={messages} />
       )
     }
-  </section>
-</Auth>
+  </DashboardPage>
+</Dashboard>
 
 <style>
   .message-count {

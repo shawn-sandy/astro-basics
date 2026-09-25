@@ -65,19 +65,21 @@ SUPABASE_ANON_KEY=your_anon_key_here</code></pre>
   .test-section {
     margin: 2rem 0;
     padding: 1.5rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--rule);
     border-radius: 8px;
-    background: #f8fafc;
+    background: var(--card-background);
   }
 
   .test-section h2 {
     margin-top: 0;
-    color: #1a202c;
+    color: var(--ink);
   }
 
+  /* `--btn-bg`, not `background`: @fpkit/acss paints `button[type]` from that hook and outranks this scoped rule. */
   button {
-    background: #3182ce;
-    color: white;
+    --btn-bg: var(--island);
+
+    color: var(--paper);
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 6px;
@@ -86,11 +88,11 @@ SUPABASE_ANON_KEY=your_anon_key_here</code></pre>
     margin-bottom: 1rem;
 
     &:hover {
-      background: #2c5aa0;
+      --btn-bg: color-mix(in oklch, var(--island) 88%, var(--ink));
     }
 
     &:disabled {
-      background: #a0aec0;
+      --btn-bg: var(--ink-soft);
       cursor: not-allowed;
     }
   }
@@ -98,8 +100,8 @@ SUPABASE_ANON_KEY=your_anon_key_here</code></pre>
   .result-box {
     min-height: 100px;
     padding: 1rem;
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--paper);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     font-family: monospace;
     white-space: pre-wrap;
@@ -107,19 +109,19 @@ SUPABASE_ANON_KEY=your_anon_key_here</code></pre>
   }
 
   .success {
-    border-color: #48bb78;
-    background: #f0fff4;
-    color: #22543d;
+    border-color: color-mix(in srgb, var(--color-success) 45%, var(--paper));
+    background: color-mix(in srgb, var(--color-success) 22%, var(--paper));
+    color: var(--ink);
   }
 
   .error {
-    border-color: #f56565;
-    background: #fffafa;
-    color: #742a2a;
+    border-color: color-mix(in srgb, var(--color-error) 45%, var(--paper));
+    background: color-mix(in srgb, var(--color-error) 22%, var(--paper));
+    color: var(--ink);
   }
 
   code {
-    background: #edf2f7;
+    background: var(--paper);
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     font-family: monospace;
@@ -149,7 +151,7 @@ SUPABASE_ANON_KEY=your_anon_key_here</code></pre>
   }
 
   a {
-    color: #3182ce;
+    color: var(--island);
     text-decoration: none;
 
     &:hover {

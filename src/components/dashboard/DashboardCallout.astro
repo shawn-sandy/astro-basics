@@ -1,0 +1,129 @@
+---
+import DashboardIcon from '#components/dashboard/DashboardIcon.astro'
+import type { DashboardIconName } from '#components/dashboard/icons'
+
+/**
+ * A single-destination row: icon, title, one line of description and a link.
+ * Used for the role-gated panel links; wrap it in `RoleGuard` to gate it.
+ *
+ * Sits on the page surface with a hairline border rather than on the card
+ * surface, so it reads as a signpost and not as another data panel. Wraps to a
+ * full-width link when there is no room beside the text.
+ *
+ * @component DashboardCallout
+ * @example
+ * ```astro
+ * <RoleGuard allowedRoles={['admin', 'super_admin']}>
+ *   <DashboardCallout title="Admin panel" description="…" href="/admin" linkLabel="Open admin panel" />
+ * </RoleGuard>
+ * ```
+ */
+export type Props = {
+  /** Heading, also the region's accessible name. */
+  title: string
+  /** One line under the title. */
+  description: string
+  /** Destination of the link. */
+  href: string
+  /** Text of the link. */
+  linkLabel: string
+  /** Leading icon. */
+  icon?: DashboardIconName
+}
+
+const { title, description, href, linkLabel, icon = 'admin' } = Astro.props
+const headingId = `dashboard-callout-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+---
+
+<section class="dashboard-callout" aria-labelledby={headingId}>
+  <span class="dashboard-callout__icon" aria-hidden="true">
+    <DashboardIcon name={icon} size={20} />
+  </span>
+  <div class="dashboard-callout__text">
+    <h2 id={headingId} class="dashboard-callout__title">{title}</h2>
+    <p class="dashboard-callout__description">{description}</p>
+  </div>
+  <a class="dashboard-callout__link" href={href}>
+    {linkLabel}
+    <DashboardIcon name="chevron" size={16} />
+  </a>
+</section>
+
+<style>
+  .dashboard-callout {
+    --sect-x: 0;
+    --sect-y: 0;
+
+    align-items: center;
+    border: 1px solid var(--rule);
+    border-radius: var(--card-radius);
+    container-type: inline-size;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: inherit;
+    gap: var(--space-4) var(--space-5);
+    margin: 0;
+    padding: var(--space-5) var(--space-6);
+  }
+
+  .dashboard-callout__icon {
+    align-items: center;
+    background: var(--card-background);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    box-sizing: border-box;
+    color: var(--ink-soft);
+    display: flex;
+    flex-shrink: 0;
+    height: 44px;
+    justify-content: center;
+    width: 44px;
+  }
+
+  .dashboard-callout__text {
+    display: flex;
+    flex: 1 1 16rem;
+    flex-direction: column;
+    gap: var(--space-0-5);
+    min-width: 0;
+  }
+
+  .dashboard-callout__title {
+    font-size: var(--font-size-base);
+    margin: 0;
+  }
+
+  .dashboard-callout__description {
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: none;
+  }
+
+  /* `[href]` lifts the selector to (0,2,0), above the vendor's `a[href]`. */
+  .dashboard-callout__link[href] {
+    align-items: center;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    box-sizing: border-box;
+    color: var(--island);
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-weight: var(--font-weight-semibold);
+    gap: var(--space-2);
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 var(--space-4);
+    text-decoration: none;
+  }
+
+  .dashboard-callout__link[href]:hover {
+    border-color: var(--island);
+  }
+
+  /* Narrow: the link takes its own full-width line under the text. */
+  @container (max-width: 34rem) {
+    .dashboard-callout__link[href] {
+      flex-basis: 100%;
+    }
+  }
+</style>

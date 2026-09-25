@@ -69,16 +69,16 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
 
   .form-message.success {
     display: block;
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background-color: color-mix(in srgb, var(--color-success) 22%, var(--paper));
+    color: var(--ink);
+    border: 1px solid color-mix(in srgb, var(--color-success) 45%, var(--paper));
   }
 
   .form-message.error {
     display: block;
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background-color: color-mix(in srgb, var(--color-error) 22%, var(--paper));
+    color: var(--ink);
+    border: 1px solid color-mix(in srgb, var(--color-error) 45%, var(--paper));
   }
 
   button[disabled] {

@@ -25,6 +25,8 @@ type Props = {
   showBreadcrumb?: boolean
   breadcrumbRoutes?: routeItem[]
   hideHeader?: boolean
+  /** Omit the site navigation and footer, for layouts that bring their own (e.g. `Dashboard.astro`). */
+  hideSiteChrome?: boolean
 }
 
 const showBreadcrumb = Astro.props.showBreadcrumb === undefined ? true : Astro.props.showBreadcrumb
@@ -32,7 +34,7 @@ const showBreadcrumb = Astro.props.showBreadcrumb === undefined ? true : Astro.p
 // Get authentication state from locals
 const { userId } = Astro.locals
 
-const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
+const { pageTitle, pageDescription, pageImageUrl, hideHeader, hideSiteChrome } = Astro.props
 ---
 
 <html lang="en">
@@ -91,40 +93,44 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
     <!-- Offline Status Indicator -->
     <!-- <OfflineIndicator /> -->
 
-    <Navigation>
-      {
-        /*
-         * Authenticated-only links render into the default slot, which sits
-         * inside the navigation popover panel. The `userId` check is what
-         * keeps them out of an anonymous response — the popover is
-         * presentational and never an access-control mechanism (CWE-602).
-         */
-        userId && (
-          <ul data-nav-account>
+    {
+      !hideSiteChrome && (
+        <Navigation>
+          {
+            /*
+             * Authenticated-only links render into the default slot, which sits
+             * inside the navigation popover panel. The `userId` check is what
+             * keeps them out of an anonymous response — the popover is
+             * presentational and never an access-control mechanism (CWE-602).
+             */
+            userId && (
+              <ul data-nav-account>
+                <li>
+                  <a href="/dashboard">Dashboard</a>
+                </li>
+                <li>
+                  <a href="/profile">Profile</a>
+                </li>
+              </ul>
+            )
+          }
+
+          <ul slot="login">
             <li>
-              <a href="/dashboard">Dashboard</a>
+              <ThemeToggle />
             </li>
-            <li>
-              <a href="/profile">Profile</a>
+            <li class="clerk-user-button">
+              <Show when="signed-in">
+                <UserButton />
+              </Show>
+              <Show when="signed-out">
+                <SignInButton mode="modal" />
+              </Show>
             </li>
           </ul>
-        )
-      }
-
-      <ul slot="login">
-        <li>
-          <ThemeToggle />
-        </li>
-        <li class="clerk-user-button">
-          <Show when="signed-in">
-            <UserButton />
-          </Show>
-          <Show when="signed-out">
-            <SignInButton mode="modal" />
-          </Show>
-        </li>
-      </ul>
-    </Navigation>
+        </Navigation>
+      )
+    }
 
     {
       !hideHeader && (
@@ -143,7 +149,7 @@ const { pageTitle, pageDescription, pageImageUrl, hideHeader } = Astro.props
       )
     }
     <slot />
-    <Footer />
+    {!hideSiteChrome && <Footer />}
 
     <!-- PWA Install Prompt -->
     <!-- {isPWAEnabled && <PWAInstallPrompt />} -->

@@ -1,0 +1,91 @@
+---
+/**
+ * The body of a dashboard page: a header (a small label over the page title,
+ * with optional actions on the right) followed by the page's content, on the
+ * dashboard's content width and vertical rhythm.
+ *
+ * Pass header buttons or links in the `actions` slot; they are styled by the
+ * page that authors them.
+ *
+ * @component DashboardPage
+ * @example
+ * ```astro
+ * <DashboardPage eyebrow="Messages" title="Message center">
+ *   <a slot="actions" href="/dashboard/messages/new">New message</a>
+ *   <MessageList messages={messages} />
+ * </DashboardPage>
+ * ```
+ */
+export type Props = {
+  /** Small uppercase label above the title, usually the section's nav label. */
+  eyebrow: string
+  /** The page's `h1`. */
+  title: string
+}
+
+const { eyebrow, title } = Astro.props
+---
+
+<div class="dashboard-page">
+  <div class="dashboard-page__header">
+    <div class="dashboard-page__intro">
+      <p class="dashboard-page__eyebrow" data-ui="eyebrow">{eyebrow}</p>
+      <h1 class="dashboard-page__title">{title}</h1>
+    </div>
+    {
+      Astro.slots.has('actions') && (
+        <div class="dashboard-page__actions">
+          <slot name="actions" />
+        </div>
+      )
+    }
+  </div>
+  <slot />
+</div>
+
+<style>
+  .dashboard-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    margin-inline: auto;
+    max-width: 76rem;
+  }
+
+  .dashboard-page__header {
+    align-items: flex-end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-6);
+    justify-content: space-between;
+  }
+
+  .dashboard-page__intro {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .dashboard-page__eyebrow {
+    margin: 0;
+  }
+
+  .dashboard-page__title {
+    font-size: clamp(1.625rem, 1.25rem + 1.2vw, 2rem);
+    line-height: 1.15;
+    margin: 0;
+  }
+
+  .dashboard-page__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  /* Phones: the actions take the full row under the title. */
+  @media (max-width: 40rem) {
+    .dashboard-page__actions {
+      width: 100%;
+    }
+  }
+</style>

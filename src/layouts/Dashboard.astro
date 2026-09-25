@@ -1,0 +1,85 @@
+---
+import DashboardSidebar from '#components/dashboard/DashboardSidebar.astro'
+import Base from '#layouts/Base.astro'
+import { getDashboardUser } from '#utils/dashboard-user'
+
+/**
+ * App-shell layout for dashboard pages: the dashboard sidebar in place of the
+ * site's top navigation and footer, and the page content in `main#main`, which
+ * the base layout's skip link targets.
+ *
+ * The sidebar's name and role come from `getDashboardUser`, which caches per
+ * request, so a page that also reads the user makes no second Clerk call.
+ * Route protection stays in `src/middleware.ts`; this layout gates nothing.
+ *
+ * @example
+ * ```astro
+ * <Dashboard pageTitle="Messages - Astro Kit">
+ *   <DashboardPage eyebrow="Messages" title="Message center">…</DashboardPage>
+ * </Dashboard>
+ * ```
+ */
+export type Props = {
+  pageTitle?: string
+  pageDescription?: string
+}
+
+const { pageTitle, pageDescription } = Astro.props
+const user = await getDashboardUser(Astro)
+---
+
+<Base
+  pageTitle={pageTitle}
+  pageDescription={pageDescription}
+  showBreadcrumb={false}
+  hideHeader
+  hideSiteChrome
+>
+  <div class="dashboard-shell">
+    <DashboardSidebar userName={user?.name} userRole={user?.role} />
+    <main id="main" tabindex="-1" class="dashboard-shell__main">
+      <slot />
+    </main>
+  </div>
+</Base>
+
+<style>
+  /*
+   * `body` is a flex column. An explicit `min-height` replaces a flex item's
+   * content-based minimum, so without `flex-shrink: 0` a short viewport squeezed
+   * the shell below its content and the sticky sidebar scrolled away with it.
+   */
+  .dashboard-shell {
+    background: var(--paper);
+    display: grid;
+    flex: 1 0 auto;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 100dvh;
+  }
+
+  /*
+   * Restates what the vendor's `main` rules and `_base.scss` set for the
+   * site's content column: a centred max width, block padding and a larger
+   * font size. The dashboard's own column fills its grid track instead.
+   */
+  .dashboard-shell__main {
+    box-sizing: border-box;
+    font-size: var(--font-size-sm);
+    margin: 0;
+    max-width: none;
+    min-width: 0;
+    padding: var(--space-6) var(--space-5) var(--space-12);
+    width: auto;
+  }
+
+  @media (min-width: 64rem) {
+    .dashboard-shell {
+      align-items: start;
+      grid-template-columns: 15.5rem minmax(0, 1fr);
+    }
+
+    .dashboard-shell__main {
+      padding: var(--space-10) var(--space-12) var(--space-16);
+    }
+  }
+</style>
