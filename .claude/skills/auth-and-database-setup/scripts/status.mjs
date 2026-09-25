@@ -99,7 +99,13 @@ async function supabaseSchemaLine(env, fetchImpl) {
     if (res.ok) return 'Supabase users table: found'
     // PostgREST answers "permission denied" (42501) with 401 for anonymous requests, so the
     // status alone cannot tell a bad key from missing table grants. Only the code is read.
-    const code = (await res.json().catch(() => null))?.code
+    // Only malformed JSON is ignored; a timeout while the body streams must reach the
+    // outer handler, or a stalled 401 would be reported as a rejected key.
+    const body = await res.json().catch(error => {
+      if (error?.name === 'SyntaxError') return null
+      throw error
+    })
+    const code = body?.code
     if (code === '42501')
       return 'Supabase users table: exists, but the anon key has no access to it (42501)'
     if (res.status === 404) return 'Supabase users table: MISSING (404) - run the schema SQL'
@@ -107,7 +113,9 @@ async function supabaseSchemaLine(env, fetchImpl) {
       return 'Supabase users table: key rejected (HTTP 401) - recopy SUPABASE_ANON_KEY'
     return `Supabase users table: unexpected HTTP ${res.status}`
   } catch (error) {
-    if (error?.name === 'TimeoutError')
+    // The timeout signal is the only abort source; some undici versions surface an abort
+    // during body streaming as AbortError rather than TimeoutError.
+    if (error?.name === 'TimeoutError' || error?.name === 'AbortError')
       return `Supabase users table: timed out after ${PROBE_TIMEOUT_MS / 1000}s`
     // Only the error code: the message can contain the project hostname.
     return `Supabase users table: could not reach SUPABASE_URL (${error?.cause?.code ?? 'network error'})`

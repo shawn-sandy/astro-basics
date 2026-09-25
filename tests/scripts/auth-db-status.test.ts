@@ -1,10 +1,13 @@
+// @vitest-environment node
 /**
  * Tests for the auth-and-database-setup skill's status script.
  *
  * The script must agree with the app about what counts as "configured", and must
- * never echo a secret, since its output lands in an AI chat transcript.
+ * never echo a secret, since its output lands in an AI chat transcript. It runs under
+ * Node, so the tests use Node's fetch primitives rather than happy-dom's.
  */
 import { readFileSync } from 'node:fs'
+import { ReadableStream } from 'node:stream/web'
 import { parseEnv } from 'node:util'
 import { describe, it, expect, vi } from 'vitest'
 import { report } from '../../.claude/skills/auth-and-database-setup/scripts/status.mjs'
@@ -171,6 +174,30 @@ describe('auth-and-database-setup status report', () => {
     const [, init] = hang.mock.calls[0] as unknown as [unknown, { signal?: unknown }]
     expect(init.signal).toBeInstanceOf(AbortSignal)
     expect(lines.some(l => l.includes('users table') && l.includes('timed out'))).toBe(true)
+  })
+
+  it('reports a timeout that fires while the error body is still arriving', async () => {
+    const stalled = async () =>
+      new Response(
+        new ReadableStream({
+          pull() {
+            throw Object.assign(new Error('The operation was aborted due to timeout'), {
+              name: 'TimeoutError',
+            })
+          },
+        }),
+        { status: 401 }
+      )
+    const line = (await report(supabase, stalled)).find(l => l.includes('users table'))
+
+    expect(line).toContain('timed out')
+    expect(line).not.toContain('key rejected')
+  })
+
+  it('still reads a 401 with a non-JSON body as a rejected key', async () => {
+    const lines = await report(supabase, async () => new Response('not json', { status: 401 }))
+
+    expect(lines.some(l => l.includes('users table') && l.includes('key rejected'))).toBe(true)
   })
 
   it('does not blame the key when the anon role lacks table access (42501)', async () => {
