@@ -122,8 +122,14 @@ Known constraints:
 - **Auth fails open without Clerk keys.** When the keys are absent the auth middleware is left out
   of the chain entirely, so `/dashboard` and `/organization` are not protected. The proposal
   (decision 7) requires auth to fail closed before a non-developer deploys; it has not been fixed.
-- `POST /api/test/sync-user` performs a Supabase service-role write with no authentication check.
-  The same decision requires it deleted or limited to development; it is still present.
+  The route matcher also still lists `/forum`, which no longer exists.
+- **`POST /api/test/sync-user` is unauthenticated, with or without Clerk keys.** It sits outside
+  the protected routes, and neither the CSRF middleware (which only issues tokens) nor rate
+  limiting (contact form only) guards it. Given any Clerk user ID, it upserts that user's row with
+  the Supabase service-role client, bypassing RLS, and returns the user's email, username, name,
+  image and last sign-in time; failures return raw Supabase and Clerk errors. The same decision
+  requires it deleted or limited to development; it is still present.
+- Both are tracked in issue #381.
 
 ## Brand Commitments
 
