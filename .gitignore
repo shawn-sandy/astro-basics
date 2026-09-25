@@ -37,6 +37,8 @@ backup-docs/
 # Only .impeccable/live/config.json is durable project config and stays tracked.
 .impeccable/live/*
 !.impeccable/live/config.json
+# Design-hook cache: per-session edit counts keyed by absolute file paths.
+.impeccable/hook.cache.json
 
 # Storybook
 storybook-static/
