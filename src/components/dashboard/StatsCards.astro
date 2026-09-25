@@ -1,4 +1,21 @@
 ---
+import DashboardIcon from '#components/dashboard/DashboardIcon.astro'
+import { isDashboardIcon } from '#components/dashboard/icons'
+
+/**
+ * Headline numbers as one strip, divided by hairlines rather than boxed
+ * separately.
+ *
+ * Marked up as a description list: each label is a `dt` and its value the
+ * `dd`, so a screen reader announces the pair together. `icon` takes a
+ * dashboard icon name, or any other string (such as an emoji) shown as text.
+ *
+ * @component StatsCards
+ * @example
+ * ```astro
+ * <StatsCards stats={[{ title: 'Total posts', value: '24' }]} />
+ * ```
+ */
 export type Props = {
   readonly stats: readonly {
     readonly title: string
@@ -10,59 +27,72 @@ export type Props = {
 const { stats } = Astro.props
 ---
 
-<div class="stats-cards">
+<dl class="stats-cards">
   {
     stats.map(stat => (
       <div class="stat-card">
-        {stat.icon && <span class="stat-icon">{stat.icon}</span>}
-        <h3>{stat.title}</h3>
-        <p class="stat-number">{stat.value}</p>
+        <dt class="stat-card__label" data-ui="eyebrow">
+          {stat.icon && (
+            <span class="stat-icon" aria-hidden="true">
+              {isDashboardIcon(stat.icon) ? (
+                <DashboardIcon name={stat.icon} size={16} />
+              ) : (
+                stat.icon
+              )}
+            </span>
+          )}
+          {stat.title}
+        </dt>
+        <dd class="stat-number">{stat.value}</dd>
       </div>
     ))
   }
-</div>
+</dl>
 
 <style>
+  /*
+   * Hairlines come from each cell's right and bottom box-shadow over a
+   * transparent cell, clipped by the strip's `overflow: hidden`. That draws a
+   * single 1px rule between cells however the grid wraps, and leaves no filled
+   * block behind a short last row, which a `gap` over a ruled background would.
+   */
   .stats-cards {
+    background: var(--card-background);
+    border: 1px solid var(--rule);
+    border-radius: var(--card-radius);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
   }
 
   .stat-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    box-shadow:
+      1px 0 0 var(--rule),
+      0 1px 0 var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2-5);
+    padding: var(--space-5) var(--space-6);
   }
 
-  .stat-icon {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    display: block;
-  }
-
-  .stat-card h3 {
-    margin: 0 0 0.5rem 0;
-    color: #64748b;
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
+  .stat-card__label {
+    align-items: center;
+    display: flex;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
   }
 
   .stat-number {
+    font-family: var(--font-family-display);
+    font-size: clamp(1.75rem, 1.4rem + 1vw, 2.25rem);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.02em;
+    line-height: 1;
     margin: 0;
-    font-size: 2rem;
-    font-weight: bold;
-    color: #1a202c;
-  }
-
-  @media (max-width: 768px) {
-    .stats-cards {
-      grid-template-columns: repeat(2, 1fr);
-    }
+    padding: 0;
   }
 </style>

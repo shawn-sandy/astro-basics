@@ -1,7 +1,7 @@
 ---
 import type { User } from '@clerk/backend'
 import { formatMetadataForDisplay } from '#utils/sanitize'
-import { fetchUserWithRole } from '#utils/user-sync'
+import { fetchCurrentUserWithRole } from '#utils/dashboard-user'
 import RoleBadge from '#components/react/RoleBadge.tsx'
 import type { UserRole } from '#utils/role-types'
 
@@ -14,9 +14,10 @@ let error: string | null = null
 let userRole: UserRole | null = null
 let roleError: string | null = null
 
-// Fetch user data and role using reusable utility
-if (userId) {
-  const result = await fetchUserWithRole(userId, Astro)
+// Shares the request's single lookup with the dashboard layout, so a page that
+// renders both makes one Clerk call rather than two.
+const result = await fetchCurrentUserWithRole(Astro)
+if (result) {
   user = result.user
   userRole = result.userRole
   error = result.error
@@ -195,7 +196,7 @@ const formatDateTime = (timestamp: number | undefined) => {
 
 <style>
   .user-info {
-    background: var(--color-surface, #ffffff);
+    background: var(--card-background);
     border-radius: 8px;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -207,7 +208,7 @@ const formatDateTime = (timestamp: number | undefined) => {
     gap: 1rem;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--color-border, #e5e7eb);
+    border-bottom: 1px solid var(--rule);
   }
 
   .user-info__avatar {
@@ -226,12 +227,12 @@ const formatDateTime = (timestamp: number | undefined) => {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--color-text-primary, #1f2937);
+    color: var(--ink);
   }
 
   .user-info__username {
     margin: 0.25rem 0 0;
-    color: var(--color-text-secondary, #6b7280);
+    color: var(--ink-soft);
     font-size: 0.875rem;
   }
 
@@ -250,12 +251,12 @@ const formatDateTime = (timestamp: number | undefined) => {
 
   .user-info__label {
     font-weight: 500;
-    color: var(--color-text-secondary, #6b7280);
+    color: var(--ink-soft);
     min-width: 100px;
   }
 
   .user-info__value {
-    color: var(--color-text-primary, #1f2937);
+    color: var(--ink);
     word-break: break-all;
     display: flex;
     align-items: center;
@@ -265,7 +266,7 @@ const formatDateTime = (timestamp: number | undefined) => {
   .user-info__value--mono {
     font-family: 'Courier New', monospace;
     font-size: 0.75rem;
-    background: var(--color-background, #f9fafb);
+    background: var(--paper);
     padding: 0.125rem 0.25rem;
     border-radius: 4px;
   }
@@ -273,7 +274,7 @@ const formatDateTime = (timestamp: number | undefined) => {
   .user-info__value--code {
     font-family: 'Courier New', monospace;
     font-size: 0.75rem;
-    background: var(--color-background, #f9fafb);
+    background: var(--paper);
     padding: 0.5rem;
     border-radius: 4px;
     margin: 0;
@@ -289,35 +290,33 @@ const formatDateTime = (timestamp: number | undefined) => {
     display: inline-block;
   }
 
-  .user-info__badge--verified {
-    background: #dbeafe;
-    color: #1e40af;
+  /* Tints mixed into the card surface with ink text, so badges stay legible in both themes. */
+  .user-info__badge--verified,
+  .user-info__badge--default {
+    background: color-mix(in srgb, var(--color-info) 22%, var(--card-background));
+    color: var(--ink);
   }
 
   .user-info__badge--success {
-    background: #d1fae5;
-    color: #065f46;
-  }
-
-  .user-info__badge--default {
-    background: #dbeafe;
-    color: #1e40af;
+    background: color-mix(in srgb, var(--color-success) 22%, var(--card-background));
+    color: var(--ink);
   }
 
   .user-info__signed-out,
   .user-info__error,
   .user-info__loading {
     text-align: center;
-    color: var(--color-text-secondary, #6b7280);
+    color: var(--ink-soft);
     padding: 2rem;
   }
 
+  /* Mixed toward ink: darkens the red on light paper, lightens it on dark. */
   .user-info__error {
-    color: #dc2626;
+    color: color-mix(in oklch, var(--color-error) 70%, var(--ink));
   }
 
   .user-info__value--error {
-    color: #dc2626;
+    color: color-mix(in oklch, var(--color-error) 70%, var(--ink));
     font-style: italic;
   }
 

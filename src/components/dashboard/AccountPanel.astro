@@ -1,0 +1,222 @@
+---
+import DashboardIcon from '#components/dashboard/DashboardIcon.astro'
+import StatusPill from '#components/dashboard/StatusPill.astro'
+
+/**
+ * Summary of the signed-in account: avatar, name, email, role, email
+ * verification and last sign-in, with a link to the full profile.
+ *
+ * Presentational only. The page fetches the user once and passes plain values
+ * in, so this component makes no Clerk calls and renders the same way in tests.
+ * Every field is optional: a missing value drops its row, and with no name the
+ * panel reads "Your account".
+ *
+ * @component AccountPanel
+ * @example
+ * ```astro
+ * <AccountPanel name="Ada Lovelace" email="ada@example.com" emailVerified role="member" />
+ * ```
+ */
+export type Props = {
+  /** Display name. */
+  name?: string | undefined
+  /** Primary email address. */
+  email?: string | undefined
+  /** Whether the primary email is verified. Only shown alongside `email`. */
+  emailVerified?: boolean | undefined
+  /** Role key, e.g. `member` or `super_admin`; shown in words. */
+  role?: string | undefined
+  /** Last sign-in, already formatted for display. */
+  lastSignIn?: string | undefined
+  /** Avatar URL. Without one a placeholder silhouette is drawn. */
+  imageUrl?: string | undefined
+  /** Destination of the "Edit profile" link. */
+  profileHref?: string
+}
+
+const {
+  name,
+  email,
+  emailVerified = false,
+  role,
+  lastSignIn,
+  imageUrl,
+  profileHref = '/profile',
+} = Astro.props
+
+const roleLabel = role?.replace(/_/g, ' ')
+// Unique per render, so two panels on one page never share an id.
+const headingId = `account-panel-${crypto.randomUUID()}`
+const hasFacts = Boolean(roleLabel || email || lastSignIn)
+---
+
+<section class="account-panel" aria-labelledby={headingId}>
+  <h2 id={headingId} class="account-panel__heading" data-ui="eyebrow">Account</h2>
+
+  <div class="account-panel__identity">
+    {
+      imageUrl ? (
+        <img class="account-panel__avatar" src={imageUrl} alt="" width="56" height="56" />
+      ) : (
+        <span class="account-panel__avatar account-panel__avatar--empty" aria-hidden="true">
+          <DashboardIcon name="profile" size={26} />
+        </span>
+      )
+    }
+    <div class="account-panel__who">
+      <p class="account-panel__name">{name ?? 'Your account'}</p>
+      {email && <p class="account-panel__email">{email}</p>}
+    </div>
+  </div>
+
+  {
+    hasFacts && (
+      <dl class="account-panel__facts">
+        {roleLabel && (
+          <div class="account-panel__fact">
+            <dt>Role</dt>
+            <dd class="account-panel__role">{roleLabel}</dd>
+          </div>
+        )}
+        {email && (
+          <div class="account-panel__fact">
+            <dt>Email</dt>
+            <dd>
+              <StatusPill tone={emailVerified ? 'success' : 'neutral'}>
+                {emailVerified ? 'Verified' : 'Unverified'}
+              </StatusPill>
+            </dd>
+          </div>
+        )}
+        {lastSignIn && (
+          <div class="account-panel__fact">
+            <dt>Last sign-in</dt>
+            <dd>{lastSignIn}</dd>
+          </div>
+        )}
+      </dl>
+    )
+  }
+
+  <a class="account-panel__link" href={profileHref}>Edit profile</a>
+</section>
+
+<style>
+  .account-panel {
+    background: var(--card-background);
+    border: 1px solid var(--rule);
+    border-radius: var(--card-radius);
+    display: flex;
+    flex-direction: column;
+    font-size: inherit;
+    gap: var(--space-5);
+    margin: 0;
+    padding: var(--space-6);
+  }
+
+  .account-panel__heading {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-normal);
+    margin: 0;
+  }
+
+  .account-panel__identity {
+    align-items: center;
+    display: flex;
+    gap: var(--space-3-5);
+  }
+
+  .account-panel__avatar {
+    border-radius: 50%;
+    flex-shrink: 0;
+    height: 3.5rem;
+    object-fit: cover;
+    width: 3.5rem;
+  }
+
+  .account-panel__avatar--empty {
+    align-items: center;
+    background: var(--paper);
+    border: 1px dashed var(--ink-soft);
+    box-sizing: border-box;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: center;
+  }
+
+  .account-panel__who {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0-5);
+    min-width: 0;
+  }
+
+  .account-panel__name,
+  .account-panel__email {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .account-panel__name {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.015em;
+  }
+
+  .account-panel__email {
+    color: var(--ink-soft);
+    font-size: var(--font-size-sm);
+  }
+
+  .account-panel__facts {
+    border-top: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: var(--space-4) 0 0;
+  }
+
+  .account-panel__fact {
+    align-items: center;
+    display: flex;
+    gap: var(--space-3);
+    justify-content: space-between;
+  }
+
+  .account-panel__fact dt,
+  .account-panel__fact dd {
+    margin: 0;
+    padding: 0;
+  }
+
+  .account-panel__fact dt {
+    color: var(--ink-soft);
+    font-weight: var(--font-weight-normal);
+  }
+
+  .account-panel__role {
+    font-weight: var(--font-weight-semibold);
+    text-transform: capitalize;
+  }
+
+  /* `[href]` lifts the selector to (0,2,0), above the vendor's `a[href]`. */
+  .account-panel__link[href] {
+    align-items: center;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    color: var(--island);
+    display: flex;
+    font-size: inherit;
+    font-weight: var(--font-weight-semibold);
+    justify-content: center;
+    min-height: 44px;
+    text-decoration: none;
+  }
+
+  .account-panel__link[href]:hover {
+    border-color: var(--island);
+  }
+</style>

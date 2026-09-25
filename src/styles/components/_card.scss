@@ -1,6 +1,6 @@
 .card {
   &:has(a:first-of-type:empty) {
-    border: lightgray solid thin;
+    border: var(--rule) solid thin;
     display: grid;
     grid-template-rows: "pile";
     height: fit-content;

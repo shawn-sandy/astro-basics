@@ -1,0 +1,103 @@
+---
+import DashboardIcon from '#components/dashboard/DashboardIcon.astro'
+
+/**
+ * A titled dashboard region: a heading row with an optional trailing link,
+ * then the slotted content on the card surface with a hairline border.
+ *
+ * The panel has no padding of its own; the lists placed in it pad their rows,
+ * so row dividers can run edge to edge.
+ *
+ * @component DashboardSection
+ * @example
+ * ```astro
+ * <DashboardSection title="Recent posts" actionHref="/admin/posts" actionLabel="Manage posts">
+ *   <PostPreview posts={posts} />
+ * </DashboardSection>
+ * ```
+ */
+export type Props = {
+  /** Visible heading, also the section's accessible name. */
+  title: string
+  /** Destination of the link in the heading row. Omit for no link. */
+  actionHref?: string
+  /** Text of the heading-row link. */
+  actionLabel?: string
+}
+
+const { title, actionHref, actionLabel } = Astro.props
+
+// The heading names the region. A random suffix keeps the id unique when two
+// sections share a title or a title has no ASCII letters to slug.
+const headingId = `dashboard-section-${crypto.randomUUID()}`
+---
+
+<section class="dashboard-section" aria-labelledby={headingId}>
+  <div class="dashboard-section__head">
+    <h2 id={headingId} class="dashboard-section__title">{title}</h2>
+    {
+      actionHref && actionLabel && (
+        <a class="dashboard-section__action" href={actionHref}>
+          {actionLabel}
+          <DashboardIcon name="chevron" size={16} />
+        </a>
+      )
+    }
+  </div>
+  <div class="dashboard-section__panel">
+    <slot />
+  </div>
+</section>
+
+<style>
+  /*
+   * @fpkit/acss gives `section:not(nav)` (0,0,2) an auto inline margin, which
+   * would shrink the section to its content inside the dashboard's flex
+   * columns, and block padding; this class outranks it and zeroes both.
+   */
+  .dashboard-section {
+    display: flex;
+    flex-direction: column;
+    font-size: inherit;
+    gap: var(--space-2);
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+  }
+
+  .dashboard-section__head {
+    align-items: center;
+    display: flex;
+    gap: var(--space-4);
+    justify-content: space-between;
+    min-height: 44px;
+  }
+
+  .dashboard-section__title {
+    font-size: var(--font-size-lg);
+    margin: 0;
+  }
+
+  /* `[href]` lifts the selector to (0,2,0), above the vendor's `a[href]`. */
+  .dashboard-section__action[href] {
+    align-items: center;
+    color: var(--island);
+    display: inline-flex;
+    font-size: inherit;
+    font-weight: var(--font-weight-semibold);
+    gap: var(--space-1);
+    min-height: 44px;
+    text-decoration: none;
+  }
+
+  .dashboard-section__action[href]:hover {
+    text-decoration: underline;
+  }
+
+  .dashboard-section__panel {
+    background: var(--card-background);
+    border: 1px solid var(--rule);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+  }
+</style>

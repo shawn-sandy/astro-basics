@@ -385,6 +385,39 @@
 :root[data-theme="dark"] {
   @include direction-dark;
   @include legacy-palette-dark;
+
+  // @fpkit/acss ships its own `[data-theme=dark]` block that repoints its
+  // semantic tokens at the dark end of the neutral scale. `legacy-palette-dark`
+  // has already inverted that scale, so the two flips cancel and those tokens
+  // paint light on the dark page: the skip link measured #f4f4f5, and white
+  // button text on the vendor's dark-mode blue measured 3.52:1. Only the toggle
+  // stamps the attribute, so only this path needs it: restating the vendor's
+  // light mapping lets the inverted palette do the flip, exactly as it does
+  // under `prefers-color-scheme`. (0,2,0) beats the vendor's (0,1,0) whatever
+  // the load order. The list is every token the vendor block flips;
+  // `tests/integration/design-tokens.test.ts` fails if a vendor upgrade adds one.
+  --color-primary: var(--color-blue-600);
+  --color-primary-hover: var(--color-blue-700);
+  --color-primary-active: var(--color-blue-800);
+  --color-primary-light: var(--color-blue-100);
+  --color-secondary: var(--color-neutral-700);
+  --color-secondary-hover: var(--color-neutral-800);
+  --color-secondary-light: var(--color-neutral-100);
+  --color-surface: var(--color-neutral-0);
+  --color-surface-secondary: var(--color-neutral-50);
+  --color-surface-tertiary: var(--color-neutral-100);
+  --color-surface-elevated: var(--color-neutral-0);
+  --color-border: var(--color-neutral-300);
+  --color-border-subtle: var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-400);
+  --color-border-interactive: var(--color-neutral-400);
+  --color-text: var(--color-neutral-800);
+  --color-text-secondary: var(--color-neutral-700);
+  --color-text-tertiary: var(--color-neutral-600);
+  --color-text-inverse: var(--color-neutral-0);
+  --color-disabled-bg: var(--color-neutral-100);
+  --color-skip-link-bg: var(--color-neutral-100);
+
   @include direction-dark-surfaces;
 }
 

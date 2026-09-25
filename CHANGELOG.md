@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Dashboard app shell** (`src/layouts/Dashboard.astro`, `src/components/dashboard/`): `/dashboard`,
+  `/dashboard/users` and `/profile` now share a dashboard layout with its own sidebar in place of
+  the site navigation and footer
+  - `DashboardSidebar` is a sticky column at 64rem and wider; below that it collapses to a top bar
+    whose menu button opens the same links in a native `popover`, so there is one copy of the links.
+    The account button sits in the bar on narrow screens rather than in the popover, because Clerk
+    renders its account menu outside the sidebar and a click there light-dismissed the popover. A
+    small script closes a menu left open when the viewport widens past the breakpoint. The whole
+    sidebar is one `nav` landmark, and the current page is marked with `aria-current`
+  - `DashboardPage` gives every dashboard page the same header (eyebrow, title, optional actions)
+    and content width
+  - New building blocks: `AccountPanel`, `DashboardCallout`, `DashboardSection`, `StatusPill`,
+    `DashboardIcon` and a named line-icon set (`icons.ts`)
+  - `fetchCurrentUserWithRole` (`src/utils/dashboard-user.ts`) looks up the signed-in user at most
+    once per request, keyed on `Astro.locals`; the layout, the page and `UserInfo` share it, so a
+    dashboard page makes one Clerk call. `getDashboardUser` shapes that result for display, with the
+    last sign-in in UTC and labelled as such
+  - `Base.astro` gains a `hideSiteChrome` prop to omit the site navigation and footer
+
 - **Theme toggle** (`src/components/astro/ThemeToggle.astro`, `src/layouts/Base.astro`): a
   light/dark button in the site navigation bar
   - Stamps `:root[data-theme]`, which the token layer already honours over `prefers-color-scheme`;
@@ -144,6 +163,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   only, `src/utils/env-config.ts` drops `TURSO_*` and `DATABASE_PROVIDER`, and `npm run setup:roles`
   generates PostgreSQL migrations only and prints the `psql` command to apply them
 
+- **Dashboard components restyled to the design direction** (`src/components/dashboard/`):
+  `StatsCards` is a single hairline-divided strip, `PostPreview` a column list that stacks in narrow
+  containers, `ActivityFeed` a timeline and `QuickActions` a row list. Existing props still work:
+  `icon` accepts a dashboard icon name or, as before, any text such as an emoji, and posts gain an
+  optional `href` for an edit link. "Create new post" moves from the quick actions to the page header
+
 - **Accent repointed from violet to petrol** (`src/styles/_design-tokens.scss`): `--island` and
   `--island-bg` move off the violet/indigo family that generated palettes converge on
   - Light `#5b2cf5` → `#0b6070`, dark `#9b7dff` → `#6bb9c9`; the washes follow, `#f0ebff` →
@@ -233,6 +258,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Supabase test page**: `/supabase-test` and `/api/supabase-test`
 
 ### Fixed
+
+- **Dark mode left light surfaces on several pages** (`src/styles/_design-tokens.scss`,
+  `src/styles/components/_form.scss`, `_alert.scss`, `_card.scss`, and the dashboard, profile,
+  offline and message-us pages): @fpkit/acss's own `[data-theme=dark]` block points
+  its semantic tokens at the dark end of the neutral scale, which the site's dark palette has already
+  inverted, so the two flips cancelled under the theme toggle. The skip link measured `#f4f4f5` and
+  white text on the vendor's dark-mode button blue measured 3.52:1. The toggle path now restates the
+  vendor's light mapping for those tokens, and hard-coded light colours on the listed pages and
+  stylesheets use the direction tokens instead. Form fields kept a `whitesmoke` fill under light
+  text in dark mode, which made typed input unreadable
 
 - **`db:migrate` scripts never loaded `.env`** (`package.json`): `db:migrate`,
   `db:migrate:status`, `db:migrate:create` and `db:migrate:rollback` ran

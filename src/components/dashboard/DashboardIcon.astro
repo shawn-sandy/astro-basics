@@ -1,0 +1,45 @@
+---
+import { DASHBOARD_ICONS, type DashboardIconName } from '#components/dashboard/icons'
+
+/**
+ * Decorative line icon from the dashboard set.
+ *
+ * Always hidden from assistive technology: the text beside it carries the
+ * meaning, and an icon-only control names itself with `aria-label`.
+ *
+ * @component DashboardIcon
+ * @example
+ * ```astro
+ * <a href="/admin/posts"><DashboardIcon name="file" />Manage posts</a>
+ * ```
+ */
+export type Props = {
+  /** Which icon to draw. */
+  name: DashboardIconName
+  /** Rendered width and height in CSS px. */
+  size?: number
+}
+
+const { name, size = 18 } = Astro.props
+---
+
+<svg
+  class="dashboard-icon"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.75"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  set:html={DASHBOARD_ICONS[name]}
+/>
+
+<style>
+  .dashboard-icon {
+    flex-shrink: 0;
+  }
+</style>

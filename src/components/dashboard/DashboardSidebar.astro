@@ -1,0 +1,402 @@
+---
+import { UserButton } from '@clerk/astro/components'
+import ThemeToggle from '#components/astro/ThemeToggle.astro'
+import DashboardIcon from '#components/dashboard/DashboardIcon.astro'
+import type { DashboardIconName } from '#components/dashboard/icons'
+import { SITE_TITLE } from '#utils/site-config'
+
+/**
+ * The dashboard's own navigation: brand, section links, a way back to the
+ * site, the theme toggle and the account button, all inside one `nav`
+ * landmark, as in the site's `Navigation`.
+ *
+ * On wide screens it is a sticky left column. Below 64rem it collapses to a
+ * top bar, and the same link list moves into a native `popover` menu opened by
+ * the bar's menu button. The browser provides open/close, Esc and outside-click
+ * dismissal, so there is one copy of the links. On wide screens the popover is
+ * forced visible and back into normal flow; the one script closes a menu left
+ * open when the viewport widens past the breakpoint.
+ *
+ * The popover is presentational only and never gates access: every link is in
+ * the HTML response whether the menu is open or not.
+ *
+ * @component DashboardSidebar
+ * @example
+ * ```astro
+ * <DashboardSidebar userName="Ada Lovelace" userRole="member" />
+ * ```
+ */
+export type Props = {
+  /** Name shown beside the account button. */
+  userName?: string | undefined
+  /** Role key shown under the name, e.g. `member` or `super_admin`. */
+  userRole?: string | undefined
+  /** Path used to mark the current link. Defaults to the request path. */
+  currentPath?: string
+}
+
+type NavItem = { href: string; label: string; icon: DashboardIconName }
+
+const NAV_ITEMS: readonly NavItem[] = [
+  { href: '/dashboard', label: 'Overview', icon: 'overview' },
+  { href: '/dashboard/users', label: 'Users', icon: 'users' },
+  { href: '/profile', label: 'Profile', icon: 'profile' },
+  { href: '/admin', label: 'Admin', icon: 'admin' },
+]
+
+const MENU_ID = 'dashboard-menu'
+
+const { userName, userRole, currentPath = Astro.url.pathname } = Astro.props
+
+/** Astro serves `/dashboard` and `/dashboard/` alike, so compare without the trailing slash. */
+const normalizePath = (path: string) => path.replace(/\/+$/, '') || '/'
+const current = normalizePath(currentPath)
+const roleLabel = userRole?.replace(/_/g, ' ')
+---
+
+<nav class="dashboard-sidebar" aria-label="Dashboard">
+  <div class="dashboard-sidebar__bar">
+    <a class="dashboard-sidebar__brand" href="/">
+      <span class="dashboard-sidebar__wordmark">{SITE_TITLE}</span>
+      <span class="dashboard-sidebar__eyebrow" data-ui="eyebrow">Dashboard</span>
+    </a>
+    <div class="dashboard-sidebar__controls">
+      <ThemeToggle />
+      <span class="dashboard-sidebar__bar-account">
+        <UserButton />
+      </span>
+      <button
+        type="button"
+        class="dashboard-sidebar__menu"
+        popovertarget={MENU_ID}
+        aria-label="Dashboard menu"
+      >
+        <DashboardIcon name="menu" size={22} />
+      </button>
+    </div>
+  </div>
+
+  <div id={MENU_ID} class="dashboard-sidebar__panel" popover="auto" data-dashboard-menu>
+    <ul class="dashboard-sidebar__links" role="list">
+      {
+        NAV_ITEMS.map(item => (
+          <li>
+            <a
+              class="dashboard-sidebar__link"
+              href={item.href}
+              aria-current={normalizePath(item.href) === current ? 'page' : undefined}
+            >
+              <DashboardIcon name={item.icon} />
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="dashboard-sidebar__footer">
+      <div class="dashboard-sidebar__footer-row">
+        <a class="dashboard-sidebar__back" href="/">
+          <DashboardIcon name="back" />
+          Back to site
+        </a>
+        <span class="dashboard-sidebar__footer-toggle">
+          <ThemeToggle />
+        </span>
+      </div>
+      <div class="dashboard-sidebar__user">
+        <UserButton />
+        <div class="dashboard-sidebar__who">
+          <span class="dashboard-sidebar__name">{userName ?? 'Your account'}</span>
+          {roleLabel && <span class="dashboard-sidebar__role">{roleLabel}</span>}
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+  // A menu left open while the viewport widens past 64rem stays in the top
+  // layer, overlaying the page with its toggle button hidden, so close it.
+  // The `hidePopover` check also skips browsers without the popover API, where
+  // `:popover-open` is an unknown selector and `matches` would throw.
+  const menu = document.querySelector<HTMLElement>('[data-dashboard-menu]')
+  window.matchMedia('(min-width: 64rem)').addEventListener('change', event => {
+    if (event.matches && menu && 'hidePopover' in menu && menu.matches(':popover-open')) {
+      menu.hidePopover()
+    }
+  })
+</script>
+
+<style>
+  /*
+   * The root is a `nav`, which @fpkit/acss lays out as a centred flex row; the
+   * display, direction and alignment are restated for each breakpoint. Its
+   * `place-items: center` also sets `justify-items`, which centres and
+   * shrink-wraps the bar even in block layout, so that is reset here.
+   */
+  .dashboard-sidebar {
+    background: var(--paper-sunk);
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink);
+    display: block;
+    font-size: var(--font-size-sm);
+    place-items: normal;
+    position: sticky;
+    top: 0;
+    z-index: var(--z-index-sticky);
+  }
+
+  .dashboard-sidebar__bar {
+    align-items: center;
+    box-sizing: border-box;
+    display: flex;
+    gap: var(--space-3);
+    justify-content: space-between;
+    min-height: 4rem;
+    padding: 0 var(--space-2-5) 0 var(--space-5);
+  }
+
+  /* `[href]` lifts link selectors to (0,2,0), above the vendor's `a[href]`. */
+  .dashboard-sidebar__brand[href] {
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    font-size: inherit;
+    justify-content: center;
+    line-height: 1.25;
+    min-height: 44px;
+    text-decoration: none;
+  }
+
+  .dashboard-sidebar__wordmark {
+    font-family: var(--font-family-display);
+    font-size: 1.0625rem;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.02em;
+  }
+
+  /* `[data-ui]` lifts this to (0,2,0), above the shared eyebrow rule's (0,1,0) size. */
+  .dashboard-sidebar__eyebrow[data-ui] {
+    font-size: 0.6875rem;
+  }
+
+  .dashboard-sidebar__controls {
+    align-items: center;
+    display: flex;
+    gap: var(--space-1);
+  }
+
+  /*
+   * @fpkit/acss paints `button[type]` from `--btn-bg` at (0,1,1), so the hook
+   * is set rather than `background`, as in ThemeToggle.
+   */
+  .dashboard-sidebar__menu {
+    --btn-bg: transparent;
+
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    height: 44px;
+    justify-content: center;
+    padding: 0;
+    width: 44px;
+  }
+
+  .dashboard-sidebar__menu:hover,
+  .dashboard-sidebar__menu:focus-visible {
+    border-color: color-mix(in srgb, currentcolor 30%, transparent);
+  }
+
+  /* Narrow: the panel is a dropdown sheet under the bar while the popover is open. */
+  .dashboard-sidebar__panel {
+    background: var(--paper-sunk);
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    box-sizing: border-box;
+    color: var(--ink);
+    flex-direction: column;
+    font-size: var(--font-size-sm);
+    gap: var(--space-6);
+    inset: 4rem 0 auto;
+    margin: 0;
+    max-height: calc(100dvh - 4rem);
+    overflow-y: auto;
+    padding: var(--space-4);
+    position: fixed;
+    width: 100%;
+  }
+
+  .dashboard-sidebar__panel:popover-open {
+    display: flex;
+  }
+
+  /* The vendor pads `nav ul > li`; those properties are restated on the list items. */
+  .dashboard-sidebar__links {
+    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    font-size: inherit;
+    gap: var(--space-1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dashboard-sidebar__links > li {
+    display: block;
+    margin: 0;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .dashboard-sidebar__link[href] {
+    align-items: center;
+    border-radius: var(--radius-lg);
+    color: var(--ink);
+    display: flex;
+    font-size: inherit;
+    font-weight: var(--font-weight-medium);
+    gap: var(--space-3);
+    min-height: 44px;
+    padding: 0 var(--space-3);
+    text-decoration: none;
+  }
+
+  .dashboard-sidebar__link[href]:hover {
+    background: var(--paper);
+  }
+
+  .dashboard-sidebar__link[aria-current='page'] {
+    background: var(--island-bg);
+    color: var(--island);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .dashboard-sidebar__footer {
+    border-top: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+  }
+
+  .dashboard-sidebar__footer-row {
+    align-items: center;
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .dashboard-sidebar__back[href] {
+    align-items: center;
+    border-radius: var(--radius-lg);
+    color: var(--ink-soft);
+    display: flex;
+    flex-grow: 1;
+    font-size: inherit;
+    gap: var(--space-2-5);
+    min-height: 44px;
+    padding: 0 var(--space-3);
+    text-decoration: none;
+  }
+
+  .dashboard-sidebar__back[href]:hover {
+    color: var(--ink);
+  }
+
+  /* Narrow: the bar already carries the toggle. */
+  .dashboard-sidebar__footer-toggle {
+    display: none;
+  }
+
+  /*
+   * Narrow: the account button lives in the bar, not in the popover. Clerk
+   * renders its menu outside the sidebar, so a click in that menu counted as an
+   * outside click and light-dismissed a popover holding the button.
+   */
+  .dashboard-sidebar__bar-account {
+    align-items: center;
+    display: inline-flex;
+    height: 44px;
+    justify-content: center;
+    width: 44px;
+  }
+
+  /* Shown from 64rem, where the account row sits in the sidebar footer. */
+  .dashboard-sidebar__user {
+    align-items: center;
+    display: none;
+    gap: var(--space-3);
+    min-height: 44px;
+    padding: var(--space-1) var(--space-3);
+  }
+
+  .dashboard-sidebar__who {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+    min-width: 0;
+  }
+
+  .dashboard-sidebar__name {
+    font-weight: var(--font-weight-semibold);
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard-sidebar__role {
+    color: var(--ink-soft);
+    font-size: var(--font-size-xs);
+    text-transform: capitalize;
+  }
+
+  @media (min-width: 64rem) {
+    .dashboard-sidebar {
+      align-items: stretch;
+      border-bottom: 0;
+      border-right: 1px solid var(--rule);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-7);
+      justify-content: flex-start;
+      height: 100dvh;
+      overflow-y: auto;
+      padding: var(--space-6) var(--space-4);
+    }
+
+    .dashboard-sidebar__bar {
+      min-height: 0;
+      padding: var(--space-1) var(--space-3);
+    }
+
+    .dashboard-sidebar__controls {
+      display: none;
+    }
+
+    /* Forced visible and back into flow: the UA hides a closed popover and fixes it to the viewport. */
+    .dashboard-sidebar__panel[popover] {
+      background: transparent;
+      border: 0;
+      display: flex;
+      flex: 1;
+      inset: auto;
+      justify-content: space-between;
+      max-height: none;
+      overflow: visible;
+      padding: 0;
+      position: static;
+      width: auto;
+    }
+
+    .dashboard-sidebar__footer-toggle {
+      display: block;
+    }
+
+    .dashboard-sidebar__user {
+      display: flex;
+    }
+  }
+</style>

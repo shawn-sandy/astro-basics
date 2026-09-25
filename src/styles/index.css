@@ -281,6 +281,27 @@
   --color-neutral-700: #e4e4e7;
   --color-neutral-800: #f4f4f5;
   --color-neutral-900: #fafafa;
+  --color-primary: var(--color-blue-600);
+  --color-primary-hover: var(--color-blue-700);
+  --color-primary-active: var(--color-blue-800);
+  --color-primary-light: var(--color-blue-100);
+  --color-secondary: var(--color-neutral-700);
+  --color-secondary-hover: var(--color-neutral-800);
+  --color-secondary-light: var(--color-neutral-100);
+  --color-surface: var(--color-neutral-0);
+  --color-surface-secondary: var(--color-neutral-50);
+  --color-surface-tertiary: var(--color-neutral-100);
+  --color-surface-elevated: var(--color-neutral-0);
+  --color-border: var(--color-neutral-300);
+  --color-border-subtle: var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-400);
+  --color-border-interactive: var(--color-neutral-400);
+  --color-text: var(--color-neutral-800);
+  --color-text-secondary: var(--color-neutral-700);
+  --color-text-tertiary: var(--color-neutral-600);
+  --color-text-inverse: var(--color-neutral-0);
+  --color-disabled-bg: var(--color-neutral-100);
+  --color-skip-link-bg: var(--color-neutral-100);
 }
 :root[data-theme='dark'] body {
   background-color: var(--paper);
@@ -477,7 +498,7 @@ img + * {
   display: none;
 }
 .card:has(a:first-of-type:empty) {
-  border: #d3d3d3 solid thin;
+  border: var(--rule) solid thin;
   display: grid;
   grid-template-rows: 'pile';
   height: fit-content;
@@ -526,12 +547,12 @@ form .error-msg {
 form input,
 form textarea,
 form select {
-  background-color: #f5f5f5;
+  background-color: var(--paper-sunk);
 }
 form input:user-invalid:not(:focus),
 form textarea:user-invalid:not(:focus),
 form select:user-invalid:not(:focus) {
-  background-color: #ffe6e6;
+  background-color: color-mix(in srgb, var(--error-color) 15%, var(--paper-sunk));
   outline: thin solid var(--error-color);
 }
 form input:user-invalid:not(:focus) + p,
@@ -547,7 +568,7 @@ form select:user-invalid:not(:focus) + p::before {
 form input:user-valid:not(:focus),
 form textarea:user-valid:not(:focus),
 form select:user-valid:not(:focus) {
-  background-color: #e6ffe6;
+  background-color: color-mix(in srgb, var(--success-color) 15%, var(--paper-sunk));
   outline: thin solid var(--success-color);
 }
 form input:user-valid:not(:focus) + p,
@@ -701,19 +722,19 @@ nav[data-site-nav]:has(> [popover]:popover-open) button[popovertarget] {
   text-decoration: underline;
 }
 .alert-error {
-  background-color: #f8d7da;
-  border-color: #f5c6cb;
-  color: #721c24;
+  background-color: color-mix(in srgb, var(--color-error) 22%, var(--paper));
+  border-color: color-mix(in srgb, var(--color-error) 45%, var(--paper));
+  color: var(--ink);
 }
 .alert-success {
-  background-color: #d4edda;
-  border-color: #c3e6cb;
-  color: #155724;
+  background-color: color-mix(in srgb, var(--color-success) 22%, var(--paper));
+  border-color: color-mix(in srgb, var(--color-success) 45%, var(--paper));
+  color: var(--ink);
 }
 .alert-info {
-  background-color: #d1ecf1;
-  border-color: #bee5eb;
-  color: #0c5460;
+  background-color: color-mix(in srgb, var(--color-info) 22%, var(--paper));
+  border-color: color-mix(in srgb, var(--color-info) 45%, var(--paper));
+  color: var(--ink);
 }
 .text-primary-50 {
   color: var(--color-primary-50);

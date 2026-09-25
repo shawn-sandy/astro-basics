@@ -16,7 +16,7 @@ import Base from '#layouts/Base.astro'
       <div style="max-width: 500px;">
         <h1 style="font-size: 3rem; margin-bottom: 1rem;">📱</h1>
         <h2 style="margin-bottom: 1rem;">You're Offline</h2>
-        <p style="margin-bottom: 2rem; color: #666;">
+        <p style="margin-bottom: 2rem; color: var(--ink-soft);">
           It looks like you're not connected to the internet. Don't worry - you can still browse
           some of our cached content!
         </p>
@@ -34,22 +34,22 @@ import Base from '#layouts/Base.astro'
         <div style="margin-bottom: 2rem;">
           <button
             id="refresh-button"
-            style="background: #1e293b; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; margin-right: 1rem;"
+            style="background: var(--island); color: var(--paper); border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; margin-right: 1rem;"
           >
             Try Again
           </button>
           <a
             href="/"
-            style="background: #f8fafc; color: #1e293b; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 0.5rem; text-decoration: none; display: inline-block;"
+            style="background: var(--paper-sunk); color: var(--ink); border: 1px solid var(--rule); padding: 0.75rem 1.5rem; border-radius: 0.5rem; text-decoration: none; display: inline-block;"
           >
             Go Home
           </a>
         </div>
 
         <div
-          style="margin-top: 2rem; padding: 1rem; background: #f8fafc; border-radius: 0.5rem; border-left: 4px solid #3b82f6;"
+          style="margin-top: 2rem; padding: 1rem; background: var(--paper-sunk); border-radius: 0.5rem; border-left: 4px solid #3b82f6;"
         >
-          <p style="margin: 0; font-size: 0.9rem; color: #4b5563;">
+          <p style="margin: 0; font-size: 0.9rem; color: var(--ink-soft);">
             <strong>Tip:</strong> Once you're back online, this page will automatically update with the
             latest content.
           </p>

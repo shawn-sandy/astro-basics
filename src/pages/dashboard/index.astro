@@ -1,17 +1,23 @@
 ---
-import Auth from '#/layouts/Auth.astro'
 import { Show } from '@clerk/astro/components'
 import {
-  DashboardCard,
-  DashboardLayout,
-  StatsCards,
+  AccountPanel,
   ActivityFeed,
-  QuickActions,
+  DashboardCallout,
+  DashboardIcon,
+  DashboardPage,
+  DashboardSection,
   PostPreview,
+  QuickActions,
+  StatsCards,
 } from '#/components/dashboard'
 import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
-import UserInfo from '#/components/astro/UserInfo.astro'
 import RoleGuard from '#components/astro/RoleGuard.astro'
+import Dashboard from '#layouts/Dashboard.astro'
+import { getDashboardUser } from '#utils/dashboard-user'
+
+// The same per-request lookup the layout makes for the sidebar, so no second Clerk call.
+const user = await getDashboardUser(Astro)
 
 // Dashboard data
 const stats = [
@@ -23,17 +29,17 @@ const stats = [
 
 const activities = [
   {
-    icon: '📝',
+    icon: 'file',
     content: 'New blog post published: "Getting Started with Astro"',
     timestamp: '2 hours ago',
   },
   {
-    icon: '👀',
+    icon: 'eye',
     content: 'Page views increased on "React Components in Astro"',
     timestamp: '5 hours ago',
   },
   {
-    icon: '❤️',
+    icon: 'heart',
     content: 'Post liked: "Building Modern Web Apps"',
     timestamp: '1 day ago',
   },
@@ -41,29 +47,23 @@ const activities = [
 
 const actions = [
   {
-    href: '/admin/posts/new',
-    icon: '✏️',
-    label: 'Create New Post',
-    primary: true,
-  },
-  {
     href: '/admin/posts',
-    icon: '📄',
-    label: 'Manage Posts',
+    icon: 'file',
+    label: 'Manage posts',
   },
   {
     href: '/admin/media',
-    icon: '🖼️',
-    label: 'Media Library',
+    icon: 'image',
+    label: 'Media library',
   },
   {
     href: '/guide',
-    icon: '📚',
-    label: 'Developer Guides',
+    icon: 'book',
+    label: 'Developer guides',
   },
   {
     href: '/admin/settings',
-    icon: '⚙️',
+    icon: 'settings',
     label: 'Settings',
   },
 ]
@@ -74,85 +74,148 @@ const posts = [
     excerpt: 'A comprehensive guide to building reusable components...',
     status: 'Published' as const,
     date: '3 days ago',
+    href: '/admin/posts',
   },
   {
     title: 'React Integration in Astro',
     excerpt: 'Learn how to seamlessly integrate React components...',
     status: 'Draft' as const,
     date: '1 week ago',
+    href: '/admin/posts',
   },
 ]
 ---
 
-<Auth pageTitle="Dashboard - Astro Kit" pageDescription="">
+<Dashboard pageTitle="Dashboard - Astro Kit">
   <Show when="signed-in">
-    <div class="dashboard-container">
-      <DashboardLayout columns="1fr 1fr" gap="2rem" className="dashboard-grid">
-        <div class="stats-section">
-          <StatsCards stats={stats} />
+    <DashboardPage
+      eyebrow="Overview"
+      title={user?.firstName ? `Welcome back, ${user.firstName}` : 'Welcome back'}
+    >
+      <a slot="actions" class="overview__button" href="/">
+        View site
+        <DashboardIcon name="external" size={16} />
+      </a>
+      <a slot="actions" class="overview__button overview__button--primary" href="/admin/posts/new">
+        <DashboardIcon name="plus" size={16} />
+        Create new post
+      </a>
+
+      <StatsCards stats={stats} />
+
+      <div class="overview__grid">
+        <div class="overview__column">
+          <DashboardSection
+            title="Recent posts"
+            actionHref="/admin/posts"
+            actionLabel="Manage posts"
+          >
+            <PostPreview posts={posts} />
+          </DashboardSection>
+
+          <DashboardSection title="Recent activity">
+            <ActivityFeed activities={activities} />
+          </DashboardSection>
+
+          <RoleGuard allowedRoles={['member']}>
+            <DashboardCallout
+              title="Member panel"
+              description="Access the member panel for advanced management features."
+              href="/admin"
+              linkLabel="Open member panel"
+              icon="users"
+            />
+          </RoleGuard>
+          <RoleGuard allowedRoles={['admin', 'super_admin']}>
+            <DashboardCallout
+              title="Admin panel"
+              description="Access the admin panel for advanced management features."
+              href="/admin"
+              linkLabel="Open admin panel"
+            />
+          </RoleGuard>
         </div>
-        <UserInfo />
-        <DashboardCard title="Recent Activity">
-          <ActivityFeed activities={activities} />
-        </DashboardCard>
 
-        <DashboardCard title="Quick Actions">
-          <QuickActions actions={actions} />
-        </DashboardCard>
+        <div class="overview__column">
+          <AccountPanel
+            name={user?.name}
+            email={user?.email}
+            emailVerified={user?.emailVerified}
+            role={user?.role}
+            lastSignIn={user?.lastSignIn}
+            imageUrl={user?.imageUrl}
+          />
 
-        <DashboardCard title="Recent Posts">
-          <PostPreview posts={posts} />
-        </DashboardCard>
-      </DashboardLayout>
-      <RoleGuard allowedRoles={['member']}>
-        <DashboardCard title="Member Panel Access" className="mt-4">
-          <p>Access the member panel for advanced management features.</p>
-          <div style="text-align: center; margin-top: 2rem;">
-            <a href="/admin" class="btn btn-primary">Go to Member Panel</a>
-          </div>
-        </DashboardCard>
-      </RoleGuard>
-      <hr />
-      <RoleGuard allowedRoles={['admin', `super_admin`]}>
-        <DashboardCard title="Admin Panel Access" className="mt-4">
-          <p>Access the admin panel for advanced management features.</p>
-          <div style="text-align: center; margin-top: 2rem;">
-            <a href="/admin" class="btn btn-primary">Go to Admin Panel</a>
-          </div>
-        </DashboardCard>
-      </RoleGuard>
-    </div>
+          <DashboardSection title="Quick actions">
+            <QuickActions actions={actions} />
+          </DashboardSection>
+        </div>
+      </div>
+    </DashboardPage>
   </Show>
 
   <Show when="signed-out">
     <SignedOutMessage />
   </Show>
-</Auth>
+</Dashboard>
 
 <style>
-  .dashboard-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+  /* `[href]` lifts the selector to (0,2,0), above the vendor's `a[href]`. */
+  .overview__button[href] {
+    align-items: center;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    box-sizing: border-box;
+    color: var(--island);
+    display: inline-flex;
+    font-size: inherit;
+    font-weight: var(--font-weight-semibold);
+    gap: var(--space-2);
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 var(--space-4);
+    text-decoration: none;
   }
 
-  .profile-section {
-    grid-column: 1 / -1;
+  .overview__button[href]:hover {
+    border-color: var(--island);
   }
 
-  .stats-section {
-    grid-column: 1 / -1;
+  /* Paper on the accent, as in HomeHero: white text fails on the lighter dark-mode accent. */
+  .overview__button--primary[href] {
+    background: var(--island);
+    border-color: var(--island);
+    color: var(--paper);
   }
 
-  .stats-section h2 {
-    margin: 0 0 1rem 0;
-    color: #1a202c;
-    font-size: 1.25rem;
+  .overview__button--primary[href]:hover {
+    background: color-mix(in oklch, var(--island) 88%, var(--ink));
   }
 
-  @media (max-width: 768px) {
-    .dashboard-container {
-      padding: 1rem;
+  .overview__grid {
+    display: grid;
+    gap: var(--space-8);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .overview__column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    min-width: 0;
+  }
+
+  /* Phones: the two header buttons share the row. */
+  @media (max-width: 40rem) {
+    .overview__button[href] {
+      flex: 1 1 auto;
+    }
+  }
+
+  @media (min-width: 80rem) {
+    .overview__grid {
+      align-items: start;
+      grid-template-columns: minmax(0, 1fr) 22.5rem;
     }
   }
 </style>
