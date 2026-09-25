@@ -1,4 +1,8 @@
 // @vitest-environment node
+import { readFileSync } from 'node:fs'
+// `URL` is imported rather than taken from the global scope: the ESLint test
+// override declares no Node globals, so the bare global trips `no-undef`.
+import { URL, fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { experimental_AstroContainer as AstroContainer } from 'astro/container'
 import AccountPanel from '#components/dashboard/AccountPanel.astro'
@@ -228,5 +232,71 @@ describe('StatsCards icons', () => {
     expect(icons[0]).toContain('<svg')
     expect(icons[0]).not.toContain('>file<')
     expect(icons[1]).toContain('❤️')
+  })
+})
+
+describe('DashboardSidebar without the popover API', () => {
+  /**
+   * Flatten the component's `<style>` block into rules, each with the at-rule
+   * preludes it sits under. Braces are walked rather than regex-matched so nested
+   * `@supports` and `@media` blocks are attributed correctly.
+   */
+  function sidebarRules(): { selector: string; body: string; conditions: string[] }[] {
+    const source = readFileSync(
+      fileURLToPath(
+        new URL('../../src/components/dashboard/DashboardSidebar.astro', import.meta.url)
+      ),
+      'utf8'
+    )
+    const css = (/<style>([\s\S]*?)<\/style>/.exec(source)?.[1] ?? '').replace(
+      /\/\*[\s\S]*?\*\//g,
+      ''
+    )
+    const rules: { selector: string; body: string; conditions: string[] }[] = []
+    const walk = (text: string, conditions: string[]) => {
+      let prelude = ''
+      for (let i = 0; i < text.length; i += 1) {
+        if (text[i] === '{') {
+          let depth = 0
+          let close = i
+          for (; close < text.length; close += 1) {
+            if (text[close] === '{') depth += 1
+            else if (text[close] === '}' && --depth === 0) break
+          }
+          const inner = text.slice(i + 1, close)
+          const head = prelude.trim()
+          if (head.startsWith('@')) walk(inner, [...conditions, head])
+          else rules.push({ selector: head, body: inner, conditions })
+          prelude = ''
+          i = close
+        } else if (text[i] === '}' || text[i] === ';') prelude = ''
+        else prelude += text[i]
+      }
+    }
+    walk(css, [])
+    return rules
+  }
+
+  const SUPPORTED = /^@supports\s+selector\(\s*:popover-open\s*\)$/
+  const UNSUPPORTED = /^@supports\s+not\s+selector\(\s*:popover-open\s*\)$/
+
+  it('only takes the menu panel out of flow where popovers are supported', () => {
+    // Where `popover` is ignored, a fixed panel never hides and covers the page.
+    const fixedPanels = sidebarRules().filter(
+      rule =>
+        rule.selector.includes('dashboard-sidebar__panel') && /position\s*:\s*fixed/.test(rule.body)
+    )
+
+    expect(fixedPanels.length).toBeGreaterThan(0)
+    for (const rule of fixedPanels) expect(rule.conditions.some(c => SUPPORTED.test(c))).toBe(true)
+  })
+
+  it('lists the links in flow and hides the inert menu button where popovers are unsupported', () => {
+    const fallback = sidebarRules().filter(rule => rule.conditions.some(c => UNSUPPORTED.test(c)))
+    const panel = fallback.find(rule => rule.selector.includes('dashboard-sidebar__panel'))
+    const button = fallback.find(rule => rule.selector.includes('dashboard-sidebar__menu'))
+
+    expect(panel?.body).toMatch(/display\s*:\s*(?!none)[a-z]/)
+    expect(button?.body).toMatch(/display\s*:\s*none/)
   })
 })

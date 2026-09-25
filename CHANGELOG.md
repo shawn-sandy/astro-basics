@@ -275,6 +275,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Dashboard menu covered the page in browsers without popovers** (`src/components/dashboard/DashboardSidebar.astro`):
+  below 64rem the sidebar's link panel was always `position: fixed`, and where the `popover` attribute
+  is unsupported (Safari before 17, Firefox before 125) nothing hid it, so it sat over the page
+  permanently while the menu button did nothing. The fixed dropdown now applies only under
+  `@supports selector(:popover-open)`; elsewhere the links are listed in flow under the bar, the
+  button is hidden and the narrow bar stops sticking
+
 - **Homepage polish** (`src/pages/index.astro`, `src/components/astro/HomeHero.astro`,
   `FeatureCards.astro`, `Card.astro`, `Footer.astro`)
   - The promoted feature specimens printed `<Card cardTitle="…" />`, which renders an empty card;
