@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Logging Correlation E2E', () => {
   test('API requests should include correlation IDs in logs', async ({ page }) => {
     // Navigate to a page that makes API calls
-    const response = await page.goto('http://localhost:4321')
+    const response = await page.goto('/')
     expect(response?.status()).toBe(200)
 
     // Check that the page loaded successfully
@@ -15,7 +15,7 @@ test.describe('Logging Correlation E2E', () => {
     request,
   }) => {
     // Test direct API call with correlation tracking
-    const response = await request.get('http://localhost:4321/api/user/profile', {
+    const response = await request.get('/api/user/profile', {
       headers: {
         Accept: 'application/json',
       },
@@ -27,7 +27,7 @@ test.describe('Logging Correlation E2E', () => {
 
   test('webhook endpoints should handle correlation IDs', async ({ request }) => {
     // Test webhook endpoint (will fail signature verification, but should log properly)
-    const response = await request.post('http://localhost:4321/api/webhooks/clerk', {
+    const response = await request.post('/api/webhooks/clerk', {
       headers: {
         'Content-Type': 'application/json',
         'svix-id': 'test-id',
@@ -49,7 +49,7 @@ test.describe('Logging Correlation E2E', () => {
     const requests = Array(5)
       .fill(null)
       .map((_, i) =>
-        request.get(`http://localhost:4321/api/user/profile?test=${i}`, {
+        request.get(`/api/user/profile?test=${i}`, {
           headers: {
             Accept: 'application/json',
           },
@@ -66,7 +66,7 @@ test.describe('Logging Correlation E2E', () => {
 
   test('error responses should include correlation tracking', async ({ request }) => {
     // Make a request to an endpoint that will error
-    const response = await request.patch('http://localhost:4321/api/user/profile', {
+    const response = await request.patch('/api/user/profile', {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -83,21 +83,21 @@ test.describe('Logging Correlation E2E', () => {
   test('slow requests should trigger performance warnings', async ({ request }) => {
     // This test would require a slow endpoint or mock
     // For now, just verify the endpoint responds
-    const response = await request.get('http://localhost:4321')
+    const response = await request.get('/')
     expect(response.status()).toBe(200)
   })
 })
 
 test.describe('Logger Integration with Real Routes', () => {
   test('homepage should have correlation ID in middleware', async ({ page }) => {
-    const response = await page.goto('http://localhost:4321')
+    const response = await page.goto('/')
 
     expect(response?.status()).toBe(200)
     await expect(page.locator('body')).toBeVisible()
   })
 
   test('API route should return proper error structure', async ({ request }) => {
-    const response = await request.get('http://localhost:4321/api/user/profile')
+    const response = await request.get('/api/user/profile')
 
     // Unauthenticated requests should return 401
     if (response.status() === 401) {
@@ -108,7 +108,7 @@ test.describe('Logger Integration with Real Routes', () => {
 
   test('protected dashboard route should handle authentication', async ({ page }) => {
     // Navigate to protected route
-    const response = await page.goto('http://localhost:4321/dashboard')
+    const response = await page.goto('/dashboard')
 
     // Should either show dashboard (if auth configured) or redirect/error
     expect(response?.status()).toBeLessThan(500)
@@ -119,7 +119,7 @@ test.describe('Logger Flush Behavior', () => {
   test('API routes should complete without hanging (flush works)', async ({ request }) => {
     const startTime = Date.now()
 
-    const response = await request.get('http://localhost:4321/api/user/profile')
+    const response = await request.get('/api/user/profile')
 
     const duration = Date.now() - startTime
 
@@ -131,7 +131,7 @@ test.describe('Logger Flush Behavior', () => {
   test('webhook processing should flush logs before response', async ({ request }) => {
     const startTime = Date.now()
 
-    const response = await request.post('http://localhost:4321/api/webhooks/clerk', {
+    const response = await request.post('/api/webhooks/clerk', {
       headers: {
         'Content-Type': 'application/json',
         'svix-id': 'test-flush-id',
