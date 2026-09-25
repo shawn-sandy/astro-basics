@@ -47,7 +47,7 @@ Start with these commands to understand your current system state:
 This error appears when the system can't find valid Supabase credentials.
 
 **Symptoms:**
-- `getDatabase()` throws "No database configured. Set SUPABASE_URL and SUPABASE_ANON_KEY in your environment variables."
+- `getDatabase()` throws "No database configured. Set SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY in your environment variables."
 - API endpoints return 503 Service Unavailable errors
 - Dashboard shows "Database service unavailable"
 - `npm run db:status` shows `Selected Provider: none`
@@ -65,7 +65,7 @@ This error appears when the system can't find valid Supabase credentials.
          npm run db:wizard
          ```
 
-      3. Follow the interactive prompts to enter your Supabase project URL, anon key, and (optionally) service role key
+      3. Follow the interactive prompts to enter your Supabase project URL, anon key, and service role key
     </Steps>
   </TabItem>
   <TabItem label="Manual Fix">

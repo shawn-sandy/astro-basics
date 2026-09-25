@@ -647,7 +647,7 @@ export const db = createClient(supabaseUrl, supabaseKey)
 
 - `SUPABASE_URL` - Supabase project URL
 - `SUPABASE_ANON_KEY` - Supabase anonymous key
-- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (optional, for server operations)
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (required: every database query uses it; server-side only)
 
 ### Optional Variables
 

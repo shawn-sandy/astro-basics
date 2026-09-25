@@ -166,14 +166,14 @@ function checkCurrentStatus() {
     `  Anonymous Key: ${envVars.SUPABASE_ANON_KEY ? colors.green + '✓ Configured' + colors.reset : colors.red + '✗ Not set' + colors.reset}`
   )
   console.log(
-    `  Service Role Key: ${envVars.SUPABASE_SERVICE_ROLE_KEY ? colors.green + '✓ Configured' + colors.reset : colors.yellow + '⚠ Optional' + colors.reset}`
+    `  Service Role Key: ${envVars.SUPABASE_SERVICE_ROLE_KEY ? colors.green + '✓ Configured' + colors.reset : colors.red + '✗ Not set (required)' + colors.reset}`
   )
   console.log(
     `  Status: ${supabaseFullyConfigured ? colors.green + '✓ Fully Ready' + colors.reset : supabaseBasicConfigured ? colors.yellow + 'Basic Setup' + colors.reset : colors.red + 'Not Configured' + colors.reset}`
   )
   console.log()
 
-  const activeProvider = supabaseBasicConfigured ? 'supabase' : 'none'
+  const activeProvider = supabaseFullyConfigured ? 'supabase' : 'none'
   console.log(
     `${colors.cyan}Active Provider:${colors.reset} ${activeProvider !== 'none' ? colors.green + activeProvider + colors.reset : colors.red + 'None' + colors.reset}`
   )
@@ -215,19 +215,16 @@ async function runSetup() {
     return false
   }
 
-  const configureServiceRole = await question(
-    'Do you want to configure the service role key? (y/N) [Optional but recommended]: '
-  )
-  let supabaseServiceKey = ''
-  if (configureServiceRole.toLowerCase() === 'y' || configureServiceRole.toLowerCase() === 'yes') {
-    supabaseServiceKey = await question('Enter your Supabase service role key: ')
+  // Every database query runs through the service role client, so this key is required.
+  const supabaseServiceKey = await question('Enter your Supabase service role key: ')
+  if (!supabaseServiceKey.trim()) {
+    log.error('The service role key is required: the app uses it for every database query')
+    return false
   }
 
   envVars.SUPABASE_URL = supabaseUrl.trim()
   envVars.SUPABASE_ANON_KEY = supabaseAnonKey.trim()
-  if (supabaseServiceKey.trim()) {
-    envVars.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceKey.trim()
-  }
+  envVars.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceKey.trim()
 
   // Test connection
   const supabaseTestResult = await testConnection(envVars)

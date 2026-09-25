@@ -21,6 +21,7 @@ const clerk = {
 const supabase = {
   SUPABASE_URL: 'https://projectref-hostname.supabase.co',
   SUPABASE_ANON_KEY: 'anon-key-SECRET',
+  SUPABASE_SERVICE_ROLE_KEY: 'service-role-SECRET',
 }
 
 const neverCalled = vi.fn(() => {
@@ -231,29 +232,23 @@ describe('auth-and-database-setup status report', () => {
     expect(line).not.toContain('key rejected')
   })
 
-  it('reports Clerk user sync as ready only with login ON and a service role key', async () => {
+  it('keeps the database OFF without the service role key, which every query uses', async () => {
+    const { SUPABASE_SERVICE_ROLE_KEY: _omit, ...noServiceRole } = supabase
+    const lines = await report(noServiceRole, neverCalled)
+
+    expect(lines).toContain('Database: Supabase: OFF')
+    expect(lines.find(l => l.includes('SUPABASE_SERVICE_ROLE_KEY'))).toContain('missing')
+    expect(neverCalled).not.toHaveBeenCalled()
+  })
+
+  it('reports Clerk user sync as ready only with login ON', async () => {
     const ok = async () => new Response('[]', { status: 200 })
-    const serviceRole = 'service-role-SECRET'
     const syncLine = (lines: string[]) => lines.find(l => l.startsWith('Clerk user sync'))
 
-    expect(syncLine(await report({ ...clerk, ...supabase }, ok))).toContain('not ready')
-    expect(
-      syncLine(
-        await report(
-          { ...clerk, ...supabase, SUPABASE_SERVICE_ROLE_KEY: template.SUPABASE_SERVICE_ROLE_KEY },
-          ok
-        )
-      )
-    ).toContain('not ready')
-    expect(
-      syncLine(await report({ ...supabase, SUPABASE_SERVICE_ROLE_KEY: serviceRole }, ok))
-    ).toContain('not ready')
+    expect(syncLine(await report(supabase, ok))).toContain('not ready')
 
-    const ready = await report(
-      { ...clerk, ...supabase, SUPABASE_SERVICE_ROLE_KEY: serviceRole },
-      ok
-    )
+    const ready = await report({ ...clerk, ...supabase }, ok)
     expect(ready).toContain('Clerk user sync: ready')
-    expect(ready.join('\n')).not.toContain(serviceRole)
+    expect(ready.join('\n')).not.toContain(supabase.SUPABASE_SERVICE_ROLE_KEY)
   })
 })

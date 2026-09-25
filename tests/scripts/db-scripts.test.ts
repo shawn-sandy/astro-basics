@@ -37,10 +37,15 @@ describe('db:status', () => {
 
   it('does not report YOUR_ placeholders as set', () => {
     const out = dbStatus(placeholders)
-    // SUPABASE_SERVICE_ROLE_KEY is optional, so it is reported as a warning, not ✗
-    expect(out.match(/✗ Not set/g)).toHaveLength(2)
+    expect(out.match(/✗ Not set/g)).toHaveLength(DB_KEYS.length)
     expect(out).not.toMatch(/✓ Set/)
     expect(out).toMatch(/Selected Provider: .*none/)
+  })
+
+  it('selects no provider without the service role key, as the app does', () => {
+    const out = dbStatus({ SUPABASE_URL: 'real-url', SUPABASE_ANON_KEY: 'real-anon' })
+    expect(out).toMatch(/Selected Provider: .*none/)
+    expect(out).toContain('SUPABASE_SERVICE_ROLE_KEY')
   })
 })
 

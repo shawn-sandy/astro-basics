@@ -77,7 +77,7 @@ console.log(
   `     SUPABASE_ANON_KEY: ${supabaseAnonKey ? colors.green + '✓ Set' + colors.reset : colors.red + '✗ Not set' + colors.reset}`
 )
 console.log(
-  `     SUPABASE_SERVICE_ROLE_KEY: ${supabaseServiceKey ? colors.green + '✓ Set' + colors.reset : colors.yellow + '⚠ Not set' + colors.reset}`
+  `     SUPABASE_SERVICE_ROLE_KEY: ${supabaseServiceKey ? colors.green + '✓ Set' + colors.reset : colors.red + '✗ Not set' + colors.reset}`
 )
 console.log(
   `     Status: ${supabaseFullyConfigured ? colors.green + '✓ Fully configured' + colors.reset : supabaseConfigured ? colors.yellow + '⚠ Partially configured' + colors.reset : colors.red + '✗ Not configured' + colors.reset}`
@@ -88,7 +88,8 @@ console.log()
 // Provider selection
 log.header('3. Database Provider')
 
-const selectedProvider = supabaseConfigured ? 'supabase' : null
+// Every database query uses the service role client, so all three keys are needed
+const selectedProvider = supabaseFullyConfigured ? 'supabase' : null
 
 console.log(
   `   Selected Provider: ${selectedProvider ? colors.green + selectedProvider + colors.reset : colors.red + 'none' + colors.reset}`
@@ -101,11 +102,11 @@ log.header('4. Next Steps')
 
 if (!allFilesExist) {
   log.error('Fix missing abstraction layer files first')
-} else if (!selectedProvider) {
+} else if (!supabaseConfigured) {
   log.error('Configure Supabase (SUPABASE_URL and SUPABASE_ANON_KEY)')
   console.log(`   Run: ${colors.cyan}npm run db:wizard${colors.reset} or see .env.example`)
 } else if (!supabaseFullyConfigured) {
-  log.warning('Set SUPABASE_SERVICE_ROLE_KEY for server-side operations')
+  log.error('Set SUPABASE_SERVICE_ROLE_KEY: every database query uses it')
 } else {
   log.success('Database is ready')
 }

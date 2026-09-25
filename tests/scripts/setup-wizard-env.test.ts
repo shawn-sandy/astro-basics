@@ -49,14 +49,14 @@ const wizardAnswers: [RegExp, string][] = [
   [/Reconfigure\?/, 'y'],
   [/Supabase project URL/, 'https://abc.supabase.co'],
   [/anonymous key/, 'eyJanon'],
-  [/service role key\?/, 'n'],
+  [/service role key/, 'eyJservice'],
 ]
 
 /**
  * Run the real wizard from a copy of scripts/ in projectDir, so it edits projectDir/.env.
- * Configures Supabase without a service role key. Resolves with the exit code.
+ * Answers each prompt from `answers`. Resolves with the exit code.
  */
-function runWizard(projectDir: string): Promise<number | null> {
+function runWizard(projectDir: string, answers = wizardAnswers): Promise<number | null> {
   mkdirSync(join(projectDir, 'scripts/lib'), { recursive: true })
   for (const file of ['setup-wizard.js', 'lib/env-file.js']) {
     cpSync(new URL(`../../scripts/${file}`, import.meta.url), join(projectDir, 'scripts', file))
@@ -72,7 +72,7 @@ function runWizard(projectDir: string): Promise<number | null> {
       // Prompts end in ": " with no newline; one has a colour reset before the space.
       const prompt = output.slice(output.lastIndexOf('\n') + 1).replaceAll('\x1b[0m', '')
       if (!prompt.endsWith(': ')) return
-      const answer = wizardAnswers.find(([pattern]) => pattern.test(prompt))
+      const answer = answers.find(([pattern]) => pattern.test(prompt))
       if (!answer) {
         child.kill()
         reject(new Error(`Unexpected wizard prompt: ${prompt}`))
@@ -143,12 +143,30 @@ describe('setup wizard .env write path', () => {
     const parsed = parseEnv(after)
     expect(parsed).toMatchObject({
       SUPABASE_URL: 'https://abc.supabase.co',
+      SUPABASE_SERVICE_ROLE_KEY: 'eyJservice',
       SUPABASE_ANON_KEY: 'eyJanon',
       EXTRA_KEY: 'keep-me',
       PUBLIC_SUPABASE_URL: parseEnv(example).PUBLIC_SUPABASE_URL,
     })
-    const changed = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'ENABLE_COMMENTS']
+    const changed = [
+      'SUPABASE_URL',
+      'SUPABASE_ANON_KEY',
+      'SUPABASE_SERVICE_ROLE_KEY',
+      'ENABLE_COMMENTS',
+    ]
     expect(untouchedLines(after, changed)).toEqual(untouchedLines(original, changed))
+  })
+
+  it('fails without writing .env when the service role key is left empty', async () => {
+    // Every database query uses the service role key, so a setup without it cannot work.
+    const original = readFileSync(envPath, 'utf-8')
+    const answers: [RegExp, string][] = wizardAnswers.map(([pattern, answer]) => [
+      pattern,
+      pattern.source.includes('service role') ? '' : answer,
+    ])
+
+    expect(await runWizard(dir, answers)).toBe(1)
+    expect(readFileSync(envPath, 'utf-8')).toBe(original)
   })
 
   it('sees a key on the first line of a file saved with a BOM', () => {

@@ -226,6 +226,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     export them first if you need them
   - `db:schema` no longer counts `.env.example` `YOUR_...` placeholders as configured, and
     `db:seed:messages` reports a malformed `SUPABASE_URL` without a stack trace
+  - `SUPABASE_SERVICE_ROLE_KEY` is now required for the database: every query goes through the
+    service role client, so `getDatabase()`, `db:status` and the setup skill's status script treat
+    Supabase as unconfigured without it, and `db:wizard` asks for it instead of offering to skip.
+    Before, the contact form passed its configuration check and then answered 500
 
 ### Fixed
 

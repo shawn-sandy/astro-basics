@@ -118,7 +118,7 @@ CLERK_SECRET_KEY=sk_test_dummy
 npm run db:wizard
 
 # Follow prompts for your Supabase project URL, anon key,
-# and (optionally) service role key
+# and service role key
 ```
 
 **See**: [02-guides/clerk-supabase-setup.md](./02-guides/clerk-supabase-setup.md)

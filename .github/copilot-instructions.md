@@ -120,7 +120,7 @@ npm run test:e2e      # Playwright (requires: npx playwright install)
 ### Database Operations (requires .env configuration)
 
 ```bash
-npm run db:wizard         # Interactive Supabase setup (URL, anon key, optional service role key)
+npm run db:wizard         # Interactive Supabase setup (URL, anon key, service role key)
 npm run db:status         # Show Supabase configuration + readiness
 npm run db:schema         # Check Supabase configuration against the expected schema
 ```

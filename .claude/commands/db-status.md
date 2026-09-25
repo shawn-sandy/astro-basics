@@ -2,7 +2,7 @@ Show comprehensive database status including Supabase configuration and health i
 
 This command provides detailed insights into:
 
-- Whether Supabase is configured (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, optional `SUPABASE_SERVICE_ROLE_KEY`)
+- Whether Supabase is configured (`SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`, all required for database queries)
 - Database abstraction layer status
 - Environment variables and connection status
 - Next recommended actions

@@ -30,6 +30,7 @@ describe('getDatabase', () => {
     const { getDatabase, getDatabaseStatus } = await loadDatabaseWithEnv({
       SUPABASE_URL: 'https://abcdefgh.supabase.co',
       SUPABASE_ANON_KEY: 'real-anon-key',
+      SUPABASE_SERVICE_ROLE_KEY: 'real-service-key',
     })
 
     expect(getDatabase().getProviderName()).toBe('supabase')
@@ -43,6 +44,19 @@ describe('getDatabase', () => {
     })
 
     expect(() => getDatabase()).toThrow(/SUPABASE_URL/)
+    expect(getDatabaseStatus()).toMatchObject({ current: null, is_configured: false })
+  })
+
+  it('stays unconfigured without the service role key, which every query uses', async () => {
+    // Every SupabaseDatabase operation goes through getSupabaseServiceRole(). Reporting the
+    // database as ready without the key let the contact form pass its check and then 500.
+    const { getDatabase, getDatabaseStatus } = await loadDatabaseWithEnv({
+      SUPABASE_URL: 'https://abcdefgh.supabase.co',
+      SUPABASE_ANON_KEY: 'real-anon-key',
+      SUPABASE_SERVICE_ROLE_KEY: '',
+    })
+
+    expect(() => getDatabase()).toThrow(/SUPABASE_SERVICE_ROLE_KEY/)
     expect(getDatabaseStatus()).toMatchObject({ current: null, is_configured: false })
   })
 })

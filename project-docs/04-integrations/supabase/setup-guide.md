@@ -500,7 +500,7 @@ Since this project is configured for Netlify deployment, follow these steps for 
 ```bash
 SUPABASE_URL=your_production_supabase_url
 SUPABASE_ANON_KEY=your_production_anon_key
-# Optional: Service role key for admin operations
+# Service role key: required for database queries (server-side only)
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
@@ -622,7 +622,7 @@ For other deployment platforms, ensure these are set:
 ```bash
 SUPABASE_URL=your_production_supabase_url
 SUPABASE_ANON_KEY=your_production_anon_key
-# Optional: Service role key for admin operations
+# Service role key: required for database queries (server-side only)
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 

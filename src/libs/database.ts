@@ -17,6 +17,8 @@
  * console.log(`Using: ${status.current} (${status.provider_name})`);
  */
 
+import { getEnvironmentConfig } from '#utils/env-config'
+
 import type {
   Database,
   DatabaseProvider,
@@ -27,6 +29,15 @@ import type {
 } from './database-types'
 import { isSupabaseConfigured } from './supabase'
 import { getSupabaseServiceRole } from './supabase-native'
+
+/**
+ * Whether the database can serve queries. Every SupabaseDatabase operation runs through
+ * getSupabaseServiceRole(), so the service role key is required on top of the URL and
+ * anon key that make Supabase "configured" for the rest of the app.
+ */
+function isDatabaseConfigured(): boolean {
+  return isSupabaseConfigured() && !!getEnvironmentConfig().getSupabaseServiceRoleKey()
+}
 
 /**
  * Supabase PostgreSQL database provider with real-time capabilities.
@@ -54,7 +65,7 @@ class SupabaseDatabase implements Database {
   }
 
   isConfigured(): boolean {
-    return isSupabaseConfigured()
+    return isDatabaseConfigured()
   }
 
   async insertMessage(data: MessageData): Promise<number> {
@@ -217,7 +228,7 @@ class SupabaseDatabase implements Database {
 }
 
 /**
- * Reports whether Supabase, the only database provider, is configured.
+ * Reports whether Supabase, the only database provider, is configured for queries.
  *
  * @returns {ProviderDetectionResult} `recommended` is `'supabase'` when configured, otherwise null
  * @example
@@ -225,7 +236,7 @@ class SupabaseDatabase implements Database {
  * // { available: ['supabase'], configured: ['supabase'], recommended: 'supabase' }
  */
 export function detectDatabaseProviders(): ProviderDetectionResult {
-  const configured: DatabaseProvider[] = isSupabaseConfigured() ? ['supabase'] : []
+  const configured: DatabaseProvider[] = isDatabaseConfigured() ? ['supabase'] : []
 
   return {
     available: configured,
@@ -238,7 +249,7 @@ export function detectDatabaseProviders(): ProviderDetectionResult {
  * Primary entry point for all database operations.
  *
  * @returns {Database} Supabase-backed database instance
- * @throws {Error} When Supabase is not configured
+ * @throws {Error} When SUPABASE_URL, SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY is missing
  * @example
  * const db = getDatabase();
  * const newMessageId = await db.insertMessage({
@@ -250,7 +261,7 @@ export function detectDatabaseProviders(): ProviderDetectionResult {
 export function getDatabase(): Database {
   if (!detectDatabaseProviders().recommended) {
     throw new Error(
-      'No database configured. Set SUPABASE_URL and SUPABASE_ANON_KEY in your environment variables.'
+      'No database configured. Set SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY in your environment variables.'
     )
   }
 

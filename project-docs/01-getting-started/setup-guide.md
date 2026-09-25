@@ -126,7 +126,7 @@ npm run db:wizard
 The wizard will:
 
 1. Show your current Supabase configuration
-2. Prompt for your Supabase project URL, anon key, and (optionally) service role key
+2. Prompt for your Supabase project URL, anon key, and service role key (required for database queries)
 3. Test the connection
 4. Write the values to `.env`, preserving your other settings
 
