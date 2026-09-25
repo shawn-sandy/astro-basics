@@ -1,9 +1,8 @@
 import { test, expect } from '@playwright/test'
-import { BASE_URL } from './test-utils'
 
 test.describe('Home Page Structure', () => {
   test('has essential semantic elements', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     // Test for main content landmark
     await expect(page.locator('main')).toBeVisible()
@@ -21,7 +20,7 @@ test.describe('Home Page Structure', () => {
   })
 
   test('has proper page landmarks', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     // Test ARIA landmarks
     await expect(page.getByRole('main')).toBeVisible()
@@ -41,7 +40,7 @@ test.describe('Home Page Structure', () => {
   })
 
   test('has interactive elements', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     // Test for links (navigation, content links, etc.)
     const links = page.getByRole('link')
@@ -55,7 +54,7 @@ test.describe('Home Page Structure', () => {
   })
 
   test('has proper heading hierarchy', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     // Test that h1 elements exist (components may have multiple)
     const h1Count = await page.locator('h1').count()

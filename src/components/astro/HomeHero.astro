@@ -28,9 +28,9 @@
  * <!-- All three strings are overridable; every one has a default. -->
  * <HomeHero
  *   slot="header"
- *   eyebrow="30+ components / zero client JS by default"
- *   headline="Astro components, ready to paste."
- *   deck="Server-rendered components with typed props."
+ *   eyebrow="30+ components / built for Claude Code"
+ *   headline="Build agentic web apps on Astro Kit."
+ *   deck="Login, database and dashboard come wired in."
  * />
  * ```
  */
@@ -46,9 +46,9 @@ export type Props = {
 }
 
 const {
-  eyebrow = '30+ components / zero client JS by default',
-  headline = 'Astro components, ready to paste.',
-  deck = 'Server-rendered components with typed props. Copy the import, drop in the markup, ship static HTML.',
+  eyebrow = '30+ components / built for Claude Code',
+  headline = 'Build agentic web apps on Astro Kit.',
+  deck = 'Login, database and dashboard come wired in, and the repo is set up for Claude Code to work in.',
 } = Astro.props as Props
 
 const specimenTitle = 'Accessibility First'
@@ -99,7 +99,9 @@ const specimenCode = [
         <p>{specimenBody}</p>
       </Card>
     </div>
-    <pre class="home-hero__code"><code>{specimenCode}</code></pre>
+    <!-- tabindex: the import line scrolls sideways, and a scroll region needs a
+         tab stop for a keyboard user to scroll it (WCAG 2.1.1). -->
+    <pre class="home-hero__code" tabindex="0"><code>{specimenCode}</code></pre>
   </figure>
 </header>
 
@@ -154,6 +156,12 @@ const specimenCode = [
     grid-template-areas: none;
     grid-template-rows: auto;
     min-height: fit-content;
+
+    /* The same vendor sheet floors every header at `min-width: 20rem`. With a
+       classic scrollbar a 320px viewport leaves 305px of layout, so the band
+       overflowed by 15px and the page scrolled sideways (SC 1.4.10 Reflow,
+       which is tested at 400% zoom on desktop browsers that have one). */
+    min-width: 0;
     padding-block: 4.5rem 4rem;
 
     /*
@@ -215,10 +223,17 @@ const specimenCode = [
     margin: 0 0 1.25rem;
 
     /* Left, not centred. A long compound word must break rather than widen
-       the document at 320px. */
-    hyphens: auto;
+       the document at 320px. Hyphenation stays manual above 21rem: with
+       `auto` everywhere the browser split "compo-nents" at 390px even though
+       the word (286px at the 3rem floor) fits the column on a line of its own.
+       Below 21rem it no longer fits, and a hyphen beats a bare mid-word break. */
+    hyphens: manual;
     overflow-wrap: break-word;
     text-align: left;
+
+    /* Evens the lines so a short headline never strands its last word alone
+       ("agent." sat on its own line at 1440px). */
+    text-wrap: balance;
     text-transform: none;
   }
 
@@ -381,7 +396,12 @@ const specimenCode = [
       gap: 2.25rem;
       grid-template-columns: minmax(0, 1fr);
       padding-block: 3rem 2.5rem;
-      padding-inline: 1rem;
+    }
+  }
+
+  @media (max-width: 21rem) {
+    .home-hero .home-hero__display {
+      hyphens: auto;
     }
   }
 </style>
