@@ -149,6 +149,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Homepage hero speaks to the agentic starter** (`src/components/astro/HomeHero.astro`): the
+  headline is now "Build agentic web apps on Astro Kit.", the deck names what comes wired in (login,
+  database, dashboard) and that the repo is set up for Claude Code, and the eyebrow drops the "zero
+  client JS" claim, which is Astro's baseline and not something the kit adds
+- **Homepage sections have headings** (`src/pages/index.astro`): "What's in the kit" and "Latest
+  posts" as `h2`s, so the feature cards and the post list no longer follow the hero `h1` without a
+  section heading of their own
+- **PRODUCT.md** names the primary user as a non-developer who hands the repo to Claude Code, drops
+  the Turso and threaded-comment claims, and records the open security constraints (auth fails open
+  without Clerk keys; `POST /api/test/sync-user` has no auth check)
+
 - **Breaking: the contact form is email-only** (`src/pages/api/message-us.ts`): submissions to
   `POST /api/message-us` (the `/message-us` page) are no longer stored; each one is delivered only
   as the `contact-notification` email
@@ -258,6 +269,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Supabase test page**: `/supabase-test` and `/api/supabase-test`
 
 ### Fixed
+
+- **Homepage polish** (`src/pages/index.astro`, `src/components/astro/HomeHero.astro`,
+  `FeatureCards.astro`, `Card.astro`, `Footer.astro`)
+  - The promoted feature specimens printed `<Card cardTitle="…" />`, which renders an empty card;
+    they now print the body the card beside them actually renders
+  - Hero, features and post list share one left edge (they sat at 16, 20 and 32px on mobile, and the
+    post list 32px in on desktop)
+  - Post titles on the homepage take the card-title size instead of the vendor `--h3` scale, which
+    reached 48px at desktop and outranked everything below the hero
+  - The headline no longer hyphenates mid-word at common phone widths; `hyphens: auto` now applies
+    only below 21rem, and `text-wrap: balance` keeps a short headline from stranding its last word
+  - The hero overrode the vendor `header { min-width: 20rem }`, which scrolled the page 15px
+    sideways at 320px in browsers with a classic scrollbar (SC 1.4.10)
+  - The scrolling code samples in the hero and the promoted cards take `tabindex="0"`, so a keyboard
+    can scroll them (axe `scrollable-region-focusable`)
+  - The footer read "ontwitter"; the compact feature rows lost a stray 8px list indent
+- **`.impeccable/hook.cache.json` is ignored** (`.gitignore`): the design hook's per-session cache
+  holds absolute local paths and was committed by accident
 
 - **Dark mode left light surfaces on several pages** (`src/styles/_design-tokens.scss`,
   `src/styles/components/_form.scss`, `_alert.scss`, `_card.scss`, and the dashboard, profile,
