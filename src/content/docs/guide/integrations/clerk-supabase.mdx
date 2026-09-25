@@ -122,31 +122,10 @@ export const GET: APIRoute = async ({ locals }) => {
 
 ### Client-Side (React Components)
 
-Use the `useSupabase` hook for automatic token handling:
-
-```tsx title="src/components/react/UserProfile.tsx"
-import { useSupabase } from '#hooks/useSupabase'
-
-export function UserProfile() {
-  const { supabase, userId, isLoaded } = useSupabase()
-  const [profile, setProfile] = useState(null)
-
-  useEffect(() => {
-    if (!supabase || !userId) return
-
-    supabase
-      .from('users')
-      .select('*')
-      .eq('clerk_id', userId)
-      .single()
-      .then(({ data }) => setProfile(data))
-  }, [supabase, userId])
-
-  if (!isLoaded) return <div>Loading...</div>
-
-  return <div>{profile?.full_name}</div>
-}
-```
+There is no client-side Supabase helper. Query Supabase on the server — in an
+Astro page or an API route, with the helpers above — and pass the result to the
+React component as props, or have the component fetch it from an API route such
+as `/api/user/profile`.
 
 ## Row Level Security (RLS)
 

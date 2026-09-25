@@ -1,7 +1,5 @@
 import type { APIRoute } from 'astro'
 
-import { getDatabase } from '#libs/database'
-import type { MessageData } from '#libs/database-types'
 import {
   validateCsrfToken,
   extractCsrfTokenFromForm,
@@ -9,32 +7,23 @@ import {
   parseCsrfTokenFromCookie,
   CSRF_CONFIG,
 } from '#utils/csrf'
-import { getNotificationAddress, sendEmail } from '#utils/email'
+import { getNotificationAddress, isEmailConfigured, sendEmail } from '#utils/email'
 import { sanitizeMessageData } from '#utils/input-sanitization'
-import { extractClientIP } from '#utils/ip-validation'
 
+/**
+ * Contact form submission.
+ *
+ * Submissions are not stored - the notification email is the only record of
+ * each one, so the endpoint refuses work it cannot deliver and reports a failed
+ * send as an error rather than acknowledging it.
+ */
 export const POST: APIRoute = async ({ request, cookies }) => {
-  let db
-  try {
-    db = getDatabase()
-    if (!db.isConfigured()) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Database is not configured. Please contact the administrator.',
-        }),
-        {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
-    }
-  } catch (error) {
-    console.error('Database initialization error:', error)
+  const notificationAddress = getNotificationAddress()
+  if (!notificationAddress || !isEmailConfigured()) {
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Database service unavailable. Please contact the administrator.',
+        error: 'The contact form is not configured. Please contact the administrator.',
       }),
       {
         status: 503,
@@ -178,57 +167,50 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       )
     }
 
-    // Get client IP and user agent
-    const ip_address = extractClientIP(request)
-    const user_agent = request.headers.get('user-agent') || undefined
+    // `subject` is optional, so give it a stand-in rather than letting
+    // "undefined" reach the subject line of a real email.
+    const subject = sanitizedData.subject || '(no subject)'
 
-    // Prepare message data using sanitized inputs
-    const messageData: MessageData = {
-      name: sanitizedData.name,
-      email: sanitizedData.email,
-      subject: sanitizedData.subject,
-      message: sanitizedData.message,
-      ip_address, // Now properly normalized and validated
-      user_agent: user_agent?.substring(0, 500), // Limit to schema constraint
-    }
+    // Deliver to the site owner. `sendEmail` reports failure instead of
+    // throwing, and the provider call is bounded by a timeout so a hung
+    // provider cannot push this handler past the platform's function limit.
+    const delivery = await sendEmail({
+      template: 'contact-notification',
+      to: notificationAddress,
+      // The submitter's address is unverified, so it must not be the sender.
+      // As Reply-To it makes the notification answerable without letting the
+      // form choose who our domain sends as.
+      replyTo: sanitizedData.email,
+      subject: `New contact message: ${subject}`,
+      parameters: {
+        name: sanitizedData.name,
+        email: sanitizedData.email,
+        subject,
+        message: sanitizedData.message,
+        receivedAt: new Date().toISOString(),
+      },
+    })
 
-    // Insert message into database
-    const messageId = await db.insertMessage(messageData)
-
-    // Notify the site owner. Best-effort by design: the message is already
-    // persisted, so a mail outage must not turn a successful submission into an
-    // error for the sender. `sendEmail` reports failure instead of throwing, and
-    // the provider call is bounded by a timeout so a hung provider cannot push
-    // this handler past the platform's function limit.
-    const notificationAddress = getNotificationAddress()
-    if (notificationAddress) {
-      // `subject` is optional on MessageData, so give it a stand-in rather than
-      // letting "undefined" reach the subject line of a real email.
-      const subject = sanitizedData.subject || '(no subject)'
-      await sendEmail({
-        template: 'contact-notification',
-        to: notificationAddress,
-        // The submitter's address is unverified, so it must not be the sender.
-        // As Reply-To it makes the notification answerable without letting the
-        // form choose who our domain sends as.
-        replyTo: sanitizedData.email,
-        subject: `New contact message: ${subject}`,
-        parameters: {
-          name: sanitizedData.name,
-          email: sanitizedData.email,
-          subject,
-          message: sanitizedData.message,
-          messageId: String(messageId),
-          receivedAt: new Date().toISOString(),
-        },
-      })
+    // Nothing else records the submission, so an undelivered message is lost
+    // and the sender must be told to retry.
+    if (!delivery.sent) {
+      console.error('Contact form notification failed:', delivery.reason)
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'An error occurred while sending your message. Please try again later.',
+        }),
+        {
+          status: 502,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
     }
 
     return new Response(
       JSON.stringify({
         success: true,
         message: 'Your message has been sent successfully!',
-        id: messageId,
       }),
       {
         status: 200,
@@ -253,23 +235,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
 // Optional: Add GET endpoint to check API status
 export const GET: APIRoute = async () => {
-  let isConfigured = false
-  let providerName = 'none'
-
-  try {
-    const db = getDatabase()
-    isConfigured = db.isConfigured()
-    providerName = db.getProviderName()
-  } catch (error) {
-    console.error('Database check error:', error)
-  }
-
   return new Response(
     JSON.stringify({
       success: true,
       message: 'Contact API is running',
-      configured: isConfigured,
-      provider: providerName,
+      configured: isEmailConfigured() && getNotificationAddress() !== null,
     }),
     {
       status: 200,

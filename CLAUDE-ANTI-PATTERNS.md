@@ -29,7 +29,7 @@ This file documents anti-patterns—common mistakes and violations that must be 
 // ❌ INCORRECT
 import Header from '../components/astro/Header.astro'
 import { SITE_TITLE } from '../../utils/site-config'
-import { getDatabase } from './database'
+import { getSupabaseServiceRole } from './supabase-native'
 import type { Message } from '../types/message'
 ```
 
@@ -39,7 +39,7 @@ import type { Message } from '../types/message'
 // ✅ CORRECT
 import Header from '#components/astro/Header.astro'
 import { SITE_TITLE } from '#utils/site-config'
-import { getDatabase } from '#libs/database'
+import { getSupabaseServiceRole } from '#libs/supabase-native'
 import type { Message } from '#types/message'
 ```
 
@@ -335,8 +335,7 @@ export const POST: APIRoute = async ({ request }) => {
   const body = await request.json()
 
   // Directly processing without auth check
-  const db = getDatabase()
-  const result = await db.insertMessage(body)
+  const result = await createResource(body)
 
   return new Response(JSON.stringify(result), { status: 201 })
 }
@@ -356,8 +355,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
   }
 
   const body = await request.json()
-  const db = getDatabase()
-  const result = await db.insertMessage(body)
+  const result = await createResource(body)
 
   return new Response(JSON.stringify(result), {
     status: 201,
@@ -385,8 +383,7 @@ export const POST: APIRoute = async ({ request }) => {
   const body = await request.json()
 
   // No validation - accepts any data
-  const db = getDatabase()
-  const result = await db.insertMessage(body)
+  const result = await createResource(body)
 
   return new Response(JSON.stringify(result), { status: 201 })
 }
@@ -414,8 +411,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // Proceed with validated data
-  const db = getDatabase()
-  const result = await db.insertMessage(body)
+  const result = await createResource(body)
 
   return new Response(JSON.stringify(result), {
     status: 201,
@@ -483,8 +479,7 @@ return new Response(
 // ❌ INCORRECT
 export const GET: APIRoute = async ({ params }) => {
   // No error handling - will crash on any error
-  const db = getDatabase()
-  const result = await db.getMessageById(params.id)
+  const result = await getResourceById(params.id)
 
   return new Response(JSON.stringify(result), { status: 200 })
 }
@@ -496,8 +491,7 @@ export const GET: APIRoute = async ({ params }) => {
 // ✅ CORRECT
 export const GET: APIRoute = async ({ params }) => {
   try {
-    const db = getDatabase()
-    const result = await db.getMessageById(params.id)
+    const result = await getResourceById(params.id)
 
     if (!result) {
       return new Response(JSON.stringify({ error: 'Not Found' }), {
@@ -535,9 +529,10 @@ export const GET: APIRoute = async ({ params }) => {
 
 ## Database Anti-Patterns
 
-### ❌ Anti-Pattern 13: Direct Database Provider Access
+### ❌ Anti-Pattern 13: Direct Supabase Client Creation
 
-**Problem:** Directly accessing Supabase or Turso clients bypasses abstraction layer.
+**Problem:** Calling `createClient` from `@supabase/supabase-js` directly bypasses the shared helpers
+in `#libs/supabase-native`.
 
 ```typescript
 // ❌ INCORRECT
@@ -547,75 +542,31 @@ export const GET: APIRoute = async () => {
   // Direct Supabase access - bad!
   const supabase = createClient(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_ANON_KEY)
 
-  const { data } = await supabase.from('messages').select('*')
+  const { data } = await supabase.from('users').select('*')
 
   return new Response(JSON.stringify(data), { status: 200 })
 }
 ```
 
-**Solution:** Always use the unified database abstraction layer.
+**Solution:** Always use the helpers in `#libs/supabase-native`.
 
 ```typescript
 // ✅ CORRECT
-import { getDatabase } from '#libs/database'
-import type { MessageQueryOptions } from '#libs/database-types'
+import { getSupabaseServiceRole } from '#libs/supabase-native'
 
 export const GET: APIRoute = async () => {
-  // Use abstraction layer
-  const db = getDatabase()
-  const options: MessageQueryOptions = { limit: 10 }
-  const messages = await db.getMessages(options)
-
-  return new Response(JSON.stringify({ data: messages }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
-```
-
-**Why This Matters:**
-
-- Enables database provider switching without code changes
-- Consistent interface across project
-- Easier testing (mock single interface)
-- Centralized connection management
-- Type safety across providers
-
----
-
-### ❌ Anti-Pattern 14: Hardcoded Provider Logic
-
-**Problem:** Using if/else logic to check which database provider is active.
-
-```typescript
-// ❌ INCORRECT
-export const GET: APIRoute = async () => {
-  if (import.meta.env.DATABASE_PROVIDER === 'supabase') {
-    // Supabase logic
-    const supabase = createClient(/* ... */)
-    const { data } = await supabase.from('messages').select('*')
-    return new Response(JSON.stringify(data), { status: 200 })
-  } else if (import.meta.env.DATABASE_PROVIDER === 'turso') {
-    // Turso logic
-    const turso = createClient(/* ... */)
-    const result = await turso.execute('SELECT * FROM messages')
-    return new Response(JSON.stringify(result.rows), { status: 200 })
+  // Shared, typed client - null when Supabase is not configured
+  const supabase = getSupabaseServiceRole()
+  if (!supabase) {
+    return new Response(JSON.stringify({ error: 'Database not configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
-}
-```
 
-**Solution:** Use the abstraction layer which handles provider detection automatically.
+  const { data: users } = await supabase.from('users').select('id, email').limit(10)
 
-```typescript
-// ✅ CORRECT
-import { getDatabase } from '#libs/database'
-
-export const GET: APIRoute = async () => {
-  // Works with any provider - no conditional logic needed
-  const db = getDatabase()
-  const messages = await db.getMessages({ limit: 10 })
-
-  return new Response(JSON.stringify({ data: messages }), {
+  return new Response(JSON.stringify({ data: users }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   })
@@ -624,16 +575,16 @@ export const GET: APIRoute = async () => {
 
 **Why This Matters:**
 
-- Adding new providers doesn't require endpoint changes
-- Eliminates branching logic
-- Single source of truth for provider selection
-- Cleaner, more maintainable code
+- Consistent interface across project
+- Easier testing (mock one module)
+- Centralized connection management and configuration checks
+- Type safety via `src/libs/database.types.ts`
 
 ---
 
 ## Error Handling Anti-Patterns
 
-### ❌ Anti-Pattern 15: Silent Failures
+### ❌ Anti-Pattern 14: Silent Failures
 
 **Problem:** Catching errors without logging or user feedback.
 
@@ -682,7 +633,7 @@ try {
 
 ---
 
-### ❌ Anti-Pattern 16: Generic Error Messages
+### ❌ Anti-Pattern 15: Generic Error Messages
 
 **Problem:** Vague error messages that don't help users or developers.
 
@@ -733,7 +684,7 @@ if (!found) {
 
 ## Security Anti-Patterns
 
-### ❌ Anti-Pattern 17: No Input Sanitization
+### ❌ Anti-Pattern 16: No Input Sanitization
 
 **Problem:** Accepting user input without sanitization.
 
@@ -743,8 +694,7 @@ export const POST: APIRoute = async ({ request }) => {
   const body = await request.json()
 
   // Directly using unsanitized input
-  const db = getDatabase()
-  await db.insertMessage({
+  await createResource({
     name: body.name, // Could contain malicious scripts
     message: body.message, // Could contain XSS attacks
   })
@@ -770,8 +720,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // Sanitize inputs
-  const db = getDatabase()
-  await db.insertMessage({
+  await createResource({
     name: sanitizeInput(body.name),
     email: body.email, // Already validated
     message: sanitizeInput(body.message),
@@ -788,7 +737,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 ---
 
-### ❌ Anti-Pattern 18: Missing CSRF Protection
+### ❌ Anti-Pattern 17: Missing CSRF Protection
 
 **Problem:** Forms without CSRF token validation.
 
@@ -838,7 +787,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 ## File Organization Anti-Patterns
 
-### ❌ Anti-Pattern 19: Files in Wrong Locations
+### ❌ Anti-Pattern 18: Files in Wrong Locations
 
 **Problem:** Placing files in incorrect directories.
 
@@ -879,7 +828,7 @@ src/
 
 ---
 
-### ❌ Anti-Pattern 20: Inconsistent File Naming
+### ❌ Anti-Pattern 19: Inconsistent File Naming
 
 **Problem:** Mixed naming conventions across files.
 
@@ -927,7 +876,7 @@ src/utils/
 | Runtime type imports      | Use `import type`               |
 | Missing auth check        | Add `if (!locals.userId)` first |
 | No input validation       | Validate required fields        |
-| Direct DB access          | Use `getDatabase()` abstraction |
+| Direct DB access          | Use `#libs/supabase-native`     |
 | Inconsistent errors       | Use standard error format       |
 | No error handling         | Wrap in try-catch               |
 | Missing JSDoc             | Add comprehensive comments      |
@@ -944,7 +893,7 @@ Before committing code, verify you haven't introduced these anti-patterns:
 - [ ] Type-only imports use `import type`
 - [ ] Protected endpoints check authentication
 - [ ] User input is validated and sanitized
-- [ ] Database accessed via abstraction layer only
+- [ ] Database accessed via `#libs/supabase-native` helpers only
 - [ ] Error responses follow consistent format
 - [ ] Try-catch blocks wrap async operations
 - [ ] Components in correct directories

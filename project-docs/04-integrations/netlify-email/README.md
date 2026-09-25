@@ -5,6 +5,9 @@ project-local Astro integration (`src/integrations/email/`), which resolves the
 blocking findings below. See [§6](#6-outcome-implemented-as-an-astro-integration)
 and the [Email guide](../../../src/content/docs/guide/integrations/email.mdx).
 **Scope:** Contact form (`POST /api/message-us`) and signup (Clerk `user.created`)
+**Update:** The contact form no longer stores submissions, so the notification email is now its
+only delivery path. See [Contact form delivery](#contact-form-delivery). Sections 1-5 describe the
+earlier design, in which the message was saved to a database first.
 **Reviewed against:** `@netlify/plugin-emails@1.1.1` (source read directly from the published
 tarball, since <https://docs.netlify.com/extend/install-and-use/setup-guides/email-integration/>
 is unreachable from the build sandbox)
@@ -526,3 +529,24 @@ lazily, so projects using HTML templates add no dependency at all.
 The transport boundary in `src/integrations/email/providers.ts` is narrow, so
 switching to a provider SDK later — or back to the Netlify integration — is a
 single-file change that leaves every call site untouched.
+
+### Contact form delivery
+
+`POST /api/message-us` (the `/message-us` form) stores nothing: the `messages` table was removed,
+and each submission is delivered only as the `contact-notification` email to `EMAIL_TO_ADDRESS`.
+That reverses the best-effort stance of §3.3 for this call site:
+
+- Email is **required** for the form: `EMAIL_PROVIDER`, `EMAIL_PROVIDER_API_KEY`,
+  `EMAIL_FROM_ADDRESS` and `EMAIL_TO_ADDRESS` (plus `EMAIL_MAILGUN_DOMAIN` for Mailgun). Without
+  them the endpoint returns `503` (contact form not configured).
+- A failed send returns `502` and asks the submitter to try again, instead of reporting success for
+  a message nothing recorded.
+- The success response has no `id`, the notification email has no message ID, and the submitter's
+  IP address and user agent are not recorded. CSRF validation, input sanitization and the per-IP
+  rate limit are unchanged.
+- `GET /api/message-us` reports whether email is configured rather than database status.
+
+The Clerk `user.created` welcome email keeps the best-effort contract: the webhook returns 2xx
+whatever the mail outcome. `/contact-us` (Netlify Forms) and `/contact` do not use this endpoint.
+The Starlight [Email guide](../../../src/content/docs/guide/integrations/email.mdx#contact-form)
+carries the same description.

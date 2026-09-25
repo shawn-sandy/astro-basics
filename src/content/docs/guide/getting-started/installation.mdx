@@ -64,10 +64,6 @@ SITE_URL=http://localhost:4321
 # Database (Optional)
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
-# Turso (Optional)
-TURSO_DATABASE_URL=libsql://your-database.turso.io
-TURSO_AUTH_TOKEN=your_auth_token_here
 ```
 
 :::note[Where to find these credentials?]
@@ -83,7 +79,7 @@ Need help locating your API keys?
 If you plan to customize user roles, **configure them before running database migrations**. Role configuration generates database migrations that define your role schema. See [Section 3: Role Configuration](#3-role-configuration-optional) below for details, or skip to use the default 3-tier system (member, admin, super_admin).
 :::
 
-The project supports **Supabase** (PostgreSQL) and **Turso** (LibSQL) backends.
+The project uses **Supabase** (PostgreSQL) as its database.
 
 #### Interactive Setup (Recommended)
 
@@ -100,41 +96,12 @@ The wizard will detect available credentials and guide you through configuration
 # Check database status and configuration
 npm run db:status
 
-# Initialize database schema
-npm run db:setup
-
-# Verify connection
-npm run db:check
-
-# Run migrations (Supabase)
-npm run db:migrate
-
-# Check migration status
-npm run db:migrate:status
+# Apply the Supabase migrations with psql (see scripts/migrations/README.md)
+psql $DATABASE_URL -f scripts/migrations/001_core_schema.sql
+psql $DATABASE_URL -f scripts/migrations/002_security_policies.sql
 ```
 
-#### Database Switching
-
-The project includes seamless database switching with automatic backups:
-
-```bash
-# Switch to Supabase (with backup)
-npm run db:switch:supabase
-
-# Switch to Turso (with backup)
-npm run db:switch:turso
-
-# Auto-detect and use available database
-npm run db:switch:auto
-
-# Create backup only
-npm run db:backup
-
-# Restore from backup
-npm run db:restore
-```
-
-See the [Complete Setup Guide](/guide/getting-started/setup/) and [Database Switching Guide](/guide/database-switching/) for detailed configuration.
+See the [Complete Setup Guide](/guide/getting-started/setup/) for detailed configuration.
 
 ### 3. Role Configuration (Optional)
 
@@ -181,8 +148,8 @@ export const roleConfig: RoleConfig = {
 # Generate TypeScript types and database migrations
 npm run setup:roles
 
-# Apply the migration
-npm run db:migrate
+# Apply the migration (use the number setup:roles printed)
+psql $DATABASE_URL -f scripts/migrations/<NNN>_user_roles.sql
 ```
 
 **4. Commit your changes:**
@@ -308,5 +275,4 @@ After installation, explore these guides:
 - **[Complete Setup](/guide/getting-started/setup/)** - Full feature configuration (database, roles, security)
 - **[Configurable Roles](/guide/configurable-roles/)** - Custom role system with templates and examples
 - **[Role Guard Usage](/guide/role-guard-usage/)** - Access control patterns and best practices
-- **[Database Switching](/guide/database-switching/)** - Flexible backend selection
 - **[Components](/guide/components/)** - Explore available components

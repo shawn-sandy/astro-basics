@@ -15,7 +15,7 @@ test.describe('Logging Correlation E2E', () => {
     request,
   }) => {
     // Test direct API call with correlation tracking
-    const response = await request.get('http://localhost:4321/api/messages', {
+    const response = await request.get('http://localhost:4321/api/user/profile', {
       headers: {
         Accept: 'application/json',
       },
@@ -49,7 +49,7 @@ test.describe('Logging Correlation E2E', () => {
     const requests = Array(5)
       .fill(null)
       .map((_, i) =>
-        request.get(`http://localhost:4321/api/messages?test=${i}`, {
+        request.get(`http://localhost:4321/api/user/profile?test=${i}`, {
           headers: {
             Accept: 'application/json',
           },
@@ -66,7 +66,7 @@ test.describe('Logging Correlation E2E', () => {
 
   test('error responses should include correlation tracking', async ({ request }) => {
     // Make a request to an endpoint that will error
-    const response = await request.post('http://localhost:4321/api/messages', {
+    const response = await request.patch('http://localhost:4321/api/user/profile', {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -97,7 +97,7 @@ test.describe('Logger Integration with Real Routes', () => {
   })
 
   test('API route should return proper error structure', async ({ request }) => {
-    const response = await request.get('http://localhost:4321/api/messages')
+    const response = await request.get('http://localhost:4321/api/user/profile')
 
     // Unauthenticated requests should return 401
     if (response.status() === 401) {
@@ -119,7 +119,7 @@ test.describe('Logger Flush Behavior', () => {
   test('API routes should complete without hanging (flush works)', async ({ request }) => {
     const startTime = Date.now()
 
-    const response = await request.get('http://localhost:4321/api/messages')
+    const response = await request.get('http://localhost:4321/api/user/profile')
 
     const duration = Date.now() - startTime
 

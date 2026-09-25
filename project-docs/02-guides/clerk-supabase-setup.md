@@ -147,7 +147,6 @@ npm run start
 Visit these protected routes to verify authentication:
 
 - `/dashboard` - User dashboard
-- `/forum` - Community forum with messages
 - `/organization` - Organization management
 
 ### 5.4 Test API Endpoints
@@ -158,16 +157,6 @@ You can test the API endpoints using curl or your browser's dev tools:
 # Get user profile (requires authentication)
 curl http://localhost:4321/api/user/profile \
   -H "Authorization: Bearer YOUR_CLERK_TOKEN"
-
-# Get messages
-curl http://localhost:4321/api/messages \
-  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
-
-# Create a message
-curl -X POST http://localhost:4321/api/messages \
-  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test User","email":"test@example.com","message":"Hello World"}'
 ```
 
 ## Step 6: Production Deployment
@@ -271,46 +260,9 @@ Get current user's profile from Supabase
 
 Update user profile fields
 
-#### GET /api/messages
-
-Get user's messages (filtered by RLS)
-
-#### POST /api/messages
-
-Create a new message
-
-#### PATCH /api/messages
-
-Update message (mark as read/archived)
-
-#### DELETE /api/messages?id={messageId}
-
-Delete a message
-
-### React Hooks
-
-#### useSupabase()
-
-Returns authenticated Supabase client and connection status
-
-```typescript
-const { client, loading, error, isAuthenticated } = useSupabase()
-```
-
-#### useSupabaseSubscription(table, filter)
-
-Subscribe to real-time changes in a table
-
-```typescript
-const { data, loading, error } = useSupabaseSubscription('messages', `clerk_user_id=eq.${userId}`)
-```
-
 ## Migration from Turso
 
-If you're migrating from Turso to Supabase:
-
-1. Export data from Turso using the export script
-2. Transform data to match Supabase schema
-3. Import using Supabase's CSV import or SQL insert statements
-4. Update application code to use Supabase client instead of Turso
-5. Test thoroughly before switching production traffic
+The app no longer uses Turso at all — Supabase is the only database — so any Turso database
+created for this project can be deleted. Nothing needs to be migrated: Turso only held
+contact-form messages, and the contact form now delivers each submission as a notification email
+instead of storing it. Export the Turso data first if you want to keep old messages.

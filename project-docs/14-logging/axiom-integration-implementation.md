@@ -652,43 +652,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 #### Step 4.2: Update Database Operations
 
-**File:** `src/libs/database.ts`
-
-Add correlation tracking to database operations:
-
-```typescript
-// Example for TursoDatabase class methods
-async getMessages(options?: MessageQueryOptions, correlationId?: string): Promise<Message[]> {
-  const ctx = {
-    operation: 'database.getMessages',
-    provider: 'turso',
-    correlationId: correlationId || logger.createCorrelationId(),
-    queryOptions: options,
-  }
-
-  await logger.debug('Fetching messages from database', ctx)
-
-  try {
-    const startTime = Date.now()
-    const tursoMessages = await tursoGetMessages(options)
-    const duration = Date.now() - startTime
-
-    await logger.info('Messages retrieved successfully', {
-      ...ctx,
-      count: tursoMessages.length,
-      requestDuration: duration,
-    })
-
-    return tursoMessages.map(this.convertTursoMessage)
-  } catch (error) {
-    await logger.error('Failed to retrieve messages', {
-      ...ctx,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
-    throw error
-  }
-}
-```
+> **No longer applies.** `src/libs/database.ts`, the Turso provider and the messages feature have
+> since been removed. Supabase is reached through `#libs/supabase-native`; add correlation context
+> at the call sites (API routes and `#utils/user-sync`) instead.
 
 #### Step 4.3: Update User Profile API Routes
 
@@ -1132,7 +1098,6 @@ export const POST: APIRoute = async ({ locals }) => {
    - `/api/webhooks/clerk`
    - `/api/user/profile`
    - `/api/user/profile-with-org`
-   - `/api/messages`
 4. Verify logs in Axiom with correct correlation
 5. Test error scenarios (invalid inputs, auth failures)
 6. Verify `logger.flush()` works in serverless environment

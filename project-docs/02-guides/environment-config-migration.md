@@ -5,7 +5,7 @@
 This guide helps developers migrate from direct `import.meta.env` access to the unified environment configuration abstraction layer. The migration improves type safety, validation, performance, and testability.
 
 **Target Audience:** Developers working on astro-basics codebase
-**Migration Status:** Phase 1 complete (7 files), Phase 2 in progress (8 files remaining)
+**Migration Status:** Phase 1 complete (5 files), Phase 2 in progress (6 files remaining)
 **Related Issue:** #317
 **OpenSpec Proposal:** [complete-env-abstraction-migration](../../openspec/changes/complete-env-abstraction-migration/)
 
@@ -13,21 +13,19 @@ This guide helps developers migrate from direct `import.meta.env` access to the 
 
 ## Migration Status
 
-### ✅ Completed (Phase 1 - 7 Files)
+### ✅ Completed (Phase 1 - 5 Files)
 
 These files have been successfully migrated and serve as reference examples:
 
 | File                          | Status      | Pattern Used                   |
 | ----------------------------- | ----------- | ------------------------------ |
-| `src/libs/database.ts`        | ✅ Migrated | Database provider detection    |
-| `src/libs/turso.ts`           | ✅ Migrated | Database client initialization |
 | `src/libs/supabase.ts`        | ✅ Migrated | Database client setup          |
 | `src/libs/supabase-native.ts` | ✅ Migrated | Native database operations     |
 | `src/utils/clerk-config.ts`   | ✅ Migrated | Clerk configuration management |
 | `src/utils/logger.ts`         | ✅ Migrated | Axiom logging configuration    |
 | `src/utils/env-config.ts`     | ✅ Source   | Abstraction implementation     |
 
-### ⏳ Pending (Phase 2 - 8 Files)
+### ⏳ Pending (Phase 2 - 6 Files)
 
 These files still use direct `import.meta.env` access and need migration:
 
@@ -36,14 +34,12 @@ These files still use direct `import.meta.env` access and need migration:
 - [ ] `src/middleware.ts`
 - [ ] `src/pages/api/webhooks/clerk.ts`
 - [ ] `src/libs/supabase-auth.ts`
-- [ ] `src/libs/supabase-server.ts`
 
 **Medium Priority (Components & Hooks):**
 
 - [ ] `src/components/astro/RoleGuard.astro`
 - [ ] `src/layouts/Base.astro`
 - [ ] `src/components/astro/CollectionTagList.astro`
-- [ ] `src/hooks/useSupabase.tsx`
 
 ---
 
@@ -129,18 +125,6 @@ const supabaseUrl = envConfig.getSupabaseUrl()
 const supabaseAnonKey = envConfig.getSupabaseAnonKey()
 ```
 
-**Turso Configuration:**
-
-```typescript
-// Before
-const tursoUrl = import.meta.env.TURSO_DATABASE_URL
-const tursoToken = import.meta.env.TURSO_AUTH_TOKEN
-
-// After
-const tursoUrl = envConfig.getTursoDatabaseUrl()
-const tursoToken = envConfig.getTursoAuthToken()
-```
-
 ### Step 4: Use Validation Helpers
 
 **Replace manual validation with built-in helpers:**
@@ -161,7 +145,6 @@ if (!envConfig.isClerkConfigured()) {
 
 - `isClerkConfigured()` - Validates both Clerk keys present and not placeholders
 - `isSupabaseConfigured()` - Validates Supabase URL and anon key
-- `isTursoConfigured()` - Validates Turso URL and auth token
 - `isAxiomConfigured()` - Validates Axiom token and dataset
 
 ### Step 5: Safe Non-Null Assertions
@@ -389,66 +372,6 @@ const isDevelopment = envConfig.isDevelopment()
 
 ---
 
-### Example 5: React Hook (`src/hooks/useSupabase.tsx`)
-
-**Before:**
-
-```typescript
-import { createClient } from '@supabase/supabase-js'
-import { useEffect, useState } from 'react'
-
-export function useSupabase() {
-  const [client, setClient] = useState<any>(null)
-
-  useEffect(() => {
-    const supabaseUrl = import.meta.env.SUPABASE_URL
-    const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY
-
-    if (supabaseUrl && supabaseAnonKey) {
-      const supabase = createClient(supabaseUrl, supabaseAnonKey)
-      setClient(supabase)
-    }
-  }, [])
-
-  return client
-}
-```
-
-**After:**
-
-```typescript
-import { createClient } from '@supabase/supabase-js'
-import { useEffect, useState } from 'react'
-import { getEnvironmentConfig } from '#utils/env-config'
-
-export function useSupabase() {
-  const [client, setClient] = useState<any>(null)
-
-  useEffect(() => {
-    const envConfig = getEnvironmentConfig()
-
-    if (envConfig.isSupabaseConfigured()) {
-      const supabaseUrl = envConfig.getSupabaseUrl()!
-      const supabaseAnonKey = envConfig.getSupabaseAnonKey()!
-
-      const supabase = createClient(supabaseUrl, supabaseAnonKey)
-      setClient(supabase)
-    }
-  }, [])
-
-  return client
-}
-```
-
-**Changes:**
-
-- ✅ Added env-config import
-- ✅ Created instance inside useEffect (appropriate for React)
-- ✅ Used `isSupabaseConfigured()` validation
-- ✅ Safe non-null assertions after validation
-
----
-
 ## Common Migration Pitfalls
 
 ### ❌ Pitfall 1: Skipping Validation
@@ -643,7 +566,7 @@ vi.mock('#utils/env-config', () => ({
 
 Review these successfully migrated files for patterns:
 
-- **Database:** `src/libs/database.ts`, `src/libs/turso.ts`, `src/libs/supabase.ts`
+- **Database:** `src/libs/supabase.ts`, `src/libs/supabase-native.ts`
 - **Auth:** `src/utils/clerk-config.ts`
 - **Logging:** `src/utils/logger.ts`
 
@@ -689,6 +612,6 @@ A: Add it to `src/utils/env-config.ts` following the existing patterns, then use
 ---
 
 **Last Updated:** October 2025
-**Migration Status:** Phase 1 complete (7/15 files), Phase 2 in progress
+**Migration Status:** Phase 1 complete (5/11 files), Phase 2 in progress
 **Related Issue:** #317
 **OpenSpec Proposal:** [complete-env-abstraction-migration](../../openspec/changes/complete-env-abstraction-migration/)

@@ -31,13 +31,13 @@ This file contains enforceable architectural patterns that MUST be followed when
 // ✅ CORRECT
 import Header from '#components/astro/Header.astro'
 import { SITE_TITLE } from '#utils/site-config'
-import { getDatabase } from '#libs/database'
-import type { Message } from '#libs/database-types'
+import { getSupabaseServiceRole } from '#libs/supabase-native'
+import type { Database } from '#libs/database.types'
 
 // ❌ INCORRECT - NEVER DO THIS
 import Header from '../components/astro/Header.astro'
 import { SITE_TITLE } from '../../utils/site-config'
-import { getDatabase } from './libs/database'
+import { getSupabaseServiceRole } from './libs/supabase-native'
 ```
 
 ### Type-Only Imports
@@ -48,7 +48,7 @@ import { getDatabase } from './libs/database'
 // ✅ CORRECT
 import type { APIRoute } from 'astro'
 import type { Props } from './types'
-import type { Database } from '#libs/database-types'
+import type { Database } from '#libs/database.types'
 
 // ❌ INCORRECT
 import { APIRoute } from 'astro' // Runtime import for type-only usage
@@ -74,11 +74,11 @@ import Header from '#components/astro/Header.astro'
 import Alert from '#components/react/Alert'
 
 import { SITE_TITLE } from '#utils/site-config'
-import { getDatabase } from '#libs/database'
+import { getSupabaseServiceRole } from '#libs/supabase-native'
 import { FORM_ERROR_MESSAGES } from '#constants/formErrors'
 
 import type { APIRoute } from 'astro'
-import type { Message } from '#libs/database-types'
+import type { Database } from '#libs/database.types'
 
 import './styles.css'
 ```
@@ -279,7 +279,7 @@ export interface IProps {
 
 1. Authentication check
 2. Input validation
-3. Database access via abstraction layer
+3. Database access via `#libs/supabase-native` helpers
 4. Business logic
 5. Consistent error handling
 6. Consistent success response
@@ -288,7 +288,7 @@ export interface IProps {
 
 ```typescript
 import type { APIRoute } from 'astro'
-import { getDatabase } from '#libs/database'
+import { getSupabaseServiceRole } from '#libs/supabase-native'
 import { validateInput } from '#utils/validation'
 
 /**
@@ -327,10 +327,23 @@ export const GET: APIRoute = async ({ locals, request, params }) => {
     }
 
     // ────────────────────────────────────────────────────────────
-    // 3. DATABASE ACCESS (REQUIRED: Use abstraction layer)
+    // 3. DATABASE ACCESS (REQUIRED: Use #libs/supabase-native helpers)
     // ────────────────────────────────────────────────────────────
-    const db = getDatabase()
-    const resource = await db.getResourceById(Number(id))
+    const supabase = getSupabaseServiceRole()
+    if (!supabase) {
+      return new Response(JSON.stringify({ error: 'Database not configured' }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
+    const { data: resource, error: dbError } = await supabase
+      .from('resources')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (dbError) throw dbError
 
     if (!resource) {
       return new Response(JSON.stringify({ error: 'Not Found' }), {
@@ -410,9 +423,17 @@ export const POST: APIRoute = async ({ locals, request }) => {
       )
     }
 
-    // 3. Database operation via abstraction layer
-    const db = getDatabase()
-    const result = await db.insertResource(body)
+    // 3. Database operation via #libs/supabase-native helpers
+    const supabase = getSupabaseServiceRole()
+    if (!supabase) throw new Error('Supabase not configured')
+
+    const { data: result, error: dbError } = await supabase
+      .from('resources')
+      .insert(body)
+      .select()
+      .single()
+
+    if (dbError) throw dbError
 
     // 4. Success response
     return new Response(
@@ -454,80 +475,60 @@ export const POST: APIRoute = async ({ locals, request }) => {
 - `404` - Not Found (resource doesn't exist)
 - `409` - Conflict (duplicate, constraint violation)
 - `500` - Internal Server Error (unexpected error)
+- `503` - Service Unavailable (a required service, such as Supabase, is not configured)
 
 ---
 
 ## Database Access Patterns
 
-### MANDATORY: Use Database Abstraction Layer
+### MANDATORY: Use the Supabase Helpers
 
-**Rule:** NEVER access database providers directly. ALWAYS use the unified database interface.
+**Rule:** Supabase is the only database. NEVER call `createClient` from `@supabase/supabase-js`
+directly. ALWAYS use the helpers in `#libs/supabase-native` (or `#libs/supabase-auth` for
+Clerk-scoped clients), typed with `src/libs/database.types.ts`.
 
 ```typescript
-// ✅ CORRECT - Use abstraction layer
-import { getDatabase, getDatabaseStatus } from '#libs/database'
-import type { Message, MessageData } from '#libs/database-types'
+// ✅ CORRECT - Use the shared helpers
+import { getSupabaseServiceRole } from '#libs/supabase-native'
 
-const db = getDatabase()
-const messages = await db.getMessages({ limit: 10 })
+const supabase = getSupabaseServiceRole() // null when Supabase is not configured
+if (!supabase) {
+  return new Response(JSON.stringify({ error: 'Database not configured' }), { status: 503 })
+}
 
-// Check database status
-const status = getDatabaseStatus()
-console.log(`Using: ${status.provider_name}`)
+const { data: users, error } = await supabase.from('users').select('id, email').limit(10)
 
-// ❌ INCORRECT - Direct provider access
+// ❌ INCORRECT - Creating a client directly
 import { createClient } from '@supabase/supabase-js'
-import { createClient as createTursoClient } from '@libsql/client'
 
 const supabase = createClient(url, key) // NEVER do this
-const turso = createTursoClient({ url }) // NEVER do this
 ```
 
-### Database Operation Patterns
+### Choosing a Client
 
-**Message Operations:**
+| Helper                                  | Use for                                                                 |
+| --------------------------------------- | ----------------------------------------------------------------------- |
+| `getSupabaseServiceRole()`              | Webhooks and trusted server operations (service role key, bypasses RLS) |
+| `createServerSupabaseClient(token)`     | Server requests on behalf of a user (Clerk session token, RLS applies)  |
+| `createAuthenticatedSupabaseClient(fn)` | Same as above, fetching the Clerk token on demand                       |
+| `isSupabaseConfigured()`                | Guard before any of the above; return `503` when it is `false`          |
 
-```typescript
-import { getDatabase } from '#libs/database'
-import type { MessageData, MessageQueryOptions } from '#libs/database-types'
-
-const db = getDatabase()
-
-// Create message
-const messageData: MessageData = {
-  name: 'John Doe',
-  email: 'john@example.com',
-  subject: 'Inquiry',
-  message: 'Hello!',
-  phone: '+1234567890',
-}
-const messageId = await db.insertMessage(messageData)
-
-// Query messages
-const options: MessageQueryOptions = {
-  limit: 10,
-  offset: 0,
-  isRead: false,
-  isArchived: false,
-}
-const messages = await db.getMessages(options)
-
-// Get single message
-const message = await db.getMessageById(messageId)
-
-// Update message status
-await db.markMessageAsRead(messageId)
-
-// Archive message (soft delete)
-await db.archiveMessage(messageId)
-```
+All three client helpers return `null` when Supabase is not configured.
 
 ### Error Handling for Database Operations
 
 ```typescript
 try {
-  const db = getDatabase()
-  const result = await db.someOperation()
+  const supabase = getSupabaseServiceRole()
+  if (!supabase) throw new Error('Supabase not configured')
+
+  const { data: result, error: dbError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (dbError) throw dbError
 
   if (!result) {
     // Handle not found case
@@ -817,12 +818,12 @@ tests/
 ├── utils/
 │   └── validation.test.ts
 └── libs/
-    └── database.test.ts
+    └── supabase-native.test.ts
 
 e2e/
 ├── auth.spec.ts
 └── api/
-    └── messages.spec.ts
+    └── message-us.spec.ts
 ```
 
 ---
@@ -831,24 +832,24 @@ e2e/
 
 **Rule:** Follow this matrix for file placement:
 
-| Feature Type        | Location                    | File Extension     | Import Pattern                                    |
-| ------------------- | --------------------------- | ------------------ | ------------------------------------------------- |
-| Server Component    | `src/components/astro/`     | `.astro`           | `import Comp from '#components/astro/Comp.astro'` |
-| Client Component    | `src/components/react/`     | `.tsx`             | `import Comp from '#components/react/Comp'`       |
-| Protected Component | `src/components/dashboard/` | `.astro` or `.tsx` | `import Comp from '#components/dashboard/Comp'`   |
-| API Endpoint        | `src/pages/api/`            | `.ts`              | `export const GET: APIRoute`                      |
-| Public Page         | `src/pages/`                | `.astro`           | N/A (route-based)                                 |
-| Layout              | `src/layouts/`              | `.astro`           | `import Layout from '#layouts/Layout.astro'`      |
-| Utility Function    | `src/utils/`                | `.ts`              | `import { fn } from '#utils/module'`              |
-| Database Client     | `src/libs/`                 | `.ts`              | `import { getDatabase } from '#libs/database'`    |
-| Type Definition     | `src/types/`                | `.ts`              | `import type { Type } from '#types/module'`       |
-| Constant            | `src/constants/`            | `.ts`              | `import { CONST } from '#constants/module'`       |
-| Content Collection  | `src/content/`              | `.md` or `.mdx`    | `getCollection('posts')`                          |
-| Style               | `src/styles/`               | `.scss`            | `@use '#styles/variables'`                        |
-| Test (Unit)         | `tests/`                    | `.test.ts`         | N/A (test files)                                  |
-| Test (E2E)          | `e2e/`                      | `.spec.ts`         | N/A (test files)                                  |
-| Database Migration  | `scripts/migrations/`       | `.sql`             | N/A (SQL files)                                   |
-| Build Script        | `scripts/`                  | `.ts` or `.js`     | N/A (scripts)                                     |
+| Feature Type        | Location                    | File Extension     | Import Pattern                                                   |
+| ------------------- | --------------------------- | ------------------ | ---------------------------------------------------------------- |
+| Server Component    | `src/components/astro/`     | `.astro`           | `import Comp from '#components/astro/Comp.astro'`                |
+| Client Component    | `src/components/react/`     | `.tsx`             | `import Comp from '#components/react/Comp'`                      |
+| Protected Component | `src/components/dashboard/` | `.astro` or `.tsx` | `import Comp from '#components/dashboard/Comp'`                  |
+| API Endpoint        | `src/pages/api/`            | `.ts`              | `export const GET: APIRoute`                                     |
+| Public Page         | `src/pages/`                | `.astro`           | N/A (route-based)                                                |
+| Layout              | `src/layouts/`              | `.astro`           | `import Layout from '#layouts/Layout.astro'`                     |
+| Utility Function    | `src/utils/`                | `.ts`              | `import { fn } from '#utils/module'`                             |
+| Database Client     | `src/libs/`                 | `.ts`              | `import { getSupabaseServiceRole } from '#libs/supabase-native'` |
+| Type Definition     | `src/types/`                | `.ts`              | `import type { Type } from '#types/module'`                      |
+| Constant            | `src/constants/`            | `.ts`              | `import { CONST } from '#constants/module'`                      |
+| Content Collection  | `src/content/`              | `.md` or `.mdx`    | `getCollection('posts')`                                         |
+| Style               | `src/styles/`               | `.scss`            | `@use '#styles/variables'`                                       |
+| Test (Unit)         | `tests/`                    | `.test.ts`         | N/A (test files)                                                 |
+| Test (E2E)          | `e2e/`                      | `.spec.ts`         | N/A (test files)                                                 |
+| Database Migration  | `scripts/migrations/`       | `.sql`             | N/A (SQL files)                                                  |
+| Build Script        | `scripts/`                  | `.ts` or `.js`     | N/A (scripts)                                                    |
 
 ---
 
@@ -944,7 +945,7 @@ Before completing ANY task, verify compliance with these patterns:
 - [ ] Props use explicit `T | undefined` instead of `T?`
 - [ ] API endpoints include authentication check (if protected)
 - [ ] API endpoints validate input
-- [ ] Database operations use abstraction layer (never direct)
+- [ ] Database operations use `#libs/supabase-native` helpers (never `createClient` directly)
 - [ ] Error responses follow consistent format
 - [ ] Try-catch blocks wrap async operations
 - [ ] JSDoc comments added to exported functions

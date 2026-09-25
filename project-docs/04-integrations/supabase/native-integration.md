@@ -622,7 +622,6 @@ try {
     <div class="dashboard-actions">
       <a href="/dashboard/profile">Edit Profile</a>
       <a href="/dashboard/settings">Settings</a>
-      <a href="/dashboard/messages">Messages</a>
     </div>
   </div>
 </DashboardLayout>
@@ -696,7 +695,6 @@ try {
 
 1. **Start development server**: `npm run dev`
 2. **Test authentication flow**:
-
    - Visit `/dashboard`
    - Sign in with Clerk
    - Verify dashboard loads with user data
@@ -716,12 +714,10 @@ try {
 ### Step 16: Verify Security
 
 1. **Test unauthorized access**:
-
    - Try accessing API endpoints without authentication
    - Should return 401 Unauthorized
 
 2. **Test RLS policies**:
-
    - Create test user
    - Verify they can only see their own data
 
@@ -782,12 +778,10 @@ $$ LANGUAGE plpgsql;
 ### Common Issues
 
 1. **"Invalid JWT" errors**:
-
    - Check Clerk domain configuration in Supabase
    - Verify third-party auth is enabled
 
 2. **RLS policy denies access**:
-
    - Check that `auth.jwt()->>'sub'` matches `clerk_id`
    - Verify user exists in database
 

@@ -7,7 +7,6 @@ The **Environment Configuration Abstraction Layer** provides a unified, type-saf
 **Location:** [src/utils/env-config.ts](../../src/utils/env-config.ts)
 **Implementation Date:** October 2025
 **Related Issue:** #317
-**Pattern:** Follows the same architectural approach as the database abstraction layer
 
 ---
 
@@ -151,37 +150,6 @@ envConfig.getEnvironment() // 'development' | 'production' | 'test'
 - Use `live` keys for production deployments
 - Never commit secret keys to version control
 
-### Turso Credentials
-
-**CLI Commands** (Turso CLI required):
-
-| Variable             | Command                            | Format                      |
-| -------------------- | ---------------------------------- | --------------------------- |
-| `TURSO_DATABASE_URL` | `turso db show [db-name] --url`    | `libsql://your-db.turso.io` |
-| `TURSO_AUTH_TOKEN`   | `turso db tokens create [db-name]` | JWT token string            |
-
-**Steps to Get Credentials:**
-
-```bash
-# 1. Install Turso CLI (if not installed)
-curl -sSfL https://get.tur.so/install.sh | bash
-
-# 2. Authenticate
-turso auth login
-
-# 3. Get database URL
-turso db show my-database --url
-
-# 4. Create auth token
-turso db tokens create my-database
-```
-
-**Security Notes:**
-
-- Auth tokens can be rotated via CLI
-- Tokens inherit database access permissions
-- Each token is scoped to a specific database
-
 ---
 
 ### Astro Configuration
@@ -235,47 +203,16 @@ const secretKey = envConfig.getClerkSecretKey()!
 ### Database Configuration
 
 ```typescript
-// Provider selection
-envConfig.getDatabaseProvider() // 'turso' | 'supabase' | 'auto' | null
-
-// Supabase validation and access
+// Supabase validation and access (Supabase is the only database)
 envConfig.isSupabaseConfigured() // boolean
 envConfig.getSupabaseUrl() // string | null
 envConfig.getSupabaseAnonKey() // string | null
 envConfig.getSupabaseServiceRoleKey() // string | null
-
-// Turso validation and access
-envConfig.isTursoConfigured() // boolean
-envConfig.getTursoDatabaseUrl() // string | null
-envConfig.getTursoAuthToken() // string | null
 ```
 
-**Provider Selection Logic:**
-
-1. If `DATABASE_PROVIDER` explicitly set, use that provider (if configured)
-2. Otherwise, auto-detect based on available credentials
-3. Priority: Supabase → Turso
-
-**Example:**
-
-```typescript
-// In database client initialization
-if (envConfig.isSupabaseConfigured()) {
-  const url = envConfig.getSupabaseUrl()!
-  const key = envConfig.getSupabaseServiceRoleKey()!
-
-  return createClient(url, key)
-}
-
-if (envConfig.isTursoConfigured()) {
-  const url = envConfig.getTursoDatabaseUrl()!
-  const token = envConfig.getTursoAuthToken()!
-
-  return createClient({ url, authToken: token })
-}
-
-throw new Error('No database provider configured')
-```
+These accessors are consumed by `src/libs/supabase-native.ts`. Application code should call its
+helpers (`getSupabaseServiceRole()`, `createServerSupabaseClient(token)`) rather than building a
+client from the raw credentials.
 
 ### Logging (Axiom)
 
@@ -335,9 +272,7 @@ console.log(status)
       hasWebhook: false
     },
     database: {
-      provider: 'supabase',
-      configured: true,
-      availableProviders: ['supabase']
+      configured: true
     },
     logging: {
       configured: false,
@@ -477,33 +412,6 @@ const environment = envConfig.getEnvironment()
     🚧 Development Mode ({environment})
   </div>
 )}
-```
-
-### Pattern 5: React Hooks
-
-```typescript
-// src/hooks/useSupabase.tsx
-import { createClient } from '@supabase/supabase-js'
-import { useEffect, useState } from 'react'
-import { getEnvironmentConfig } from '#utils/env-config'
-
-export function useSupabase() {
-  const [client, setClient] = useState<any>(null)
-
-  useEffect(() => {
-    const envConfig = getEnvironmentConfig()
-
-    if (envConfig.isSupabaseConfigured()) {
-      const url = envConfig.getSupabaseUrl()!
-      const key = envConfig.getSupabaseAnonKey()!
-
-      const supabase = createClient(url, key)
-      setClient(supabase)
-    }
-  }, [])
-
-  return client
-}
 ```
 
 ---
@@ -693,25 +601,17 @@ export const db = createClient(supabaseUrl, supabaseKey)
 - `PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key (client-safe)
 - `CLERK_SECRET_KEY` - Clerk secret key (server-only)
 
-**Database (choose one):**
+**Database (Supabase):**
 
-- **Supabase:**
-  - `SUPABASE_URL` - Supabase project URL
-  - `SUPABASE_ANON_KEY` - Supabase anonymous key
-  - `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (optional, for server operations)
-- **Turso:**
-  - `TURSO_DATABASE_URL` - Turso database URL
-  - `TURSO_AUTH_TOKEN` - Turso authentication token
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_ANON_KEY` - Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (optional, for server operations)
 
 ### Optional Variables
 
 **Clerk (Optional):**
 
 - `CLERK_WEBHOOK_SECRET` - Webhook signature verification
-
-**Database (Optional):**
-
-- `DATABASE_PROVIDER` - Explicit provider selection (`turso` | `supabase` | `auto`)
 
 **Logging (Optional):**
 

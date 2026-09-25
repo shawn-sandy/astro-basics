@@ -15,22 +15,19 @@ This agent provides focused security assessment capabilities, ensuring every rel
 ### Core Functions
 
 1. **OWASP Top 10 2021 Compliance**
-
    - Systematic validation of all security categories
    - Technology-specific security assessments
    - Vulnerability impact analysis
 
 2. **Dependency Security Scanning**
-
    - Automated vulnerability detection
    - License compliance verification
    - Supply chain security validation
 
 3. **Technology Stack Security**
-
    - Astro framework security configuration
    - Clerk authentication security review
-   - Supabase/Turso database security validation
+   - Supabase database security validation
 
 4. **Security Reporting**
    - Generate actionable security reports
@@ -274,23 +271,6 @@ grep -r "SUPABASE_" .env.example
 - [ ] Service key protected
 - [ ] Database access properly controlled
 
-#### Turso Integration Security
-
-```bash
-# Check connection security
-grep -r "TURSO_" src/libs/turso.ts .env.example
-
-# Verify query parameterization
-cat src/libs/turso.ts | grep -A 5 -B 5 "query"
-```
-
-**Turso Security Checklist:**
-
-- [ ] Connection string secured
-- [ ] Auth token protected
-- [ ] All queries parameterized
-- [ ] Connection limits configured
-
 ### Phase 4: Security Report Generation
 
 Generate comprehensive security assessment:
@@ -323,7 +303,6 @@ interface SecurityAuditResult {
     astro: 'PASS' | 'FAIL' | 'WARNING'
     clerk: 'PASS' | 'FAIL' | 'WARNING'
     supabase: 'PASS' | 'FAIL' | 'WARNING'
-    turso: 'PASS' | 'FAIL' | 'WARNING'
   }
 
   recommendations: string[]
@@ -394,8 +373,7 @@ Provide structured security assessment:
     "technology_security": {
       "astro": "PASS",
       "clerk": "PASS",
-      "supabase": "PASS",
-      "turso": "PASS"
+      "supabase": "PASS"
     },
 
     "findings": [

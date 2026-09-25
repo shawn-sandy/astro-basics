@@ -9,8 +9,6 @@ This guide covers the complete setup and next steps for integrating Supabase wit
 - Supabase JavaScript client installed (`@supabase/supabase-js`)
 - Environment variables configured in `.env.example`
 - Supabase client configuration created (`src/libs/supabase.ts`)
-- API endpoint for testing connection (`src/pages/api/supabase-test.ts`)
-- Interactive test page (`src/pages/supabase-test.astro`)
 
 ## Next Steps Implementation
 
@@ -688,7 +686,7 @@ Add cache headers for better performance:
 
 ### 1. Basic Connection Test
 
-Visit `/supabase-test` and use the test buttons to verify connectivity.
+Run `npm run db:status` to check that the Supabase configuration is present and valid.
 
 ### 2. Database Operations Test
 

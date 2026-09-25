@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Dashboard app shell** (`src/layouts/Dashboard.astro`, `src/components/dashboard/`): `/dashboard`,
-  `/dashboard/messages`, `/dashboard/users` and `/profile` now share a dashboard layout with its own
-  sidebar in place of the site navigation and footer
+  `/dashboard/users` and `/profile` now share a dashboard layout with its own sidebar in place of
+  the site navigation and footer
   - `DashboardSidebar` is a sticky column at 64rem and wider; below that it collapses to a top bar
     whose menu button opens the same links in a native `popover`, so there is one copy of the links.
     The account button sits in the bar on narrow screens rather than in the popover, because Clerk
@@ -149,6 +149,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking: the contact form is email-only** (`src/pages/api/message-us.ts`): submissions to
+  `POST /api/message-us` (the `/message-us` page) are no longer stored; each one is delivered only
+  as the `contact-notification` email
+  - Requires `EMAIL_PROVIDER`, `EMAIL_PROVIDER_API_KEY`, `EMAIL_FROM_ADDRESS` and
+    `EMAIL_TO_ADDRESS`; without them the endpoint answers 503 instead of accepting the message
+  - A failed send answers 502 rather than reporting success, since nothing else records it
+  - The response no longer carries an `id`, the email no longer shows a message ID, and the sender's
+    IP address and user agent are no longer recorded (`src/utils/ip-validation.ts` removed)
+  - `GET /api/message-us` reports whether email is configured instead of the database provider
+
+- **Supabase is the only database**: `db:wizard` and `db:status` configure and report Supabase
+  only, `src/utils/env-config.ts` drops `TURSO_*` and `DATABASE_PROVIDER`, and `npm run setup:roles`
+  generates PostgreSQL migrations only and prints the `psql` command to apply them
+
 - **Dashboard components restyled to the design direction** (`src/components/dashboard/`):
   `StatsCards` is a single hairline-divided strip, `PostPreview` a column list that stacks in narrow
   containers, `ActivityFeed` a timeline and `QuickActions` a row list. Existing props still work:
@@ -227,11 +241,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     there; it is no longer the current behaviour
 - Minor updates and refinements
 
+### Removed
+
+- **Messages feature**: the `messages` table, the dashboard inbox (`/dashboard/messages`), the
+  `/forum` page (it only listed messages), `/api/messages`, `MessageList.astro`, `MessagesList.tsx`,
+  the `useSupabase` hook, `src/libs/supabase-server.ts`, and `npm run db:seed:messages`
+  - `scripts/migrations/006_drop_messages_table.sql` drops the table from existing Supabase
+    databases. It is irreversible; export the table first if you need its rows
+- **Turso and the database abstraction layer**: `getDatabase()` (`src/libs/database.ts`,
+  `src/libs/database-types.ts`), `src/libs/turso.ts`, `db/migrations/`, `db/schema.sql` and the
+  `@libsql/client` dependency
+- **Database tooling built on them**: `db:setup`, `db:manage`, `db:schema`, `db:reset`, `db:check`,
+  `db:migrate*`, `db:switch*`, `db:backup`, `db:restore`, `test:db:connection` and
+  `test:db:abstraction`, their scripts, and the matching `/db-*` Claude commands except
+  `/db-setup` and `/db-status`
+- **Supabase test page**: `/supabase-test` and `/api/supabase-test`
+
 ### Fixed
 
 - **Dark mode left light surfaces on several pages** (`src/styles/_design-tokens.scss`,
   `src/styles/components/_form.scss`, `_alert.scss`, `_card.scss`, and the dashboard, profile,
-  offline, message-us and supabase-test pages): @fpkit/acss's own `[data-theme=dark]` block points
+  offline and message-us pages): @fpkit/acss's own `[data-theme=dark]` block points
   its semantic tokens at the dark end of the neutral scale, which the site's dark palette has already
   inverted, so the two flips cancelled under the theme toggle. The skip link measured `#f4f4f5` and
   white text on the vendor's dark-mode button blue measured 3.52:1. The toggle path now restates the
