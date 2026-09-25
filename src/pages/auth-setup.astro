@@ -1,0 +1,26 @@
+---
+/**
+ * Setup notice served in place of protected routes (/dashboard, /organization)
+ * while Clerk keys are missing or placeholders. The middleware rewrites those
+ * routes here; the 503 tells crawlers and uptime checks the page is not live.
+ */
+import Layout from '#layouts/Layout.astro'
+
+Astro.response.status = 503
+---
+
+<Layout
+  pageTitle="Sign-in is not set up yet"
+  pageDescription="This area needs Clerk authentication, which has not been configured."
+>
+  <h2>Sign-in is not set up yet</h2>
+  <p>
+    This part of the site is for signed-in members, and sign-in has not been configured. It stays
+    closed until it is.
+  </p>
+  <p>
+    If you run this site, add <code>PUBLIC_CLERK_PUBLISHABLE_KEY</code> and
+    <code>CLERK_SECRET_KEY</code> to its environment, then restart or redeploy. The
+    <a href="/guide/getting-started/setup/">setup guide</a> walks through it.
+  </p>
+</Layout>

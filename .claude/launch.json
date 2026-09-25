@@ -3,9 +3,10 @@
   "configurations": [
     {
       "name": "start",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["run-p", "dev -- --port 4330", "sass"],
-      "port": 4330
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "npx run-p \"dev -- --port $PORT\" sass"],
+      "port": 4330,
+      "autoPort": true
     },
     {
       "name": "dev",
