@@ -63,8 +63,9 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '#utils/site-config.js'
   }
 
   /* `main > section` carries 2rem of inline padding, which set the post list
-     32px in from the hero and features above it. This keeps the list on the
-     shared gutter: 1.25rem while the viewport is narrower than the measure,
+     32px in from the hero and features above it. This keeps the post list and
+     the sidebar beside it on the shared gutter, so their outer edges meet the
+     features' edges: 1.25rem while the viewport is narrower than the measure,
      easing to 0 once main is centred with room to spare. Scoped through :has
      so it cannot reach another page's main. */
   :global(main:has(.home-latest) > section) {

@@ -100,7 +100,8 @@ Explicitly **not** claimed:
   action must point at the repository, the guide, or the setup skills.
 - Astro in SSR mode (`output: 'server'`) with selective React hydration.
 - 37 `.astro` components and 8 React components in the library, plus 13 dashboard components.
-  The React components have Storybook 10 stories.
+  Four of the React components (`Alert`, `ContactForm`, `RoleBadge`, `RoleGuard`) have
+  Storybook 10 stories.
 - Three content collections (`posts`, `docs`, `content`) authored in MDX with a shared schema and
   a `publish: true` gate. `publish` defaults to `false`, which gives agent-authored content a
   human review step before it goes public.
