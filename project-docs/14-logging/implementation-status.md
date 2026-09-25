@@ -86,8 +86,7 @@
    - Line 104: Failed to sync user to Supabase
    - Line 131: User sync failed
 
-5. **`src/pages/api/test/sync-user.ts`** (1 call):
-   - Line 131: Test sync failed
+5. **`src/pages/api/test/sync-user.ts`** (1 call) - removed; no longer applies.
 
 ## Required Actions
 
@@ -252,7 +251,6 @@
 
 - `src/pages/api/message-us.ts`
 - `src/pages/api/user/sync.ts`
-- `src/pages/api/test/sync-user.ts`
 
 ## Estimated Completion
 
