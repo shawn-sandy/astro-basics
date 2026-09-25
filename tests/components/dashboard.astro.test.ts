@@ -291,6 +291,29 @@ describe('DashboardSidebar without the popover API', () => {
     for (const rule of fixedPanels) expect(rule.conditions.some(c => SUPPORTED.test(c))).toBe(true)
   })
 
+  it('leaves display to the browser on the base panel rule, so a closed popover stays hidden', () => {
+    const base = sidebarRules().filter(
+      rule => rule.selector === '.dashboard-sidebar__panel' && rule.conditions.length === 0
+    )
+
+    expect(base.length).toBeGreaterThan(0)
+    for (const rule of base) expect(rule.body).not.toMatch(/(^|;|\s)display\s*:/)
+  })
+
+  it('unsticks the bar without a media query where popovers are unsupported', () => {
+    // Astro compiles `max-width` into range syntax, which Safari before 16.4 and
+    // Chrome before 104 cannot parse, and several of those lack popovers. A media
+    // condition here would leave the always-open list pinned over the page there.
+    const unconditioned = sidebarRules().filter(
+      rule =>
+        rule.selector === '.dashboard-sidebar' &&
+        rule.conditions.length === 1 &&
+        UNSUPPORTED.test(rule.conditions[0] ?? '')
+    )
+
+    expect(unconditioned.some(rule => /position\s*:\s*static/.test(rule.body))).toBe(true)
+  })
+
   it('lists the links in flow and hides the inert menu button where popovers are unsupported', () => {
     const fallback = sidebarRules().filter(rule => rule.conditions.some(c => UNSUPPORTED.test(c)))
     const panel = fallback.find(rule => rule.selector.includes('dashboard-sidebar__panel'))

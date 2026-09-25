@@ -244,12 +244,20 @@ const roleLabel = userRole?.replace(/_/g, ' ')
   }
 
   /*
-   * Without popover support (Safari before 17, Firefox before 125) the
-   * `popover` attribute is ignored and the menu button opens nothing, so the
-   * links are listed in flow under the bar and the button is hidden. The narrow
-   * bar stops sticking, or the always-open list would stay pinned over the page.
+   * Without popover support (Chrome and Edge before 114, Safari before 17,
+   * Firefox before 125) the `popover` attribute is ignored and the menu button
+   * opens nothing, so the links are listed in flow under the bar and the button
+   * is hidden. The bar stops sticking, or the always-open list would stay pinned
+   * over the page. It is unstuck unconditionally and re-stuck only for the wide
+   * layout: Astro compiles media queries into range syntax, which Safari before
+   * 16.4 and Chrome before 104 cannot parse, so a narrow-only `static` would
+   * never apply in several of these browsers.
    */
   @supports not selector(:popover-open) {
+    .dashboard-sidebar {
+      position: static;
+    }
+
     .dashboard-sidebar__menu {
       display: none;
     }
@@ -259,9 +267,9 @@ const roleLabel = userRole?.replace(/_/g, ' ')
       display: flex;
     }
 
-    @media (max-width: 63.99rem) {
+    @media (min-width: 64rem) {
       .dashboard-sidebar {
-        position: static;
+        position: sticky;
       }
     }
   }
