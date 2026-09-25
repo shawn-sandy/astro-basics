@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const fetchUserWithRole = vi.fn()
 vi.mock('#utils/user-sync', () => ({ fetchUserWithRole }))
 
-const { getDashboardUser } = await import('#utils/dashboard-user')
+const { fetchCurrentUserWithRole, getDashboardUser } = await import('#utils/dashboard-user')
 
 /** A minimal `Astro` global: only `locals` is read, and it is the per-request cache key. */
 function astroFor(userId: string | undefined): AstroGlobal {
@@ -49,7 +49,9 @@ describe('getDashboardUser', () => {
       role: 'admin',
       imageUrl: 'https://img.example.com/ada.png',
     })
-    expect(user?.lastSignIn).toBeTruthy()
+    // Formatted in UTC and labelled, so it reads the same on any server and never passes off
+    // server-local time as the visitor's.
+    expect(user?.lastSignIn).toBe('Sep 25, 2026, 02:30 PM UTC')
   })
 
   it('falls back to the username and the member role', async () => {
@@ -71,6 +73,19 @@ describe('getDashboardUser', () => {
     expect(await getDashboardUser(astroFor('user_1'))).toBeNull()
   })
 
+  it('shares one Clerk call between the raw lookup and the display shape in a request', async () => {
+    fetchUserWithRole.mockResolvedValue({ user: clerkUser, userRole: 'member' })
+    const request = astroFor('user_1')
+
+    // UserInfo reads the raw result and the dashboard layout reads the display shape.
+    const raw = await fetchCurrentUserWithRole(request)
+    const shaped = await getDashboardUser(request)
+
+    expect(raw?.user).toBe(clerkUser)
+    expect(shaped?.name).toBe('Ada Lovelace')
+    expect(fetchUserWithRole).toHaveBeenCalledTimes(1)
+  })
+
   it('makes one Clerk call per request however many components ask', async () => {
     fetchUserWithRole.mockResolvedValue({ user: clerkUser, userRole: 'member' })
     const request = astroFor('user_1')
@@ -82,7 +97,7 @@ describe('getDashboardUser', () => {
     ])
     await getDashboardUser(astroFor('user_1'))
 
-    expect(fromPage).toBe(fromLayout)
+    expect(fromPage).toEqual(fromLayout)
     expect(fetchUserWithRole).toHaveBeenCalledTimes(2)
   })
 })

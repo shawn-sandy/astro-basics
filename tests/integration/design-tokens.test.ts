@@ -224,6 +224,44 @@ describe('compiled design tokens', () => {
       expect(painted.length).toBeGreaterThan(0)
     })
 
+    it('restates every vendor token the vendor dark block flips, so the toggle matches the OS path', () => {
+      // @fpkit/acss's own `[data-theme=dark]` rule repoints its semantic tokens at
+      // the dark end of the neutral scale, which the site's dark palette has
+      // already inverted, so under the toggle the two flips cancelled (the skip
+      // link painted #f4f4f5). The site's toggle rule restates the vendor's light
+      // mapping so the inverted palette alone does the flip, as under the media
+      // query. A vendor upgrade that flips a new token fails here.
+      const vendorPath = fileURLToPath(
+        new URL('../../node_modules/@fpkit/acss/libs/index.css', import.meta.url)
+      )
+      const vendorRules = parseRules(stripComments(readFileSync(vendorPath, 'utf8')))
+      const valuesOf = (selector: string) =>
+        new Map(
+          vendorRules
+            .filter(rule => rule.selector === selector && rule.conditions.length === 0)
+            .flatMap(rule => rule.declarations.map(d => [d.property, d.value] as const))
+        )
+      const vendorLight = valuesOf(':root')
+      const vendorDark = valuesOf('[data-theme=dark]')
+      const flipped = [...vendorDark].filter(
+        ([property, value]) =>
+          vendorLight.has(property) &&
+          vendorLight.get(property) !== value &&
+          /^--color-(primary|secondary|surface|border|text|disabled|skip-link)/.test(property)
+      )
+      const siteToggle = new Map(
+        darkToggle
+          .filter(rule => /^:root\[data-theme=['"]?dark['"]?\]$/.test(rule.selector))
+          .flatMap(rule => rule.declarations.map(d => [d.property, d.value] as const))
+      )
+
+      expect(flipped.length).toBeGreaterThan(0)
+      const missing = flipped
+        .filter(([property]) => siteToggle.get(property) !== vendorLight.get(property))
+        .map(([property]) => property)
+      expect(missing).toEqual([])
+    })
+
     it('paints the same surfaces through the explicit [data-theme="dark"] toggle', () => {
       // The media query alone cannot be overridden by a UI switch, so the toggle
       // path has to repaint too, not just redeclare :root variables.

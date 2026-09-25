@@ -38,7 +38,8 @@ const {
     color: var(--body-text, var(--ink-soft));
   }
 
-  .sign-in-btn {
+  /* `[href]` lifts the selector to (0,2,0), above the vendor's `a[href]`; a bare class loses. */
+  .sign-in-btn[href] {
     display: inline-block;
     padding: 0.75rem 1.5rem;
     background: var(--button-bg, var(--island));
@@ -48,7 +49,7 @@ const {
     transition: background 0.2s;
   }
 
-  .sign-in-btn:hover {
+  .sign-in-btn[href]:hover {
     background: var(--button-hover-bg, color-mix(in oklch, var(--island) 88%, var(--ink)));
   }
 

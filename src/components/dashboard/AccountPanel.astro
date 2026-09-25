@@ -45,11 +45,13 @@ const {
 } = Astro.props
 
 const roleLabel = role?.replace(/_/g, ' ')
+// Unique per render, so two panels on one page never share an id.
+const headingId = `account-panel-${crypto.randomUUID()}`
 const hasFacts = Boolean(roleLabel || email || lastSignIn)
 ---
 
-<section class="account-panel" aria-labelledby="account-panel-heading">
-  <h2 id="account-panel-heading" class="account-panel__heading" data-ui="eyebrow">Account</h2>
+<section class="account-panel" aria-labelledby={headingId}>
+  <h2 id={headingId} class="account-panel__heading" data-ui="eyebrow">Account</h2>
 
   <div class="account-panel__identity">
     {
@@ -101,9 +103,6 @@ const hasFacts = Boolean(roleLabel || email || lastSignIn)
 
 <style>
   .account-panel {
-    --sect-x: 0;
-    --sect-y: 0;
-
     background: var(--card-background);
     border: 1px solid var(--rule);
     border-radius: var(--card-radius);
@@ -210,6 +209,7 @@ const hasFacts = Boolean(roleLabel || email || lastSignIn)
     border-radius: var(--radius-lg);
     color: var(--island);
     display: flex;
+    font-size: inherit;
     font-weight: var(--font-weight-semibold);
     justify-content: center;
     min-height: 44px;

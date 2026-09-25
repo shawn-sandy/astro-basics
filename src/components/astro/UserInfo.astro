@@ -1,7 +1,7 @@
 ---
 import type { User } from '@clerk/backend'
 import { formatMetadataForDisplay } from '#utils/sanitize'
-import { fetchUserWithRole } from '#utils/user-sync'
+import { fetchCurrentUserWithRole } from '#utils/dashboard-user'
 import RoleBadge from '#components/react/RoleBadge.tsx'
 import type { UserRole } from '#utils/role-types'
 
@@ -14,9 +14,10 @@ let error: string | null = null
 let userRole: UserRole | null = null
 let roleError: string | null = null
 
-// Fetch user data and role using reusable utility
-if (userId) {
-  const result = await fetchUserWithRole(userId, Astro)
+// Shares the request's single lookup with the dashboard layout, so a page that
+// renders both makes one Clerk call rather than two.
+const result = await fetchCurrentUserWithRole(Astro)
+if (result) {
   user = result.user
   userRole = result.userRole
   error = result.error

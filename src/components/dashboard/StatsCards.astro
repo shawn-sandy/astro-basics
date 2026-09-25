@@ -1,10 +1,14 @@
 ---
+import DashboardIcon from '#components/dashboard/DashboardIcon.astro'
+import { isDashboardIcon } from '#components/dashboard/icons'
+
 /**
  * Headline numbers as one strip, divided by hairlines rather than boxed
  * separately.
  *
  * Marked up as a description list: each label is a `dt` and its value the
- * `dd`, so a screen reader announces the pair together.
+ * `dd`, so a screen reader announces the pair together. `icon` takes a
+ * dashboard icon name, or any other string (such as an emoji) shown as text.
  *
  * @component StatsCards
  * @example
@@ -30,7 +34,11 @@ const { stats } = Astro.props
         <dt class="stat-card__label" data-ui="eyebrow">
           {stat.icon && (
             <span class="stat-icon" aria-hidden="true">
-              {stat.icon}
+              {isDashboardIcon(stat.icon) ? (
+                <DashboardIcon name={stat.icon} size={16} />
+              ) : (
+                stat.icon
+              )}
             </span>
           )}
           {stat.title}

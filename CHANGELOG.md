@@ -13,15 +13,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `/dashboard/messages`, `/dashboard/users` and `/profile` now share a dashboard layout with its own
   sidebar in place of the site navigation and footer
   - `DashboardSidebar` is a sticky column at 64rem and wider; below that it collapses to a top bar
-    whose menu button opens the same links in a native `popover`, so there is one copy of the links
-    and no script. The whole sidebar is one `nav` landmark, and the current page is marked with
-    `aria-current`
+    whose menu button opens the same links in a native `popover`, so there is one copy of the links.
+    The account button sits in the bar on narrow screens rather than in the popover, because Clerk
+    renders its account menu outside the sidebar and a click there light-dismissed the popover. A
+    small script closes a menu left open when the viewport widens past the breakpoint. The whole
+    sidebar is one `nav` landmark, and the current page is marked with `aria-current`
   - `DashboardPage` gives every dashboard page the same header (eyebrow, title, optional actions)
     and content width
   - New building blocks: `AccountPanel`, `DashboardCallout`, `DashboardSection`, `StatusPill`,
     `DashboardIcon` and a named line-icon set (`icons.ts`)
-  - `getDashboardUser` (`src/utils/dashboard-user.ts`) shapes the signed-in Clerk user for display
-    and caches it per request, so the layout and the page share one Clerk call
+  - `fetchCurrentUserWithRole` (`src/utils/dashboard-user.ts`) looks up the signed-in user at most
+    once per request, keyed on `Astro.locals`; the layout, the page and `UserInfo` share it, so a
+    dashboard page makes one Clerk call. `getDashboardUser` shapes that result for display, with the
+    last sign-in in UTC and labelled as such
   - `Base.astro` gains a `hideSiteChrome` prop to omit the site navigation and footer
 
 - **Theme toggle** (`src/components/astro/ThemeToggle.astro`, `src/layouts/Base.astro`): a

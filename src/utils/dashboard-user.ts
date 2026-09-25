@@ -1,6 +1,6 @@
 import type { AstroGlobal } from 'astro'
 
-import { fetchUserWithRole } from '#utils/user-sync'
+import { fetchUserWithRole, type UserWithRoleResult } from '#utils/user-sync'
 
 /** The signed-in user's details, shaped for display in the dashboard. */
 export type DashboardUser = {
@@ -14,27 +14,51 @@ export type DashboardUser = {
   emailVerified: boolean
   /** Role key; `member` when none is stored, as in `UserInfo`. */
   role: string
-  /** Last sign-in, formatted for display. */
+  /** Last sign-in in UTC, labelled with the zone. */
   lastSignIn: string | undefined
   /** Avatar URL. */
   imageUrl: string | undefined
 }
 
 /**
- * One lookup per request. The layout (for the sidebar) and the page (for the
- * greeting and account panel) both ask; keying on `Astro.locals`, which is
- * shared by every component in a render, makes the second ask reuse the first
- * Clerk call instead of repeating it.
+ * One Clerk lookup per request. The dashboard layout (for the sidebar), the
+ * page (for the greeting and account panel) and `UserInfo` all ask; keying on
+ * `Astro.locals`, which Astro creates per request and shares with every
+ * component in that render, makes every later ask reuse the first call.
  */
-const requestCache = new WeakMap<object, Promise<DashboardUser | null>>()
+const requestCache = new WeakMap<object, Promise<UserWithRoleResult | null>>()
+
+/**
+ * `fetchUserWithRole` for the signed-in user, at most once per request.
+ *
+ * Resolves to `null` without calling Clerk when there is no signed-in user.
+ * `Astro.locals.userId` is unset whenever the Clerk keys are not configured,
+ * because the middleware then skips auth.
+ *
+ * @param astro - The page or component's `Astro` global.
+ * @returns The raw result, including its `error` and `roleError`, or `null`.
+ * @example
+ * ```astro
+ * ---
+ * const result = await fetchCurrentUserWithRole(Astro)
+ * ---
+ * {result?.user && <p>{result.user.fullName}</p>}
+ * ```
+ */
+export function fetchCurrentUserWithRole(astro: AstroGlobal): Promise<UserWithRoleResult | null> {
+  const cached = requestCache.get(astro.locals)
+  if (cached) return cached
+
+  const { userId } = astro.locals
+  const pending = userId ? fetchUserWithRole(userId, astro) : Promise.resolve(null)
+  requestCache.set(astro.locals, pending)
+  return pending
+}
 
 /**
  * Returns the signed-in user for dashboard display, or `null` when there is no
- * signed-in user or the lookup fails.
- *
- * `Astro.locals.userId` is unset whenever the Clerk keys are not configured,
- * because the middleware then skips auth; this returns `null` in that case
- * rather than calling Clerk.
+ * signed-in user or the lookup fails. Shares the request's single Clerk call
+ * through `fetchCurrentUserWithRole`.
  *
  * @param astro - The page or component's `Astro` global.
  * @returns The user's display details, or `null`.
@@ -46,21 +70,10 @@ const requestCache = new WeakMap<object, Promise<DashboardUser | null>>()
  * <h1>{user?.firstName ? `Welcome back, ${user.firstName}` : 'Welcome back'}</h1>
  * ```
  */
-export function getDashboardUser(astro: AstroGlobal): Promise<DashboardUser | null> {
-  const cached = requestCache.get(astro.locals)
-  if (cached) return cached
-
-  const pending = loadDashboardUser(astro)
-  requestCache.set(astro.locals, pending)
-  return pending
-}
-
-async function loadDashboardUser(astro: AstroGlobal): Promise<DashboardUser | null> {
-  const { userId } = astro.locals
-  if (!userId) return null
-
+export async function getDashboardUser(astro: AstroGlobal): Promise<DashboardUser | null> {
   try {
-    const { user, userRole } = await fetchUserWithRole(userId, astro)
+    const result = await fetchCurrentUserWithRole(astro)
+    const user = result?.user
     if (!user) return null
 
     const primaryEmail =
@@ -73,7 +86,9 @@ async function loadDashboardUser(astro: AstroGlobal): Promise<DashboardUser | nu
       firstName: user.firstName || name,
       email: primaryEmail?.emailAddress,
       emailVerified: primaryEmail?.verification?.status === 'verified',
-      role: userRole ?? 'member',
+      role: result.userRole ?? 'member',
+      // The server cannot know the visitor's zone, so the time is pinned to UTC and
+      // says so, instead of passing the server's local time off as theirs.
       lastSignIn: user.lastSignInAt
         ? new Date(user.lastSignInAt).toLocaleString('en-US', {
             year: 'numeric',
@@ -81,6 +96,8 @@ async function loadDashboardUser(astro: AstroGlobal): Promise<DashboardUser | nu
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
+            timeZone: 'UTC',
+            timeZoneName: 'short',
           })
         : undefined,
       imageUrl: user.imageUrl || undefined,

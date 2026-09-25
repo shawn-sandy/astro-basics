@@ -13,8 +13,9 @@ import { SITE_TITLE } from '#utils/site-config'
  * On wide screens it is a sticky left column. Below 64rem it collapses to a
  * top bar, and the same link list moves into a native `popover` menu opened by
  * the bar's menu button. The browser provides open/close, Esc and outside-click
- * dismissal, so there is one copy of the links and no script. On wide screens
- * the popover is forced visible and back into normal flow.
+ * dismissal, so there is one copy of the links. On wide screens the popover is
+ * forced visible and back into normal flow; the one script closes a menu left
+ * open when the viewport widens past the breakpoint.
  *
  * The popover is presentational only and never gates access: every link is in
  * the HTML response whether the menu is open or not.
@@ -62,6 +63,9 @@ const roleLabel = userRole?.replace(/_/g, ' ')
     </a>
     <div class="dashboard-sidebar__controls">
       <ThemeToggle />
+      <span class="dashboard-sidebar__bar-account">
+        <UserButton />
+      </span>
       <button
         type="button"
         class="dashboard-sidebar__menu"
@@ -73,7 +77,7 @@ const roleLabel = userRole?.replace(/_/g, ' ')
     </div>
   </div>
 
-  <div id={MENU_ID} class="dashboard-sidebar__panel" popover="auto">
+  <div id={MENU_ID} class="dashboard-sidebar__panel" popover="auto" data-dashboard-menu>
     <ul class="dashboard-sidebar__links" role="list">
       {
         NAV_ITEMS.map(item => (
@@ -112,6 +116,15 @@ const roleLabel = userRole?.replace(/_/g, ' ')
   </div>
 </nav>
 
+<script>
+  // A menu left open while the viewport widens past 64rem stays in the top
+  // layer, overlaying the page with its toggle button hidden, so close it.
+  const menu = document.querySelector<HTMLElement>('[data-dashboard-menu]')
+  window.matchMedia('(min-width: 64rem)').addEventListener('change', event => {
+    if (event.matches && menu?.matches(':popover-open')) menu.hidePopover()
+  })
+</script>
+
 <style>
   /*
    * The root is a `nav`, which @fpkit/acss lays out as a centred flex row; the
@@ -146,6 +159,7 @@ const roleLabel = userRole?.replace(/_/g, ' ')
     color: var(--ink);
     display: flex;
     flex-direction: column;
+    font-size: inherit;
     justify-content: center;
     line-height: 1.25;
     min-height: 44px;
@@ -159,7 +173,8 @@ const roleLabel = userRole?.replace(/_/g, ' ')
     letter-spacing: -0.02em;
   }
 
-  .dashboard-sidebar__eyebrow {
+  /* `[data-ui]` lifts this to (0,2,0), above the shared eyebrow rule's (0,1,0) size. */
+  .dashboard-sidebar__eyebrow[data-ui] {
     font-size: 0.6875rem;
   }
 
@@ -240,6 +255,7 @@ const roleLabel = userRole?.replace(/_/g, ' ')
     border-radius: var(--radius-lg);
     color: var(--ink);
     display: flex;
+    font-size: inherit;
     font-weight: var(--font-weight-medium);
     gap: var(--space-3);
     min-height: 44px;
@@ -277,6 +293,7 @@ const roleLabel = userRole?.replace(/_/g, ' ')
     color: var(--ink-soft);
     display: flex;
     flex-grow: 1;
+    font-size: inherit;
     gap: var(--space-2-5);
     min-height: 44px;
     padding: 0 var(--space-3);
@@ -292,9 +309,23 @@ const roleLabel = userRole?.replace(/_/g, ' ')
     display: none;
   }
 
+  /*
+   * Narrow: the account button lives in the bar, not in the popover. Clerk
+   * renders its menu outside the sidebar, so a click in that menu counted as an
+   * outside click and light-dismissed a popover holding the button.
+   */
+  .dashboard-sidebar__bar-account {
+    align-items: center;
+    display: inline-flex;
+    height: 44px;
+    justify-content: center;
+    width: 44px;
+  }
+
+  /* Shown from 64rem, where the account row sits in the sidebar footer. */
   .dashboard-sidebar__user {
     align-items: center;
-    display: flex;
+    display: none;
     gap: var(--space-3);
     min-height: 44px;
     padding: var(--space-1) var(--space-3);
@@ -359,6 +390,10 @@ const roleLabel = userRole?.replace(/_/g, ' ')
 
     .dashboard-sidebar__footer-toggle {
       display: block;
+    }
+
+    .dashboard-sidebar__user {
+      display: flex;
     }
   }
 </style>

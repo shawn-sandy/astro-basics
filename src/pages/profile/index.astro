@@ -114,7 +114,8 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
     gap: 0.5rem;
   }
 
-  .action-link {
+  /* `[href]` lifts link selectors to (0,2,0), above the vendor's `a[href]`; a bare class loses. */
+  .action-link[href] {
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -125,7 +126,7 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
     transition: background-color 0.2s ease;
   }
 
-  .action-link:hover {
+  .action-link[href]:hover {
     background: var(--paper);
     color: var(--island);
   }
@@ -142,7 +143,7 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
     line-height: 1.5;
   }
 
-  .help-link {
+  .help-link[href] {
     display: inline-block;
     padding: 0.5rem 1rem;
     background: var(--island);
@@ -154,7 +155,7 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
     transition: background-color 0.2s ease;
   }
 
-  .help-link:hover {
+  .help-link[href]:hover {
     background: color-mix(in oklch, var(--island) 88%, var(--ink));
   }
 
@@ -184,7 +185,7 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
       gap: 0.25rem;
     }
 
-    .action-link {
+    .action-link[href] {
       padding: 0.5rem;
     }
   }

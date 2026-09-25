@@ -32,7 +32,8 @@ export type Props = {
 }
 
 const { title, description, href, linkLabel, icon = 'admin' } = Astro.props
-const headingId = `dashboard-callout-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+// Unique per render, so two callouts with one title never share an id.
+const headingId = `dashboard-callout-${crypto.randomUUID()}`
 ---
 
 <section class="dashboard-callout" aria-labelledby={headingId}>
@@ -51,9 +52,6 @@ const headingId = `dashboard-callout-${title.toLowerCase().replace(/[^a-z0-9]+/g
 
 <style>
   .dashboard-callout {
-    --sect-x: 0;
-    --sect-y: 0;
-
     align-items: center;
     border: 1px solid var(--rule);
     border-radius: var(--card-radius);
@@ -108,6 +106,7 @@ const headingId = `dashboard-callout-${title.toLowerCase().replace(/[^a-z0-9]+/g
     color: var(--island);
     display: inline-flex;
     flex: 0 0 auto;
+    font-size: inherit;
     font-weight: var(--font-weight-semibold);
     gap: var(--space-2);
     justify-content: center;

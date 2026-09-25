@@ -4,8 +4,10 @@ import { experimental_AstroContainer as AstroContainer } from 'astro/container'
 import AccountPanel from '#components/dashboard/AccountPanel.astro'
 import ActivityFeed from '#components/dashboard/ActivityFeed.astro'
 import DashboardPage from '#components/dashboard/DashboardPage.astro'
+import DashboardSection from '#components/dashboard/DashboardSection.astro'
 import DashboardSidebar from '#components/dashboard/DashboardSidebar.astro'
 import PostPreview from '#components/dashboard/PostPreview.astro'
+import StatsCards from '#components/dashboard/StatsCards.astro'
 import ProfilePage from '#pages/profile/index.astro'
 
 /** Render a component to an HTML string with the given props and slot markup. */
@@ -45,7 +47,10 @@ describe('DashboardSidebar current link', () => {
   })
 
   it('keeps the brand, links and account controls inside one navigation landmark', async () => {
-    const html = (await render(DashboardSidebar, { currentPath: '/dashboard' })).trim()
+    // Script tags are not content; the component's resize handler renders after the nav.
+    const html = (await render(DashboardSidebar, { currentPath: '/dashboard' }))
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '')
+      .trim()
     const navs = html.match(/<nav\b[^>]*>/g) ?? []
 
     // axe's `region` rule flags content outside landmarks; the whole sidebar is the landmark.
@@ -53,6 +58,15 @@ describe('DashboardSidebar current link', () => {
     expect(navs[0]).toMatch(/aria-label="[^"]+"/)
     expect(html.startsWith('<nav')).toBe(true)
     expect(html.trimEnd().endsWith('</nav>')).toBe(true)
+  })
+
+  it('keeps an account button outside the popover, so its portaled menu cannot dismiss it', async () => {
+    // Clerk renders the account menu outside the sidebar; a click in it counts as
+    // an outside click and light-dismisses a popover that holds the button.
+    const html = await render(DashboardSidebar, { currentPath: '/dashboard' })
+    const [bar] = html.split(/<div\b[^>]*\bpopover=/)
+
+    expect(bar).toMatch(/clerk-user-button/)
   })
 
   it('wires the menu button to the popover panel that holds the links', async () => {
@@ -159,13 +173,60 @@ describe('Profile page in the dashboard shell', () => {
   it('never skips a heading level after the page title', async () => {
     // Signed-out render: no user details, so no UserInfo name heading sits in between.
     const html = await render(ProfilePage)
-    const levels = [...html.matchAll(/<h([1-6])\b/g)].map(match => Number(match[1]))
+    const headings = [...html.matchAll(/<h([1-6])\b([^>]*)>/g)].map(match => ({
+      level: Number(match[1]),
+      attrs: match[2],
+    }))
+    const levels = headings.map(heading => heading.level)
     const firstH1 = levels.indexOf(1)
     const afterTitle = levels.slice(firstH1)
 
-    expect(firstH1).toBeGreaterThanOrEqual(0)
+    // The first h1 must be the page's own title, not the signed-out message's.
+    expect(headings[firstH1]?.attrs).toContain('dashboard-page__title')
     for (let i = 1; i < afterTitle.length; i++) {
       expect(afterTitle[i] - afterTitle[i - 1]).toBeLessThanOrEqual(1)
     }
+  })
+})
+
+describe('Heading ids', () => {
+  /** The `id` of each heading and the `aria-labelledby` of each labelled region. */
+  const ids = (html: string) => ({
+    headings: [...html.matchAll(/<h2\b[^>]*\bid="([^"]+)"/g)].map(match => match[1]),
+    labels: [...html.matchAll(/aria-labelledby="([^"]+)"/g)].map(match => match[1]),
+  })
+
+  it('stay unique when two sections share a title, and still label their region', async () => {
+    const first = ids(await render(DashboardSection, { title: 'Recent posts' }))
+    const second = ids(await render(DashboardSection, { title: 'Recent posts' }))
+
+    expect(first.labels).toEqual(first.headings)
+    expect(second.labels).toEqual(second.headings)
+    expect(first.headings[0]).not.toBe(second.headings[0])
+  })
+
+  it('stay unique across two account panels on one page', async () => {
+    const first = ids(await render(AccountPanel))
+    const second = ids(await render(AccountPanel))
+
+    expect(first.labels).toEqual(first.headings)
+    expect(first.headings[0]).not.toBe(second.headings[0])
+  })
+})
+
+describe('StatsCards icons', () => {
+  it('draws a line icon for a known name and keeps other strings as text', async () => {
+    const html = await render(StatsCards, {
+      stats: [
+        { title: 'Posts', value: '24', icon: 'file' },
+        { title: 'Likes', value: '456', icon: '❤️' },
+      ],
+    })
+    const icons = html.match(/<span class="stat-icon[^"]*"[^>]*>[\s\S]*?<\/span>/g) ?? []
+
+    expect(icons).toHaveLength(2)
+    expect(icons[0]).toContain('<svg')
+    expect(icons[0]).not.toContain('>file<')
+    expect(icons[1]).toContain('❤️')
   })
 })
