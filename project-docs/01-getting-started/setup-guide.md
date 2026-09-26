@@ -153,6 +153,7 @@ It does not create tables — apply the migrations as in Option B, step 3.
    # Apply database schema (users, roles, organizations)
    psql $DATABASE_URL -f scripts/migrations/001_core_schema.sql
    psql $DATABASE_URL -f scripts/migrations/002_security_policies.sql
+   psql $DATABASE_URL -f scripts/migrations/007_data_api_grants.sql
    ```
 
 4. **Configure Clerk Integration**
@@ -510,6 +511,7 @@ that the Supabase project is not paused.
 # Apply the migrations to create tables
 psql $DATABASE_URL -f scripts/migrations/001_core_schema.sql
 psql $DATABASE_URL -f scripts/migrations/002_security_policies.sql
+psql $DATABASE_URL -f scripts/migrations/007_data_api_grants.sql
 ```
 
 #### 4. Build Warnings

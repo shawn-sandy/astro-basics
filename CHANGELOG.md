@@ -275,6 +275,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Supabase tables unreachable without automatic Data API grants; users could set their own
+  role** (`scripts/migrations/007_data_api_grants.sql`): 001 and 002 relied on Supabase granting
+  every API role full access to new tables. Projects without those grants (the default for new
+  projects since 2026-05-30) answered `42501 permission denied` to every role, including the
+  service role behind the Clerk webhook and user sync. Where the grants did exist, a signed-in user
+  could update their own `users.role`, which `requireRole()` trusts. 007 revokes everything, then
+  grants `service_role` full DML and `authenticated` only what `/api/user/profile` and
+  `/api/user/profile-with-org` use, with column-level `UPDATE`. `anon` gets nothing. Rollback in
+  `rollback_007_data_api_grants.sql`
+  - The auth-and-database-setup status script reads an anon `42501` as the table existing, and
+    once the anon key checks out it probes again as `service_role` when
+    `SUPABASE_SERVICE_ROLE_KEY` is set. Clerk user sync stays "not ready" until that probe passes
+  - The setup guides list 007 in their fresh-install steps
 - **Dashboard menu covered the page in browsers without popovers** (`src/components/dashboard/DashboardSidebar.astro`):
   below 64rem the sidebar's link panel was always `position: fixed`, and where the `popover` attribute
   is unsupported (Chrome and Edge before 114, Safari before 17, Firefox before 125) nothing hid it,

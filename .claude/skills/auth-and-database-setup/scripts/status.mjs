@@ -103,23 +103,29 @@ const counts = state => state === 'ok' || state.startsWith('set, but')
 const PROBE_TIMEOUT_MS = 10_000
 
 /**
- * Asks Supabase whether the `users` table from scripts/migrations/001_core_schema.sql exists.
+ * Asks Supabase whether the `users` table from scripts/migrations/001_core_schema.sql exists,
+ * as anon or as service_role. Clerk sync writes as service_role, which needs the grants from
+ * 007_data_api_grants.sql. That migration grants anon nothing, so an anon 42501 means "exists".
  * @param {Record<string, string | undefined>} env
  * @param {typeof fetch} fetchImpl
+ * @param {boolean} asServiceRole
  * @returns {Promise<string>}
  */
-async function supabaseSchemaLine(env, fetchImpl) {
+async function supabaseSchemaLine(env, fetchImpl, asServiceRole) {
   // The app's queries cannot work from here, and the 404 the probe would get says
   // "run the schema SQL" - the wrong fix.
   if (isRestEndpoint(env.SUPABASE_URL))
     return 'Supabase users table: not checked - remove /rest/v1 from SUPABASE_URL'
+  const keyName = asServiceRole ? 'SUPABASE_SERVICE_ROLE_KEY' : 'SUPABASE_ANON_KEY'
+  const key = String(env[keyName])
   try {
     // Resolve exactly as supabase-js does: new URL('rest/v1', ensureTrailingSlash(url)).
     // An absolute '/rest/v1' would drop any base path and probe a URL the app never uses.
     const base = env.SUPABASE_URL.trim()
     const url = new URL('rest/v1/users?select=id&limit=1', base.endsWith('/') ? base : `${base}/`)
     const res = await fetchImpl(url, {
-      headers: { apikey: String(env.SUPABASE_ANON_KEY) },
+      // The same two headers supabase-js sends, so the gateway resolves the key's role.
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
     })
     if (res.ok) return 'Supabase users table: found'
@@ -133,10 +139,12 @@ async function supabaseSchemaLine(env, fetchImpl) {
     })
     const code = body?.code
     if (code === '42501')
-      return 'Supabase users table: exists, but the anon key has no access to it (42501)'
+      return asServiceRole
+        ? 'Supabase users table: exists, but service_role has no access to it (42501) - run 007_data_api_grants.sql'
+        : 'Supabase users table: found'
     if (res.status === 404) return 'Supabase users table: MISSING (404) - run the schema SQL'
     if (res.status === 401)
-      return 'Supabase users table: key rejected (HTTP 401) - recopy SUPABASE_ANON_KEY'
+      return `Supabase users table: key rejected (HTTP 401) - recopy ${keyName}`
     return `Supabase users table: unexpected HTTP ${res.status}`
   } catch (error) {
     // The timeout signal is the only abort source; some undici versions surface an abort
@@ -169,13 +177,24 @@ export async function report(env, fetchImpl = fetch) {
   }
 
   if (on['Database: Supabase']) {
-    lines.push(await supabaseSchemaLine(env, fetchImpl))
     // The webhook and fetchUserWithRole() write users through getSupabaseServiceRole(),
     // which returns null without this key (src/libs/supabase-native.ts).
+    const serviceRole = counts(
+      fieldState(env.SUPABASE_SERVICE_ROLE_KEY, { key: 'SUPABASE_SERVICE_ROLE_KEY' })
+    )
+    // Anon first: the profile endpoints send that key as apikey, so a bad one breaks them
+    // even when the service role can reach the table.
+    let schemaLine = await supabaseSchemaLine(env, fetchImpl, false)
+    if (serviceRole && schemaLine === 'Supabase users table: found')
+      schemaLine = await supabaseSchemaLine(env, fetchImpl, true)
+    lines.push(schemaLine)
     const needs = [
       !on['Login (Clerk)'] && 'Login ON',
-      !counts(fieldState(env.SUPABASE_SERVICE_ROLE_KEY, { key: 'SUPABASE_SERVICE_ROLE_KEY' })) &&
-        'SUPABASE_SERVICE_ROLE_KEY',
+      !serviceRole && 'SUPABASE_SERVICE_ROLE_KEY',
+      // With the key set, schemaLine is the service_role probe: sync fails until it passes.
+      serviceRole &&
+        schemaLine !== 'Supabase users table: found' &&
+        'the users table check to pass',
     ].filter(Boolean)
     lines.push(
       needs.length

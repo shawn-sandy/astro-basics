@@ -186,6 +186,7 @@ Apply the SQL migrations with `psql` (see `scripts/migrations/README.md`):
 # Apply database schema (users, roles, organizations, comments)
 psql $DATABASE_URL -f scripts/migrations/001_core_schema.sql
 psql $DATABASE_URL -f scripts/migrations/002_security_policies.sql
+psql $DATABASE_URL -f scripts/migrations/007_data_api_grants.sql
 
 # Set up Clerk-Supabase user sync
 npm run db:setup-users
@@ -472,6 +473,7 @@ Supabase project is not paused.
 # Apply the migrations (see scripts/migrations/README.md)
 psql $DATABASE_URL -f scripts/migrations/001_core_schema.sql
 psql $DATABASE_URL -f scripts/migrations/002_security_policies.sql
+psql $DATABASE_URL -f scripts/migrations/007_data_api_grants.sql
 ```
 
 ### Build Warnings
