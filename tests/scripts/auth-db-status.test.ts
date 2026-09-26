@@ -283,6 +283,15 @@ describe('auth-and-database-setup status report', () => {
     expect(lines.find(l => l.includes('users table'))).toContain('recopy SUPABASE_ANON_KEY')
   })
 
+  it('keeps Clerk user sync not ready while service_role cannot reach the users table', async () => {
+    const lines = await report(
+      { ...clerk, ...supabase, SUPABASE_SERVICE_ROLE_KEY: serviceRole },
+      byKey(anonDenied, () => new Response(JSON.stringify({ code: '42501' }), { status: 403 }))
+    )
+
+    expect(lines.find(l => l.startsWith('Clerk user sync'))).toContain('not ready')
+  })
+
   it('reports Clerk user sync as ready only with login ON and a service role key', async () => {
     const ok = async () => new Response('[]', { status: 200 })
     const serviceRole = 'service-role-SECRET'

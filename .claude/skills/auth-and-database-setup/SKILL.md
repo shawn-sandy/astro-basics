@@ -116,7 +116,7 @@ uses the service role key and does not need it. The steps are in
 | `could not reach SUPABASE_URL (ENOTFOUND)`        | Typo in the URL, or the project is paused                     | Check the Project URL; resume the project in the Supabase dashboard                    |
 | `SUPABASE_URL` says `without /rest/v1`            | They pasted the REST endpoint; the app adds `/rest/v1` itself | Delete `/rest/v1` from the end of `SUPABASE_URL` and `PUBLIC_SUPABASE_URL`             |
 | `Supabase users table: timed out`                 | The URL points at something that never answers                | Check the Project URL is the one from **Project Settings > API**                       |
-| `Clerk user sync: not ready`                      | Login is off, or `SUPABASE_SERVICE_ROLE_KEY` is not set       | Part A, or Part B step 2                                                               |
+| `Clerk user sync: not ready`                      | Login is off, the service key is unset, or users table failed | Part A, Part B step 2, or the users table row above                                    |
 
 ## Done
 

@@ -191,6 +191,10 @@ export async function report(env, fetchImpl = fetch) {
     const needs = [
       !on['Login (Clerk)'] && 'Login ON',
       !serviceRole && 'SUPABASE_SERVICE_ROLE_KEY',
+      // With the key set, schemaLine is the service_role probe: sync fails until it passes.
+      serviceRole &&
+        schemaLine !== 'Supabase users table: found' &&
+        'the users table check to pass',
     ].filter(Boolean)
     lines.push(
       needs.length

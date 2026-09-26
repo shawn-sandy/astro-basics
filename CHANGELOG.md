@@ -286,7 +286,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `rollback_007_data_api_grants.sql`
   - The auth-and-database-setup status script reads an anon `42501` as the table existing, and
     once the anon key checks out it probes again as `service_role` when
-    `SUPABASE_SERVICE_ROLE_KEY` is set
+    `SUPABASE_SERVICE_ROLE_KEY` is set. Clerk user sync stays "not ready" until that probe passes
   - The setup guides list 007 in their fresh-install steps
 - **Dashboard menu covered the page in browsers without popovers** (`src/components/dashboard/DashboardSidebar.astro`):
   below 64rem the sidebar's link panel was always `position: fixed`, and where the `popover` attribute
