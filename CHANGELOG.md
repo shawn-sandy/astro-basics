@@ -57,6 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `PRODUCT.md` records the evaluating-developer audience, the three confirmed differentiators,
     clone-or-template distribution, and an explicit list of evidence the project does **not** have,
     so future work cannot fabricate it
+  - The README's Styling System section links `DESIGN.md` and a published Astro Kit design system
+    artifact that renders its tokens, type roles and components in light and dark themes
 - **Impeccable live mode** (`.impeccable/live/config.json`): durable configuration for browser-based
   design iteration. Running live mode injects a picker `<script>` into `src/layouts/Base.astro` and
   writes session state under `.impeccable/live/`; both are local development artifacts, removed by
