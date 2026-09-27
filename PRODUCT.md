@@ -27,8 +27,9 @@ either user above.
 Astro Kit is an Astro website that a non-developer can hand to Claude Code to set up, customize,
 extend, and deploy. It doubles as its own component library and reference implementation, so the
 same repository serves the person working through an agent and the developer reading the code.
-Until the known security constraints under Capabilities and Constraints are fixed, it is not to be
-described as production-ready.
+It is not to be described as production-ready. The security blockers that once held this gate are
+fixed (#383); it now holds because the agentic conversion below is unfinished and `/docs` still
+answers 500 (see Known constraints).
 
 The direction is set by the converged proposal at
 `docs/prompts/proposal-build-agentic-starter-kit.md`: make the repository's existing capability
@@ -127,7 +128,9 @@ Known constraints:
 - Name: **Astro Kit** (`SITE_TITLE`). The repository and guide are named `astro-basics` /
   "Astro-Basics Guide"; the two names coexist today and no consolidation has been decided.
 - Owner and author: Shawn Sandy. Repository: `github.com/shawn-sandy/astro-basics`. Licence: MIT.
-- Tagline in use: "A simple, easy to use multipurpose starter theme for Astro."
+- Tagline in use: "A simple, easy to use multipurpose starter theme for Astro." (`SITE_DESCRIPTION`
+  in `src/utils/site-config.ts`). It predates the agentic-starter positioning and no longer matches
+  it; no replacement has been decided, so do not invent one.
 - The `--island` accent is a deep petrol, chosen specifically so the page does not read as a
   framework default. It is not to drift toward the sky-blue or violet/indigo families.
 - The existing token vocabulary (`ink`, `ink-soft`, `paper`, `paper-sunk`, `island`, `island-bg`,
