@@ -10,7 +10,7 @@ This directory contains PostgreSQL migrations for the Supabase database provider
 
 ### Fresh Database Installation
 
-For **new databases**, run only these two migrations in order:
+For **new databases**, run only these three migrations in order:
 
 ```bash
 # Set your Supabase connection string
@@ -21,7 +21,14 @@ psql $DATABASE_URL -f scripts/migrations/001_core_schema.sql
 
 # Apply security policies
 psql $DATABASE_URL -f scripts/migrations/002_security_policies.sql
+
+# Grant the API roles access to the tables
+psql $DATABASE_URL -f scripts/migrations/007_data_api_grants.sql
 ```
+
+Run 007 on every project. Projects that have "Automatically expose new tables and functions" turned
+off grant the API roles nothing, and every request gets `42501 permission denied`. On projects that
+still grant automatically, 007 swaps those broad grants for the least-privilege set below.
 
 **That's it!** Skip migrations 003 and 004 - they are deprecated/redundant.
 
@@ -52,6 +59,7 @@ psql $DATABASE_URL -f scripts/migrations/006_drop_messages_table.sql
 | `001_core_schema.sql`         | 2025-10-12 | Core tables, roles, indexes, triggers                               | **ACTIVE** |
 | `002_security_policies.sql`   | 2025-10-06 | Row Level Security (RLS) policies                                   | **ACTIVE** |
 | `006_drop_messages_table.sql` | 2026-09-25 | Drop legacy `messages` table (existing databases only, no rollback) | **ACTIVE** |
+| `007_data_api_grants.sql`     | 2026-09-25 | Table privileges for the API roles                                  | **ACTIVE** |
 
 ### ⚠️ Deprecated Migrations
 
@@ -112,12 +120,46 @@ psql $DATABASE_URL -f scripts/migrations/006_drop_messages_table.sql
 
 ---
 
+### 007_data_api_grants.sql
+
+**Purpose**: Grants the Data API roles the table privileges the app uses. RLS decides which rows a
+role sees. Grants decide whether it can reach the table at all. Without grants, every role gets
+`42501`, including `service_role`: it bypasses RLS, but it still needs table privileges.
+
+Supabase stopped granting automatically for new projects on 2026-05-30. Existing projects follow on
+2026-10-30. See the
+[changelog entry](https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically).
+
+**Grants**:
+
+| Role            | `users`                                                              | `organization_memberships`     | `user_preferences`                                                                          |
+| --------------- | -------------------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------- |
+| `service_role`  | select, insert, update, delete                                       | select, insert, update, delete | select, insert, update, delete                                                              |
+| `authenticated` | select; update `username`, `full_name`, `avatar_url`, `app_metadata` | select                         | select; update `theme`, `notifications_email`, `notifications_push`, `language`, `timezone` |
+| `anon`          | none                                                                 | none                           | none                                                                                        |
+
+`service_role` serves the Clerk webhook, user sync and the role guard. `authenticated` serves
+`/api/user/profile` and `/api/user/profile-with-org`, which use the Clerk JWT. No code reads these
+tables as `anon`.
+
+007 revokes all privileges on the three tables before granting, so every project ends with the same
+privileges on them. The automatic grants include table-wide `UPDATE` on `users`, which lets a signed-in user set
+their own `role` through the Data API. `requireRole()` trusts that column. The column-level `UPDATE`
+closes that path.
+
+**Rollback**: `rollback_007_data_api_grants.sql` removes every privilege the API roles have on these
+tables. It does not restore automatic grants. Restoring them means `GRANT ALL`, which reopens the
+`role` hole.
+
+---
+
 ## Rollback Procedures
 
 ### Rollback All Migrations (Nuclear Option)
 
 ```bash
 # Rollback in reverse order
+psql $DATABASE_URL -f scripts/migrations/rollback_007_data_api_grants.sql
 psql $DATABASE_URL -f scripts/migrations/rollback_002_security_policies.sql
 psql $DATABASE_URL -f scripts/migrations/rollback_001_core_schema.sql
 ```
@@ -238,10 +280,12 @@ The migration is trying to create an ENUM or type that already exists. Usually s
 
 If you're getting permission denied errors:
 
-1. Check that RLS is enabled: `SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public';`
-2. Verify your JWT contains the correct claims (especially 'sub' for user ID)
-3. Test with service role key (bypasses RLS) to isolate issue
-4. Review policies: `SELECT * FROM pg_policies WHERE schemaname = 'public';`
+1. `42501 permission denied for table ...` means the role has no table privileges. RLS is not the
+   cause. Run `007_data_api_grants.sql`.
+2. Check that RLS is enabled: `SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public';`
+3. Verify your JWT contains the correct claims (especially 'sub' for user ID)
+4. Test with service role key (bypasses RLS) to isolate issue
+5. Review policies: `SELECT * FROM pg_policies WHERE schemaname = 'public';`
 
 ### Migration verification failures
 

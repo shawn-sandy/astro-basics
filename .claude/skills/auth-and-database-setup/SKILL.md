@@ -82,9 +82,14 @@ it: submissions are only emailed, which needs the email settings (out of scope h
    - `SUPABASE_SERVICE_ROLE_KEY`: the service_role (or secret) key. This key is
      needed for Clerk user sync.
 3. Create the schema. In the Supabase dashboard, open **SQL Editor** and run these
-   two files, in order and one at a time:
+   three files, in order and one at a time:
    - `scripts/migrations/001_core_schema.sql`
    - `scripts/migrations/002_security_policies.sql`
+   - `scripts/migrations/007_data_api_grants.sql`
+
+   The third file lets the site read and write the new tables. Newer Supabase
+   projects give it no access by default, and without this file every request fails
+   with `permission denied` (42501).
 
    On a Mac, `pbcopy < scripts/migrations/001_core_schema.sql` puts a file on the
    clipboard. Skip the other files in that folder. `scripts/migrations/README.md`
@@ -101,17 +106,17 @@ uses the service role key and does not need it. The steps are in
 
 ## When something goes wrong
 
-| What they see                                     | What it means                                                 | What to do                                                                               |
-| ------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Status script says `ok` but the site is unchanged | The dev server is still using the old `.env`                  | `Ctrl+C`, `npm run dev`                                                                  |
-| `node: .env: not found`                           | There is no `.env` yet                                        | Step 0                                                                                   |
-| `Supabase users table: MISSING (404)`             | The schema SQL has not been run, or the API cannot see it yet | Part B, step 3. If it already ran, check that the Data API exposes the `public` schema   |
-| `Supabase users table: exists, but ... (42501)`   | The table is there, but the API roles have no grants on it    | The schema SQL changes no grants; check the table's API access in the Supabase dashboard |
-| `Supabase users table: key rejected`              | The anon key was copied wrong or belongs to another project   | Recopy `SUPABASE_ANON_KEY`                                                               |
-| `could not reach SUPABASE_URL (ENOTFOUND)`        | Typo in the URL, or the project is paused                     | Check the Project URL; resume the project in the Supabase dashboard                      |
-| `SUPABASE_URL` says `without /rest/v1`            | They pasted the REST endpoint; the app adds `/rest/v1` itself | Delete `/rest/v1` from the end of `SUPABASE_URL` and `PUBLIC_SUPABASE_URL`               |
-| `Supabase users table: timed out`                 | The URL points at something that never answers                | Check the Project URL is the one from **Project Settings > API**                         |
-| `Clerk user sync: not ready`                      | Login is off, or `SUPABASE_SERVICE_ROLE_KEY` is not set       | Part A, or Part B step 2                                                                 |
+| What they see                                     | What it means                                                 | What to do                                                                             |
+| ------------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Status script says `ok` but the site is unchanged | The dev server is still using the old `.env`                  | `Ctrl+C`, `npm run dev`                                                                |
+| `node: .env: not found`                           | There is no `.env` yet                                        | Step 0                                                                                 |
+| `Supabase users table: MISSING (404)`             | The schema SQL has not been run, or the API cannot see it yet | Part B, step 3. If it already ran, check that the Data API exposes the `public` schema |
+| `Supabase users table: exists, but ... (42501)`   | The table is there, but the service role has no grants on it  | Run `scripts/migrations/007_data_api_grants.sql` (Part B, step 3)                      |
+| `Supabase users table: key rejected`              | The key it names was copied wrong or is from another project  | Recopy the key it names                                                                |
+| `could not reach SUPABASE_URL (ENOTFOUND)`        | Typo in the URL, or the project is paused                     | Check the Project URL; resume the project in the Supabase dashboard                    |
+| `SUPABASE_URL` says `without /rest/v1`            | They pasted the REST endpoint; the app adds `/rest/v1` itself | Delete `/rest/v1` from the end of `SUPABASE_URL` and `PUBLIC_SUPABASE_URL`             |
+| `Supabase users table: timed out`                 | The URL points at something that never answers                | Check the Project URL is the one from **Project Settings > API**                       |
+| `Clerk user sync: not ready`                      | Login is off, the service key is unset, or users table failed | Part A, Part B step 2, or the users table row above                                    |
 
 ## Done
 

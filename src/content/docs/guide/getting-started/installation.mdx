@@ -99,6 +99,7 @@ npm run db:status
 # Apply the Supabase migrations with psql (see scripts/migrations/README.md)
 psql $DATABASE_URL -f scripts/migrations/001_core_schema.sql
 psql $DATABASE_URL -f scripts/migrations/002_security_policies.sql
+psql $DATABASE_URL -f scripts/migrations/007_data_api_grants.sql
 ```
 
 See the [Complete Setup Guide](/guide/getting-started/setup/) for detailed configuration.
