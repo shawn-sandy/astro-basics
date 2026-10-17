@@ -10,6 +10,24 @@ import clerk from '@clerk/astro'
 import { astroEmail } from '#integrations/email/index.ts'
 
 import starlight from '@astrojs/starlight'
+import { loadEnv } from 'vite'
+
+// Astro does not load `.env` into process.env before this file runs; loadEnv reads both.
+const { PUBLIC_CLERK_PUBLISHABLE_KEY } = loadEnv(process.env.NODE_ENV, process.cwd(), '')
+
+/**
+ * Registers Clerk, dropping its browser scripts when there is no `pk_` publishable key.
+ * Without a key those scripts throw "Missing publishableKey", and when the before-hydration
+ * copy runs first, every island on the page fails to hydrate. The integration itself stays,
+ * because `Show` imports the `virtual:@clerk/astro/config` module its Vite plugin provides.
+ */
+function clerkIntegration() {
+  const integration = clerk()
+  if (PUBLIC_CLERK_PUBLISHABLE_KEY?.startsWith('pk_')) return integration
+  const setup = integration.hooks['astro:config:setup']
+  integration.hooks['astro:config:setup'] = options => setup({ ...options, injectScript: () => {} })
+  return integration
+}
 
 // https://astro.build/config
 export default defineConfig({
@@ -29,7 +47,10 @@ export default defineConfig({
       // Sidebar configuration for src/content/docs/guide structure
       sidebar: [
         { label: 'Guide', items: [{ label: 'Welcome', link: '/guide/' }] },
-        { label: 'Getting Started', items: [{ autogenerate: { directory: 'guide/getting-started' } }] },
+        {
+          label: 'Getting Started',
+          items: [{ autogenerate: { directory: 'guide/getting-started' } }],
+        },
         { label: 'Components', items: [{ autogenerate: { directory: 'guide/components' } }] },
         {
           label: 'Features',
@@ -51,9 +72,7 @@ export default defineConfig({
         },
         {
           label: 'Utilities',
-          items: [
-            { label: 'User Sync', link: '/guide/utilities/user-sync' },
-          ],
+          items: [{ label: 'User Sync', link: '/guide/utilities/user-sync' }],
         },
         { label: 'API Reference', items: [{ autogenerate: { directory: 'guide/api' } }] },
         {
@@ -88,7 +107,7 @@ export default defineConfig({
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
     }),
     mdx(),
-    clerk(),
+    clerkIntegration(),
     astroEmail(),
   ],
   output: 'server',

@@ -138,6 +138,14 @@ if (!envConfig.isClerkConfigured()) {
   The `isClerkConfigured()` method automatically detects placeholder values like `YOUR_CLERK_PUBLISHABLE_KEY` and returns `false`. You don't need to check for placeholders manually!
 </Aside>
 
+### Building Without Keys
+
+Without a `pk_` publishable key at build time, `astro.config.mjs` keeps the Clerk integration but skips Clerk's browser scripts, so pages and islands load normally and protected routes return the 503 setup notice.
+
+<Aside type="caution" title="Rebuild after adding keys">
+  To turn Clerk on, set both keys and rebuild. The publishable key is baked in when the site builds, so adding it to the host's environment alone changes nothing until the next deploy.
+</Aside>
+
 ### Accessing Keys
 
 ```typescript
