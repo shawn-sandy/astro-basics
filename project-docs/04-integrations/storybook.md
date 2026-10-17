@@ -26,11 +26,11 @@ no Astro renderer to point at them. Document those in the Starlight guide under
 hydrate a React component — `ContactForm.astro`, for example — are covered
 indirectly by the story for the React component they wrap.
 
-One React component is deliberately excluded: `astro-breadcrumb`. The underlying
-`@fpkit/react` `Breadcrumb` derives its trail from `window.location.pathname` and
-treats `routes` purely as a segment-to-label lookup table. Inside Storybook's
-`iframe.html` that pathname is always Storybook's own, so a story would display a
-misleading trail rather than the component's real output.
+One React component is deliberately excluded: `astro-breadcrumb`. It reads
+`window.location.pathname` for its trail and passes it to the `@fpkit/acss`
+`Breadcrumb`, which treats `routes` purely as a segment-to-label lookup table. Inside
+Storybook's `iframe.html` that pathname is always Storybook's own, so a story would
+display a misleading trail rather than the component's real output.
 
 ## Configuration
 
