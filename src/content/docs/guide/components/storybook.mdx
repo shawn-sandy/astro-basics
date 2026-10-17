@@ -66,9 +66,9 @@ Storybook renders `src/components/react/` only.
   they wrap.
 </Aside>
 
-`astro-breadcrumb` is also excluded. The `@fpkit/react` `Breadcrumb` it wraps
-builds its trail from `window.location.pathname` and uses the `routes` prop only
-as a segment-to-label lookup, so inside Storybook's iframe it would always show
+`astro-breadcrumb` is also excluded. It reads `window.location.pathname` for its
+trail and passes it to the `@fpkit/acss` `Breadcrumb`, which uses the `routes` prop
+only as a segment-to-label lookup, so inside Storybook's iframe it would always show
 Storybook's own path rather than a realistic trail.
 
 ## Adding a story

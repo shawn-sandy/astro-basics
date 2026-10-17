@@ -21,11 +21,11 @@ are not rendered here. Astro components that wrap a React component — such as
 `ContactForm.astro` — are covered indirectly by the React story for the component
 they hydrate.
 
-One React component is deliberately left out: `astro-breadcrumb`. The underlying
-`@fpkit/react` `Breadcrumb` builds its trail from `window.location.pathname` and
-uses the `routes` prop only as a segment-to-label lookup table. Inside Storybook's
-`iframe.html` that pathname is always Storybook's own, so any story would render a
-misleading trail rather than the component's real output.
+One React component is deliberately left out: `astro-breadcrumb`. It reads
+`window.location.pathname` for its trail and passes it to the `@fpkit/acss`
+`Breadcrumb`, which uses the `routes` prop only as a segment-to-label lookup table.
+Inside Storybook's `iframe.html` that pathname is always Storybook's own, so any
+story would render a misleading trail rather than the component's real output.
 
 ## Styling
 

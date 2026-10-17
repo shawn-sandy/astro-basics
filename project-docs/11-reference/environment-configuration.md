@@ -150,6 +150,13 @@ envConfig.getEnvironment() // 'development' | 'production' | 'test'
 - Use `live` keys for production deployments
 - Never commit secret keys to version control
 
+**Building Without Keys:**
+
+Without a `pk_` publishable key at build time, `astro.config.mjs` keeps the Clerk integration but
+skips Clerk's browser scripts, so pages and islands load normally and protected routes return the
+503 setup notice. To turn Clerk on, set both keys and rebuild: the publishable key is baked in when
+the site builds, so adding it to the host's environment alone changes nothing until the next deploy.
+
 ---
 
 ### Astro Configuration

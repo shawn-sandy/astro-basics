@@ -55,74 +55,74 @@
     <style>
       /* ── Design tokens — the same palette the generated plans use ──── */
       :root {
-        --paper: #fcfcfa;
+        --paper: #fbfbfd;
         --panel: #ffffff;
-        --sunk: #f5f4f1;
-        --ink: #16151c;
-        --ink-2: #4b4858;
-        --ink-3: #6e6a80;
-        --rule: #e6e3ec;
-        --rule-soft: #f0eef4;
-        --accent: #4a2fe0;
-        --accent-soft: #efebfe;
-        --accent-line: #c9befb;
+        --sunk: #f4f4f8;
+        --ink: #14141c;
+        --ink-2: #494959;
+        --ink-3: #63637a;
+        --rule: #e4e4ee;
+        --rule-soft: #f0f0f6;
+        --accent: #3730c4;
+        --accent-soft: #eeedfb;
+        --accent-line: #c6c2f0;
         --on-accent: #ffffff;
-        --moss: #2f6b45;
-        --moss-soft: #edf5ef;
-        --moss-line: #c3ddcd;
-        --signal: #a8420c;
-        --signal-soft: #fbf0e9;
-        --signal-line: #e8c9b4;
+        --moss: #2c6a44;
+        --moss-soft: #ecf4ef;
+        --moss-line: #c0dccb;
+        --signal: #8a5209;
+        --signal-soft: #fbf3e6;
+        --signal-line: #e8d3ac;
         --radius: 4px;
         --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
-        --ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-        --prose: Georgia, "Iowan Old Style", "Times New Roman", serif;
+        --ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        --prose: var(--ui);
         color-scheme: light;
       }
       /* Written twice: an explicit choice has to beat the OS preference, and
          plain CSS cannot share a block between an attribute selector and a
          media query. Keep the two lists in sync. */
       :root[data-theme="dark"] {
-        --paper: #121118;
-        --panel: #1a1922;
-        --sunk: #201f29;
-        --ink: #edebf3;
-        --ink-2: #b3afc4;
-        --ink-3: #8b87a0;
-        --rule: #2c2a38;
-        --rule-soft: #24232e;
-        --accent: #a594ff;
-        --accent-soft: #221f36;
-        --accent-line: #4a4270;
-        --on-accent: #16151c;
-        --moss: #7bc098;
-        --moss-soft: #1b2a21;
-        --moss-line: #2f4a39;
-        --signal: #e8a278;
-        --signal-soft: #2b2019;
-        --signal-line: #4d3826;
+        --paper: #0f0f16;
+        --panel: #17171f;
+        --sunk: #1d1d27;
+        --ink: #ecebf2;
+        --ink-2: #b2b0c2;
+        --ink-3: #8a889c;
+        --rule: #2a2a36;
+        --rule-soft: #22222c;
+        --accent: #a8a2f5;
+        --accent-soft: #1f1d33;
+        --accent-line: #454070;
+        --on-accent: #14141c;
+        --moss: #7cc099;
+        --moss-soft: #17271e;
+        --moss-line: #2e4838;
+        --signal: #e0a86a;
+        --signal-soft: #271e12;
+        --signal-line: #4a3820;
         color-scheme: dark;
       }
       @media (prefers-color-scheme: dark) {
         :root:not([data-theme="light"]) {
-          --paper: #121118;
-          --panel: #1a1922;
-          --sunk: #201f29;
-          --ink: #edebf3;
-          --ink-2: #b3afc4;
-          --ink-3: #8b87a0;
-          --rule: #2c2a38;
-          --rule-soft: #24232e;
-          --accent: #a594ff;
-          --accent-soft: #221f36;
-          --accent-line: #4a4270;
-          --on-accent: #16151c;
-          --moss: #7bc098;
-          --moss-soft: #1b2a21;
-          --moss-line: #2f4a39;
-          --signal: #e8a278;
-          --signal-soft: #2b2019;
-          --signal-line: #4d3826;
+          --paper: #0f0f16;
+          --panel: #17171f;
+          --sunk: #1d1d27;
+          --ink: #ecebf2;
+          --ink-2: #b2b0c2;
+          --ink-3: #8a889c;
+          --rule: #2a2a36;
+          --rule-soft: #22222c;
+          --accent: #a8a2f5;
+          --accent-soft: #1f1d33;
+          --accent-line: #454070;
+          --on-accent: #14141c;
+          --moss: #7cc099;
+          --moss-soft: #17271e;
+          --moss-line: #2e4838;
+          --signal: #e0a86a;
+          --signal-soft: #271e12;
+          --signal-line: #4a3820;
           color-scheme: dark;
         }
       }
@@ -206,8 +206,10 @@
       .tabs a:hover { color: var(--ink); background: var(--sunk); }
       .tabs a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
       .tabs a .n { color: var(--ink-3); margin-left: 0.3rem; }
-      /* --ink-3 on the current tab's accent-soft chip measures 4.46:1, just
-         under AA — the count takes the tab's own colour there instead. */
+      /* --ink-3 on the current tab's accent-soft chip clears AA since the 9.1.0
+         palette (5.04:1 light, 4.75:1 dark; it was 4.46:1 before). The count
+         still takes the tab's own colour — the chip reads as one unit that way,
+         which is now a look rather than a contrast workaround. */
       .tabs a[aria-current="page"] .n { color: var(--accent); }
 
       /* Every structural label speaks in mono. */
@@ -468,6 +470,10 @@
       /* A plan that has a prototype is worth spotting in a scan. Inline text,
          never an <a> — the row is already one anchor. */
       .r-meta .proto-chip { color: var(--accent); }
+      /* Same inline-text rule for a plan that lives on claude.ai rather
+         than in this repo. Accent, not signal: it marks where the plan is,
+         not that anything is wrong with it. */
+      .r-meta .artifact-chip { color: var(--accent); }
       .r-date {
         font-family: var(--mono);
         font-size: 0.65rem;
@@ -551,9 +557,9 @@
         <a class="mark" href="../index.html">agentics</a>
         <nav class="tabs" aria-label="Collections">
           <a href="../index.html" >Home</a>
-          <a href="index.html" aria-current="page">Plans<span class="n">3</span></a>
+          <a href="index.html" aria-current="page">Plans<span class="n">8</span></a>
           <a href="../prototypes/index.html" >Prototypes<span class="n">1</span></a>
-          <a href="../artifacts/index.html" >Artifacts<span class="n">0</span></a>
+          <a href="../artifacts/index.html" >Artifacts<span class="n">1</span></a>
           <a href="../media/social/index.html" >Social<span class="n">0</span></a>
         </nav>
       </div>
@@ -565,7 +571,7 @@
         <!-- The bare <p> and the leading number are load-bearing: the merge
              driver's COUNT_RE rewrites `<p>N items`. The prose after it is
              free text. -->
-        <p>3 items &mdash; in flight first, then newest. Search matches titles.</p>
+        <p>8 items &mdash; in flight first, then newest. Search matches titles.</p>
       </div>
       <button
         class="theme-toggle"
@@ -633,7 +639,7 @@
     <div class="visible-count" id="visibleCount" aria-live="polite"></div>
 
     <div class="gallery-grid" id="galleryGrid"><a class="gallery-card" href="move-navigation-into-popover.html"
-   data-status="in-progress" data-type="feature" data-effort="high" data-month="2026-08" data-title="move the site navigation into a native html popover menu" data-steps-done="0" data-steps-total="9">
+   data-local="move-navigation-into-popover" data-status="in-progress" data-type="feature" data-effort="high" data-month="2026-08" data-title="move the site navigation into a native html popover menu" data-steps-done="0" data-steps-total="9">
   <span class="glyph" aria-hidden="true">&#9675;</span><span class="sr-only">in progress</span>
   <span class="r-title">Move the site navigation into a native HTML popover menu</span>
   <span class="r-meta">feature &middot; <span class="hi">high</span></span>
@@ -641,26 +647,61 @@
   <span class="r-steps">0 / 9 steps</span>
 </a>
 <a class="gallery-card" href="upgrade-astro-to-v7.html"
-   data-status="in-progress" data-type="chore" data-effort="" data-month="2026-06" data-title="upgrade astro to v7" data-steps-done="11" data-steps-total="11">
+   data-local="upgrade-astro-to-v7" data-status="in-progress" data-type="chore" data-effort="" data-month="2026-06" data-title="upgrade astro to v7" data-steps-done="11" data-steps-total="11">
   <span class="glyph" aria-hidden="true">&#9675;</span><span class="sr-only">in progress</span>
   <span class="r-title">Upgrade Astro to v7</span>
   <span class="r-meta">chore</span>
   <span class="r-date">2026-06-30</span>
   <span class="r-steps">11 / 11 steps</span>
 </a>
-<a class="gallery-card" href="add-homepage-design-direction.html"
-   data-status="todo" data-type="feature" data-effort="high" data-month="2026-08" data-title="show the components instead of describing them" data-steps-done="0" data-steps-total="9">
+<a class="gallery-card" href="https://claude.ai/artifact/7qgGa5gtDwVYLVQ9bMTsu4" target="_blank" rel="noopener"
+   data-local="fix-keyless-clerk-island-hydration" data-status="todo" data-type="fix" data-effort="" data-month="2026-10" data-title="keep every island alive on sites built without a clerk key" data-steps-done="0" data-steps-total="9">
   <span class="glyph" aria-hidden="true">&#9675;</span><span class="sr-only">todo</span>
+  <span class="r-title">Keep every island alive on sites built without a Clerk key</span>
+  <span class="r-meta">fix &middot; <span class="artifact-chip" title="Published to claude.ai — no local file in this repo">artifact</span></span>
+  <span class="r-date">2026-10-16</span><span class="sr-only"> (opens on claude.ai)</span>
+</a>
+<a class="gallery-card" href="add-site-config-setup-skill.html"
+   data-local="add-site-config-setup-skill" data-status="todo" data-type="feature" data-effort="high" data-month="2026-08" data-title="turn site branding setup into a guided conversation" data-steps-done="0" data-steps-total="7">
+  <span class="glyph" aria-hidden="true">&#9675;</span><span class="sr-only">todo</span>
+  <span class="r-title">Turn site branding setup into a guided conversation</span>
+  <span class="r-meta">feature &middot; <span class="hi">high</span></span>
+  <span class="r-date">2026-08-18</span>
+</a>
+<a class="gallery-card" href="build-agentic-starter-kit.html"
+   data-local="build-agentic-starter-kit" data-status="todo" data-type="feature" data-effort="high" data-month="2026-08" data-title="make every agentic affordance in astro-basics executable, verifiable, and true" data-steps-done="0" data-steps-total="10">
+  <span class="glyph" aria-hidden="true">&#9675;</span><span class="sr-only">todo</span>
+  <span class="r-title">Make every agentic affordance in astro-basics executable, verifiable, and true</span>
+  <span class="r-meta">feature &middot; <span class="hi">high</span></span>
+  <span class="r-date">2026-08-10</span>
+</a>
+<a class="gallery-card" href="add-config-driven-theming.html"
+   data-local="add-config-driven-theming" data-status="todo" data-type="feature" data-effort="high" data-month="2026-08" data-title="config-driven named themes, three worked examples, and a skill that builds the fourth" data-steps-done="0" data-steps-total="10">
+  <span class="glyph" aria-hidden="true">&#9675;</span><span class="sr-only">todo</span>
+  <span class="r-title">Config-driven named themes, three worked examples, and a Skill that builds the fourth</span>
+  <span class="r-meta">feature &middot; <span class="hi">high</span></span>
+  <span class="r-date">2026-08-06</span>
+</a>
+<a class="gallery-card" href="add-homepage-design-direction.html"
+   data-local="add-homepage-design-direction" data-status="completed" data-type="feature" data-effort="high" data-month="2026-08" data-title="show the components instead of describing them" data-steps-done="9" data-steps-total="9">
+  <span class="glyph" aria-hidden="true">&#10003;</span><span class="sr-only">completed</span>
   <span class="r-title">Show the components instead of describing them</span>
   <span class="r-meta">feature &middot; <span class="hi">high</span></span>
   <span class="r-date">2026-08-05</span>
+</a>
+<a class="gallery-card" href="move-navigation-into-popover-review.html"
+   data-local="move-navigation-into-popover-review" data-status="todo" data-type="untyped" data-effort="" data-month="" data-title="plan review: move the site navigation into a native html popover menu" data-steps-done="0" data-steps-total="0">
+  <span class="glyph" aria-hidden="true">&#9675;</span><span class="sr-only">todo</span>
+  <span class="r-title">Plan Review: Move the site navigation into a native HTML popover menu</span>
+  <span class="r-meta">untyped</span>
+  <span class="r-date"></span>
 </a></div>
 
     <div class="no-results" id="noResults">No items match your search.</div>
 
     <div class="gallery-footer">
-      <span>3 items</span>
-      <span>Generated 2026-08-05 16:50</span>
+      <span>8 items</span>
+      <span>Generated 2026-10-16 20:10</span>
     </div>
 
     <script>
