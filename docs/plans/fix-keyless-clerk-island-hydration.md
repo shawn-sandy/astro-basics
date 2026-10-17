@@ -59,6 +59,8 @@ Risks and mitigations:
 - project-docs/11-reference/environment-configuration.md (modified) — the same note in the project docs
 - CHANGELOG.md (modified) — entry under `[Unreleased]` → `### Fixed`
 - src/components/react/astro-breadcrumb.tsx (modified) — import `Breadcrumb` from `@fpkit/acss` instead of `@fpkit/react`, whose unkeyed fragment logged a React dev-mode "unique key" error that failed steps 8 and 9 on the dev server
+- src/integrations/clerk/publishable-key.ts (new) — `readPublishableKey()`, which reads the key from `process.env` and the `.env` files for the build's mode, honouring `astro build --mode`; `astro.config.mjs` calls it instead of calling `loadEnv` inline
+- tests/clerk-publishable-key.test.ts (new) — Vitest coverage for `readPublishableKey()`: `--mode staging`, `--mode=staging`, no mode, and a host-set `process.env` key
 
 ## Steps
 

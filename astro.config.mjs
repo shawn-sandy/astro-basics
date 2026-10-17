@@ -8,12 +8,11 @@ import embeds from 'astro-embed/integration'
 import node from '@astrojs/node'
 import clerk from '@clerk/astro'
 import { astroEmail } from '#integrations/email/index.ts'
+import { readPublishableKey } from '#integrations/clerk/publishable-key.ts'
 
 import starlight from '@astrojs/starlight'
-import { loadEnv } from 'vite'
 
-// Astro does not load `.env` into process.env before this file runs; loadEnv reads both.
-const { PUBLIC_CLERK_PUBLISHABLE_KEY } = loadEnv(process.env.NODE_ENV, process.cwd(), '')
+const PUBLIC_CLERK_PUBLISHABLE_KEY = readPublishableKey()
 
 /**
  * Registers Clerk, dropping its browser scripts when there is no `pk_` publishable key.

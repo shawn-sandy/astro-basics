@@ -282,10 +282,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and whichever ran first threw `@clerk/astro: Missing publishableKey`. Every island awaits the
   before-hydration script before it starts, so on loads where that copy ran first no island on the
   page hydrated (a card gallery's Next button and its testimonials froze on about 1 load in 4). A
-  `clerkIntegration()` helper now reads the key with `loadEnv` and, unless it starts with `pk_`,
-  runs Clerk's `astro:config:setup` hook with a no-op `injectScript`. The integration stays
-  registered because `Show` needs its virtual config module. Sites that add a key must rebuild,
-  since the publishable key is baked in at build time
+  `clerkIntegration()` helper now reads the key from `process.env` and the `.env` files Astro loads
+  for the build's mode, `--mode` included (`src/integrations/clerk/publishable-key.ts`), and,
+  unless it starts with `pk_`, runs Clerk's `astro:config:setup` hook with a no-op `injectScript`.
+  The integration stays registered because `Show` needs its virtual config module. Sites that add
+  a key must rebuild, since the publishable key is baked in at build time
 - **React "unique key" error on every page with a breadcrumb** (`src/components/react/astro-breadcrumb.tsx`):
   the site breadcrumb used `Breadcrumb` from `@fpkit/react` 0.4.3, the latest release, which
   renders the current page in an unkeyed fragment, so the dev console logged an error each time
