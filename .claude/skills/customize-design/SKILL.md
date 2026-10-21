@@ -63,6 +63,10 @@ proof on its own.
 
 ## Step 0 - Ask once, then check the build
 
+Run every command in this skill from the repository root; the paths are relative to it.
+The tools are called from `./node_modules/.bin/`, so nothing is downloaded. If one is
+missing, run `npm install` rather than reaching for `npx`.
+
 Ask in one message:
 
 1. **Scope.** The whole site (Path A, the default), or a brand layer on a few sections
@@ -87,7 +91,7 @@ or set that work aside first. With no output, check that the committed CSS match
 SCSS:
 
 ```bash
-npm run sass:build && npx prettier --write src/styles/index.css && git status --short src/styles/index.css src/styles/index.css.map
+npm run sass:build && ./node_modules/.bin/prettier --write src/styles/index.css && git status --short src/styles/index.css src/styles/index.css.map
 ```
 
 No output means they match. Any output means the committed CSS had drifted from its source
@@ -183,15 +187,18 @@ Some corners do not read the scale. Tie them in by adding these to the `:root` b
 ### A5 - Build and check
 
 ```bash
-npm run sass:build && npx prettier --write src/styles/index.css
+npm run sass:build && ./node_modules/.bin/prettier --write src/styles/index.css
 node .claude/skills/customize-design/scripts/contrast.mjs
-npx vitest run tests/integration/design-tokens.test.ts tests/scripts/design-contrast.test.ts
-npx playwright test e2e/home-accessibility.spec.ts e2e/homepage-design-direction.spec.ts
+./node_modules/.bin/vitest run tests/integration/design-tokens.test.ts tests/scripts/design-contrast.test.ts
+./node_modules/.bin/playwright test e2e/home-accessibility.spec.ts e2e/homepage-design-direction.spec.ts
 ```
 
+Don't swap in `npm test`: its `pretest` script rebuilds `index.css` compressed, which
+turns the whole file into a one-line diff.
+
 Playwright starts the dev server itself. It needs browsers installed once
-(`npx playwright install`); if they are missing, say the e2e checks did not run rather
-than calling the work verified. If port 4321 is already in use, Playwright reuses
+(`./node_modules/.bin/playwright install`); if they are missing, say the e2e checks did
+not run rather than calling the work verified. If port 4321 is already in use, Playwright reuses
 whatever is there, which may be another checkout with the old colours. Check with
 `lsof -nP -iTCP:4321 -sTCP:LISTEN`, and if it is taken, prefix the command with
 `PLAYWRIGHT_BASE_URL=http://localhost:4341` (any free port).

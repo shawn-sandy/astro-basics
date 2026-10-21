@@ -2,9 +2,9 @@
 /**
  * Tests for the customize-design skill's contrast script.
  *
- * The real token file is only checked for shape, never for values: rebranding the
- * site is the point of the skill, so pinning today's colours here would fail every
- * customisation. Values are checked against fixtures instead.
+ * The real token file is checked for shape and for passing contrast, never for
+ * specific values: rebranding the site is the point of the skill, so pinning today's
+ * colours here would fail every customisation. Values are checked against fixtures.
  */
 import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
@@ -146,6 +146,8 @@ describe('customize-design contrast script CLI', () => {
 
   it('finds the token file from any working directory', () => {
     const result = run([], 'src')
+    // 0, not just "no error": every real pair must clear 4.5:1 whatever the brand.
+    expect(result.status).toBe(0)
     expect(result.stderr).toBe('')
     expect(result.stdout).toMatch(/^ink on paper +light \d+\.\d\d/)
   })
