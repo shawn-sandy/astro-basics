@@ -13,14 +13,15 @@ the spec match it.
 
 ## Where the design lives
 
-| What                 | File                                                                        | Edit                                                                                     |
-| -------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Palette, both themes | `src/styles/_design-tokens.scss`                                            | the seven tokens in `@mixin direction-light` and `@mixin direction-dark`                 |
-| Fonts                | `src/styles/_design-tokens.scss`, `public/fonts/`, `src/layouts/Base.astro` | `@font-face`, `--font-family-display` / `-sans` / `-mono`, the font preload `<link>`     |
-| Corners              | `src/styles/_design-tokens.scss`                                            | `--radius-lg`, `--radius-base`, and `--radius` (see A4)                                  |
-| Docs site accent     | `src/styles/starlight-custom.scss`                                          | `--sl-color-accent`, `-high`, `-low` and `--sl-color-text-accent`, light and dark blocks |
-| Name, logo, favicon  | `src/utils/site-config.ts`, `public/`                                       | `SITE_TITLE`, `SITE_LOGO`, `favicon.svg`                                                 |
-| The written spec     | `DESIGN.md`                                                                 | frontmatter tokens and the prose that names them                                         |
+| What                 | File                                                                                                                     | Edit                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| Palette, both themes | `src/styles/_design-tokens.scss`                                                                                         | the seven tokens in `@mixin direction-light` and `@mixin direction-dark`                 |
+| Fonts                | `src/styles/_design-tokens.scss`, `public/fonts/`, `src/layouts/Base.astro`                                              | `@font-face`, `--font-family-display` / `-sans` / `-mono`, the font preload `<link>`     |
+| Corners              | `src/styles/_design-tokens.scss`                                                                                         | the `--radius-*` scale, plus `--radius` and `--btn-radius` (see A4)                      |
+| Docs site accent     | `src/styles/starlight-custom.scss`                                                                                       | `--sl-color-accent`, `-high`, `-low` and `--sl-color-text-accent`, light and dark blocks |
+| Name, logo, favicon  | `src/utils/site-config.ts`, `public/`                                                                                    | `SITE_TITLE`, `SITE_LOGO`, `favicon.svg`                                                 |
+| The written spec     | `DESIGN.md`                                                                                                              | frontmatter tokens and the prose that names them                                         |
+| Copies of the spec   | `src/content/docs/guide/design-direction.mdx`, `project-docs/03-features/design-direction.md`, `.impeccable/design.json` | the token table, the colour names and the measured ratios (see A6)                       |
 
 The site loads the compiled `src/styles/index.css` (imported in `Base.astro`), not the
 SCSS. A token edit changes nothing until `npm run sass:build` runs. Starlight's sheet is
@@ -32,26 +33,33 @@ Leave these alone - they are not the palette:
   @fpkit/acss components. A sky blue reaching the screen is a regression, not a brand.
 - `design-tokens.css`, `design-tokens.json`, `_component-sample-tokens.scss`: extracted
   from a sample file. The site never loads them.
-- The `var(--island, #0b6070)` fallbacks in `HomeHero.astro`: they only apply when the
-  token is missing.
+- The fallbacks in `HomeHero.astro` (`var(--ink, #101418)` and one for each other
+  direction token): they only apply when a token is missing.
 
-## Rules the tests enforce
+## Rules to keep
 
-Each one fails a test when broken. Keep them through any rebrand.
+Keep these through any rebrand. Tests cover only part of them, so a green run is not
+proof on its own.
 
 - **The accent is only for things a visitor can operate.** `--island` paints links,
   buttons and focus rings. Never a heading, border, hairline or surface.
-  `e2e/homepage-design-direction.spec.ts` fails if any other element computes to it.
+  `e2e/homepage-design-direction.spec.ts` fails if any other element computes to it, but
+  it only checks the homepage. Other routes are yours to check.
 - **Every text pair is at least 4.5:1, in both themes.** `e2e/home-accessibility.spec.ts`
-  checks the rendered page. The script below checks the tokens before you build.
-- **Headings, body and labels use three different font families**
-  (`homepage-design-direction`).
+  checks five pairs on the homepage: ink and ink-soft on paper and on paper-sunk, and
+  island on paper. The script below measures those and three more no test covers: island
+  on paper-sunk, island on island-bg, and ink on island-bg.
+- **Headings, body and labels use three different font families.** Tested in
+  `homepage-design-direction`.
 - **Dark is darker than light**, and body, header and cards repaint between themes.
+  Tested in `homepage-design-direction`.
 - **The primary button label is `--paper`, never white.** The accent lightens in dark
-  mode, and white text on it would fail contrast.
+  mode, and white text on it would fail contrast. No test checks this; look at the hero
+  button in dark mode.
 - **Edit the mixins, not `:root`.** Each mixin is included in `:root`, in
   `@media (prefers-color-scheme: dark)` and in `:root[data-theme]`, so one edit reaches
-  all three scopes. A colour set only in `:root` stays stale under the other two.
+  all three scopes. A colour set only in `:root` stays stale under the other two. No test
+  checks this either.
 
 ## Step 0 - Ask once, then check the build
 
@@ -120,7 +128,8 @@ the script's output. Those figures are a record, never an estimate.
 
 Optionally, point Starlight's accent at the new hue so the docs at `/guide/` match:
 `--sl-color-accent`, `-high`, `-low` and `--sl-color-text-accent` in both blocks of
-`starlight-custom.scss`.
+`starlight-custom.scss`. Measure `--sl-color-text-accent` against `--sl-color-bg` and
+`--sl-color-bg-sidebar` in each block with the script's hex mode; no test covers the docs.
 
 ### A3 - Fonts (only if asked)
 
@@ -139,12 +148,26 @@ family and from each other.
 
 ### A4 - Corners (only if asked)
 
-`--radius-lg` (8px) is the default for cards and buttons, and `--radius-base` (4px) is
-for inputs. `--card-radius`, `--button-radius`, `--input-radius` and `--img-radius` alias
-them. The homepage hero and the @fpkit/acss components read `--radius` instead, which
-@fpkit/acss sets to 0.5rem and the site never overrides. To move it, add
-`--radius: var(--radius-lg);` to the `:root` block. Radius does not change between
-themes, so `:root` is enough here.
+Change the scale and the aliases follow:
+
+| Token           | Size | Painted on                                                                            |
+| --------------- | ---- | ------------------------------------------------------------------------------------- |
+| `--radius-lg`   | 8px  | cards and the navigation toggle and panel (through `--card-radius`), dashboard panels |
+| `--radius-md`   | 6px  | links in the navigation panel, dashboard quick-action buttons                         |
+| `--radius-base` | 4px  | form inputs (through `--input-radius`)                                                |
+| `--radius-2xl`  | 16px | images (through `--img-radius`)                                                       |
+
+Some corners do not read the scale. Tie them in by adding these to the `:root` block of
+`_design-tokens.scss`. Radius does not change between themes, so `:root` is enough.
+
+- **The homepage hero's buttons and code specimen** read `--radius`, which @fpkit/acss
+  sets to 0.5rem and the site never sets. Add `--radius: var(--radius-lg);`.
+- **Every plain `<button>`** reads `--btn-radius`, with a 0.375rem fallback in
+  @fpkit/acss. Add `--btn-radius: var(--radius-lg);`.
+- **`pre` (0.5rem) and `article img` (0.3rem)** are hard-coded in `src/styles/_base.scss`.
+  Point them at a token only if the user wants those corners to change too.
+
+`--button-radius` is declared but nothing reads it, so changing it does nothing.
 
 ### A5 - Build and check
 
@@ -167,16 +190,29 @@ login is on, `/dashboard`. Check each in light and dark, using both the header's
 toggle and the OS setting, and at 320px wide. Leave the status colours (success,
 warning, error, info) alone. They signal state, not brand.
 
-### A6 - Make DESIGN.md match
+### A6 - Make DESIGN.md and its copies match
 
 - **Frontmatter:** `name`, `description`, the seven `colors` (light values), each
   `typography.*.fontFamily`, `rounded`, and any component value that hardcodes a colour
   (`button-primary-hover.backgroundColor`).
 - **`## Colors`:** new names for the colours (Harbour Teal and Harbour Wash are the
-  current ones), light and dark hex, and the script's ratios.
+  current ones), how the accent is described ("low-chroma blue-green"), light and dark
+  hex, and the script's ratios.
 - **`## Typography`** if the display font changed, **`## Shapes`** if the corners did.
-- Every other mention of the old values:
-  `grep -n "Harbour\|0b6070\|6bb9c9\|e6f2f6\|102a33\|Inter" DESIGN.md`.
+- **Every other hex, ratio and colour word.** Ratios also appear outside `## Colors`, for
+  example under `### Buttons`. List them all and decide each one:
+
+  ```bash
+  grep -nE '#[0-9a-fA-F]{6}\b|[0-9]+\.[0-9]+:1|Harbour|petrol|blue-green|teal' DESIGN.md
+  grep -nw Inter DESIGN.md
+  ```
+
+Then make the same changes in the two published copies:
+`src/content/docs/guide/design-direction.mdx` (the `/guide/design-direction` page) and
+`project-docs/03-features/design-direction.md`. Both have a token table and the measured
+ratios. Run the same `grep` on each. `.impeccable/design.json` is generated from
+`DESIGN.md` by the impeccable plugin: regenerate it if the user has that plugin, and
+otherwise tell them it is now stale.
 
 Keep the Named Rules. They describe the system, not the brand. Change one only if the
 user's brand really breaks it, and tell them which.
@@ -226,9 +262,11 @@ drifted CSS, because it needs no Sass build.
 2. **Opt components in.** Each one sets `data-<brand>` on its root element and imports
    the sheet with `import '#styles/<brand>-palette.css'`. The browser loads it once,
    however many components import it.
-3. **No brand colour may equal `--island`**, in either theme. The accent audit compares
-   computed colours to the resolved `--island`, so a brand heading that matches it fails
-   the build. Choose a visibly different hue.
+3. **No brand colour may equal `--island`**, in either theme. The accent audit in
+   `e2e/homepage-design-direction.spec.ts` compares computed colours to the resolved
+   `--island`, so a brand heading that matches it fails that test. It only audits the
+   homepage, so a brand layer on another route goes unchecked: compare its hexes to
+   `--island` yourself. Choose a visibly different hue.
 4. **Measure every brand pair** with the script's `#fg:#bg` mode in both themes, and
    record the ratios in a comment at the top of the sheet.
 5. **Write it into `DESIGN.md`:** the brand's light values as `colors.<brand>-*` in the

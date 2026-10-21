@@ -3,18 +3,28 @@
  * WCAG contrast for the Astro Kit direction tokens, light and dark, read straight
  * from the `direction-light` and `direction-dark` mixins in `_design-tokens.scss`.
  *
- * Usage, from the repo root:
+ * Usage (paths from the repo root; the token file is found from any directory):
  *   node .claude/skills/customize-design/scripts/contrast.mjs            # the token pairs
  *   node .claude/skills/customize-design/scripts/contrast.mjs '#185c53:#f5f8f6'  # any hex pair
  *
- * Exits 1 when a pair falls below 4.5:1. Ratios are floored to two decimals, so
- * 4.499 never prints as a passing 4.50.
+ * Exits 1 when a pair falls below 4.5:1, 2 on a malformed pair. Ratios are floored
+ * to two decimals, so 4.499 never prints as a passing 4.50.
  */
 import { readFileSync } from 'node:fs'
-import { pathToFileURL } from 'node:url'
+import { URL, fileURLToPath, pathToFileURL } from 'node:url'
 
-const TOKENS_FILE = 'src/styles/_design-tokens.scss'
+const TOKENS_FILE = fileURLToPath(
+  new URL('../../../../src/styles/_design-tokens.scss', import.meta.url)
+)
 const FLOOR = 4.5
+
+/**
+ * Drop block and line comments, so a commented-out declaration, brace or mixin header
+ * can never be read as a token. A `//` right after a `:` is kept, for `url(https://…)`.
+ */
+function stripComments(scss) {
+  return scss.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1')
+}
 
 /** Text-on-ground pairs the stylesheets paint, foreground first, with where each one shows. */
 export const PAIRS = [
@@ -30,8 +40,19 @@ export const PAIRS = [
 
 /** The custom properties one mixin declares, as `{ name: value }` without the `--`. */
 export function readTheme(scss, mixin) {
-  const body = new RegExp(`@mixin ${mixin}\\s*\\{([^}]*)\\}`).exec(scss)?.[1]
-  if (body === undefined) throw new Error(`@mixin ${mixin} not found in ${TOKENS_FILE}`)
+  const css = stripComments(scss)
+  const header = new RegExp(`@mixin ${mixin}\\s*\\{`).exec(css)
+  if (!header) throw new Error(`@mixin ${mixin} not found in _design-tokens.scss`)
+
+  // Walk to the matching brace: a Sass `#{…}` inside the body would end a `[^}]*` match early.
+  const start = header.index + header[0].length
+  let end = start
+  for (let depth = 1; end < css.length && depth > 0; end += 1) {
+    if (css[end] === '{') depth += 1
+    else if (css[end] === '}') depth -= 1
+  }
+  const body = css.slice(start, end - 1)
+
   return Object.fromEntries(
     [...body.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].map(([, name, value]) => [name, value.trim()])
   )
@@ -44,7 +65,8 @@ function channels(color) {
     return [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16))
   }
   m = /^rgb\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)\s*\)$/i.exec(color)
-  if (m) return m.slice(1).map(Number)
+  const rgb = m?.slice(1).map(Number)
+  if (rgb?.every(c => c <= 255)) return rgb
   // ponytail: opaque hex and rgb() only; e2e/home-accessibility.spec.ts measures anything the browser parses
   throw new Error(
     `cannot measure "${color}": use opaque hex or rgb(), or run e2e/home-accessibility.spec.ts`
@@ -87,6 +109,11 @@ export function report(scss) {
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const pairs = process.argv.slice(2)
+  const malformed = pairs.find(pair => !/^[^:]+:[^:]+$/.test(pair))
+  if (malformed !== undefined) {
+    console.error(`"${malformed}" is not a pair.\nusage: contrast.mjs ['#fg:#bg' ...]`)
+    process.exit(2)
+  }
   let failed = false
   if (pairs.length) {
     for (const pair of pairs) {
