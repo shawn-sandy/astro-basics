@@ -1,0 +1,247 @@
+---
+name: customize-design
+description: Rebrand the Astro Kit design system - colours, fonts, corner radius - in both themes, keeping DESIGN.md and measured contrast in step. Use when asked to change the site's colours, fonts, theme or branding.
+version: 0.1.0
+---
+
+# Customize the Design System
+
+Change how astro-basics looks - its accent and neutral colours, its fonts, its corners -
+without breaking dark mode, contrast, or the tests that guard the design. `DESIGN.md` is
+the written spec. The stylesheet is what ships, so change the stylesheet first and make
+the spec match it.
+
+## Where the design lives
+
+| What                 | File                                                                        | Edit                                                                                     |
+| -------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Palette, both themes | `src/styles/_design-tokens.scss`                                            | the seven tokens in `@mixin direction-light` and `@mixin direction-dark`                 |
+| Fonts                | `src/styles/_design-tokens.scss`, `public/fonts/`, `src/layouts/Base.astro` | `@font-face`, `--font-family-display` / `-sans` / `-mono`, the font preload `<link>`     |
+| Corners              | `src/styles/_design-tokens.scss`                                            | `--radius-lg`, `--radius-base`, and `--radius` (see A4)                                  |
+| Docs site accent     | `src/styles/starlight-custom.scss`                                          | `--sl-color-accent`, `-high`, `-low` and `--sl-color-text-accent`, light and dark blocks |
+| Name, logo, favicon  | `src/utils/site-config.ts`, `public/`                                       | `SITE_TITLE`, `SITE_LOGO`, `favicon.svg`                                                 |
+| The written spec     | `DESIGN.md`                                                                 | frontmatter tokens and the prose that names them                                         |
+
+The site loads the compiled `src/styles/index.css` (imported in `Base.astro`), not the
+SCSS. A token edit changes nothing until `npm run sass:build` runs. Starlight's sheet is
+compiled by Vite, so it needs no build step.
+
+Leave these alone - they are not the palette:
+
+- `--color-primary-*` (sky blue) and `--color-neutral-*` (greys): kept for the
+  @fpkit/acss components. A sky blue reaching the screen is a regression, not a brand.
+- `design-tokens.css`, `design-tokens.json`, `_component-sample-tokens.scss`: extracted
+  from a sample file. The site never loads them.
+- The `var(--island, #0b6070)` fallbacks in `HomeHero.astro`: they only apply when the
+  token is missing.
+
+## Rules the tests enforce
+
+Each one fails a test when broken. Keep them through any rebrand.
+
+- **The accent is only for things a visitor can operate.** `--island` paints links,
+  buttons and focus rings. Never a heading, border, hairline or surface.
+  `e2e/homepage-design-direction.spec.ts` fails if any other element computes to it.
+- **Every text pair is at least 4.5:1, in both themes.** `e2e/home-accessibility.spec.ts`
+  checks the rendered page. The script below checks the tokens before you build.
+- **Headings, body and labels use three different font families**
+  (`homepage-design-direction`).
+- **Dark is darker than light**, and body, header and cards repaint between themes.
+- **The primary button label is `--paper`, never white.** The accent lightens in dark
+  mode, and white text on it would fail contrast.
+- **Edit the mixins, not `:root`.** Each mixin is included in `:root`, in
+  `@media (prefers-color-scheme: dark)` and in `:root[data-theme]`, so one edit reaches
+  all three scopes. A colour set only in `:root` stays stale under the other two.
+
+## Step 0 - Ask once, then check the build
+
+Ask in one message:
+
+1. **Scope.** The whole site (Path A, the default), or a brand layer on a few sections
+   only (Path B).
+2. **Colour.** One brand colour is enough; you derive the rest. A logo works too: read
+   its fills.
+3. **Fonts.** Keep Inter, or name a display face they may self-host (Google Fonts' OFL
+   fonts can be). Body and labels stay on system stacks unless they ask.
+4. **Corners.** Keep 8px, go sharper, or go rounder.
+5. **Name.** What the design system is called in `DESIGN.md`. The site title is
+   separate, in `site-config.ts`.
+
+Before editing anything, check that the committed CSS matches its SCSS:
+
+```bash
+npm run sass:build && npx prettier --write src/styles/index.css && git status --short src/styles/index.css src/styles/index.css.map
+```
+
+No output means they match. Any output means the committed CSS had drifted from its source
+(common in forks), and a rebuild would ship unrelated changes along with the rebrand. Stop,
+show the user `git diff --stat`, and ask whether to commit the rebuilt CSS on its own
+first, or to use Path B, which needs no rebuild.
+
+Record the starting numbers:
+
+```bash
+node .claude/skills/customize-design/scripts/contrast.mjs
+```
+
+## Path A - Rebrand the whole site
+
+### A1 - Pick the seven colours
+
+| Token          | Role                                                | Light                                                        | Dark                           |
+| -------------- | --------------------------------------------------- | ------------------------------------------------------------ | ------------------------------ |
+| `--island`     | the accent                                          | the brand colour, dark enough for 4.5:1 on all three grounds | a lighter tint of the same hue |
+| `--island-bg`  | accent wash: hover fills, `::selection`, active nav | a very light tint of the hue                                 | a very dark shade of the hue   |
+| `--ink`        | text                                                | near-black, may lean toward the hue                          | near-white                     |
+| `--ink-soft`   | secondary text                                      | mid-grey; its pair with `--paper-sunk` is the tightest       | mid-grey, lighter              |
+| `--paper`      | page background                                     | near-white                                                   | near-black                     |
+| `--paper-sunk` | header band, cards, code blocks                     | one step darker than paper                                   | one step lighter than paper    |
+| `--rule`       | hairlines, never text                               | light grey                                                   | dark grey                      |
+
+Try candidates before editing anything. Any `#fg:#bg` pair works:
+
+```bash
+node .claude/skills/customize-design/scripts/contrast.mjs '#185c53:#fcfcfd' '#185c53:#f1f3f5'
+```
+
+Hover and active states are mixed from `--island` with `color-mix()`, so there are no
+hover tokens to set.
+
+A brand colour too light for text (yellow, light orange, any pastel) cannot be the accent.
+Use a darker shade of its hue for `--island`, keep the bright one for `--island-bg` or the
+logo, and tell the user why.
+
+### A2 - Edit the tokens
+
+Change the values in `@mixin direction-light` and `@mixin direction-dark` in
+`src/styles/_design-tokens.scss`. Keep the property names: dozens of components read
+`--island`, `--ink` and the rest. Replace the ratios in the comment above the mixins with
+the script's output. Those figures are a record, never an estimate.
+
+Optionally, point Starlight's accent at the new hue so the docs at `/guide/` match:
+`--sl-color-accent`, `-high`, `-low` and `--sl-color-text-accent` in both blocks of
+`starlight-custom.scss`.
+
+### A3 - Fonts (only if asked)
+
+1. Put the font in `public/fonts/` as one woff2, one weight, latin subset. Confirm its
+   licence allows self-hosting.
+2. In `_design-tokens.scss`, update the `@font-face` `font-family`, `font-weight` and
+   `src`, and put the new family first in `--font-family-display`.
+3. In `src/layouts/Base.astro`, change the preload `href` to match the `src` exactly. A
+   mismatch downloads the font twice.
+4. Headings render at `--font-weight-semibold` (600; set in `src/styles/_base.scss`). A
+   file in another weight needs that line changed too, or the browser fakes the weight.
+
+Each extra weight is another network request: make that choice with the user, not for
+them. `--font-family-sans` and `--font-family-mono` must stay different from the display
+family and from each other.
+
+### A4 - Corners (only if asked)
+
+`--radius-lg` (8px) is the default for cards and buttons, and `--radius-base` (4px) is
+for inputs. `--card-radius`, `--button-radius`, `--input-radius` and `--img-radius` alias
+them. The homepage hero and the @fpkit/acss components read `--radius` instead, which
+@fpkit/acss sets to 0.5rem and the site never overrides. To move it, add
+`--radius: var(--radius-lg);` to the `:root` block. Radius does not change between
+themes, so `:root` is enough here.
+
+### A5 - Build and check
+
+```bash
+npm run sass:build && npx prettier --write src/styles/index.css
+node .claude/skills/customize-design/scripts/contrast.mjs
+npx vitest run tests/integration/design-tokens.test.ts tests/scripts/design-contrast.test.ts
+npx playwright test e2e/home-accessibility.spec.ts e2e/homepage-design-direction.spec.ts
+```
+
+Playwright starts the dev server itself. It needs browsers installed once
+(`npx playwright install`); if they are missing, say the e2e checks did not run rather
+than calling the work verified. If port 4321 is already in use, Playwright reuses
+whatever is there, which may be another checkout with the old colours. Check with
+`lsof -nP -iTCP:4321 -sTCP:LISTEN`, and if it is taken, prefix the command with
+`PLAYWRIGHT_BASE_URL=http://localhost:4341` (any free port).
+
+Then look at the site with `npm run dev`: the homepage, a blog post, `/guide/` and, if
+login is on, `/dashboard`. Check each in light and dark, using both the header's theme
+toggle and the OS setting, and at 320px wide. Leave the status colours (success,
+warning, error, info) alone. They signal state, not brand.
+
+### A6 - Make DESIGN.md match
+
+- **Frontmatter:** `name`, `description`, the seven `colors` (light values), each
+  `typography.*.fontFamily`, `rounded`, and any component value that hardcodes a colour
+  (`button-primary-hover.backgroundColor`).
+- **`## Colors`:** new names for the colours (Harbour Teal and Harbour Wash are the
+  current ones), light and dark hex, and the script's ratios.
+- **`## Typography`** if the display font changed, **`## Shapes`** if the corners did.
+- Every other mention of the old values:
+  `grep -n "Harbour\|0b6070\|6bb9c9\|e6f2f6\|102a33\|Inter" DESIGN.md`.
+
+Keep the Named Rules. They describe the system, not the brand. Change one only if the
+user's brand really breaks it, and tell them which.
+
+The script floors ratios, so 6.768 prints as 6.76. Older figures in `DESIGN.md` were
+rounded and can read 0.01 higher. Write the script's figures.
+
+### A7 - Re-sync the published design system (optional)
+
+The README links the Astro Kit design system artifact, which was built from `DESIGN.md`.
+If the user wants it updated and has the `design-system-from-design-md` skill, run that
+skill now and pass it the artifact's URL, so it re-syncs the existing system instead of
+creating a new one. That skill lives in the user's own `~/.claude/skills`, not in this
+repo. If it is not available, say so and stop. Don't build an artifact by hand.
+
+## Path B - A brand layer on some sections
+
+Use this when only some sections should carry the brand, such as the homepage hero, while
+every other route keeps the kit's palette. It is also the way through when Step 0 found
+drifted CSS, because it needs no Sass build.
+
+1. **Create `src/styles/<brand>-palette.css`**, plain CSS outside the Sass build. Prefix
+   every property with the brand name and scope it to `[data-<brand>]`, in three blocks:
+
+   ```css
+   [data-acme] {
+     --acme-ground: #f5f8f6;
+     --acme-ink: #12302b;
+   }
+
+   @media (prefers-color-scheme: dark) {
+     :root:not([data-theme='light']) [data-acme] {
+       --acme-ground: #0e1d1a;
+       --acme-ink: #e4efeb;
+     }
+   }
+
+   :root[data-theme='dark'] [data-acme] {
+     --acme-ground: #0e1d1a;
+     --acme-ink: #e4efeb;
+   }
+   ```
+
+   The `:not([data-theme='light'])` guard lets the theme toggle beat a dark OS. The last
+   block lets it beat a light one.
+
+2. **Opt components in.** Each one sets `data-<brand>` on its root element and imports
+   the sheet with `import '#styles/<brand>-palette.css'`. The browser loads it once,
+   however many components import it.
+3. **No brand colour may equal `--island`**, in either theme. The accent audit compares
+   computed colours to the resolved `--island`, so a brand heading that matches it fails
+   the build. Choose a visibly different hue.
+4. **Measure every brand pair** with the script's `#fg:#bg` mode in both themes, and
+   record the ratios in a comment at the top of the sheet.
+5. **Write it into `DESIGN.md`:** the brand's light values as `colors.<brand>-*` in the
+   frontmatter, and a `### <Brand> Brand Layer` section under `## Colors` that names the
+   components it paints. Then run A5 without the Sass build, and A7 if wanted.
+
+## Report back
+
+Tell the user:
+
+- which files changed
+- the contrast table, before and after
+- which checks ran and passed, and which did not run (no Playwright browsers, no login)
+- what is left for them: logo, favicon, and site title if those were not part of it
+
+Commit nothing unless they ask.
