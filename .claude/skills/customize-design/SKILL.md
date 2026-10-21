@@ -284,8 +284,9 @@ drifted CSS, because it needs no Sass build.
    declare the new properties; nothing paints with them until a component reads them.
    Components read the direction tokens through their own aliases. `HomeHero.astro`, for
    example, sets `--hero-ink: var(--ink, #101418)` and paints with `--hero-ink`. Repoint
-   each alias in an opted-in component, keeping the kit token as the fallback so it still
-   renders if used without the attribute: `--hero-ink: var(--acme-ink, var(--ink));`. A
+   each alias in an opted-in component by wrapping it, so the kit token and the alias's
+   own literal fallback both survive: `--hero-ink: var(--acme-ink, var(--ink, #101418));`.
+   The component then still renders without the attribute, and before the tokens load. A
    component with no aliases needs its painted properties (`color`, `background`,
    `border-color`) pointed at the brand properties directly. Then confirm in the browser
    that the section's computed colours are the brand values, in both themes.
