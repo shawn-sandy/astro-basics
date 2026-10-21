@@ -75,7 +75,16 @@ Ask in one message:
 5. **Name.** What the design system is called in `DESIGN.md`. The site title is
    separate, in `site-config.ts`.
 
-Before editing anything, check that the committed CSS matches its SCSS:
+Before editing anything, make sure no style work is in progress:
+
+```bash
+git status --short src/styles
+```
+
+Any output means someone has uncommitted style changes. The rebuild below writes over
+`index.css` and would mix their edits into the comparison, so stop and ask them to commit
+or set that work aside first. With no output, check that the committed CSS matches its
+SCSS:
 
 ```bash
 npm run sass:build && npx prettier --write src/styles/index.css && git status --short src/styles/index.css src/styles/index.css.map
@@ -84,7 +93,9 @@ npm run sass:build && npx prettier --write src/styles/index.css && git status --
 No output means they match. Any output means the committed CSS had drifted from its source
 (common in forks), and a rebuild would ship unrelated changes along with the rebrand. Stop,
 show the user `git diff --stat`, and ask whether to commit the rebuilt CSS on its own
-first, or to use Path B, which needs no rebuild.
+first, or to use Path B, which needs no rebuild. For Path B, put the committed CSS back with
+`git restore src/styles/index.css src/styles/index.css.map`. Nothing is lost: the first
+check showed those files were clean.
 
 Record the starting numbers:
 
@@ -262,14 +273,23 @@ drifted CSS, because it needs no Sass build.
 2. **Opt components in.** Each one sets `data-<brand>` on its root element and imports
    the sheet with `import '#styles/<brand>-palette.css'`. The browser loads it once,
    however many components import it.
-3. **No brand colour may equal `--island`**, in either theme. The accent audit in
+3. **Point the component's colours at the brand.** The attribute and the sheet only
+   declare the new properties; nothing paints with them until a component reads them.
+   Components read the direction tokens through their own aliases. `HomeHero.astro`, for
+   example, sets `--hero-ink: var(--ink, #101418)` and paints with `--hero-ink`. Repoint
+   each alias in an opted-in component, keeping the kit token as the fallback so it still
+   renders if used without the attribute: `--hero-ink: var(--acme-ink, var(--ink));`. A
+   component with no aliases needs its painted properties (`color`, `background`,
+   `border-color`) pointed at the brand properties directly. Then confirm in the browser
+   that the section's computed colours are the brand values, in both themes.
+4. **No brand colour may equal `--island`**, in either theme. The accent audit in
    `e2e/homepage-design-direction.spec.ts` compares computed colours to the resolved
    `--island`, so a brand heading that matches it fails that test. It only audits the
    homepage, so a brand layer on another route goes unchecked: compare its hexes to
    `--island` yourself. Choose a visibly different hue.
-4. **Measure every brand pair** with the script's `#fg:#bg` mode in both themes, and
+5. **Measure every brand pair** with the script's `#fg:#bg` mode in both themes, and
    record the ratios in a comment at the top of the sheet.
-5. **Write it into `DESIGN.md`:** the brand's light values as `colors.<brand>-*` in the
+6. **Write it into `DESIGN.md`:** the brand's light values as `colors.<brand>-*` in the
    frontmatter, and a `### <Brand> Brand Layer` section under `## Colors` that names the
    components it paints. Then run A5 without the Sass build, and A7 if wanted.
 

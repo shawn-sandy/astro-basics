@@ -135,6 +135,15 @@ describe('customize-design contrast script CLI', () => {
     }
   })
 
+  it('exits 2, not the contrast-failure 1, on a colour it cannot read', () => {
+    for (const bad of ['#12345:#fff', '#fff:teal', 'rgb(300, 0, 0):#000']) {
+      const result = run([bad])
+      expect(result.status, bad).toBe(2)
+      expect(result.stderr, bad).toContain('cannot measure')
+      expect(result.stderr, bad).not.toMatch(/^\s+at /m)
+    }
+  })
+
   it('finds the token file from any working directory', () => {
     const result = run([], 'src')
     expect(result.stderr).toBe('')

@@ -7,8 +7,9 @@
  *   node .claude/skills/customize-design/scripts/contrast.mjs            # the token pairs
  *   node .claude/skills/customize-design/scripts/contrast.mjs '#185c53:#f5f8f6'  # any hex pair
  *
- * Exits 1 when a pair falls below 4.5:1, 2 on a malformed pair. Ratios are floored
- * to two decimals, so 4.499 never prints as a passing 4.50.
+ * Exits 1 when a pair falls below 4.5:1, and 2 when it cannot measure (a malformed
+ * pair, an unreadable colour, a missing token). Ratios are floored to two decimals,
+ * so 4.499 never prints as a passing 4.50.
  */
 import { readFileSync } from 'node:fs'
 import { URL, fileURLToPath, pathToFileURL } from 'node:url'
@@ -115,17 +116,24 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     process.exit(2)
   }
   let failed = false
-  if (pairs.length) {
-    for (const pair of pairs) {
-      const [fg, bg] = pair.split(':')
-      const value = ratio(fg, bg)
-      if (value < FLOOR) failed = true
-      console.log(`${fg} on ${bg}: ${value.toFixed(2)}${value < FLOOR ? ' FAIL' : ''}`)
+  // Exit 1 means a pair measured under 4.5:1, so anything that stops a measurement
+  // (an unreadable colour, a missing token) exits 2 instead of throwing.
+  try {
+    if (pairs.length) {
+      for (const pair of pairs) {
+        const [fg, bg] = pair.split(':')
+        const value = ratio(fg, bg)
+        if (value < FLOOR) failed = true
+        console.log(`${fg} on ${bg}: ${value.toFixed(2)}${value < FLOOR ? ' FAIL' : ''}`)
+      }
+    } else {
+      const result = report(readFileSync(TOKENS_FILE, 'utf8'))
+      failed = result.failed
+      console.log(result.lines.join('\n'))
     }
-  } else {
-    const result = report(readFileSync(TOKENS_FILE, 'utf8'))
-    failed = result.failed
-    console.log(result.lines.join('\n'))
+  } catch (error) {
+    console.error(error.message)
+    process.exit(2)
   }
   if (failed) {
     console.log(
