@@ -148,6 +148,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `scripts/migrations/001_core_schema.sql` exists (10-second timeout), and whether Clerk
     user sync is ready (login on plus `SUPABASE_SERVICE_ROLE_KEY`)
   - The `project-setup` skill now hands login and database setup off to it
+- **Design customization skill** (`.claude/skills/customize-design/`): a Claude skill that
+  rebrands the Astro Kit design system in light and dark
+  - Whole-site path: the seven direction tokens, then optionally the display font, corner
+    radius and Starlight accent, followed by a Sass rebuild, the design checks, and `DESIGN.md`
+    and its two published copies brought in step
+  - Scoped path: a `[data-<brand>]` palette sheet for selected sections, with no Sass rebuild
+  - Before any edit, it checks that the committed `index.css` still matches its SCSS, so a
+    rebuild cannot ship unrelated changes
+  - `scripts/contrast.mjs` measures the eight text pairs the stylesheets paint, in both themes,
+    straight from the `direction-light` and `direction-dark` mixins, or any hex pair given to
+    it; it floors ratios, exits 1 under 4.5:1, and works from any directory
 
 ### Changed
 
