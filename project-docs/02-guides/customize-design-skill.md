@@ -116,7 +116,9 @@ the rebrand:
 6. **Make `DESIGN.md` match.** Frontmatter (`name`, `description`, the seven `colors`, each
    `typography.*.fontFamily`, `rounded`, and component values that hardcode a colour such as
    `button-primary-hover.backgroundColor`), the colour names and descriptions in `## Colors`, the ratios, and
-   `## Typography` or `## Shapes` if those changed. The skill searches for every other hex, ratio and colour word:
+   `## Typography` or `## Shapes` if those changed. To find what is left, the skill runs a targeted search for
+   six-digit hex values, decimal ratios, the current colour names and the display font, then decides each hit. The
+   search is not exhaustive, so it reads the remaining values in `DESIGN.md` too:
 
    ```bash
    grep -nE '#[0-9a-fA-F]{6}\b|[0-9]+\.[0-9]+:1|Harbour|petrol|blue-green|teal' DESIGN.md
@@ -214,7 +216,7 @@ node .claude/skills/customize-design/scripts/contrast.mjs
 node .claude/skills/customize-design/scripts/contrast.mjs '#185c53:#fcfcfd' '#185c53:#f1f3f5'
 ```
 
-Output with the palette Astro Kit ships:
+Sample output, measured on the original Astro Kit palette. After a rebrand, your figures will differ:
 
 ```text
 ink on paper             light 18.04     dark 15.82      body copy
@@ -230,10 +232,13 @@ ink on island-bg         light 16.20     dark 12.43      ::selection
 | Exit code | Meaning                                                                                           |
 | --------- | ------------------------------------------------------------------------------------------------- |
 | `0`       | Every pair is at least 4.5:1                                                                      |
-| `1`       | A pair is under 4.5:1. Large text (24px and up) and non-text marks need only 3:1                  |
+| `1`       | A pair is under 4.5:1                                                                             |
 | `2`       | It could not measure: a malformed pair, an unreadable colour, or a missing or Sass-computed token |
 
 Behaviour worth knowing:
+
+- Every pair is held to 4.5:1. WCAG allows 3:1 for large text (24px and up) and non-text marks, but the script does
+  not apply that allowance, so judge those cases separately.
 
 - Ratios are floored to two decimals, so 4.499 never prints as a passing 4.50. Older figures in `DESIGN.md` were
   rounded and can read 0.01 higher (6.77 there, 6.76 here).

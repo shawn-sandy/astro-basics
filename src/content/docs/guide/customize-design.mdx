@@ -222,7 +222,7 @@ These hold through any rebrand. The tests cover only part of them, so a green ru
 
 ## The Contrast Script
 
-`scripts/contrast.mjs` reads the `direction-light` and `direction-dark` mixins straight from
+`.claude/skills/customize-design/scripts/contrast.mjs` reads the `direction-light` and `direction-dark` mixins straight from
 `src/styles/_design-tokens.scss` and measures the eight text pairs the stylesheets paint, in both themes. It needs no
 build and no browser, so you can use it on its own whenever you touch a token.
 
@@ -232,7 +232,7 @@ build and no browser, so you can use it on its own whenever you touch a token.
     node .claude/skills/customize-design/scripts/contrast.mjs
     ```
 
-    With the palette Astro Kit ships, it prints:
+    Sample output, measured on the original Astro Kit palette. After a rebrand, your figures will differ:
 
     ```text
     ink on paper             light 18.04     dark 15.82      body copy
@@ -263,10 +263,11 @@ build and no browser, so you can use it on its own whenever you touch a token.
 | Exit code | Meaning                                                                                           |
 | --------- | ------------------------------------------------------------------------------------------------- |
 | `0`       | Every pair is at least 4.5:1                                                                      |
-| `1`       | A pair is under 4.5:1. Large text (24px and up) and non-text marks need only 3:1                  |
+| `1`       | A pair is under 4.5:1                                                                             |
 | `2`       | It could not measure: a malformed pair, an unreadable colour, or a missing or Sass-computed token |
 
-The script floors ratios to two decimals, so 4.499 never prints as a passing 4.50. Older figures in `DESIGN.md` were
+The script holds every pair to 4.5:1. WCAG allows 3:1 for large text (24px and up) and non-text marks, but the script
+does not apply that allowance, so judge those cases yourself. It floors ratios to two decimals, so 4.499 never prints as a passing 4.50. Older figures in `DESIGN.md` were
 rounded and can read 0.01 higher, so 6.77 there is 6.76 here. It ignores commented-out declarations and finds the
 token file from any working directory. Three of the eight pairs (island on paper-sunk, island on island-bg and ink on
 island-bg) are measured by nothing else.
