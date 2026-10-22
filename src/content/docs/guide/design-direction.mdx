@@ -188,6 +188,12 @@ Projects importing this package get the components, and the components read thes
 Nothing is compiled in, so a consumer rebrands the kit by redefining properties - no fork, no SCSS build, no component
 edits.
 
+<Aside type="tip" title="Rebranding this repository instead">
+  To change the palette, fonts or corners of this repository itself, use the `customize-design`
+  Claude skill. It edits the tokens at their source in both themes, measures contrast and updates
+  this page. See [Customizing the Design](/guide/customize-design).
+</Aside>
+
 Two rules make an override stick:
 
 1. **Load your sheet after the kit's stylesheet.** Every override below has the same specificity as the kit's own
@@ -310,3 +316,4 @@ Automated coverage:
 | `src/components/astro/HomeHero.astro`          | Homepage hero and the live component specimen |
 | `src/styles/DESIGN-TOKENS-README.md`           | The wider token layer this direction extends  |
 | `project-docs/03-features/design-direction.md` | The same contract in the project docs         |
+| `.claude/skills/customize-design/SKILL.md`     | The skill that rebrands these tokens          |

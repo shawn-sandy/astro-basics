@@ -146,6 +146,10 @@ Projects that import this package get the components, and the components read th
 Nothing is compiled in, so a consumer rebrands the kit by redefining the properties - no fork, no SCSS build, no
 component edits.
 
+To rebrand this repository itself rather than a consuming project, use the `customize-design` Claude skill. It edits
+the tokens at their source in both themes, measures contrast and updates this spec. See
+[customize-design-skill.md](../02-guides/customize-design-skill.md).
+
 Two rules make an override stick:
 
 1. **Load your sheet after the kit's stylesheet.** Every override below has the same specificity as the kit's own
@@ -253,3 +257,5 @@ Automated coverage:
 - `docs/prototypes/restyle-astro-kit-homepage.html` - clickable prototype of the target state, with a working
   light/dark switch
 - Starlight guide: **Design Direction** at `/guide/design-direction`
+- [customize-design-skill.md](../02-guides/customize-design-skill.md) - the Claude skill that rebrands these tokens,
+  fonts and corners and keeps this spec in step

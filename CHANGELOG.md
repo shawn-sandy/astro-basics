@@ -159,6 +159,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `scripts/contrast.mjs` measures the eight text pairs the stylesheets paint, in both themes,
     straight from the `direction-light` and `direction-dark` mixins, or any hex pair given to
     it; it floors ratios, exits 1 under 4.5:1, and works from any directory
+  - Docs: a Starlight guide at `/guide/customize-design` and
+    `project-docs/02-guides/customize-design-skill.md`, linked from both Design Direction pages
 
 ### Changed
 
