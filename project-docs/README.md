@@ -36,6 +36,7 @@ Step-by-step tutorials for common operations:
 - `clerk-supabase-setup.md` - Integrating Clerk with Supabase
 - `configurable-roles.md` - Setting up custom role systems
 - `role-guard-usage-guide.md` - Using role-based access control
+- `customize-design-skill.md` - Rebranding colours, fonts and corners with the `customize-design` skill
 
 ### 03-features/
 
@@ -264,6 +265,10 @@ Historical record of finished implementations. Found in `completed/`.
 **...review security**
 → Start with [10-security/overview.md](./10-security/overview.md)
 → Review audit reports in [10-security/audits/](./10-security/audits/)
+
+**...rebrand the site (colours, fonts, corners)**
+→ Use the skill described in [02-guides/customize-design-skill.md](./02-guides/customize-design-skill.md)
+→ Read [03-features/design-direction.md](./03-features/design-direction.md) for the rules it keeps
 
 **...understand the architecture**
 → Browse [11-reference/](./11-reference/) for architecture reviews

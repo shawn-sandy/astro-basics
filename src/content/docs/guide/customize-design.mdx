@@ -1,0 +1,317 @@
+---
+title: Customizing the Design
+description: Rebrand Astro Kit's colours, fonts and corners in both themes with the customize-design Claude skill, keeping contrast, the design tests and DESIGN.md in step.
+sidebar:
+  order: 10
+---
+
+import { Aside, Card, CardGrid, Steps, Tabs, TabItem } from '@astrojs/starlight/components'
+
+`customize-design` is a Claude skill that ships with this repository in `.claude/skills/customize-design/`. It
+rebrands the Astro Kit design system: the accent and neutral colours, the display font and the corner radius. It
+works in light and dark, and keeps the [design direction](/guide/design-direction) rules, the contrast floor and
+`DESIGN.md` in step with what ships.
+
+The skill works from one principle: **the stylesheet is what ships, and `DESIGN.md` is the written spec**. It changes
+the SCSS first, measures the result, and only then rewrites the spec to match. The ratios it records come from
+measurement, not estimates.
+
+<Aside type="note" title="Rebranding this repository, not a consumer project">
+  The skill edits this checkout's own token file and rebuilds its CSS. A project that installs the
+  kit as a package rebrands it without a fork by redefining the tokens in its own stylesheet. See
+  [Overriding the Tokens as a
+  Consumer](/guide/design-direction#overriding-the-tokens-as-a-consumer).
+</Aside>
+
+## Running the Skill
+
+Open Claude Code at the repository root and ask for the change you want. Claude loads the skill for requests about
+the site's colours, fonts, theme or branding. You can also start it by name:
+
+```text
+/customize-design
+```
+
+```text
+Rebrand the site around #185c53 and make the corners sharper.
+```
+
+The skill asks everything it needs in one message:
+
+| Question    | What it decides                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------ |
+| **Scope**   | The whole site (Path A, the default) or a brand layer on a few sections (Path B)                 |
+| **Colour**  | One brand colour is enough, and the skill derives the rest. A logo works too: it reads the fills |
+| **Fonts**   | Keep Inter, or name a display face you can self-host. Body and labels stay on system stacks      |
+| **Corners** | Keep 8px, go sharper, or go rounder                                                              |
+| **Name**    | What the design system is called in `DESIGN.md`. The site title is separate, in `site-config.ts` |
+
+<CardGrid>
+  <Card title="Path A: rebrand the whole site" icon="pencil">
+    Changes the seven direction tokens in both themes, then the font, corners and Starlight accent if you asked.
+    Rebuilds the Sass, runs the design checks, and brings `DESIGN.md` and its two published copies in step.
+  </Card>
+  <Card title="Path B: a brand layer on some sections" icon="puzzle">
+    Adds a scoped `[data-<brand>]` palette sheet that selected components opt into. Every other route keeps the
+    kit's palette. Needs no Sass build.
+  </Card>
+</CardGrid>
+
+## Before It Edits Anything
+
+The site loads the compiled `src/styles/index.css`, not the SCSS, so a token change does nothing until
+`npm run sass:build` runs. A rebuild writes over `index.css`. Before that happens, the skill makes sure the rebuild
+will contain only the rebrand:
+
+<Steps>
+
+1. **No style work in progress.** `git status --short src/styles` must print nothing. If it prints anything, someone
+   has uncommitted style changes, and the skill stops and asks you to commit or set them aside first.
+
+2. **The committed CSS matches its SCSS.** It rebuilds, formats with Prettier, and checks that `index.css` and its
+   source map are unchanged. If they changed, the committed CSS had drifted from its source, which is common in
+   forks. The skill shows you the `git diff --stat` and asks whether to commit the rebuilt CSS on its own first, or
+   to switch to Path B, which needs no rebuild.
+
+3. **Starting contrast.** It runs the contrast script to record the before figures.
+
+</Steps>
+
+## Path A: Rebrand the Whole Site
+
+<Steps>
+
+1. **Pick the seven colours.** The skill derives each token from your brand colour and tries candidates with the
+   contrast script before it edits anything (see [The Seven Colours](#the-seven-colours) below).
+
+2. **Edit the tokens.** It changes the values inside `@mixin direction-light` and `@mixin direction-dark` in
+   `src/styles/_design-tokens.scss`. The property names stay the same, because dozens of components read them. The
+   ratios in the comment above the mixins are replaced with the script's output. If you want the docs at `/guide/` to
+   match, it also repoints Starlight's accent in `src/styles/starlight-custom.scss` and measures it, since no test
+   covers the docs.
+
+3. **Fonts, only if asked.** It adds one woff2 to `public/fonts/` (one weight, latin subset, after checking the
+   licence allows self-hosting). It then updates the `@font-face` and `--font-family-display`, and changes the
+   preload `href` in `src/layouts/Base.astro` to match exactly, because a mismatch downloads the font twice. Each
+   extra weight is another request, so that choice is yours.
+
+4. **Corners, only if asked.** It changes the `--radius-*` scale and ties in the corners that do not read it (see
+   [Corners](#corners) below).
+
+5. **Build and check.** It rebuilds the Sass, re-runs the contrast script, and runs the unit and end-to-end design
+   checks. Then it looks at the homepage, a blog post, `/guide/` and `/dashboard` (if login is on), in light and
+   dark, through both the theme toggle and the OS setting, and at 320px wide.
+
+6. **Make `DESIGN.md` match.** It updates the frontmatter tokens, the colour names and descriptions, the measured
+   ratios, and `## Typography` or `## Shapes` if those changed. Then it makes the same changes in the two published
+   copies: this guide's [Design Direction](/guide/design-direction) page and
+   `project-docs/03-features/design-direction.md`. The Named Rules stay, because they describe the system, not the
+   brand.
+
+7. **Re-sync the published design system, if wanted.** The README links the Astro Kit design system artifact built
+   from `DESIGN.md`. If you have the `design-system-from-design-md` skill in your own `~/.claude/skills`, the skill
+   runs it with the artifact's URL so it updates the existing system rather than creating a new one. Without that
+   skill, it says so and stops.
+
+</Steps>
+
+### The Seven Colours
+
+| Token          | Role                                                | Light                                                        | Dark                           |
+| -------------- | --------------------------------------------------- | ------------------------------------------------------------ | ------------------------------ |
+| `--island`     | the accent                                          | the brand colour, dark enough for 4.5:1 on all three grounds | a lighter tint of the same hue |
+| `--island-bg`  | accent wash: hover fills, `::selection`, active nav | a very light tint of the hue                                 | a very dark shade of the hue   |
+| `--ink`        | text                                                | near-black, may lean toward the hue                          | near-white                     |
+| `--ink-soft`   | secondary text                                      | mid-grey; its pair with `--paper-sunk` is the tightest       | mid-grey, lighter              |
+| `--paper`      | page background                                     | near-white                                                   | near-black                     |
+| `--paper-sunk` | header band, cards, code blocks                     | one step darker than paper                                   | one step lighter than paper    |
+| `--rule`       | hairlines, never text                               | light grey                                                   | dark grey                      |
+
+A brand colour too light for text (yellow, light orange, any pastel) cannot be the accent. The skill uses a darker
+shade of its hue for `--island`, keeps the bright one for `--island-bg` or the logo, and tells you why. Hover and
+active states are mixed from `--island` with `color-mix()`, so there are no hover tokens to set.
+
+### Corners
+
+Changing the scale moves every corner that reads it:
+
+| Token           | Size | Painted on                                                                            |
+| --------------- | ---- | ------------------------------------------------------------------------------------- |
+| `--radius-lg`   | 8px  | cards and the navigation toggle and panel (through `--card-radius`), dashboard panels |
+| `--radius-md`   | 6px  | links in the navigation panel, dashboard quick-action buttons                         |
+| `--radius-base` | 4px  | form inputs (through `--input-radius`)                                                |
+| `--radius-2xl`  | 16px | images (through `--img-radius`)                                                       |
+
+Some corners do not read the scale. The skill ties them in by adding these to the `:root` block of
+`_design-tokens.scss`:
+
+- `--radius: var(--radius-lg);` for the homepage hero's buttons and code specimen. They read `--radius`, which
+  @fpkit/acss sets to 0.5rem and the site never sets.
+- `--btn-radius: var(--radius-lg);` for every plain `<button>`, which otherwise falls back to 0.375rem.
+
+`pre` (0.5rem) and `article img` (0.3rem) are hard-coded in `src/styles/_base.scss`. The skill changes them only if
+you want those corners to move too. `--button-radius` is declared, but nothing reads it.
+
+## Path B: A Brand Layer on Some Sections
+
+Use Path B when only some sections should carry the brand, such as the homepage hero, while every other route keeps
+the kit's palette. It is also the way through when the drift check found stale CSS, because plain CSS needs no Sass
+build.
+
+<Steps>
+
+1. **A scoped palette sheet.** The skill creates `src/styles/<brand>-palette.css`, with every property prefixed by
+   the brand name and set in three blocks so both the OS setting and the theme toggle work:
+
+   ```css
+   [data-acme] {
+     --acme-ground: #f5f8f6;
+     --acme-ink: #12302b;
+   }
+
+   @media (prefers-color-scheme: dark) {
+     :root:not([data-theme='light']) [data-acme] {
+       --acme-ground: #0e1d1a;
+       --acme-ink: #e4efeb;
+     }
+   }
+
+   :root[data-theme='dark'] [data-acme] {
+     --acme-ground: #0e1d1a;
+     --acme-ink: #e4efeb;
+   }
+   ```
+
+2. **Components opt in.** Each one sets `data-<brand>` on its root element and imports the sheet with
+   `import '#styles/<brand>-palette.css'`. The browser loads it once, however many components import it.
+
+3. **Aliases point at the brand.** The sheet only declares properties, so nothing changes until a component paints
+   with them. The skill wraps each component alias so the kit token and the literal fallback both survive:
+
+   ```css
+   --hero-ink: var(--acme-ink, var(--ink, #101418));
+   ```
+
+4. **No brand colour may equal `--island`**, in either theme. The accent audit compares computed colours to the
+   resolved `--island`, so a brand heading that matches it fails the test.
+
+5. **Measure and record.** Every brand pair is measured with the script in both themes, the ratios go in a comment at
+   the top of the sheet, and `DESIGN.md` gains `colors.<brand>-*` tokens and a `### <Brand> Brand Layer` section.
+
+</Steps>
+
+## Rules the Skill Keeps
+
+These hold through any rebrand. The tests cover only part of them, so a green run is not proof on its own.
+
+| Rule                                                                                                   | Checked by                                                                                      |
+| ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| The accent (`--island`) paints only links, buttons and focus rings. Never a heading, border or surface | `e2e/homepage-design-direction.spec.ts`, **homepage only**                                      |
+| Every text pair is at least 4.5:1, in both themes                                                      | `e2e/home-accessibility.spec.ts` checks five pairs on the homepage; the script checks all eight |
+| Headings, body and labels use three different font families                                            | `e2e/homepage-design-direction.spec.ts`                                                         |
+| Dark is darker than light, and body, header and cards repaint between themes                           | `e2e/homepage-design-direction.spec.ts`                                                         |
+| The primary button label is `--paper`, never white, because the accent lightens in dark mode           | Nothing. Look at the hero button in dark mode                                                   |
+| Colours change in the mixins, not in `:root`, so all three theme scopes get them                       | Nothing                                                                                         |
+
+<Aside type="caution" title="Things the skill leaves alone">
+  `--color-primary-*` (sky blue) and `--color-neutral-*` stay for the @fpkit/acss components, and a
+  sky blue reaching the screen is a regression, not a brand. `design-tokens.css`,
+  `design-tokens.json` and `_component-sample-tokens.scss` are extracted samples the site never
+  loads. The status colours (success, warning, error, info) signal state, not brand.
+</Aside>
+
+## The Contrast Script
+
+`.claude/skills/customize-design/scripts/contrast.mjs` reads the `direction-light` and `direction-dark` mixins straight from
+`src/styles/_design-tokens.scss` and measures the eight text pairs the stylesheets paint, in both themes. It needs no
+build and no browser, so you can use it on its own whenever you touch a token.
+
+<Tabs>
+  <TabItem label="Token pairs">
+    ```bash
+    node .claude/skills/customize-design/scripts/contrast.mjs
+    ```
+
+    Sample output, measured on the original Astro Kit palette. After a rebrand, your figures will differ:
+
+    ```text
+    ink on paper             light 18.04     dark 15.82      body copy
+    ink-soft on paper        light 5.85      dark 7.37       decks, eyebrows, captions
+    island on paper          light 7.01      dark 8.54       links, focus ring, Paper label on the primary button
+    ink on paper-sunk        light 16.62     dark 14.51      header band, cards, code blocks
+    ink-soft on paper-sunk   light 5.39      dark 6.76       captions on cards and in the header band
+    island on paper-sunk     light 6.46      dark 7.83       links in the header band and on cards
+    island on island-bg      light 6.29      dark 6.71       ghost button hover, active dashboard link
+    ink on island-bg         light 16.20     dark 12.43      ::selection
+    ```
+
+  </TabItem>
+
+  <TabItem label="Any hex pair">
+    Pass one or more `foreground:background` pairs to try candidates before editing:
+
+    ```bash
+    node .claude/skills/customize-design/scripts/contrast.mjs '#185c53:#fcfcfd' '#185c53:#f1f3f5'
+    ```
+
+    It accepts opaque hex (3 or 6 digits) and `rgb()`. For anything else the browser can parse, run
+    `e2e/home-accessibility.spec.ts`.
+
+  </TabItem>
+</Tabs>
+
+| Exit code | Meaning                                                                                           |
+| --------- | ------------------------------------------------------------------------------------------------- |
+| `0`       | Every pair is at least 4.5:1                                                                      |
+| `1`       | A pair is under 4.5:1                                                                             |
+| `2`       | It could not measure: a malformed pair, an unreadable colour, or a missing or Sass-computed token |
+
+The script holds every pair to 4.5:1. WCAG allows 3:1 for large text (24px and up) and non-text marks, but the script
+does not apply that allowance, so judge those cases yourself. It floors ratios to two decimals, so 4.499 never prints as a passing 4.50. Older figures in `DESIGN.md` were
+rounded and can read 0.01 higher, so 6.77 there is 6.76 here. It ignores commented-out declarations and finds the
+token file from any working directory. Three of the eight pairs (island on paper-sunk, island on island-bg and ink on
+island-bg) are measured by nothing else.
+
+## Checks It Runs
+
+Every command runs from the repository root, with tools called from `./node_modules/.bin/` so nothing is downloaded:
+
+```bash
+npm run sass:build && ./node_modules/.bin/prettier --write src/styles/index.css
+node .claude/skills/customize-design/scripts/contrast.mjs
+./node_modules/.bin/vitest run tests/integration/design-tokens.test.ts tests/scripts/design-contrast.test.ts
+./node_modules/.bin/playwright test e2e/home-accessibility.spec.ts e2e/homepage-design-direction.spec.ts
+```
+
+<Aside type="tip" title="Why not npm test">
+  Its `pretest` script rebuilds `index.css` compressed, which turns the whole file into a one-line
+  diff.
+</Aside>
+
+Playwright starts the dev server itself and needs its browsers installed once. When they are missing, the skill
+reports that the end-to-end checks did not run, rather than calling the work verified. If port 4321 is already
+taken, Playwright reuses whatever is listening there, which may be another checkout with the old colours. Set
+`PLAYWRIGHT_BASE_URL=http://localhost:4341` (any free port) to avoid that.
+
+## What You Get Back
+
+When it finishes, the skill reports:
+
+- which files changed
+- the contrast table, before and after
+- which checks ran and passed, and which did not run (no Playwright browsers, login off)
+- what is left for you: logo, favicon and site title, if those were not part of the request
+
+It commits nothing unless you ask.
+
+## Related Files
+
+| File                                                   | Purpose                                                           |
+| ------------------------------------------------------ | ----------------------------------------------------------------- |
+| `.claude/skills/customize-design/SKILL.md`             | The skill's instructions                                          |
+| `.claude/skills/customize-design/scripts/contrast.mjs` | The contrast script                                               |
+| `tests/scripts/design-contrast.test.ts`                | Unit tests for the script, including its exit codes               |
+| `src/styles/_design-tokens.scss`                       | The direction tokens in both themes, the font face and the radius |
+| `src/styles/starlight-custom.scss`                     | The accent for the `/guide/` docs                                 |
+| `DESIGN.md`                                            | The written design spec                                           |
+| `project-docs/02-guides/customize-design-skill.md`     | The same guide in the project docs                                |
