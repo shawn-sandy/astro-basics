@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test'
 // public pages must load with no Clerk error and every island hydrated.
 
 // The paths with no page, and the upper-case one, only reach the notice through the middleware's
-// backstop, so a backstop that stops following Astro's routed path fails here as a 404.
+// backstop, so a backstop that stops following Astro's normalized path fails here as a 404.
 for (const path of [
   '/dashboard',
   '/dashboard/users',

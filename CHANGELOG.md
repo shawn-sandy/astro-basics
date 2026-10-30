@@ -434,11 +434,10 @@ body` in `@clerk/astro`'s `MenuItemRenderer.astro`. Clerk 4 ships the fix, so
   `requireSignedIn` first in their frontmatter. Signed-out visitors are redirected to sign-in, and
   without Clerk keys the pages still render the `/auth-setup` notice with HTTP 503. Clerk removed
   `createRouteMatcher` because middleware path matching can diverge from Astro's routing. The
-  middleware keeps a `/dashboard` and `/organization` prefix match, now on the path Astro routes
-  (`context.url`), as a backstop, and `tests/utils/require-signed-in.test.ts` fails when a page
-  under those trees does not call `requireSignedIn` first. `/organization` used to redirect
-  signed-out visitors to `/sign-in`, which does not exist; it now uses Clerk's sign-in redirect
-  like the dashboard
+  middleware keeps a `/dashboard` and `/organization` prefix match as a backstop, now on both
+  `context.url` and `context.routePattern`, and `tests/utils/require-signed-in.test.ts` fails when
+  a page under those trees does not call `requireSignedIn` first. The page's own redirect to
+  `/sign-in`, a route that does not exist and which the middleware always preempted, is gone
 - **Protected routes no longer fail open without Clerk keys** (`src/middleware.ts`): with the Clerk
   keys missing or still the `YOUR_*` placeholders, `/dashboard` and `/organization` (and their
   sub-paths) used to be served to anyone. They now render a setup notice (`/auth-setup`) with HTTP 503. With real keys, unauthenticated visitors are still redirected to sign-in. The stale

@@ -14,6 +14,7 @@ import {
 } from '#utils/csrf'
 import { logger } from '#utils/logger'
 import { messageRateLimiter, getClientIP, createRateLimitResponse } from '#utils/rate-limiter'
+import { isProtectedRoute } from '#utils/require-signed-in'
 
 /**
  * Validates Clerk authentication keys to prevent runtime failures.
@@ -33,26 +34,6 @@ const hasValidClerkKeys =
 if (!hasValidClerkKeys) {
   logger.warn('Clerk keys missing or placeholders - protected routes will return 503')
 }
-
-/**
- * Whether a request falls under /dashboard or /organization, matched as broadly
- * as the old `createRouteMatcher(['/dashboard(.*)', '/organization(.*)'])`.
- *
- * This is a backstop, so a page added under those trees without its own check
- * still fails closed. Each protected page also calls `requireSignedIn`: Clerk
- * removed `createRouteMatcher` in `@clerk/astro` 4 because middleware path
- * matching can diverge from Astro's routing. So this reads `context.url`, the
- * path Astro routes: fully decoded with repeated slashes collapsed, which makes
- * `/%64ashboard`, `/%2564ashboard` and `//dashboard` match. `request.url` is
- * neither, and Astro routes all three to the dashboard.
- *
- * @param {URL} url - `context.url`, never a URL built from `request.url`
- * @returns {boolean} True for /dashboard and /organization paths
- * @security Second layer of route protection; the page check is the first
- * @see {@link requireSignedIn} in `#utils/require-signed-in` for the page check
- */
-const isProtectedRoute = ({ pathname }: URL): boolean =>
-  /^\/(dashboard|organization)/i.test(pathname)
 
 /**
  * Synchronizes user activity from Clerk to Supabase for analytics and user tracking.
@@ -353,7 +334,7 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
   const { locals } = context
 
   // Backstop: a protected page also refuses a signed-out visitor itself (requireSignedIn)
-  if (isProtectedRoute(context.url) && !auth().userId) {
+  if (isProtectedRoute(context) && !auth().userId) {
     return auth().redirectToSignIn()
   }
 
@@ -377,7 +358,7 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
       locals.clerkToken = token
 
       // Log authenticated access with route and user context
-      const isProtected = isProtectedRoute(context.url)
+      const isProtected = isProtectedRoute(context)
       const logContext = {
         userId: locals.userId ?? undefined,
         userRole: locals.userRole,
@@ -436,7 +417,7 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
  * @security Without this, a keyless deploy would serve protected routes to anyone
  */
 const authNotConfiguredMiddleware: MiddlewareHandler = (context, next) =>
-  isProtectedRoute(context.url) ? next('/auth-setup') : next()
+  isProtectedRoute(context) ? next('/auth-setup') : next()
 
 /**
  * Main middleware pipeline combining security, rate limiting, and authentication.

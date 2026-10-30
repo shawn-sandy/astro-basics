@@ -1,4 +1,30 @@
-import type { AstroGlobal } from 'astro'
+import type { APIContext, AstroGlobal } from 'astro'
+
+const protectedPath = /^\/(dashboard|organization)/i
+
+/**
+ * Whether a request falls under /dashboard or /organization, matched as
+ * broadly as the old `createRouteMatcher(['/dashboard(.*)', '/organization(.*)'])`.
+ *
+ * This is the middleware's backstop, so a page added under those trees without
+ * its own check still fails closed. It tests two things, because neither is
+ * enough alone. `url` is Astro's normalized URL, decoded with repeated slashes
+ * collapsed, which matches `/%64ashboard`, `/%2564ashboard` and `//dashboard`,
+ * and paths with no page such as `/dashboard/nope`. But it also resolves dot
+ * segments and routing does not, so `/dashboard/%252e%252e/x` reads as `/x` while
+ * Astro serves it from any catch-all under /dashboard. `routePattern`, the route
+ * Astro matched, catches that. `request.url` is neither. Setting `base` in
+ * astro.config.mjs would mean stripping it from `url` first.
+ *
+ * @param context - The middleware's context.
+ * @returns True for paths and routes under the protected trees.
+ * @security Second layer of route protection; `requireSignedIn` is the first
+ */
+export const isProtectedRoute = ({
+  url,
+  routePattern,
+}: Pick<APIContext, 'url' | 'routePattern'>): boolean =>
+  protectedPath.test(url.pathname) || protectedPath.test(routePattern)
 
 /**
  * Access check for a page only signed-in users may see. Call it first in the

@@ -5,7 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 import type { AstroGlobal } from 'astro'
 import { describe, expect, it, vi } from 'vitest'
 
-import { requireSignedIn } from '#utils/require-signed-in'
+import { isProtectedRoute, requireSignedIn } from '#utils/require-signed-in'
 
 const pagesDir = fileURLToPath(new URL('../../src/pages/', import.meta.url))
 
@@ -55,6 +55,35 @@ describe('requireSignedIn', () => {
   })
 })
 
+describe('isProtectedRoute', () => {
+  /** What the middleware reads: the normalized URL and the route Astro matched. */
+  const request = (path: string, routePattern = '/404') => ({
+    url: new URL(path, 'http://localhost'),
+    routePattern,
+  })
+
+  it.each([
+    '/dashboard',
+    '/dashboard/nope',
+    '/DASHBOARD',
+    '/dashboardish',
+    '/organization/members',
+  ])('matches %s, which has no route of its own', path => {
+    expect(isProtectedRoute(request(path))).toBe(true)
+  })
+
+  // context.url resolves dot segments and routing does not: /dashboard/%252e%252e/x reads as /x
+  // in the URL while Astro serves it from a catch-all under /dashboard.
+  it('matches the route Astro chose when the URL reads as somewhere else', () => {
+    expect(isProtectedRoute(request('/x', '/dashboard/[...slug]'))).toBe(true)
+  })
+
+  it('leaves every other route alone', () => {
+    expect(isProtectedRoute(request('/about', '/about'))).toBe(false)
+    expect(isProtectedRoute(request('/nope'))).toBe(false)
+  })
+})
+
 // The middleware's prefix match is only a backstop, so each page must refuse signed-out
 // visitors itself. An endpoint (.ts) here needs its own locals.auth() check and test.
 describe('pages under /dashboard and /organization', () => {
@@ -73,7 +102,7 @@ describe('pages under /dashboard and /organization', () => {
   it.each(files)('%s returns the requireSignedIn refusal first', file => {
     expect(file).toMatch(/\.astro$/)
     const [, frontmatter = ''] = readFileSync(join(pagesDir, file), 'utf8').split(/^---$/m)
-    const code = frontmatter.replace(/^import\b[\s\S]*?'[^']+'$/gm, '').trimStart()
+    const code = frontmatter.replace(/^import\b[^'"]*'[^']+'$/gm, '').trimStart()
     expect(code).toMatch(/^const (\w+) = await requireSignedIn\(Astro\)\s+if \(\1\) return \1\b/)
   })
 })
