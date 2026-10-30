@@ -5,9 +5,24 @@ import { test, expect } from '@playwright/test'
 // Protected routes must refuse with a 503 setup notice, never render or redirect, and
 // public pages must load with no Clerk error and every island hydrated.
 
-for (const path of ['/dashboard', '/dashboard/users', '/organization']) {
-  test(`${path} fails closed without Clerk keys`, async ({ request }) => {
-    const response = await request.get(path, { maxRedirects: 0 })
+// The paths with no page, and the upper-case one, only reach the notice through the middleware's
+// backstop, so a backstop that stops following Astro's routed path fails here as a 404.
+for (const path of [
+  '/dashboard',
+  '/dashboard/users',
+  '/organization',
+  '/%64ashboard',
+  '/dashboard/%75sers',
+  '/DASHBOARD',
+  '/dashboard/nope',
+  '/%64ashboard/nope',
+  '/%2564ashboard/nope',
+  '//dashboard/nope',
+  '/organization/members',
+]) {
+  test(`${path} fails closed without Clerk keys`, async ({ request, baseURL }) => {
+    // A full URL, because a relative `//dashboard` would resolve as a host name.
+    const response = await request.get(`${baseURL}${path}`, { maxRedirects: 0 })
     expect(response.status()).toBe(503)
   })
 }

@@ -10,7 +10,8 @@ import { getDashboardUser } from '#utils/dashboard-user'
  *
  * The sidebar's name and role come from `getDashboardUser`, which caches per
  * request, so a page that also reads the user makes no second Clerk call.
- * Route protection stays in `src/middleware.ts`; this layout gates nothing.
+ * Route protection is in each page (`requireSignedIn`), with `src/middleware.ts`
+ * as a backstop; this layout gates nothing.
  *
  * @example
  * ```astro

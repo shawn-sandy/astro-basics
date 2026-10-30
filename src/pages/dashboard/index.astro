@@ -15,6 +15,10 @@ import SignedOutMessage from '#/components/astro/SignedOutMessage.astro'
 import RoleGuard from '#components/astro/RoleGuard.astro'
 import Dashboard from '#layouts/Dashboard.astro'
 import { getDashboardUser } from '#utils/dashboard-user'
+import { requireSignedIn } from '#utils/require-signed-in'
+
+const refusal = await requireSignedIn(Astro)
+if (refusal) return refusal
 
 // The same per-request lookup the layout makes for the sidebar, so no second Clerk call.
 const user = await getDashboardUser(Astro)
