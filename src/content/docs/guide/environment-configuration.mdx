@@ -166,21 +166,50 @@ if (envConfig.isClerkConfigured()) {
 
 ```typescript
 // src/middleware.ts
-import { clerkMiddleware, createRouteMatcher } from '@clerk/astro/server'
+import { clerkMiddleware } from '@clerk/astro/server'
 import { getEnvironmentConfig } from '#utils/env-config'
 
 const envConfig = getEnvironmentConfig()
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)'])
 
-export const onRequest = clerkMiddleware((auth, context) => {
+export const onRequest = clerkMiddleware((auth, context, next) => {
   if (!envConfig.isClerkConfigured()) {
     throw new Error('Clerk authentication not configured')
   }
 
-  if (isProtectedRoute(context.request) && !auth().userId) {
-    return auth().redirectToSignIn()
-  }
+  return next()
 })
+```
+
+`@clerk/astro` 4 removed `createRouteMatcher`, because path matching in middleware can diverge
+from how Astro routes a request. Each protected page checks for itself, first thing in its
+frontmatter:
+
+```astro
+---
+// src/pages/dashboard/index.astro
+import { requireSignedIn } from '#utils/require-signed-in'
+
+const refusal = await requireSignedIn(Astro)
+if (refusal) return refusal
+---
+```
+
+`requireSignedIn` redirects signed-out visitors to sign-in. Without Clerk keys it renders the
+`/auth-setup` notice with HTTP 503 instead. This repo's `src/middleware.ts` also redirects
+`/dashboard` and `/organization` paths as a backstop, and a test fails when a page under them does
+not call `requireSignedIn`. A protected API route checks `locals.userId` itself:
+
+```typescript
+// src/pages/api/example.ts
+import type { APIRoute } from 'astro'
+
+export const GET: APIRoute = ({ locals }) => {
+  // The middleware sets locals.userId for signed-in requests; it stays unset without Clerk keys
+  if (!locals.userId) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
+  }
+  return new Response(JSON.stringify({ userId: locals.userId }))
+}
 ```
 
 ---

@@ -2,6 +2,10 @@
 import Dashboard from '#layouts/Dashboard.astro'
 import DashboardPage from '#components/dashboard/DashboardPage.astro'
 import { Show, UserProfile } from '@clerk/astro/components'
+import { requireSignedIn } from '#utils/require-signed-in'
+
+const refusal = await requireSignedIn(Astro)
+if (refusal) return refusal
 ---
 
 <Dashboard pageTitle="User Management - Astro Basics" pageDescription="Manage users and profiles">

@@ -2,14 +2,13 @@
 import Auth from '#layouts/Auth.astro'
 import { Show, OrganizationSwitcher, OrganizationProfile } from '@clerk/astro/components'
 import { formatRoleLabel, hasPermission } from '#utils/clerk-roles'
+import { requireSignedIn } from '#utils/require-signed-in'
 
-const auth = Astro.locals.auth()
-const { userId, orgId } = auth
+const refusal = await requireSignedIn(Astro)
+if (refusal) return refusal
+
+const { orgId } = Astro.locals.auth()
 const userRole = Astro.locals.userRole
-
-if (!userId) {
-  return Astro.redirect('/sign-in')
-}
 
 // Determine which action cards to show based on role permissions
 const showMembersCard =

@@ -296,8 +296,9 @@ Before marking ANY task as complete:
 ### Authentication & Authorization
 
 - **Provider**: Clerk authentication
-- **Protected Routes**: `/dashboard/*`, `/forum/*`, `/organization/*`
-- **Middleware**: `src/middleware.ts` handles route protection
+- **Protected Routes**: `/dashboard/*`, `/organization/*`
+- **Route protection**: each protected page calls `requireSignedIn` (`#utils/require-signed-in`)
+  first in its frontmatter. `src/middleware.ts` also redirects those paths, but only as a backstop
 - **Role System**: Configurable roles via `config/roles.config.ts`
   - See: [project-docs/02-guides/configurable-roles.md](project-docs/02-guides/configurable-roles.md)
 

@@ -34,7 +34,11 @@ jobs:
 
   test:
     name: Type-check, unit, and e2e tests
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest is rolling out to ubuntu-26.04, where Playwright
+    # 1.59 cannot install Chromium ("does not support chromium on
+    # ubuntu26.04-x64"). Return to ubuntu-latest once the installed
+    # Playwright supports 26.04.
+    runs-on: ubuntu-24.04
     env:
       # astro.config.mjs re-reads this env var per-command, so it must be
       # set job-wide — a build-step-only env var left `astro preview`
@@ -71,6 +75,10 @@ jobs:
       # config read as "configured", header injection through the contact-form
       # subject, and an unbounded provider call inside the request path.
       - run: npx vitest run tests/email.test.ts tests/send-email.test.ts
+      # Hard gate: the access check every protected page calls, and that each page under
+      # src/pages/dashboard and src/pages/organization calls it. The e2e gate below only covers the
+      # keyless build; this covers the signed-out redirect and the signed-in pass-through.
+      - run: npx vitest run tests/utils/require-signed-in.test.ts
       # Informational, not blocking: the rest of the suite carries ~49
       # pre-existing failures unrelated to Astro (role-validator, csrf,
       # etc.), plus tests/integration/** needs live

@@ -1,6 +1,6 @@
 // src/middleware.ts
 
-import { clerkMiddleware, createRouteMatcher } from '@clerk/astro/server'
+import { clerkMiddleware } from '@clerk/astro/server'
 import type { MiddlewareHandler } from 'astro'
 import { sequence } from 'astro:middleware'
 
@@ -14,6 +14,7 @@ import {
 } from '#utils/csrf'
 import { logger } from '#utils/logger'
 import { messageRateLimiter, getClientIP, createRateLimitResponse } from '#utils/rate-limiter'
+import { isProtectedRoute } from '#utils/require-signed-in'
 
 /**
  * Validates Clerk authentication keys to prevent runtime failures.
@@ -33,23 +34,6 @@ const hasValidClerkKeys =
 if (!hasValidClerkKeys) {
   logger.warn('Clerk keys missing or placeholders - protected routes will return 503')
 }
-
-/**
- * Route protection matcher for authentication-required paths.
- *
- * Uses regex patterns to match entire route trees that require authentication.
- * The (.*) pattern ensures all sub-routes are also protected, preventing
- * bypass through nested paths.
- *
- * @constant {Function} isProtectedRoute - Clerk route matcher function
- * @param {Request} request - Astro request object to test against patterns
- * @returns {boolean} True if route requires authentication
- * @security Prevents unauthorized access to sensitive application areas
- * @example
- * // Protected: /dashboard, /dashboard/users, /organization
- * // Public: /, /posts, /api/public
- */
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/organization(.*)'])
 
 /**
  * Synchronizes user activity from Clerk to Supabase for analytics and user tracking.
@@ -316,9 +300,10 @@ const rateLimitMiddleware: MiddlewareHandler = async (context, next) => {
 /**
  * Enhanced Clerk authentication middleware with multi-database integration.
  *
- * Handles the complete authentication flow including route protection, session
- * management, and cross-service token synchronization. Integrates Clerk's JWT
- * tokens with Supabase for seamless database access with RLS policies.
+ * Handles the backstop route protection, session management, and cross-service
+ * token synchronization. Integrates Clerk's JWT tokens with Supabase for seamless
+ * database access with RLS policies. Each protected page also calls
+ * `requireSignedIn`, so a gap in the path match here does not expose it.
  *
  * Authentication flow:
  * 1. Check if current route requires authentication
@@ -333,7 +318,7 @@ const rateLimitMiddleware: MiddlewareHandler = async (context, next) => {
  * @param {APIContext} context - Astro request context with locals for state
  * @param {Function} next - Next middleware in the chain
  * @returns {Promise<Response>} Redirect to sign-in or continues to next middleware
- * @security Enforces authentication on protected routes with automatic redirects
+ * @security Backstop redirect for protected routes; pages check again
  * @performance Background user sync doesn't block request processing
  * @integration Bridges Clerk authentication with Supabase RLS policies
  * @example
@@ -348,8 +333,8 @@ const rateLimitMiddleware: MiddlewareHandler = async (context, next) => {
 const authMiddleware = clerkMiddleware(async (auth, context, next) => {
   const { locals } = context
 
-  // If the current route is protected and the user is not authenticated, redirect to sign-in
-  if (isProtectedRoute(context.request) && !auth().userId) {
+  // Backstop: a protected page also refuses a signed-out visitor itself (requireSignedIn)
+  if (isProtectedRoute(context) && !auth().userId) {
     return auth().redirectToSignIn()
   }
 
@@ -373,7 +358,7 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
       locals.clerkToken = token
 
       // Log authenticated access with route and user context
-      const isProtected = isProtectedRoute(context.request)
+      const isProtected = isProtectedRoute(context)
       const logContext = {
         userId: locals.userId ?? undefined,
         userRole: locals.userRole,
@@ -424,13 +409,15 @@ const authMiddleware = clerkMiddleware(async (auth, context, next) => {
  *
  * Protected routes fail closed: they render the /auth-setup notice (HTTP 503)
  * in place of the page, so a deploy made before auth is configured never
- * serves them. Every other route passes through.
+ * serves them. Every other route passes through. A protected page the path
+ * match misses still fails closed, because `requireSignedIn` finds no
+ * `locals.auth` and rewrites to the same notice.
  *
  * @type {MiddlewareHandler} Astro middleware function
  * @security Without this, a keyless deploy would serve protected routes to anyone
  */
 const authNotConfiguredMiddleware: MiddlewareHandler = (context, next) =>
-  isProtectedRoute(context.request) ? next('/auth-setup') : next()
+  isProtectedRoute(context) ? next('/auth-setup') : next()
 
 /**
  * Main middleware pipeline combining security, rate limiting, and authentication.
