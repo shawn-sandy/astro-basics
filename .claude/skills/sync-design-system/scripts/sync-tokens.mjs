@@ -15,9 +15,9 @@
  * 6-digit hex in the artifact's README, cards, stylesheet and cover that is not in its
  * palette, so a stale colour cannot hide there.
  *
- * Run it again after editing usage notes, because tokens.css repeats each note. A run
- * that prints "in sync" is also the check that a publish landed: read the published files
- * into a fresh folder and run it there.
+ * After editing usage notes in tokens.json, run it again: tokens.css repeats each note, so that
+ * run copies your edit there and the next one prints "in sync". That message is also the check
+ * that a publish landed: read the published files into a fresh folder and run it there.
  *
  * SYNC_TOKENS_SCSS points it at another token file; the checks use that.
  *
@@ -48,7 +48,7 @@ function inBlock(css, open, edit) {
   return css.slice(0, start) + edit(css.slice(start, end)) + css.slice(end)
 }
 
-const declaration = name => new RegExp(`^(\\s*--${name}:)[^;\\n]*;[^\\n]*$`, 'm')
+const declaration = name => new RegExp(`^(\\s*--${name}:)[^;\\r\\n]*;[^\\r\\n]*$`, 'm')
 
 function* textFiles(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -108,6 +108,9 @@ function sync(dir) {
     return { name, token, light: picked.light, dark: picked.dark }
   })
 
+  // Measuring can throw (the contrast tool reads only hex and rgb()), so do it before any write.
+  const result = report(scss)
+
   const css = existsSync(cssPath) ? readFileSync(cssPath, 'utf8') : null
   let nextCss = css
   if (css !== null) {
@@ -116,7 +119,9 @@ function sync(dir) {
         if (!declaration(name).test(text)) {
           throw new Error(`tokens.css has no "--${name}:" line in its ${lightId} block`)
         }
-        const note = token.usage ? ` /* ${token.usage.replaceAll('*/', '* /')} */` : ''
+        const note = token.usage
+          ? ` /* ${token.usage.replaceAll('*/', '* /').replace(/\s+/g, ' ').trim()} */`
+          : ''
         text = text.replace(declaration(name), (_, head) => `${head} ${light};${note}`)
       }
       return text
@@ -138,15 +143,12 @@ function sync(dir) {
   if (nextCss !== css) writeFileSync(cssPath, nextCss)
 
   const settled = !changes.length && nextCss === css
-  console.log(
-    settled
-      ? 'in sync: tokens.json and tokens.css already match _design-tokens.scss'
-      : changes
-          .map(c => `${c.name.padEnd(11)} ${c.id.padEnd(5)} ${c.from ?? '(none)'} -> ${c.to}`)
-          .join('\n')
+  const lines = changes.map(
+    c => `${c.name.padEnd(11)} ${c.id.padEnd(5)} ${c.from ?? '(none)'} -> ${c.to}`
   )
-  if (!settled && css === null) console.log('no project/tokens.css to patch')
-  if (!settled && nextCss !== css) console.log('tokens.css: colour lines rewritten')
+  if (nextCss !== css) lines.push('tokens.css: colour lines rewritten')
+  console.log(settled ? 'in sync: the colours already match _design-tokens.scss' : lines.join('\n'))
+  if (css === null) console.log('no project/tokens.css to patch')
 
   // A note that quotes a ratio or a hex went stale with the values it measured, status colours included.
   const stale = changes.length
@@ -160,7 +162,6 @@ function sync(dir) {
     )
   }
 
-  const result = report(scss)
   console.log(`\nContrast, from _design-tokens.scss\n${result.lines.join('\n')}`)
 
   const palette = new Set(

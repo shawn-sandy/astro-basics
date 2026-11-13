@@ -82,8 +82,8 @@ Then:
    `node .claude/skills/customize-design/scripts/contrast.mjs '#fg:#bg'`. Never estimate.
 2. Decide every hex it listed: a value that moved gets updated, a deliberate mention (a logo's raw
    colour quoted in a note) stays.
-3. Run the script again. It must print `in sync`. It repeats each usage note into `tokens.css`,
-   so this run copies your edits there.
+3. Run the script again: it repeats each usage note into `tokens.css`, so this run copies your
+   edits there. Run it once more. It must print `in sync`.
 
 The script patches colour lines only. If Step 4 also changes radius, font, spacing or type
 tokens, the previews keep the old values for those until a person saves the page (see Report).

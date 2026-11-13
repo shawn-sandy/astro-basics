@@ -27,7 +27,7 @@ const project = {
 }
 
 /** An artifact folder in the shape the type writes it; `skipCss` drops one token's tokens.css lines. */
-function artifact({ without, skipCss, readme, errorHex } = {}) {
+function artifact({ without, skipCss, readme, errorHex, notes, eol = '\n' } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'sync-ds-'))
   made.push(dir)
   mkdirSync(join(dir, 'project'))
@@ -42,7 +42,7 @@ function artifact({ without, skipCss, readme, errorHex } = {}) {
         ...named.map(name => ({
           name,
           value: { light: OLD, dark: '#bb0000' },
-          usage: `${name} note`,
+          usage: notes?.[name] ?? `${name} note`,
         })),
         {
           name: 'color-error',
@@ -66,7 +66,7 @@ function artifact({ without, skipCss, readme, errorHex } = {}) {
     '  --space-1: 0.25rem; /* grid */',
     '}',
     '',
-  ].join('\n')
+  ].join(eol)
   writeFileSync(join(dir, 'project/tokens.json'), JSON.stringify(tokens, null, 2))
   writeFileSync(join(dir, 'project/tokens.css'), css)
   writeFileSync(join(dir, 'project/README.md'), readme ?? `The accent is ${OLD}.\n`)
@@ -206,4 +206,59 @@ test('stops when a mixin lacks one of the seven tokens', () => {
   const result = run(artifact(), { SYNC_TOKENS_SCSS: scssFile({ noDark: 'rule' }) })
   assert.equal(result.status, 2)
   assert.match(result.stderr, /--rule is missing from @mixin direction-dark/)
+})
+
+test('writes nothing when a colour cannot be measured', () => {
+  const dir = artifact()
+  const before = [read(dir, 'tokens.json'), read(dir, 'tokens.css')]
+  const result = run(dir, {
+    SYNC_TOKENS_SCSS: scssFile({ light: { island: 'oklch(0.5 0.1 200)' } }),
+  })
+  assert.equal(result.status, 2)
+  assert.match(result.stderr, /cannot measure/)
+  assert.deepEqual([read(dir, 'tokens.json'), read(dir, 'tokens.css')], before)
+})
+
+test('keeps a multi-line usage note on one line, and settles', () => {
+  const dir = artifact({ notes: { rule: 'line one\nline two' } })
+  run(dir)
+  const css = read(dir, 'tokens.css')
+  assert.match(css, /--rule: [^;]+; \/\* line one line two \*\//)
+  assert.ok(!css.split('\n').includes('line two */'), 'the note leaked onto its own line')
+  assert.match(run(dir).stdout, /^in sync/)
+})
+
+test('keeps CRLF line endings in tokens.css', () => {
+  const dir = artifact({ eol: '\r\n' })
+  run(dir)
+  const lines = read(dir, 'tokens.css').split('\n').slice(0, -1)
+  assert.ok(
+    lines.every(line => line.endsWith('\r')),
+    'a rewritten line lost its \\r'
+  )
+})
+
+test('exits 0 when every text pair passes', () => {
+  assert.equal(run(artifact(), { SYNC_TOKENS_SCSS: scssFile() }).status, 0)
+})
+
+test('exits 1, still applying the colours, when a pair is under 4.5:1', () => {
+  const dir = artifact()
+  const result = run(dir, { SYNC_TOKENS_SCSS: scssFile({ light: { 'ink-soft': '#bbbbbb' } }) })
+  assert.equal(result.status, 1)
+  assert.match(result.stdout, /FAIL/)
+  const token = JSON.parse(read(dir, 'tokens.json')).color.tokens.find(t => t.name === 'ink-soft')
+  assert.equal(token.value.light, '#bbbbbb')
+})
+
+test('a hand-edited usage note takes one more run to reach tokens.css', () => {
+  const dir = artifact()
+  run(dir)
+  const file = join(dir, 'project/tokens.json')
+  const tokens = JSON.parse(readFileSync(file, 'utf8'))
+  tokens.color.tokens.find(t => t.name === 'rule').usage = 'edited by hand'
+  writeFileSync(file, JSON.stringify(tokens, null, 2))
+  assert.match(run(dir).stdout, /^tokens\.css: colour lines rewritten/)
+  assert.match(read(dir, 'tokens.css'), /--rule: [^;]+; \/\* edited by hand \*\//)
+  assert.match(run(dir).stdout, /^in sync/)
 })
