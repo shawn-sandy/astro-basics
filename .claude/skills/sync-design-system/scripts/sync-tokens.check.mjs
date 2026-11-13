@@ -262,3 +262,24 @@ test('a hand-edited usage note takes one more run to reach tokens.css', () => {
   assert.match(read(dir, 'tokens.css'), /--rule: [^;]+; \/\* edited by hand \*\//)
   assert.match(run(dir).stdout, /^in sync/)
 })
+
+test('names a usage note that quotes an integer ratio or a short hex', () => {
+  const dir = artifact({ notes: { rule: 'Hairlines, 21:1 on paper', ink: 'Drawn on #fff only' } })
+  const out = run(dir).stdout
+  assert.match(out, /rewrite from the table below: .*\bink\b/)
+  assert.match(out, /rewrite from the table below: .*\brule\b/)
+})
+
+test('lists short and alpha hex strays, but not anchors, entities or the palette in short form', () => {
+  const readme = [
+    'Shorthand #abc, alpha #11223344 and #abcd.',
+    'See [tokens](#add-token) and &#123; here.',
+    'Plain #fff is the palette white.',
+    '',
+  ].join('\n')
+  const out = run(artifact({ readme, errorHex: '#ffffff' })).stdout
+  assert.match(out, /README\.md:1 {2}#abc\b/)
+  assert.match(out, /README\.md:1 {2}#11223344/)
+  assert.match(out, /README\.md:1 {2}#abcd/)
+  assert.doesNotMatch(out, /README\.md:[23]\b/)
+})

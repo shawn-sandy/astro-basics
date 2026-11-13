@@ -37,6 +37,16 @@ const NAMES = ['ink', 'ink-soft', 'paper', 'paper-sunk', 'island', 'island-bg', 
 // What an artifact colour may be (format.md): no var(), color-mix() or named colours.
 const READABLE =
   /^(#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|(rgba?|hsla?|oklch|oklab|lab|lch)\([^()]*\))$/i
+// A whole hex token in any form READABLE accepts: not an anchor (#add-token) or an entity (&#123;).
+const HEX = String.raw`(?<![\w&])#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3,4})(?![\w-])`
+const RATIO = /\d+(?:\.\d+)?:1/
+
+/** #abc and #aabbcc are one colour: compare the long form. */
+const canon = hex => {
+  const digits = hex.slice(1).toLowerCase()
+  return `#${digits.length <= 4 ? [...digits].map(c => c + c).join('') : digits}`
+}
+
 // The page writes these itself on a save, so a stale hex in them is not ours to list.
 const GENERATED = /^(tokens\.(json|css)|manifest\.json|design-system\.json)$/
 
@@ -153,7 +163,7 @@ function sync(dir) {
   // A note that quotes a ratio or a hex went stale with the values it measured, status colours included.
   const stale = changes.length
     ? tokens.color.tokens
-        .filter(t => /\d+\.\d+:1|#[0-9a-f]{6}\b/i.test(t.usage ?? ''))
+        .filter(t => RATIO.test(t.usage ?? '') || new RegExp(HEX, 'i').test(t.usage ?? ''))
         .map(t => t.name)
     : []
   if (stale.length) {
@@ -166,9 +176,9 @@ function sync(dir) {
 
   const palette = new Set(
     tokens.color.tokens.flatMap(entry =>
-      Object.values(typeof entry.value === 'string' ? { v: entry.value } : entry.value).map(hex =>
-        String(hex).toLowerCase()
-      )
+      Object.values(typeof entry.value === 'string' ? { v: entry.value } : entry.value)
+        .filter(value => /^#[0-9a-f]+$/i.test(value))
+        .map(canon)
     )
   )
   const strays = new Set()
@@ -176,8 +186,8 @@ function sync(dir) {
     readFileSync(file, 'utf8')
       .split('\n')
       .forEach((line, index) => {
-        for (const hex of line.match(/#[0-9a-f]{6}\b/gi) ?? []) {
-          if (!palette.has(hex.toLowerCase())) {
+        for (const hex of line.match(new RegExp(HEX, 'gi')) ?? []) {
+          if (!palette.has(canon(hex))) {
             strays.add(`  ${relative(dir, file)}:${index + 1}  ${hex}  ${line.trim().slice(0, 70)}`)
           }
         }
