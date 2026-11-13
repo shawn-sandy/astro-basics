@@ -23,8 +23,8 @@
  *
  * Exits 0 when done, 1 when a text pair is under 4.5:1, and 2 when it cannot continue
  * (a file or token it needs is missing, a tokens.css line it expects is not there).
- * Nothing is written on exit 2, except after a failed write: the message then names what was
- * written.
+ * Nothing is written on exit 2, except after a failed write: the message then names what
+ * completed and the file that may be partly written.
  */
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -182,18 +182,22 @@ function sync(dir) {
   // Everything that reads a file or can reject the input runs above this line, so only a failing
   // write can leave one file changed, and then the message says which.
   const written = []
+  let target = ''
   try {
     if (changes.length) {
+      target = 'tokens.json'
       writeFileSync(jsonPath, `${JSON.stringify(tokens, null, 2)}\n`)
-      written.push('tokens.json')
+      written.push(target)
     }
     if (nextCss !== css) {
+      target = 'tokens.css'
       writeFileSync(cssPath, nextCss)
-      written.push('tokens.css')
+      written.push(target)
     }
   } catch (error) {
+    // A write opens the file empty before it fills it, so the one that failed may be truncated.
     throw new Error(
-      `${error.message}\nwrote: ${written.join(', ') || 'nothing'}; fix the cause and run again`
+      `${error.message}\ncompleted: ${written.join(', ') || 'none'}; ${target} may be partly written: read it from the artifact again before you run this again`
     )
   }
 

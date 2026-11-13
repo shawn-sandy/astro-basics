@@ -72,8 +72,9 @@ their lines in `tokens.css` (value and usage note), names the usage notes that n
 ratios, prints the measured contrast, and lists every hex in the README, cards, stylesheet and
 cover that is not in the palette. Exit 1 means a text pair is under 4.5:1: keep the code's value
 and say in that token's note that the pair fails. Exit 2 means it could not continue and wrote
-nothing, unless a write itself failed: the message then names the file it did write. Its own
-checks:
+nothing, unless a write itself failed: the message then names what completed and the file
+that may be partly written. Read that file from the artifact again before you run the script
+again. Its own checks:
 `node --test .claude/skills/sync-design-system/scripts/sync-tokens.check.mjs`.
 
 Then:

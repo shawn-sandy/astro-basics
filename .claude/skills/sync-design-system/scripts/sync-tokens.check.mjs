@@ -307,10 +307,18 @@ test('writes nothing when a file the scan reads cannot be read', () => {
   assert.deepEqual([read(dir, 'tokens.json'), read(dir, 'tokens.css')], before)
 })
 
-test('says what was written when tokens.css cannot be written', () => {
+test('names tokens.css as possibly modified when it cannot be written', () => {
   const dir = artifact()
   chmodSync(join(dir, 'project/tokens.css'), 0o444)
   const result = run(dir)
   assert.equal(result.status, 2)
-  assert.match(result.stderr, /wrote: tokens\.json/)
+  assert.match(result.stderr, /completed: tokens\.json; tokens\.css may be partly written/)
+})
+
+test('names tokens.json as possibly modified when it cannot be written', () => {
+  const dir = artifact()
+  chmodSync(join(dir, 'project/tokens.json'), 0o444)
+  const result = run(dir)
+  assert.equal(result.status, 2)
+  assert.match(result.stderr, /completed: none; tokens\.json may be partly written/)
 })
