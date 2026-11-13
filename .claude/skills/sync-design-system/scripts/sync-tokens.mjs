@@ -23,7 +23,8 @@
  *
  * Exits 0 when done, 1 when a text pair is under 4.5:1, and 2 when it cannot continue
  * (a file or token it needs is missing, a tokens.css line it expects is not there).
- * Nothing is written on exit 2.
+ * Nothing is written on exit 2, except after a failed write: the message then names what was
+ * written.
  */
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -57,6 +58,10 @@ function inBlock(css, open, edit) {
   if (end < 0) throw new Error(`tokens.css has no "${open}" block`)
   return css.slice(0, start) + edit(css.slice(start, end)) + css.slice(end)
 }
+
+const noteOf = usage =>
+  usage ? ` /* ${usage.replaceAll('*/', '* /').replace(/\s+/g, ' ').trim()} */` : ''
+const escapeRegExp = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 const declaration = name => new RegExp(`^(\\s*--${name}:)[^;\\r\\n]*;[^\\r\\n]*$`, 'm')
 
@@ -129,10 +134,16 @@ function sync(dir) {
         if (!declaration(name).test(text)) {
           throw new Error(`tokens.css has no "--${name}:" line in its ${lightId} block`)
         }
-        const note = token.usage
-          ? ` /* ${token.usage.replaceAll('*/', '* /').replace(/\s+/g, ' ').trim()} */`
-          : ''
-        text = text.replace(declaration(name), (_, head) => `${head} ${light};${note}`)
+        text = text.replace(
+          declaration(name),
+          (_, head) => `${head} ${light};${noteOf(token.usage)}`
+        )
+      }
+      // The other colour tokens (status colours) keep their value; only their note follows tokens.json.
+      for (const { name, usage } of tokens.color.tokens) {
+        if (NAMES.includes(name)) continue
+        const line = new RegExp(`^(\\s*--${escapeRegExp(name)}:[^;\\r\\n]*;)[^\\r\\n]*$`, 'm')
+        text = text.replace(line, (_, head) => `${head}${noteOf(usage)}`)
       }
       return text
     })
@@ -148,9 +159,43 @@ function sync(dir) {
     })
   }
 
-  // Everything is computed before anything is written, so a failure leaves both files alone.
-  if (changes.length) writeFileSync(jsonPath, `${JSON.stringify(tokens, null, 2)}\n`)
-  if (nextCss !== css) writeFileSync(cssPath, nextCss)
+  // The scan reads files and can fail, so it runs before the first write.
+  const palette = new Set(
+    tokens.color.tokens.flatMap(entry =>
+      Object.values(typeof entry.value === 'string' ? { v: entry.value } : entry.value)
+        .filter(value => /^#[0-9a-f]+$/i.test(value))
+        .map(canon)
+    )
+  )
+  const strays = new Set()
+  for (const file of textFiles(join(dir, 'project'))) {
+    readFileSync(file, 'utf8')
+      .split('\n')
+      .forEach((line, index) => {
+        for (const hex of line.match(new RegExp(HEX, 'gi')) ?? []) {
+          if (!palette.has(canon(hex))) {
+            strays.add(`  ${relative(dir, file)}:${index + 1}  ${hex}  ${line.trim().slice(0, 70)}`)
+          }
+        }
+      })
+  }
+  // Everything that reads a file or can reject the input runs above this line, so only a failing
+  // write can leave one file changed, and then the message says which.
+  const written = []
+  try {
+    if (changes.length) {
+      writeFileSync(jsonPath, `${JSON.stringify(tokens, null, 2)}\n`)
+      written.push('tokens.json')
+    }
+    if (nextCss !== css) {
+      writeFileSync(cssPath, nextCss)
+      written.push('tokens.css')
+    }
+  } catch (error) {
+    throw new Error(
+      `${error.message}\nwrote: ${written.join(', ') || 'nothing'}; fix the cause and run again`
+    )
+  }
 
   const settled = !changes.length && nextCss === css
   const lines = changes.map(
@@ -174,25 +219,6 @@ function sync(dir) {
 
   console.log(`\nContrast, from _design-tokens.scss\n${result.lines.join('\n')}`)
 
-  const palette = new Set(
-    tokens.color.tokens.flatMap(entry =>
-      Object.values(typeof entry.value === 'string' ? { v: entry.value } : entry.value)
-        .filter(value => /^#[0-9a-f]+$/i.test(value))
-        .map(canon)
-    )
-  )
-  const strays = new Set()
-  for (const file of textFiles(join(dir, 'project'))) {
-    readFileSync(file, 'utf8')
-      .split('\n')
-      .forEach((line, index) => {
-        for (const hex of line.match(new RegExp(HEX, 'gi')) ?? []) {
-          if (!palette.has(canon(hex))) {
-            strays.add(`  ${relative(dir, file)}:${index + 1}  ${hex}  ${line.trim().slice(0, 70)}`)
-          }
-        }
-      })
-  }
   console.log(
     strays.size
       ? `\nHex colours outside the palette (stale, or deliberate?):\n${[...strays].join('\n')}`

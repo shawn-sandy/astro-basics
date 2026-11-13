@@ -7,7 +7,7 @@
  */
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { after, test } from 'node:test'
@@ -282,4 +282,35 @@ test('lists short and alpha hex strays, but not anchors, entities or the palette
   assert.match(out, /README\.md:1 {2}#11223344/)
   assert.match(out, /README\.md:1 {2}#abcd/)
   assert.doesNotMatch(out, /README\.md:[23]\b/)
+})
+
+test('copies a corrected status-colour note into tokens.css and leaves its value alone', () => {
+  const dir = artifact()
+  run(dir)
+  const file = join(dir, 'project/tokens.json')
+  const tokens = JSON.parse(readFileSync(file, 'utf8'))
+  tokens.color.tokens.find(t => t.name === 'color-error').usage = 'status 4.10:1 on paper'
+  writeFileSync(file, JSON.stringify(tokens, null, 2))
+  run(dir)
+  assert.ok(
+    read(dir, 'tokens.css').includes('--color-error: #ef4444; /* status 4.10:1 on paper */')
+  )
+  assert.match(run(dir).stdout, /^in sync/)
+})
+
+test('writes nothing when a file the scan reads cannot be read', () => {
+  const dir = artifact()
+  const before = [read(dir, 'tokens.json'), read(dir, 'tokens.css')]
+  chmodSync(join(dir, 'project/README.md'), 0o000)
+  const result = run(dir)
+  assert.equal(result.status, 2)
+  assert.deepEqual([read(dir, 'tokens.json'), read(dir, 'tokens.css')], before)
+})
+
+test('says what was written when tokens.css cannot be written', () => {
+  const dir = artifact()
+  chmodSync(join(dir, 'project/tokens.css'), 0o444)
+  const result = run(dir)
+  assert.equal(result.status, 2)
+  assert.match(result.stderr, /wrote: tokens\.json/)
 })
