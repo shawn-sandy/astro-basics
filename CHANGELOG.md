@@ -162,6 +162,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Docs: a Starlight guide at `/guide/customize-design` and
     `project-docs/02-guides/customize-design-skill.md`, linked from both Design Direction pages
 
+- **Design system sync skill** (`.claude/skills/sync-design-system/`): a Claude skill that re-syncs
+  the published Astro Kit design system artifact to this project's colour tokens and look - the
+  reverse of `customize-design`. It edits nothing in the repository and commits nothing
+  - `scripts/sync-tokens.mjs` copies the seven direction colours onto the artifact's
+    `tokens.json` and `tokens.css` in both themes, prints the measured contrast, names the usage
+    notes that have gone stale, and lists every hex outside the palette; it exits 1 when a text
+    pair is under 4.5:1 and 2 when it wrote nothing
+  - `scripts/sync-tokens.check.mjs` holds its 22 checks, run with `node --test` and no other
+    dependency
+  - It stops rather than guessing when no artifact exists, when the system is code-owned or
+    view-only, or when `meta.repo` names another repository
+  - `customize-design` step A7 now hands off to it, in place of the global
+    `design-system-from-design-md` skill
+  - Docs: a Starlight guide at `/guide/sync-design-system` and
+    `project-docs/02-guides/sync-design-system-skill.md`, linked from both customize-design pages
+
 ### Changed
 
 - **`@clerk/astro` 3.0.23 to 4.1.19**: 4.0.0 is the first major whose peer range includes Astro 7.

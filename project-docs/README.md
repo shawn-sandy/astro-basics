@@ -37,6 +37,7 @@ Step-by-step tutorials for common operations:
 - `configurable-roles.md` - Setting up custom role systems
 - `role-guard-usage-guide.md` - Using role-based access control
 - `customize-design-skill.md` - Rebranding colours, fonts and corners with the `customize-design` skill
+- `sync-design-system-skill.md` - Re-syncing the published design system artifact with the `sync-design-system` skill
 
 ### 03-features/
 
@@ -269,6 +270,9 @@ Historical record of finished implementations. Found in `completed/`.
 **...rebrand the site (colours, fonts, corners)**
 → Use the skill described in [02-guides/customize-design-skill.md](./02-guides/customize-design-skill.md)
 → Read [03-features/design-direction.md](./03-features/design-direction.md) for the rules it keeps
+
+**...update the published design system artifact after a rebrand**
+→ Use the skill described in [02-guides/sync-design-system-skill.md](./02-guides/sync-design-system-skill.md)
 
 **...understand the architecture**
 → Browse [11-reference/](./11-reference/) for architecture reviews

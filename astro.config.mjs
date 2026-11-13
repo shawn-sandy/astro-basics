@@ -58,6 +58,7 @@ export default defineConfig({
             { label: 'Configurable Roles', link: '/guide/configurable-roles' },
             { label: 'Design Direction', link: '/guide/design-direction' },
             { label: 'Customizing the Design', link: '/guide/customize-design' },
+            { label: 'Syncing the Design System', link: '/guide/sync-design-system' },
             { label: 'Logging System', link: '/guide/logging-system' },
             { label: 'Role Guard System', link: '/guide/role-guard-usage' },
             { label: 'Page Level Guards', link: '/guide/page-level-protection/' },

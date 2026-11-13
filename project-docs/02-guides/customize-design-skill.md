@@ -130,9 +130,9 @@ the rebrand:
    the skill regenerates it if the plugin is present and otherwise says it is stale. The Named Rules stay unless the
    brand really breaks one.
 
-7. **Re-sync the published design system (optional).** If the user has the `design-system-from-design-md` skill in
-   `~/.claude/skills`, it is run with the URL of the Astro Kit artifact linked from the README, so the existing system
-   is updated rather than a new one created. Without that skill, the skill says so and stops.
+7. **Re-sync the published design system (optional).** It runs this repository's `sync-design-system` skill, which
+   re-syncs the Astro Kit artifact linked from the README in place rather than creating a new one. See
+   [sync-design-system-skill.md](./sync-design-system-skill.md).
 
 ### Corners
 
