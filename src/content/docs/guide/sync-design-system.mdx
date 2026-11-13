@@ -36,18 +36,19 @@ colours; this one carries the result out to the artifact.
 It re-syncs a system; it does not create one. If no artifact exists, the skill stops and points you at the
 `design-system-from-design-md` skill in your own `~/.claude/skills`, or the Artifact tool's quickstart.
 
-It also stops, having changed nothing, when:
+Two things stop it outright, having changed nothing:
 
-| Situation                                                   | Why it stops                                                                           |
-| ----------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| The index records `"editing": "code"`                       | `/design-sync` owns that system and keeps it read-only. The change belongs in the code |
-| The artifact was shared view-only                           | There is nothing to publish to                                                         |
-| `tokens.json` `meta.repo` names another repository, or none | A fork inherits this README's link, so the link alone does not make the artifact yours |
+| Situation                             | Why it stops                                                                           |
+| ------------------------------------- | -------------------------------------------------------------------------------------- |
+| The index records `"editing": "code"` | `/design-sync` owns that system and keeps it read-only. The change belongs in the code |
+| The artifact was shared view-only     | There is nothing to publish to                                                         |
 
-<Aside type="caution" title="A publish overwrites in place">
-  That last check is the important one. The publish replaces the system; the version before it
-  survives only in the artifact's history. The skill reports what the artifact records - repo, ref,
-  date - and asks you once before replacing a system that belongs to somewhere else.
+<Aside type="caution" title="A third check pauses instead: whose system is it?">
+  If `tokens.json` `meta.repo` and the index `lastChange.via` name another repository, or none, the
+  skill reports what the artifact records - repo, ref, date - and asks you once whether to replace
+  that system in place, continuing only on a yes. The publish overwrites the system; the version
+  before it survives only in the artifact's history. A fork inherits this README's link, so the link
+  alone does not make the artifact yours.
 </Aside>
 
 ## Code Wins
@@ -81,8 +82,8 @@ The status colours (success, warning, error, info) are not brand. They change on
 2. **Read the target, and check it is the right one.** It lists the artifact's files, then reads them by path, since
    a read without one can be refused for a big system: the index, `tokens.json`, `tokens.css`, `README.md`, every
    file it may change, and the type's reference pages. The folder they land in is the working folder for the next
-   step and the publish root later. The three stop conditions above are checked here, and the ownership check may
-   ask you one more question.
+   step and the publish root later. The two stop conditions above are checked here, and so is the ownership check,
+   which may ask you one more question.
 
 3. **Apply the colours.** The script below does the mechanical part. What it hands back needs judgement: stale usage
    notes to rewrite from measured ratios, stray hex values to keep or update, then two more runs until it prints
@@ -148,7 +149,7 @@ unattended. It takes one argument: the folder the artifact's files were read int
     ```
 
     22 checks, nothing beyond Node's own test runner, under three seconds. They cover the contrast exit codes, the
-    inputs that must write nothing, the two-run usage-note loop, CRLF preservation in `tokens.css`, the stray-hex
+    inputs that must write nothing, the three-run usage-note loop, CRLF preservation in `tokens.css`, the stray-hex
     scan's edge cases, and the partial write message.
 
   </TabItem>

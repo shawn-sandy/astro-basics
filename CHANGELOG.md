@@ -168,11 +168,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `scripts/sync-tokens.mjs` copies the seven direction colours onto the artifact's
     `tokens.json` and `tokens.css` in both themes, prints the measured contrast, names the usage
     notes that have gone stale, and lists every hex outside the palette; it exits 1 when a text
-    pair is under 4.5:1 and 2 when it wrote nothing
+    pair is under 4.5:1 and 2 when it could not continue
   - `scripts/sync-tokens.check.mjs` holds its 22 checks, run with `node --test` and no other
     dependency
-  - It stops rather than guessing when no artifact exists, when the system is code-owned or
-    view-only, or when `meta.repo` names another repository
+  - It stops rather than guessing when no artifact exists and when the system is code-owned or
+    view-only, and asks once before replacing a system whose `meta.repo` names another repository
   - `customize-design` step A7 now hands off to it, in place of the global
     `design-system-from-design-md` skill
   - Docs: a Starlight guide at `/guide/sync-design-system` and

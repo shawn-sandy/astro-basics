@@ -22,16 +22,18 @@ Do not run it to create a design system. The skill re-syncs one and stops if non
 the `design-system-from-design-md` skill (in the user's own `~/.claude/skills`) or the Artifact tool's quickstart,
 then come back.
 
-It also stops, without changing anything, when:
+Two things stop it outright, with nothing changed:
 
-| Situation                                                   | Why it stops                                                                                  |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| The index records `"editing": "code"`                       | `/design-sync` owns that system and keeps it read-only. The change belongs in the code        |
-| The artifact was shared view-only                           | There is nothing to publish to                                                                |
-| `tokens.json` `meta.repo` names another repository, or none | A fork inherits this README's link. The skill reports what the artifact records and asks once |
+| Situation                             | Why it stops                                                                           |
+| ------------------------------------- | -------------------------------------------------------------------------------------- |
+| The index records `"editing": "code"` | `/design-sync` owns that system and keeps it read-only. The change belongs in the code |
+| The artifact was shared view-only     | There is nothing to publish to                                                         |
 
-That last check matters because the publish overwrites the system in place: the earlier version survives only in the
-artifact's history.
+A third check pauses rather than stops. If `tokens.json` `meta.repo` and the index `lastChange.via` name another
+repository, or none, the skill reports what the artifact records - repo, ref, date - and asks once whether to
+replace that system in place. It continues only on a yes. This matters because the publish overwrites the system:
+the version before it survives only in the artifact's history, and a fork inherits this README's link, so the link
+alone does not make the artifact yours.
 
 ## Authority: Code Wins
 
@@ -73,8 +75,8 @@ It pulls the index `project/design-system.json`, `project/tokens.json`, `project
 every file it may change, and the type's reference pages. The folder the read saved them under is the working
 folder for Step 3 and the publish `root` in Step 5.
 
-This is where the three stop conditions above are checked. The ownership check may ask the user one more question:
-whether to replace a system whose `meta.repo` names somewhere else.
+This is where the two stop conditions above are checked, and where the ownership check may ask the user one more
+question: whether to replace a system whose `meta.repo` names somewhere else.
 
 ### Step 3 - Apply the colours
 
@@ -182,7 +184,7 @@ node --test .claude/skills/sync-design-system/scripts/sync-tokens.check.mjs
 
 22 checks, no dependencies beyond Node's own test runner, under three seconds. They cover the contrast exit codes,
 the inputs that must write nothing (a `var()` or a malformed hex in a mixin, a missing token, an unreadable file),
-the two-run usage-note loop, CRLF preservation in `tokens.css`, the stray-hex scan's edge cases, and the partial
+the three-run usage-note loop, CRLF preservation in `tokens.css`, the stray-hex scan's edge cases, and the partial
 write message.
 
 ## Deliberate Limits
