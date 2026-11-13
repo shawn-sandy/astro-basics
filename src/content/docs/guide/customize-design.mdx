@@ -109,9 +109,9 @@ will contain only the rebrand:
    brand.
 
 7. **Re-sync the published design system, if wanted.** The README links the Astro Kit design system artifact built
-   from `DESIGN.md`. If you have the `design-system-from-design-md` skill in your own `~/.claude/skills`, the skill
-   runs it with the artifact's URL so it updates the existing system rather than creating a new one. Without that
-   skill, it says so and stops.
+   from `DESIGN.md`. The skill hands that off to this repository's `sync-design-system` skill, which updates the
+   existing system in place rather than creating a new one. See
+   [Syncing the Design System](/guide/sync-design-system).
 
 </Steps>
 

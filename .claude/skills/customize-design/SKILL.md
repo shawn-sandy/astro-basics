@@ -241,10 +241,11 @@ rounded and can read 0.01 higher. Write the script's figures.
 ### A7 - Re-sync the published design system (optional)
 
 The README links the Astro Kit design system artifact, which was built from `DESIGN.md`.
-If the user wants it updated and has the `design-system-from-design-md` skill, run that
-skill now and pass it the artifact's URL, so it re-syncs the existing system instead of
-creating a new one. That skill lives in the user's own `~/.claude/skills`, not in this
-repo. If it is not available, say so and stop. Don't build an artifact by hand.
+If the user wants it updated, run this repo's `sync-design-system` skill
+(`/sync-design-system`, in `.claude/skills/sync-design-system/`). It re-syncs the existing
+system in place rather than creating a new one: the seven colours first, then the name,
+corners, fonts, components and cover. It stops if the README links no artifact, because it
+re-syncs one and does not create one. Don't build an artifact by hand.
 
 ## Path B - A brand layer on some sections
 
